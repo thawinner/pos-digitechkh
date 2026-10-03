@@ -1,0 +1,373 @@
+/* ច្រកគ្រប់គ្រងទាំងអស់ — ស្រទាប់រចនាបន្ថែមលើ custom.css
+
+   custom.css បង្ខំ .text-xs / .text-[10px] / .text-[11px] / .text-[12px]
+   ទៅជាទំហំ 14.5px តែមួយដោយ !important ដែលធ្វើឱ្យចំណងជើង និងអត្ថបទរងមាន
+   ទំហំដូចគ្នា ហើយបាត់បង់ឋានានុក្រម។ វិធានខាងក្រោមស្តារឋានានុក្រមឡើងវិញ
+   ដោយមិនប៉ះពាល់ទំហំអក្សរសកលឡើយ។
+
+   វិសាលភាព [id$="Portal"] គ្របគ្រប់ច្រកទាំងអស់ (smPortal, sePortal, wmPortal,
+   wsPortal, csPortal, gmPortal, saPortal និងច្រកថ្មីនាពេលអនាគត) ដូច្នេះ
+   តួនាទីថ្មីទទួលបានមាត្រដ្ឋានដូចគ្នាដោយស្វ័យប្រវត្តិ។ */
+
+/* ===== 1. ស្តារឋានានុក្រមសម្រាប់ថ្នាក់ Tailwind ដើម =====
+   ទំព័រចាស់ខ្លះនៅប្រើ text-xs / text-[11px] ដោយផ្ទាល់ ដោយមិនប្រើថ្នាក់ sm-*។
+   custom.css បង្ខំពួកវាទាំងអស់ទៅ 14.5px ដូចគ្នា។ វិធានខាងក្រោមបំបែកពួកវា
+   ជាកាំជណ្ដើរ ដោយមិនធ្វើឱ្យតូចជាងទំហំដែល custom.css កំណត់រួចឡើយ។
+   .text-xs និង .text-sm ទុកតាម custom.css ដើម (14.5px និង 15.5px)។ */
+
+[id$="Portal"] .text-\[10px\] {
+    font-size: 13px !important;
+    line-height: 1.45 !important;
+}
+
+[id$="Portal"] .text-\[11px\] {
+    font-size: 13.5px !important;
+    line-height: 1.45 !important;
+}
+
+[id$="Portal"] .text-\[12px\] {
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+}
+
+/* ===== 2. មាត្រដ្ឋានឈ្មោះតួនាទី (សម្រាប់ទំព័រដែលប្រើថ្នាក់ sm-*) ===== */
+
+[id$="Portal"] .sm-kpi-label {
+    font-size: 14.5px !important;
+    line-height: 1.5 !important;
+    font-weight: 500 !important;
+}
+
+[id$="Portal"] .sm-kpi-value {
+    font-size: 28px !important;
+    line-height: 1.25 !important;
+    font-weight: 700 !important;
+}
+
+[id$="Portal"] .sm-kpi-unit {
+    font-size: 15px !important;
+    line-height: 1.4 !important;
+    font-weight: 400 !important;
+}
+
+[id$="Portal"] .sm-kpi-sub {
+    font-size: 13.5px !important;
+    line-height: 1.45 !important;
+}
+
+[id$="Portal"] .sm-card-title {
+    font-size: 18px !important;
+    line-height: 1.4 !important;
+    font-weight: 600 !important;
+}
+
+[id$="Portal"] .sm-card-sub {
+    font-size: 13.5px !important;
+    line-height: 1.45 !important;
+}
+
+[id$="Portal"] .sm-th {
+    font-size: 13.5px !important;
+    line-height: 1.45 !important;
+    font-weight: 600 !important;
+}
+
+[id$="Portal"] .sm-td {
+    font-size: 16px !important;
+    line-height: 1.55 !important;
+    font-weight: 500 !important;
+}
+
+[id$="Portal"] .sm-td-strong {
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+    font-weight: 600 !important;
+}
+
+[id$="Portal"] .sm-td-sub {
+    font-size: 13.5px !important;
+    line-height: 1.45 !important;
+}
+
+[id$="Portal"] .sm-badge {
+    font-size: 13.5px !important;
+    line-height: 1.5 !important;
+    font-weight: 500 !important;
+}
+
+[id$="Portal"] .sm-label {
+    font-size: 14.5px !important;
+    line-height: 1.5 !important;
+    font-weight: 500 !important;
+}
+
+[id$="Portal"] .sm-value {
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+    font-weight: 600 !important;
+}
+
+/* ===== ធាតុរចនាបន្ថែម — ប្រើដើម្បីបំបែកជាន់ថ្នាក់ កុំឱ្យគ្រប់ប្លុកមើលទៅដូចគ្នាទាំងអស់ ===== */
+
+/* តួលេខហិរញ្ញវត្ថុ៖ ទទឹងតួអក្សរស្មើគ្នា ដូច្នេះលេខតម្រឹមជាជួរត្រង់ */
+[id$="Portal"] .sm-figure {
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: "tnum" 1 !important;
+    letter-spacing: -0.01em !important;
+}
+
+/* ស្លាកផ្នែកតូច — ជំនួសចំណងជើងកាតធម្មតា */
+[id$="Portal"] .sm-eyebrow {
+    font-size: 12.5px !important;
+    line-height: 1.4 !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.06em !important;
+    text-transform: uppercase;
+}
+
+/* តួលេខធំបំផុតនៅលើផ្ទាំង — ធំជាង sm-kpi-value ដើម្បីបង្កើតចំណុចផ្តោត */
+[id$="Portal"] .sm-hero-value {
+    font-size: 40px !important;
+    line-height: 1.1 !important;
+    font-weight: 700 !important;
+    font-variant-numeric: tabular-nums !important;
+    letter-spacing: -0.02em !important;
+}
+
+@media (max-width: 640px) {
+    [id$="Portal"] .sm-hero-value { font-size: 30px !important; }
+}
+
+/* របារវឌ្ឍនភាពស្តើង — ប្រើក្នុងជួរបញ្ជី មិនមែនជាកាតដាច់ដោយឡែក */
+[id$="Portal"] .sm-rail {
+    height: 4px;
+    border-radius: 999px;
+    background-color: rgb(226 232 240);
+    overflow: hidden;
+}
+
+[id$="Portal"] .sm-rail > span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    transition: width .35s ease;
+}
+
+/* ជួរបញ្ជីការងារ — បន្ទាត់ពណ៌ខាងឆ្វេងជំនួសផ្ទៃពណ៌ពេញ */
+[id$="Portal"] .sm-worklist-row {
+    border-left: 3px solid transparent;
+    transition: background-color .15s ease, border-color .15s ease;
+}
+
+[id$="Portal"] .sm-worklist-row:hover {
+    background-color: rgb(248 250 252);
+}
+
+[id$="Portal"] .sm-nav-label {
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+    font-weight: 500 !important;
+}
+
+[id$="Portal"] .sm-nav-note {
+    font-size: 13.5px !important;
+    line-height: 1.55 !important;
+}
+
+/* ម៉ឺនុយសកម្មភាពជួរតារាង (ស្តង់ដារលេខ 9) */
+[id$="Portal"] .sm-row-menu-item {
+    font-size: 15.5px !important;
+    line-height: 1.5 !important;
+    font-weight: 500 !important;
+}
+
+/* ===== របារចំហៀងកំណែទី 2 (បង្រួមបាន) =====
+   ធាតុ .sb-* ប្រើតែក្នុងរបារចំហៀងដែលបើក sidebarV2 ប៉ុណ្ណោះ */
+
+#portalSidebar {
+    transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* បង្រួមបានតែលើអេក្រង់ធំ ព្រោះក្រោម 1024px វាជាថតរអិលរួចទៅហើយ */
+@media (min-width: 1024px) {
+    #portalSidebar.is-collapsed {
+        width: 5.25rem !important;
+    }
+
+    #portalSidebar.is-collapsed .sb-expand-only {
+        display: none !important;
+    }
+
+    #portalSidebar.is-collapsed .sb-brand,
+    #portalSidebar.is-collapsed .sb-nav-item,
+    #portalSidebar.is-collapsed .sb-user {
+        justify-content: center !important;
+    }
+
+    /* ទទឹង 84px មិនគ្រប់សម្រាប់ទាំងឡូហ្គោ និងប៊ូតុង
+       ដូច្នេះពេលបង្រួម បង្ហាញតែប៊ូតុងពង្រីកវិញ */
+    #portalSidebar.is-collapsed .sb-brand {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }
+
+    #portalSidebar.is-collapsed .sb-nav-item {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    /* ផ្លាកលេខប្រែជាចំណុចតូច ពេលបង្រួម */
+    #portalSidebar.is-collapsed .sb-badge {
+        position: absolute;
+        top: 6px;
+        right: 14px;
+        min-width: 9px;
+        height: 9px;
+        padding: 0 !important;
+        font-size: 0 !important;
+        border-radius: 9999px;
+    }
+
+    /* ស្លាកលេចឡើងពេលដាក់ទស្សន៍ទ្រនិច — ជំនួស native tooltip (ស្តង់ដារលេខ 6) */
+    #portalSidebar.is-collapsed .sb-tip {
+        display: block;
+        position: absolute;
+        left: calc(100% + 10px);
+        top: 50%;
+        transform: translateY(-50%) translateX(-4px);
+        white-space: nowrap;
+        background: #0f172a;
+        color: #fff;
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-size: 13px;
+        line-height: 1.4;
+        box-shadow: 0 10px 25px -8px rgba(0, 0, 0, 0.6);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.15s ease, transform 0.15s ease;
+        z-index: 60;
+    }
+
+    #portalSidebar.is-collapsed .sb-nav-item:hover .sb-tip,
+    #portalSidebar.is-collapsed .sb-collapse-btn:hover .sb-tip,
+    #portalSidebar.is-collapsed .sb-user:hover .sb-tip {
+        opacity: 1;
+        transform: translateY(-50%) translateX(0);
+    }
+}
+
+/* លាក់ជាលំនាំដើម — បង្ហាញតែពេលបង្រួមលើអេក្រង់ធំប៉ុណ្ណោះ
+   បើមិនដូច្នេះទេ វានឹងលេចជាអក្សរធម្មតាក្នុងថតរអិលលើទូរស័ព្ទ */
+.sb-tip {
+    display: none;
+}
+
+/*
+ * kpi-2up — ជម្រើសចេញពីច្បាប់ «Universal KPI Grid Scaling» ក្នុង custom.css
+ * ច្បាប់នោះបង្ខំក្រឡា KPI ទាំងអស់ឱ្យទៅជួរឈរតែមួយលើទូរស័ព្ទ។ សម្រាប់កាតដែលមានតម្លៃខ្លី
+ * (ឧ. $81.20, 9) ជួរឈរពីរកាត់បន្ថយការរំកិលពាក់កណ្តាល — ដាក់ថ្នាក់នេះតែលើក្រឡាបែបនោះ
+ * ជម្រើសនេះមានភាពជាក់លាក់ (0,4,1) ខ្ពស់ជាងច្បាប់ដើម (0,3,1)
+ */
+@media (max-width: 639px) {
+    main .grid.grid-cols-2.lg\:grid-cols-4.kpi-2up {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+
+/* បន្ទាត់សម្គាល់ធាតុសកម្ម */
+.sb-nav-item[aria-current="page"]::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    border-radius: 0 3px 3px 0;
+    background: #86EFAC;
+}
+
+/*
+ * ពណ៌របារចំហៀងតាមទម្រង់
+ * ----------------------------------------------------------------------------
+ * របារចំហៀងត្រូវបានរចនាជាពណ៌ខៀវដែន (#1e3a5f) ជាមួយរូបតំណាងពណ៌ខៀវមេឃ
+ * ប៉ុន្តែ custom.css បង្ខំ <aside> ទាំងអស់ឱ្យទៅពណ៌បៃតង (#1b5223) ដោយ !important
+ * ដូច្នេះក្នុងទម្រង់ភ្លឺ យើងឃើញពណ៌ខៀវមេឃលើពណ៌បៃតង ដែលប៉ះទង្គិចគ្នា។
+ * ទម្រង់ភ្លឺ (បៃតង) ប្រើពណ៌ខៀវស្លឹកស្រាល — ទម្រង់ងងឹត (ខៀវដែន) រក្សាពណ៌ខៀវមេឃដដែល
+ */
+#portalSidebar .sb-icon        { color: #A7F3D0; }
+#portalSidebar .sb-text        { color: rgba(255, 255, 255, .84); }
+#portalSidebar .sb-accent      { color: #BBF7D0; }
+#portalSidebar .sb-accent-soft { color: rgba(220, 252, 231, .82); }
+#portalSidebar .sb-avatar      { background: rgba(167, 243, 208, .14); border-color: rgba(167, 243, 208, .32); color: #DCFCE7; }
+#portalSidebar .sb-nav-item[aria-current="page"] .sb-icon { color: #FFFFFF; }
+
+html.dark #portalSidebar .sb-icon        { color: #7DD3FC; }
+html.dark #portalSidebar .sb-text        { color: #E0F2FE; }
+html.dark #portalSidebar .sb-accent      { color: #7DD3FC; }
+html.dark #portalSidebar .sb-accent-soft { color: #BAE6FD; }
+html.dark #portalSidebar .sb-avatar      { background: rgba(14, 165, 233, .2); border-color: rgba(56, 189, 248, .3); color: #E0F2FE; }
+html.dark .sb-nav-item[aria-current="page"]::before { background: #7DD3FC; }
+
+/* ===== ស្តង់ដារបោះពុម្ពឯកសារផ្លូវការ A4 (ស្តង់ដារលេខ 12) ===== */
+.print-footer {
+    display: none;
+}
+
+@media print {
+
+    aside,
+    header,
+    .no-print,
+    #bmsMobileBackdrop,
+    #bmsMobileMenuBtn,
+    #bmsSidebarCloseBtn {
+        display: none !important;
+    }
+
+    body,
+    [id$="Portal"] {
+        background: #fff !important;
+        display: block !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    body>div.flex-1,
+    main {
+        display: block !important;
+        height: auto !important;
+        overflow: visible !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .bg-white,
+    .rounded-2xl {
+        box-shadow: none !important;
+        border-color: #e2e8f0 !important;
+    }
+
+    tr,
+    .signature-block,
+    .sm-summary,
+    .sm-print-block {
+        page-break-inside: avoid !important;
+    }
+
+    .print-footer {
+        display: block !important;
+        margin-top: 18px;
+        padding-top: 10px;
+        border-top: 1px solid #cbd5e1;
+        font-size: 11px;
+        color: #64748b;
+        text-align: center;
+    }
+
+    @page {
+        size: A4;
+        margin: 14mm 12mm;
+    }
+}

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - ទូទាត់តាមកូដស្កេនបាគង</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#0891b2", 'primary-dark': "#0e7490", accent: "#22d3ee" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+</head>
+<body id="posPortal" data-role-root="../.." data-active="pos" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex flex-col h-screen overflow-hidden">
+
+    <div id="headerHost" data-title="ទូទាត់តាមកូដស្កេនបាគង"
+             data-subtitle="សូមឱ្យអតិថិជនស្កេនកូដដើម្បីទូទាត់"
+             data-back="pos-terminal.html"></div>
+
+    <main class="flex-1 overflow-y-auto bg-slate-50 px-4 md:px-6 py-6 scrollbar-hide">
+        <div id="pageBody" class="w-full"></div>
+    </main>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        /*
+         * ការលក់ដែលរង់ចាំគឺជាប្រភពតែមួយគត់ — មិនទុកចិត្តលើ URL ទេ
+         * ពីមុន៖ បើកទំព័រនេះដោយគ្មានការលក់ (ចុចត្រឡប់ក្រោយ ឬផ្ទុកឡើងវិញ) បង្ហាញកូដស្កេន $0.00
+         * បម្រុងលេខវិក្កយបត្រទទេ ហើយប៊ូតុង «ទទួលបានប្រាក់» សម្អាតកន្ត្រកដែលកំពុងលក់ចោល
+         */
+        const pending = loadPendingPayment();
+        const receiptId = pending ? pending.receiptId : '';
+        const amount = pending ? (Number(pending.pay && pending.pay.khqr) || 0) : 0;
+        const hasPayment = !!pending && amount > 0.005;
+
+        let secondsLeft = 300;
+        let ticker = null;
+        let settled = false;
+
+        function renderPage() {
+            setPortalSubtitle(`វិក្កយបត្រ ${receiptId} · ${SHIFT.terminal} · ${SHIFT.cashier}`);
+
+            document.getElementById('pageBody').innerHTML = `
+                <div class="w-full grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+                    <!-- ផ្ទាំងស្កេនសម្រាប់អតិថិជន -->
+                    <div class="lg:col-span-3 bg-white rounded-2xl border-2 border-teal-600/20 shadow-sm p-6 md:p-8 text-center">
+                        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-600 text-white mb-5">
+                            <i class="fas fa-qrcode"></i>
+                            <span class="sm-value text-white">សូមស្កេនដើម្បីទូទាត់</span>
+                        </div>
+
+                        <p class="sm-label text-slate-500">ទឹកប្រាក់ត្រូវទូទាត់</p>
+                        <p class="text-5xl font-bold text-teal-700 leading-tight mt-1 sm-figure">${fmtUSD(amount)}</p>
+                        <p class="sm-card-title text-slate-500 mt-1">${fmtKHR(toKHR(amount))}</p>
+                        <div class="mt-4 flex justify-center">
+                            <span id="countdownChip" class="sm-badge inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-teal-50 text-teal-700 border border-teal-200 font-semibold"></span>
+                        </div>
+
+                        <div class="flex justify-center my-6">
+                            <div id="qrBox" class="p-4 bg-white rounded-2xl border-2 border-slate-200 shadow-sm inline-block"></div>
+                        </div>
+
+                        <div class="inline-flex flex-col items-center gap-1">
+                            <p class="sm-value text-slate-700">${MERCHANT.name}</p>
+                            <p class="sm-card-sub text-slate-500">${MERCHANT.account}</p>
+                            <p class="sm-td-sub text-slate-400 mt-1">ស្កេនដោយកម្មវិធីធនាគារណាមួយដែលភ្ជាប់បាគង</p>
+                        </div>
+
+                        <div id="statusBox" class="mt-6"></div>
+                    </div>
+
+                    <!-- ព័ត៌មានប្រតិបត្តិការ -->
+                    <div class="lg:col-span-2 space-y-5">
+                        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                            <div class="p-4 border-b border-slate-100">
+                                <h3 class="sm-card-title text-slate-700">មុខទំនិញក្នុងវិក្កយបត្រ</h3>
+                                <p class="sm-card-sub text-slate-500">${pending ? pending.items.length : 0} មុខទំនិញ</p>
+                            </div>
+                            <div id="itemList" class="divide-y divide-slate-100 max-h-[280px] overflow-y-auto scrollbar-hide"></div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5">
+                            <h3 class="sm-card-title text-slate-700 border-b border-slate-100 pb-3 mb-3">សង្ខេបការទូទាត់</h3>
+                            <div id="paySummary" class="space-y-2"></div>
+                        </div>
+
+                        <div class="space-y-2.5 no-print">
+                            <button onclick="confirmPaid()" id="paidBtn"
+                                class="sm-card-title w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-sm transition inline-flex items-center justify-center gap-2">
+                                <i class="fas fa-circle-check"></i> ទទួលបានប្រាក់រួចរាល់
+                            </button>
+                            <button onclick="cancelPayment()"
+                                class="sm-value w-full py-3 rounded-2xl bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 font-semibold transition inline-flex items-center justify-center gap-2">
+                                <i class="fas fa-xmark"></i> បោះបង់ការទូទាត់
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+
+            renderItems();
+            renderPaySummary();
+            renderStatus();
+            renderQr();
+        }
+
+        function renderItems() {
+            const host = document.getElementById('itemList');
+            if (!pending || !pending.items.length) {
+                host.innerHTML = '<div class="p-6 text-center"><p class="sm-card-sub text-slate-500">គ្មានទិន្នន័យមុខទំនិញទេ</p></div>';
+                return;
+            }
+            host.innerHTML = pending.items.map(l => {
+                const p = getProduct(l.sku);
+                return `
+                    <div class="p-3.5 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-white border border-slate-200 p-1 flex items-center justify-center overflow-hidden flex-shrink-0">
+                            ${productImgHtml(p, 'text-sm')}
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <p class="sm-td text-slate-700 leading-snug">${p.name}</p>
+                            <p class="sm-td-sub text-slate-400">${l.qty} × ${fmtUSD(p.price)}</p>
+                        </div>
+                        <span class="sm-value text-slate-700 flex-shrink-0">${fmtUSD(lineTotal(l))}</span>
+                    </div>`;
+            }).join('');
+        }
+
+        function renderPaySummary() {
+            const host = document.getElementById('paySummary');
+            if (!pending) {
+                host.innerHTML = '<p class="sm-card-sub text-slate-500">គ្មានទិន្នន័យការទូទាត់ទេ</p>';
+                return;
+            }
+            const rows = [
+                ['សរុបត្រូវបង់', fmtUSD(pending.due), 'text-slate-700'],
+                [PAY_LABEL.usdCash, fmtUSD(pending.pay.usdCash), 'text-slate-700'],
+                ['សាច់ប្រាក់ ៛', fmtKHR(pending.pay.khrCash), 'text-slate-700'],
+                [PAY_LABEL.khqr, fmtUSD(pending.pay.khqr), 'text-teal-700']
+            ];
+            host.innerHTML = rows.map(([label, value, tone], i) => `
+                <div class="flex justify-between ${i === rows.length - 1 ? 'pt-2 border-t border-slate-200' : ''}">
+                    <span class="sm-label text-slate-600">${label}</span>
+                    <span class="${i === rows.length - 1 ? 'sm-card-title' : 'sm-value'} ${tone}">${value}</span>
+                </div>`).join('');
+        }
+
+        function renderQr() {
+            const box = document.getElementById('qrBox');
+            if (!box || typeof QRCode === 'undefined') return;
+            box.innerHTML = '';
+            new QRCode(box, {
+                text: buildKhqrPayload(receiptId, amount),
+                width: 220,
+                height: 220,
+                colorDark: '#0f172a',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        }
+
+        function renderStatus() {
+            const box = document.getElementById('statusBox');
+            if (!box) return;
+
+            if (settled) {
+                box.innerHTML = `
+                    <div class="inline-flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-emerald-50 border border-emerald-200">
+                        <i class="fas fa-circle-check text-emerald-600"></i>
+                        <span class="sm-value text-emerald-800">ទទួលបានប្រាក់រួចរាល់</span>
+                    </div>`;
+                return;
+            }
+
+            if (secondsLeft <= 0) {
+                box.innerHTML = `
+                    <div class="inline-flex flex-col items-center gap-3">
+                        <div class="inline-flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-rose-50 border border-rose-200">
+                            <i class="fas fa-clock-rotate-left text-rose-600"></i>
+                            <span class="sm-value text-rose-800">កូដផុតសុពលភាព</span>
+                        </div>
+                        <button onclick="restartCountdown()" class="sm-badge px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold transition">
+                            <i class="fas fa-rotate-right mr-1"></i> បង្កើតកូដថ្មី
+                        </button>
+                    </div>`;
+                return;
+            }
+
+            box.innerHTML = `
+                <div class="inline-flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-teal-50 border border-teal-200">
+                    <span class="w-2.5 h-2.5 rounded-full bg-teal-500 animate-pulse"></span>
+                    <span class="sm-value text-teal-800">កំពុងរង់ចាំការទូទាត់ពីអតិថិជន...</span>
+                </div>`;
+        }
+
+        function tickLabel() {
+            const m = Math.floor(Math.max(secondsLeft, 0) / 60);
+            const s = Math.max(secondsLeft, 0) % 60;
+            return `${m}:${String(s).padStart(2, '0')}`;
+        }
+
+        function startCountdown() {
+            const chip = document.getElementById('countdownChip');
+            clearInterval(ticker);
+            ticker = setInterval(() => {
+                secondsLeft -= 1;
+                if (chip) chip.innerHTML = `<i class="fas fa-hourglass-half"></i> កូដមានសុពលភាព ${tickLabel()}`;
+                if (secondsLeft <= 0) {
+                    clearInterval(ticker);
+                    if (chip) {
+                        chip.innerHTML = '<i class="fas fa-clock-rotate-left"></i> កូដផុតសុពលភាព';
+                        chip.className = 'sm-badge hidden sm:!inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 font-semibold';
+                    }
+                    renderStatus();
+                }
+            }, 1000);
+            if (chip) chip.innerHTML = `<i class="fas fa-hourglass-half"></i> កូដមានសុពលភាព ${tickLabel()}`;
+        }
+
+        function restartCountdown() {
+            secondsLeft = 300;
+            const chip = document.getElementById('countdownChip');
+            if (chip) chip.className = 'sm-badge hidden sm:!inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-teal-50 text-teal-700 border border-teal-200 font-semibold';
+            renderQr();
+            renderStatus();
+            startCountdown();
+            showToast('បានបង្កើតកូដស្កេនថ្មី', 'info');
+        }
+
+        async function confirmPaid() {
+            if (settled || !hasPayment) return;
+            const ok = await showCustomConfirm({
+                title: 'បញ្ជាក់ការទទួលប្រាក់',
+                message: `តើលោកអ្នកបានឃើញការជូនដំណឹងទទួលប្រាក់ ${fmtUSD(amount)} ក្នុងកម្មវិធីបាគងរួចហើយមែនទេ?`,
+                confirmText: 'បាទ/ចាស ទទួលបានរួចរាល់',
+                cancelText: 'មិនទាន់'
+            });
+            if (!ok) return;
+
+            settled = true;
+            clearInterval(ticker);
+
+            if (pending) {
+                saveSale({
+                    id: pending.receiptId,
+                    time: isoLocal(new Date()),
+                    items: pending.items,
+                    pay: pending.pay,
+                    discountPercent: pending.discountPercent || 0,
+                    customerId: pending.customerId || ''
+                });
+            }
+            clearPendingPayment();
+            clearCart();
+
+            document.getElementById('paidBtn').disabled = true;
+            renderStatus();
+            showToast(`បានទទួលប្រាក់ ${fmtUSD(amount)} តាមកូដស្កេនបាគង`, 'success');
+
+            setTimeout(() => {
+                window.location.href = `pos-terminal.html?paid=${receiptId}`;
+            }, 1200);
+        }
+
+        async function cancelPayment() {
+            const ok = await showCustomConfirm({
+                title: 'បោះបង់ការទូទាត់',
+                message: 'ការទូទាត់នេះនឹងត្រូវបោះបង់ ហើយកន្ត្រកទំនិញនៅរក្សាទុកដដែល។ តើបន្តមែនទេ?',
+                confirmText: 'បោះបង់ការទូទាត់',
+                cancelText: 'បន្តរង់ចាំ',
+                danger: true
+            });
+            if (!ok) return;
+
+            clearInterval(ticker);
+            clearPendingPayment();
+            showToast('បានបោះបង់ការទូទាត់តាមកូដស្កេន', 'warning');
+            setTimeout(() => { window.location.href = 'pos-terminal.html'; }, 900);
+        }
+
+        /* គ្មានការលក់រង់ចាំ — ពន្យល់ ហើយនាំត្រឡប់ទៅផ្ទាំងគិតលុយ ដោយមិនបង្ហាញកូដស្កេន */
+        function renderNoPayment() {
+            setPortalSubtitle(`${SHIFT.terminal} · ${SHIFT.cashier}`);
+            document.getElementById('pageBody').innerHTML = `
+                <div class="w-full flex justify-center py-10">
+                    <div class="w-full sm:w-[440px] bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center">
+                        <div class="w-16 h-16 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-qrcode text-2xl"></i>
+                        </div>
+                        <h3 class="sm-card-title text-slate-700">គ្មានការទូទាត់រង់ចាំទេ</h3>
+                        <p class="sm-card-sub text-slate-500 mt-2 leading-relaxed">
+                            ទំព័រនេះបើកពីផ្ទាំងគិតលុយ នៅពេលអតិថិជនជ្រើសរើសទូទាត់តាមកូដស្កេនបាគង។
+                            ការលក់នេះប្រហែលជាបានបញ្ចប់ ឬត្រូវបានបោះបង់រួចហើយ។
+                        </p>
+                        <a href="pos-terminal.html"
+                           class="mt-6 inline-flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white sm-value font-semibold transition">
+                            <i class="fas fa-arrow-left"></i> ត្រឡប់ទៅផ្ទាំងគិតលុយ
+                        </a>
+                    </div>
+                </div>`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!hasPayment) {
+                renderNoPayment();
+                return;
+            }
+            renderPage();
+            startCountdown();
+        });
+    </script>
+</body>
+</html>

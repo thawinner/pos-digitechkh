@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - វិក្កយបត្រក្នុងវេន</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#0891b2", 'primary-dark': "#0e7490", accent: "#22d3ee" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+    <style>
+        /* បោះពុម្ពតែវិក្កយបត្រ 80mm ប៉ុណ្ណោះ */
+        @media print {
+            body * { visibility: hidden !important; }
+            #printArea, #printArea * { visibility: visible !important; }
+            #printArea { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
+            @page { size: 80mm auto; margin: 4mm; }
+        }
+    </style>
+</head>
+<body id="posPortal" data-role-root="../.." data-active="receipts" class="bg-teal-50/40 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="វិក្កយបត្រក្នុងវេនបច្ចុប្បន្ន"
+                 data-subtitle="ប្រតិបត្តិការទាំងអស់ក្នុងវេនបច្ចុប្បន្ន"></div>
+
+        <main class="flex-1 overflow-x-hidden overflow-y-auto px-4 md:px-6 py-4">
+            <div class="w-full space-y-4">
+
+                <!-- ការជូនដំណឹងអំពីការជាប់សោរវេន -->
+                <div class="bg-teal-50 border border-teal-200 rounded-2xl p-4 flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center text-lg flex-shrink-0">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="sm-card-title text-teal-900">ទិន្នន័យជាប់សោរត្រឹមវេនបច្ចុប្បន្ន</h4>
+                        <p id="lockNote" class="sm-card-sub text-teal-800 mt-0.5"></p>
+                    </div>
+                    <a href="../terminal/pos-terminal.html"
+                       class="sm-badge inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-teal-100 text-teal-800 border border-teal-200 font-semibold transition flex-shrink-0">
+                        <i class="fas fa-arrow-left"></i> <span class="hidden sm:!inline">ត្រឡប់ទៅផ្ទាំងគិតលុយ</span>
+                    </a>
+                </div>
+
+                <div id="summaryRow" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
+
+                <div class="bg-white rounded-2xl p-2 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-3">
+                    <div id="methodTabs" class="flex flex-wrap items-center gap-2"></div>
+                    <div class="relative pr-1 w-full sm:w-auto">
+                        <i class="fas fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input id="searchInput" type="text" oninput="renderReceipts()" placeholder="ស្វែងរកលេខវិក្កយបត្រ ឬឈ្មោះទំនិញ..."
+                            class="sm-td h-9 pl-9 pr-3 w-full sm:w-[300px] max-w-full rounded-xl bg-slate-50 border border-slate-200 text-slate-700 focus:outline-none focus:border-teal-600 transition">
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 text-slate-500 border-b border-slate-100">
+                                <tr>
+                                    <th class="sm-th py-3.5 px-4">ម៉ោង</th>
+                                    <th class="sm-th py-3.5 px-4">លេខវិក្កយបត្រ</th>
+                                    <th class="sm-th py-3.5 px-4">មុខទំនិញ</th>
+                                    <th class="sm-th py-3.5 px-4">របៀបទូទាត់</th>
+                                    <th class="sm-th py-3.5 px-4 text-right">ទឹកប្រាក់សរុប</th>
+                                    <th class="sm-th py-3.5 px-4 text-right">សកម្មភាព</th>
+                                </tr>
+                            </thead>
+                            <tbody id="receiptBody" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                        </table>
+                    </div>
+                    <div id="receiptEmpty" class="hidden py-14 px-6 text-center">
+                        <div class="w-14 h-14 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-receipt text-2xl"></i>
+                        </div>
+                        <h3 class="sm-card-title text-slate-700">គ្មានវិក្កយបត្រក្នុងលក្ខខណ្ឌនេះទេ</h3>
+                        <p class="sm-card-sub text-slate-500 mt-1">សូមប្តូរតម្រងរបៀបទូទាត់ ឬពាក្យស្វែងរក។</p>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- តំបន់បោះពុម្ពវិក្កយបត្រ 80mm -->
+    <div id="printArea" class="hidden"></div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        let filterMethod = 'all';
+        let expanded = {};
+
+        const METHOD_TABS = [
+            { id: 'all', label: 'ទាំងអស់' },
+            { id: 'usdCash', label: 'សាច់ប្រាក់ដុល្លារ' },
+            { id: 'khrCash', label: 'សាច់ប្រាក់រៀល' },
+            { id: 'khqr', label: 'ស្កេនកូដបាគង' },
+            { id: 'split', label: 'បែងចែក' }
+        ];
+
+        function methodOf(sale) {
+            const used = ['usdCash', 'khrCash', 'khqr'].filter(k => sale.pay[k] > 0);
+            if (used.length > 1) return 'split';
+            return used[0] || 'usdCash';
+        }
+
+        function renderSummary() {
+            const s = shiftSummary();
+            const card = (label, value, tone, sub) => `
+                <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm min-w-0">
+                    <span class="sm-kpi-label text-slate-500">${label}</span>
+                    <h3 class="sm-kpi-value ${tone} mt-1">${value}</h3>
+                    <p class="sm-kpi-sub text-slate-500 mt-1">${sub}</p>
+                </div>`;
+
+            document.getElementById('summaryRow').innerHTML =
+                card('វិក្កយបត្រក្នុងវេន', s.count, 'text-slate-700', `${s.qty} ឯកតាទំនិញ`) +
+                card('លក់បានសរុប', fmtUSD(s.gross), 'text-emerald-600', fmtKHR(toKHR(s.gross))) +
+                card('ជាមធ្យមក្នុងមួយវិក្កយបត្រ', fmtUSD(s.avgTicket), 'text-slate-700', 'តម្លៃកន្ត្រកជាមធ្យម') +
+                card('ទទួលតាមបាគង', fmtUSD(s.khqr), 'text-cyan-600', 'ទូទាត់តាមកូដស្កេន');
+        }
+
+        function renderTabs() {
+            const sales = shiftSales();
+            document.getElementById('methodTabs').innerHTML = METHOD_TABS.map(t => {
+                const count = t.id === 'all' ? sales.length : sales.filter(s => methodOf(s) === t.id).length;
+                const active = filterMethod === t.id;
+                return `<button onclick="pickMethod('${t.id}')" class="sm-badge px-4 py-2 rounded-xl transition ${active
+                    ? 'bg-teal-600 text-white font-semibold shadow-sm'
+                    : 'text-slate-600 hover:bg-slate-100 font-medium'}">${t.label} (${count})</button>`;
+            }).join('');
+        }
+
+        function pickMethod(id) {
+            filterMethod = id;
+            closeAllFloatingDropdowns();
+            renderTabs();
+            renderReceipts();
+        }
+
+        function toggleDetail(id) {
+            closeAllFloatingDropdowns();
+            expanded[id] = !expanded[id];
+            renderReceipts();
+        }
+
+        function renderReceipts() {
+            const q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+            const rows = shiftSales()
+                .filter(s => filterMethod === 'all' || methodOf(s) === filterMethod)
+                .filter(s => !q || s.id.toLowerCase().includes(q)
+                    || s.items.some(l => (getProduct(l.sku) || {}).name.toLowerCase().includes(q)));
+
+            const body = document.getElementById('receiptBody');
+            const empty = document.getElementById('receiptEmpty');
+            if (!rows.length) {
+                body.innerHTML = '';
+                body.parentElement.classList.add('hidden');
+                empty.classList.remove('hidden');
+                return;
+            }
+            body.parentElement.classList.remove('hidden');
+            empty.classList.add('hidden');
+
+            body.innerHTML = rows.map(s => {
+                const t = saleTotals(s.items, s.discountPercent);
+                const menuId = 'rcpMenu-' + s.id;
+                const isOpen = expanded[s.id];
+
+                const detail = isOpen ? `
+                    <tr class="bg-slate-50/70">
+                        <td colspan="6" class="px-4 py-3">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="space-y-1.5">
+                                    <p class="sm-label text-slate-500">មុខទំនិញ</p>
+                                    ${s.items.map(l => {
+                                        const p = getProduct(l.sku);
+                                        return `<div class="flex items-center justify-between gap-3">
+                                            <span class="sm-td text-slate-700">${p.name} <span class="sm-td-sub text-slate-400">× ${l.qty}</span></span>
+                                            <span class="sm-value text-slate-700">${fmtUSD(lineTotal(l))}</span>
+                                        </div>`;
+                                    }).join('')}
+                                </div>
+                                <div class="space-y-1.5">
+                                    <p class="sm-label text-slate-500">ការទូទាត់</p>
+                                    ${s.pay.usdCash > 0 ? `<div class="flex justify-between"><span class="sm-td text-slate-600">សាច់ប្រាក់ដុល្លារ</span><span class="sm-value text-slate-700">${fmtUSD(s.pay.usdCash)}</span></div>` : ''}
+                                    ${s.pay.khrCash > 0 ? `<div class="flex justify-between"><span class="sm-td text-slate-600">សាច់ប្រាក់រៀល</span><span class="sm-value text-slate-700">${fmtKHR(s.pay.khrCash)}</span></div>` : ''}
+                                    ${s.pay.khqr > 0 ? `<div class="flex justify-between"><span class="sm-td text-slate-600">ស្កេនកូដបាគង</span><span class="sm-value text-slate-700">${fmtUSD(s.pay.khqr)}</span></div>` : ''}
+                                    <div class="flex justify-between pt-1.5 border-t border-slate-200">
+                                        <span class="sm-td text-slate-600">តម្លៃមុនអាករ</span><span class="sm-value text-slate-700">${fmtUSD(t.net)}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="sm-td text-slate-600">អាករលើតម្លៃបន្ថែម 10%</span><span class="sm-value text-slate-700">${fmtUSD(t.vat)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>` : '';
+
+                return `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="sm-td-strong py-3.5 px-4">${fmtTime(s.time)}</td>
+                        <td class="sm-td py-3.5 px-4">${s.id}</td>
+                        <td class="py-3.5 px-4">
+                            <p class="sm-td text-slate-700">${s.items.length} មុខ</p>
+                            <p class="sm-td-sub text-slate-400">${t.qty} ឯកតា</p>
+                        </td>
+                        <td class="py-3.5 px-4">
+                            <span class="sm-badge px-2 py-0.5 rounded-full border ${methodOf(s) === 'khqr'
+                                ? 'bg-cyan-50 text-cyan-700 border-cyan-200'
+                                : methodOf(s) === 'split'
+                                    ? 'bg-purple-50 text-purple-700 border-purple-200'
+                                    : 'bg-emerald-50 text-emerald-700 border-emerald-200'}">${payMethodLabel(s.pay)}</span>
+                        </td>
+                        <td class="sm-td-strong py-3.5 px-4 text-right">${fmtUSD(t.gross)}</td>
+                        <td class="py-3.5 px-4 text-right">
+                            <button onclick="toggleRowActionMenu(event, '${menuId}')" type="button" aria-label="សកម្មភាព"
+                                class="w-12 h-12 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 border border-slate-200/70 inline-flex items-center justify-center transition">
+                                <i class="fas fa-ellipsis-vertical text-sm"></i>
+                            </button>
+                            <div id="${menuId}" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 text-left">
+                                <div class="px-3 py-2 mb-1 rounded-xl bg-slate-50 border border-slate-100">
+                                    <p class="sm-td-sub text-slate-400">សកម្មភាពលើវិក្កយបត្រ</p>
+                                    <p class="sm-value text-slate-700">${s.id}</p>
+                                </div>
+                                <button onclick="toggleDetail('${s.id}')" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition text-left">
+                                    <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0"><i class="fas fa-${isOpen ? 'eye-slash' : 'eye'} text-[11px]"></i></span>
+                                    ${isOpen ? 'បិទព័ត៌មានលម្អិត' : 'មើលមុខទំនិញលម្អិត'}
+                                </button>
+                                <button onclick="reprint('${s.id}')" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition text-left">
+                                    <span class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0"><i class="fas fa-print text-[11px]"></i></span>
+                                    បោះពុម្ពវិក្កយបត្រឡើងវិញ
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    ${detail}`;
+            }).join('');
+        }
+
+        function reprint(id) {
+            closeAllFloatingDropdowns();
+            const sale = shiftSales().find(s => s.id === id);
+            if (!sale) return showToast(`រកមិនឃើញវិក្កយបត្រ ${id}`, 'error');
+
+            document.getElementById('printArea').innerHTML = receiptHtml(sale, { reprint: true });
+            showToast(`កំពុងបញ្ជូនវិក្កយបត្រ ${id} ទៅម៉ាស៊ីនបោះពុម្ពកម្តៅ 80mm`, 'info');
+            setTimeout(() => window.print(), 400);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setPortalSubtitle(`វេន ${SHIFT.id} · ${SHIFT.terminal} · ${SHIFT.cashier}`);
+            document.getElementById('lockNote').textContent = isShiftOpen()
+                ? `បង្ហាញតែប្រតិបត្តិការចាប់ពីម៉ោង ${fmtTime(SHIFT.openedAt)} ថ្ងៃទី ${fmtKhDate(SHIFT.openedAt)} មកប៉ុណ្ណោះ។ ប្រតិបត្តិការពីវេនមុន និងចំណូលប្រចាំខែ មិនអាចចូលមើលបានឡើយ។`
+                : `វេននេះត្រូវបានបិទម៉ោង ${fmtTime(shiftState().closedAt)} រួចហើយ។ ទិន្នន័យនៅអាចមើល និងបោះពុម្ពឡើងវិញបាន ប៉ុន្តែមិនអាចលក់បន្ថែមបានទេ។`;
+
+            renderSummary();
+            renderTabs();
+            renderReceipts();
+        });
+    </script>
+</body>
+</html>
