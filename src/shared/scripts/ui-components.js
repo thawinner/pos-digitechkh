@@ -215,11 +215,16 @@ function openFloatingDropdown(btn, menu) {
     // Close any other open floating dropdowns first
     closeAllFloatingDropdowns();
 
+    // វាស់ទីតាំងប៊ូតុងមុនបង្ហាញម៉ឺនុយ ហើយដាក់ position: fixed មុនដោះ hidden —
+    // បើមិនដូច្នេះទេ ម៉ឺនុយនៅក្នុងលំហូរធម្មតាមួយភ្លែត ពង្រីកជួរក្បាលទំព័រ (items-center)
+    // រុញប៊ូតុងឡើងលើ ~85px ហើយម៉ឺនុយត្រូវដាក់ហួសគែមខាងលើអេក្រង់
+    const rect = btn.getBoundingClientRect();
+    menu.style.setProperty('position', 'fixed', 'important');
+    menu.style.setProperty('top', `${rect.bottom + 8}px`, 'important');
+
     // Mark active and unhide
     menu.classList.remove('hidden');
     menu.dataset.floatingActive = 'true';
-
-    const rect = btn.getBoundingClientRect();
     const vHeight = window.innerHeight;
     const vWidth = window.innerWidth;
 

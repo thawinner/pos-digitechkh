@@ -172,15 +172,15 @@
                     <iconify-icon icon="mdi:bell-outline" class="text-xl"></iconify-icon>
                     <span id="portalNotifDot" class="hidden absolute top-2.5 right-3 w-2.5 h-2.5 rounded-full bg-rose-500 border-2 border-[#0f172a]"></span>
                 </button>
-                <div id="portalNotifMenu" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2.5 text-left z-50">
-                    <div class="px-3 py-2 mb-1.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between gap-2">
-                        <p class="text-xs font-bold text-slate-700">ការជូនដំណឹង</p>
-                        <div class="flex items-center gap-2">
-                            <button id="portalNotifReadBtn" onclick="markPortalNotificationsRead()" type="button" class="hidden text-[11px] font-medium text-sky-700 hover:text-sky-900">សម្គាល់ថាបានអានទាំងអស់</button>
-                            <span id="portalNotifCount" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-600">0</span>
-                        </div>
+                <div id="portalNotifMenu" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 text-left z-50">
+                    <div class="px-3 pt-2 pb-2.5 mb-1 border-b border-slate-100 flex items-center justify-between gap-2">
+                        <span class="flex items-center gap-2">
+                            <span class="text-[14px] font-bold text-slate-800">ការជូនដំណឹង</span>
+                            <span id="portalNotifCount" class="text-[11px] font-bold min-w-[22px] h-[22px] px-1.5 rounded-full bg-rose-500 text-white inline-flex items-center justify-center">0</span>
+                        </span>
+                        <button id="portalNotifReadBtn" onclick="markPortalNotificationsRead()" type="button" class="hidden text-[11px] font-medium text-sky-700 hover:text-sky-900">សម្គាល់ថាបានអានទាំងអស់</button>
                     </div>
-                    <div id="portalNotifRows" class="max-h-[360px] overflow-y-auto scrollbar-hide space-y-1"></div>
+                    <div id="portalNotifRows" class="max-h-[380px] overflow-y-auto scrollbar-hide space-y-0.5"></div>
                 </div>
             </div>
             <span class="flex items-center gap-2 pl-2 ml-1 border-l border-white/10">

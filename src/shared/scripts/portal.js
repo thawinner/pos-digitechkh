@@ -338,29 +338,36 @@ function refreshPortalNotifications() {
 
     rowsEl.innerHTML = notes.length
         ? notes.map(n => {
+            const tone = NOTE_TONE_MAP[n.tone] || NOTE_TONE_MAP.info;
             const inner = `
-                <span class="w-8 h-8 rounded-lg ${NOTE_TONE_MAP[n.tone] || NOTE_TONE_MAP.info} flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <iconify-icon icon="${n.icon || 'mdi:bell-outline'}" class="text-base"></iconify-icon>
+                <span class="w-9 h-9 rounded-xl ${tone} flex items-center justify-center flex-shrink-0">
+                    <iconify-icon icon="${n.icon || 'mdi:bell-outline'}" class="text-lg"></iconify-icon>
                 </span>
                 <div class="min-w-0 flex-1">
-                    <p class="text-xs ${n.unread ? 'font-bold' : 'font-semibold'} text-slate-800 leading-snug">${n.title}</p>
-                    ${n.note ? `<p class="text-[11px] text-slate-500 mt-1 leading-relaxed">${n.note}</p>` : ''}
-                    ${n.time ? `<span class="inline-block text-[10px] text-slate-400 font-medium mt-1">${n.time}</span>` : ''}
+                    <p class="text-[13px] font-semibold text-slate-800 leading-snug">${n.title}</p>
+                    ${n.note ? `<p class="text-[12px] text-slate-500 mt-0.5 leading-relaxed">${n.note}</p>` : ''}
+                    ${n.time ? `<p class="text-[11px] text-slate-400 font-medium mt-1 inline-flex items-center gap-1"><iconify-icon icon="mdi:clock-outline" class="text-[12px]"></iconify-icon>${n.time}</p>` : ''}
                 </div>
-                ${n.unread ? '<span class="w-2 h-2 rounded-full bg-rose-500 flex-shrink-0 mt-2"></span>' : ''}`;
-            const cls = 'flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition';
+                ${n.href ? '<iconify-icon icon="mdi:chevron-right" class="text-slate-300 text-lg flex-shrink-0 self-center"></iconify-icon>' : ''}`;
+            const cls = 'flex items-start gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition';
             return n.href ? `<a href="${n.href}" class="${cls}">${inner}</a>` : `<div class="${cls}">${inner}</div>`;
         }).join('')
-        : `<div class="py-8 text-center text-slate-400">
-               <iconify-icon icon="mdi:bell-check-outline" class="text-3xl text-slate-300 mb-1"></iconify-icon>
-               <p class="text-xs">គ្មានដំណឹងថ្មីទេ</p>
+        : `<div class="py-10 text-center">
+               <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-500 flex items-center justify-center mx-auto mb-2">
+                   <iconify-icon icon="mdi:bell-check-outline" class="text-2xl"></iconify-icon>
+               </div>
+               <p class="text-[13px] font-semibold text-slate-700">គ្មានដំណឹងថ្មីទេ</p>
+               <p class="text-[12px] text-slate-400 mt-0.5">អ្វីៗដំណើរការធម្មតា</p>
            </div>`;
 
     const unread = typeof unreadNotificationCount === 'function' ? unreadNotificationCount() : notes.length;
     const dot = document.getElementById('portalNotifDot');
     if (dot) dot.classList.toggle('hidden', !unread);
     const count = document.getElementById('portalNotifCount');
-    if (count) count.textContent = notes.length;
+    if (count) {
+        count.textContent = notes.length;
+        count.classList.toggle('hidden', !notes.length);
+    }
     const readBtn = document.getElementById('portalNotifReadBtn');
     if (readBtn) readBtn.classList.toggle('hidden', !(unread && typeof markNotificationsRead === 'function'));
 }
@@ -414,15 +421,15 @@ function renderPortalHeader() {
                         <iconify-icon icon="mdi:bell-outline" class="text-xl"></iconify-icon>
                         <span id="portalNotifDot" class="hidden absolute top-2 right-2.5 w-2.5 h-2.5 rounded-full bg-rose-500 border-2 border-white"></span>
                     </button>
-                    <div id="portalNotifMenu" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2.5 text-left z-50">
-                        <div class="px-3 py-2 mb-1.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between gap-2">
-                            <span class="text-xs font-semibold text-slate-700">ការជូនដំណឹង</span>
+                    <div id="portalNotifMenu" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 text-left z-50">
+                        <div class="px-3 pt-2 pb-2.5 mb-1 border-b border-slate-100 flex items-center justify-between gap-2">
                             <span class="flex items-center gap-2">
-                                <button id="portalNotifReadBtn" onclick="markPortalNotificationsRead()" type="button" class="hidden text-[11px] font-medium text-sky-700 hover:text-sky-900">សម្គាល់ថាបានអានទាំងអស់</button>
-                                <span id="portalNotifCount" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-600">0</span>
+                                <span class="text-[14px] font-bold text-slate-800">ការជូនដំណឹង</span>
+                                <span id="portalNotifCount" class="text-[11px] font-bold min-w-[22px] h-[22px] px-1.5 rounded-full bg-rose-500 text-white inline-flex items-center justify-center">0</span>
                             </span>
+                            <button id="portalNotifReadBtn" onclick="markPortalNotificationsRead()" type="button" class="hidden text-[11px] font-medium text-sky-700 hover:text-sky-900">សម្គាល់ថាបានអានទាំងអស់</button>
                         </div>
-                        <div id="portalNotifRows" class="max-h-[360px] overflow-y-auto scrollbar-hide space-y-1"></div>
+                        <div id="portalNotifRows" class="max-h-[380px] overflow-y-auto scrollbar-hide space-y-0.5"></div>
                     </div>
                 </div>
             </div>
