@@ -204,6 +204,7 @@
                            placeholder="ស្កេនបាកូដ ឬវាយឈ្មោះទំនិញ..."
                            class="sm-td w-full h-14 pl-12 pr-4 rounded-2xl bg-[#1e293b] border-2 border-white/10 text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:bg-[#223047] transition">
                 </div>
+                <div id="lastAdded" class="hidden"></div>
                 <div id="categoryPills" class="pos-pills w-full min-w-0" onscroll="updatePillFade()"></div>
             </div>
 
@@ -688,6 +689,19 @@
             }).join('');
         }
 
+        /* បញ្ជាក់ការស្កេនភ្លាមៗ — អ្នកគិតលុយមិនចាំបាច់ងាកមើលកន្ត្រកដើម្បីដឹងថាស្កេនចូលឬអត់ */
+        let lastAddedTimer = null;
+        function showLastAdded(p, qty) {
+            const el = document.getElementById('lastAdded');
+            el.className = 'flex items-center gap-3 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/25';
+            el.innerHTML = `
+                <span class="w-9 h-9 rounded-lg bg-[#0f172a] p-0.5 flex items-center justify-center overflow-hidden flex-shrink-0">${productImgHtml(p, 'text-sm')}</span>
+                <span class="sm-td text-emerald-100 flex-1 min-w-0 truncate"><i class="fas fa-circle-check text-emerald-400 mr-1.5"></i>${p.name}</span>
+                <span class="sm-td-sub text-emerald-200 sm-figure flex-shrink-0">× ${qty} · ${fmtUSD(p.price * qty)}</span>`;
+            clearTimeout(lastAddedTimer);
+            lastAddedTimer = setTimeout(() => { el.className = 'hidden'; }, 4000);
+        }
+
         function flashCard(sku) {
             const el = document.getElementById('card-' + sku);
             if (!el) return;
@@ -728,6 +742,7 @@
             checkout = false;
             persistCart();
             flashCard(sku);
+            showLastAdded(p, (cart.find(l => l.sku === sku) || {}).qty || 1);
             renderCart();
             renderProducts();
             document.getElementById('barcodeInput').focus();
@@ -746,6 +761,25 @@
                 cart = cart.filter(l => l.sku !== sku);
                 // ការដកទំនិញចេញមុនទូទាត់ត្រូវបានអនុញ្ញាត ប៉ុន្តែកត់ត្រាសម្រាប់អ្នកគ្រប់គ្រង (C9)
                 logPosEvent('line_removed', { amount: getProduct(sku).price, note: getProduct(sku).name });
+            }
+            persistCart();
+            renderCart();
+            renderProducts();
+        }
+
+        /* ចុចលើចំនួន → ផ្ទាំងលេខ (ឧ. ប៊ិច 12 ដើម ចុចម្តង មិនមែន + ១១ ដង) */
+        async function editQty(sku) {
+            const line = cart.find(l => l.sku === sku);
+            if (!line) return;
+            const p = getProduct(sku);
+            const max = line.qty + remainingStock(sku);
+            const n = await showNumberPad({ title: p.name, subtitle: `${fmtUSD(p.price)} · ${p.unit} · ស្តុកអាចលក់ ${max}`, value: line.qty, min: 0, max, unit: p.unit, dark: true });
+            if (n == null || n === line.qty) return;
+            if (n === 0) {
+                cart = cart.filter(l => l.sku !== sku);
+                logPosEvent('line_removed', { amount: p.price * line.qty, note: p.name });
+            } else {
+                line.qty = n;
             }
             persistCart();
             renderCart();
@@ -776,6 +810,8 @@
             discountApproverId = '';
             customerId = '';
             changeMode = null;
+            tenderMode = 'usd';
+            entry = '';
             clearCart();
             renderCart();
             renderProducts();
@@ -937,7 +973,8 @@
                                                 : 'border-white/15 text-slate-200 hover:bg-white/10'}">
                                             <i class="fas ${last ? 'fa-trash-can' : 'fa-minus'} text-xs"></i>
                                         </button>
-                                        <span class="w-9 text-center sm-value text-white sm-figure">${l.qty}</span>
+                                        <button onclick="editQty('${l.sku}')" type="button" aria-label="កំណត់ចំនួន"
+                                            class="pos-tap-sm min-w-[48px] px-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 sm-value text-white sm-figure">${l.qty}</button>
                                         <button onclick="changeQty('${l.sku}', 1)" type="button" aria-label="បន្ថែមចំនួន"
                                             class="pos-tap-sm rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white inline-flex items-center justify-center transition">
                                             <i class="fas fa-plus text-xs"></i>
@@ -962,7 +999,11 @@
                 return showToast('សូមជ្រើសរើសមូលហេតុនៃការបញ្ចុះតម្លៃជាមុនសិន', 'warning');
             }
             checkout = true;
+            tenderMode = 'usd';
+            entry = '';
+            pay = { usdCash: 0, khrCash: 0, khqr: 0 };
             renderCart();
+            document.getElementById('barcodeInput').blur();
             document.getElementById('cartLines').scrollTop = 0;
         }
 
@@ -1176,130 +1217,177 @@
             renderCart();
         }
 
+        /* ===== ដំណាក់កាលទូទាត់ (រចនាថ្មី) =====
+           ផ្ទាំងទូទាត់តាមស្តង់ដារ POS៖ ផ្ទាំងរើសវិធីទូទាត់ · ប្រអប់ទឹកប្រាក់ធំ · ក្រដាសប្រាក់រហ័ស · ផ្ទាំងលេខ
+           ក្តារចុចពិតក៏ប្រើបាន៖ លេខ = វាយទឹកប្រាក់ · Backspace = លុប · Enter = បញ្ចប់ការទូទាត់ */
+
+        let tenderMode = 'usd';   // usd | khr | khqr | split
+        let entry = '';           // អក្សរលេខដែលកំពុងវាយលើផ្ទាំងលេខ
+
+        const TENDERS = [
+            { id: 'usd', label: 'ដុល្លារ', icon: 'fa-money-bill-wave' },
+            { id: 'khr', label: 'រៀល', icon: 'fa-money-bill-1' },
+            { id: 'khqr', label: 'បាគង', icon: 'fa-qrcode' },
+            { id: 'split', label: 'ចម្រុះ', icon: 'fa-layer-group' }
+        ];
+
+        function setTender(id) {
+            tenderMode = id;
+            entry = '';
+            changeMode = null;
+            const due = saleTotals(cart, discountPercent).gross;
+            pay = id === 'khqr' ? { usdCash: 0, khrCash: 0, khqr: due } : { usdCash: 0, khrCash: 0, khqr: 0 };
+            renderCart();
+        }
+
+        function applyEntry() {
+            const v = parseFloat(entry) || 0;
+            if (tenderMode === 'usd') pay = { usdCash: v, khrCash: 0, khqr: 0 };
+            else if (tenderMode === 'khr') pay = { usdCash: 0, khrCash: Math.round(v), khqr: 0 };
+            changeMode = null;
+        }
+
+        function keypad(k) {
+            if (!checkout || (tenderMode !== 'usd' && tenderMode !== 'khr')) return;
+            if (k === 'back') entry = entry.slice(0, -1);
+            else if (k === 'clear') entry = '';
+            else if (k === '.') { if (tenderMode === 'usd' && !entry.includes('.')) entry = (entry || '0') + '.'; }
+            else {
+                const next = entry + k;
+                const dec = next.split('.')[1];
+                if (dec && dec.length > 2) return;
+                if (next.replace('.', '').length > 9) return;
+                entry = next.replace(/^0+(?=\d)/, '');
+            }
+            applyEntry();
+            renderCart();
+        }
+
+        function pickAmount(v) {
+            entry = String(v);
+            applyEntry();
+            renderCart();
+        }
+
         function renderCheckout(t) {
             const rate = fxRate();
             const due = t.gross;
             const paid = paidTotal(pay, rate);
             const remaining = due - paid;
             const change = paid - due;
-            const canFinish = remaining <= 0.005;
+            const canFinish = remaining <= 0.005 && paid > 0.005;
 
-            const row = (label, value, tone) => `
-                <div class="flex items-baseline justify-between gap-3">
-                    <span class="sm-td-sub text-slate-400">${label}</span>
-                    <span class="sm-td ${tone || 'text-slate-200'} sm-figure">${value}</span>
-                </div>`;
-
-            const tender = (key, label, icon, step, placeholder) => `
-                <div>
-                    <label class="sm-td-sub text-slate-400 mb-1 flex items-center gap-1.5">
-                        <i class="fas ${icon} text-[10px]"></i> ${label}
-                    </label>
-                    <input type="number" inputmode="decimal" min="0" step="${step}" value="${pay[key] || ''}" placeholder="${placeholder}"
-                        onchange="setPay('${key}', this.value)"
-                        class="pos-num sm-td w-full px-2.5 rounded-xl bg-[#0f172a] border ${pay[key] > 0.005 ? 'border-cyan-600' : 'border-white/10'} text-white text-right focus:outline-none focus:border-cyan-500 transition">
-                </div>`;
+            const tabs = TENDERS.map(x => `
+                <button onclick="setTender('${x.id}')" type="button"
+                    class="!min-h-[50px] h-[50px] rounded-xl border flex flex-col items-center justify-center gap-0.5 transition ${tenderMode === x.id
+                        ? 'bg-cyan-600 border-cyan-500 text-white shadow-lg shadow-cyan-900/30'
+                        : 'bg-[#0f172a] border-white/10 text-slate-300 hover:border-cyan-600'}">
+                    <i class="fas ${x.icon} text-sm"></i><span class="sm-td-sub font-semibold">${x.label}</span>
+                </button>`).join('');
 
             const chip = (onclick, label, on) => `
                 <button onclick="${onclick}" type="button"
-                    class="sm-badge px-3.5 rounded-xl border font-semibold sm-figure transition ${on
-                        ? 'bg-cyan-600 border-cyan-600 text-white'
-                        : 'bg-[#0f172a] border-white/10 text-slate-200 hover:border-cyan-600'}">${label}</button>`;
+                    class="sm-badge !min-h-[40px] h-10 px-3 rounded-xl border font-semibold sm-figure transition ${on
+                        ? 'bg-emerald-500 border-emerald-500 text-white'
+                        : 'bg-white/5 border-white/10 text-slate-100 hover:border-cyan-500'}">${label}</button>`;
 
-            const usdOnly = pay.khrCash < 0.5 && pay.khqr < 0.005;
-            const khrOnly = pay.usdCash < 0.005 && pay.khqr < 0.005;
-            const exactOn = usdOnly && Math.abs(pay.usdCash - due) < 0.005;
+            let body = '';
+            if (tenderMode === 'usd' || tenderMode === 'khr') {
+                const usd = tenderMode === 'usd';
+                const amount = usd ? pay.usdCash : pay.khrCash;
+                const bills = usd
+                    ? [chip(`pickAmount(${due.toFixed(2)})`, `គត់ ${fmtUSD(due)}`, Math.abs(amount - due) < 0.005)]
+                        .concat(cashSuggestions(due).map(v => chip(`pickAmount(${v})`, '$' + (Number.isInteger(v) ? v : v.toFixed(2)), Math.abs(amount - v) < 0.005)))
+                    : rielSuggestions(due).map(v => chip(`pickAmount(${v})`, fmtKHR(v), Math.abs(amount - v) < 0.5));
+                const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', usd ? '.' : '000', '0', 'back'];
+                body = `
+                    <div class="rounded-2xl bg-[#0f172a] border ${amount > 0 ? 'border-cyan-500/60' : 'border-white/10'} px-4 py-2 flex items-center justify-between gap-3">
+                        <span class="sm-td-sub text-slate-400">ទទួលបាន${usd ? 'ជាដុល្លារ' : 'ជារៀល'}</span>
+                        <span class="text-[28px] font-bold leading-none sm-figure ${amount > 0 ? 'text-white' : 'text-slate-600'}">${usd
+                            ? '$' + (entry || (amount ? amount.toFixed(2) : '0.00'))
+                            : (Number(entry || amount || 0).toLocaleString('en-US') + ' ៛')}</span>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5">${bills.join('')}</div>
+                    <div class="grid grid-cols-3 gap-1">
+                        ${keys.map(k => `<button onclick="keypad('${k}')" type="button"
+                            class="!min-h-[46px] h-[46px] rounded-xl ${k === 'back' ? 'bg-white/5 text-slate-300' : 'bg-white/[0.07] text-white'} hover:bg-white/15 active:scale-95 text-[20px] font-semibold transition">
+                            ${k === 'back' ? '<i class="fas fa-delete-left text-base"></i>' : k}</button>`).join('')}
+                    </div>`;
+            } else if (tenderMode === 'khqr') {
+                body = `
+                    <div class="rounded-2xl bg-cyan-500/10 border border-cyan-500/25 p-5 text-center">
+                        <div class="w-14 h-14 rounded-2xl bg-white text-slate-900 flex items-center justify-center mx-auto"><i class="fas fa-qrcode text-2xl"></i></div>
+                        <p class="sm-card-title text-white mt-3">ទូទាត់ពេញចំនួនតាមកូដស្កេនបាគង</p>
+                        <p class="sm-td-sub text-slate-400 mt-1">ចុច «បង្ហាញកូដស្កេនបាគង» ខាងក្រោម ហើយបង្វែរអេក្រង់ទៅអតិថិជន</p>
+                    </div>`;
+            } else {
+                const tender = (key, label, icon, step, placeholder) => `
+                    <label class="flex items-center gap-3 rounded-xl bg-[#0f172a] border ${pay[key] > 0.005 ? 'border-cyan-600' : 'border-white/10'} px-3">
+                        <i class="fas ${icon} text-slate-400 w-4"></i>
+                        <span class="sm-td-sub text-slate-300 w-14">${label}</span>
+                        <input type="number" inputmode="decimal" min="0" step="${step}" value="${pay[key] || ''}" placeholder="${placeholder}"
+                            onchange="setPay('${key}', this.value)"
+                            class="pos-num sm-value flex-1 min-w-0 bg-transparent text-white text-right focus:outline-none">
+                    </label>`;
+                body = `
+                    <p class="sm-td-sub text-slate-400">បង់ច្រើនវិធីក្នុងវិក្កយបត្រតែមួយ · ឧ. ដុល្លារ + រៀល ឬសាច់ប្រាក់ + បាគង</p>
+                    <div class="space-y-2">
+                        ${tender('usdCash', 'ដុល្លារ', 'fa-money-bill-wave', '0.01', '0.00')}
+                        ${tender('khrCash', 'រៀល', 'fa-money-bill-1', '100', '0')}
+                        ${tender('khqr', 'បាគង', 'fa-qrcode', '0.01', '0.00')}
+                    </div>
+                    ${remaining > 0.005 && paid > 0.005 ? `<button onclick="fillRemainder()" type="button" class="sm-badge w-full !min-h-[44px] rounded-xl bg-white/5 border border-white/10 hover:border-cyan-500 text-slate-200">
+                        បំពេញនៅខ្វះ ${fmtUSD(remaining)} តាមបាគង</button>` : ''}`;
+            }
 
             document.getElementById('cartLines').innerHTML = `
-                <div class="p-4 space-y-4">
-                    <div class="rounded-2xl bg-cyan-500/10 border border-cyan-500/25 p-4 text-center">
-                        <p class="sm-td-sub text-cyan-200">ទឹកប្រាក់ត្រូវទូទាត់</p>
-                        <p class="pos-total mt-1">${fmtUSD(due)}</p>
-                        <p class="sm-td text-slate-300 sm-figure mt-1">${fmtKHR(toKHR(due, rate))}</p>
-                    </div>
-
-                    <div class="space-y-1.5 px-1">
-                        ${row('សរុបរង', fmtUSD(t.list))}
-                        ${t.discount > 0.005 ? row(`ការបញ្ចុះតម្លៃ ${t.discountPercent}%`, '− ' + fmtUSD(t.discount), 'text-amber-300') : ''}
-                        ${row('តម្លៃមុនអាករ', fmtUSD(t.net))}
-                        ${row('អាករលើតម្លៃបន្ថែម 10%', fmtUSD(t.vat))}
-                        ${row('អត្រាប្តូរប្រាក់', `1 ដុល្លារ = ${rate.toLocaleString('en-US')} ៛`, 'text-slate-400')}
-                    </div>
-
-                    <div class="space-y-2">
-                        <p class="sm-td-sub text-slate-400">ប្រាក់ដុល្លារ៖ ចុចម្តងគត់</p>
-                        <div class="flex flex-wrap gap-2">
-                            ${chip("quickPay('exact')", `គត់ ${fmtUSD(due)}`, exactOn)}
-                            ${cashSuggestions(due).map(v => chip(`quickPay(${v})`, '$' + (Number.isInteger(v) ? v : v.toFixed(2)), usdOnly && Math.abs(pay.usdCash - v) < 0.005)).join('')}
+                <div class="p-3 space-y-2.5">
+                    <div class="rounded-2xl bg-gradient-to-br from-cyan-500/15 to-cyan-500/5 border border-cyan-500/25 px-4 py-2.5 flex items-end justify-between gap-3">
+                        <div>
+                            <p class="sm-td-sub text-cyan-200">ទឹកប្រាក់ត្រូវទូទាត់</p>
+                            <p class="pos-total mt-0.5">${fmtUSD(due)}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="sm-value text-slate-200 sm-figure">${fmtKHR(toKHR(due, rate))}</p>
+                            <p class="sm-td-sub text-slate-500 sm-figure">${t.discount > 0.005 ? `បញ្ចុះ ${t.discountPercent}% · ` : ''}អាករ ${fmtUSD(t.vat)} · 1$ = ${rate.toLocaleString('en-US')} ៛</p>
                         </div>
                     </div>
-
-                    <div class="space-y-2">
-                        <p class="sm-td-sub text-slate-400">ប្រាក់រៀល៖ ចុចម្តងគត់</p>
-                        <div class="flex flex-wrap gap-2">
-                            ${rielSuggestions(due).map(v => chip(`quickPayRiel(${v})`, fmtKHR(v), khrOnly && Math.abs(pay.khrCash - v) < 0.5)).join('')}
-                        </div>
-                    </div>
-                    <button onclick="quickPay('khqr')" type="button"
-                        class="sm-value w-full px-4 rounded-xl bg-cyan-600/15 border border-cyan-600/50 hover:bg-cyan-600/25 text-cyan-100 font-semibold inline-flex items-center justify-center gap-2 transition">
-                        <i class="fas fa-qrcode"></i> ទូទាត់ពេញចំនួនតាមកូដស្កេនបាគង
-                    </button>
-
-                    <div class="pt-3 border-t border-white/10 space-y-2">
-                        <p class="sm-td-sub text-slate-400">ឬបញ្ចូលដោយដៃ៖ អាចបង់ចម្រុះច្រើនរូបិយប័ណ្ណ</p>
-                        <div class="grid grid-cols-3 gap-2">
-                            ${tender('usdCash', 'ដុល្លារ', 'fa-money-bill-wave', '0.01', '0.00')}
-                            ${tender('khrCash', 'រៀល', 'fa-money-bill-1', '100', '0')}
-                            ${tender('khqr', 'បាគង', 'fa-qrcode', '0.01', '0.00')}
-                        </div>
-                    </div>
+                    <div class="grid grid-cols-4 gap-1.5">${tabs}</div>
+                    ${body}
                 </div>`;
 
             document.getElementById('saleOptions').innerHTML = '';
 
-            /*
-             * ប្រាក់អាប់តាមរបៀបហាងនៅកម្ពុជា (C2)៖ ដុល្លារគត់ + នៅសល់ជារៀលបង្គត់ 100 ៛
-             * ពីមុនបង្ហាញប្រាក់អាប់ទាំងមូលជាដុល្លារ ហើយម្តងទៀតជារៀល (ឧ. 1,558 ៛) ដែលអាប់មិនកើត
-             */
             const state = paid < 0.005 ? 'idle' : remaining > 0.005 ? 'short' : 'ok';
             const ch = currentChange();
-            const mode = ch.mode;
             let inner;
             if (state === 'ok' && change > 0.005) {
                 const modeBtn = (m, label) => `<button onclick="setChangeMode('${m}')" type="button"
-                    class="!min-h-[36px] sm-td-sub px-2.5 rounded-lg border transition ${mode === m
+                    class="!min-h-[32px] sm-td-sub px-2 rounded-lg border whitespace-nowrap transition ${ch.mode === m
                         ? 'bg-emerald-500 border-emerald-500 text-white font-semibold' : 'border-emerald-500/30 text-emerald-200 hover:bg-emerald-500/15'}">${label}</button>`;
                 inner = `
                     <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0">
-                            <p class="sm-label text-emerald-200">ប្រាក់អាប់</p>
-                            <p class="sm-td-sub text-slate-400 sm-figure">បានទទួល ${fmtUSD(paid)}</p>
+                            <p class="sm-label text-emerald-200 whitespace-nowrap">ប្រាក់អាប់</p>
+                            <div class="flex items-center gap-1 mt-1.5">${modeBtn('mixed', 'ដុល្លារ + រៀល')}${modeBtn('riel', 'រៀលសុទ្ធ')}</div>
                         </div>
-                        <div class="text-right">
-                            <span class="text-[26px] font-bold leading-none text-emerald-100 sm-figure block">${fmtChange(ch)}</span>
+                        <div class="text-right min-w-0">
+                            <span class="text-[22px] font-bold leading-none text-emerald-100 sm-figure block whitespace-nowrap">${fmtChange(ch)}</span>
                             <span class="sm-td-sub text-slate-400 sm-figure block mt-1">ស្មើ ${fmtUSD(change)}${Math.abs(ch.roundingKHR) >= 1 ? ` · បង្គត់ ${fmtSigned(ch.roundingKHR, fmtKHR, 0.5)}` : ''}</span>
                         </div>
-                    </div>
-                    <div class="flex items-center gap-2 mt-2.5">
-                        ${modeBtn('mixed', 'ដុល្លារ + រៀល')}
-                        ${modeBtn('riel', 'រៀលទាំងអស់')}
                     </div>`;
             } else {
-                const box = {
-                    idle: ['text-slate-400', 'text-slate-200', 'នៅត្រូវទទួល'],
-                    short: ['text-amber-200', 'text-amber-200', 'នៅខ្វះ'],
-                    ok: ['text-emerald-200', 'text-emerald-100', 'ទូទាត់គត់']
-                }[state];
-                const amt = remaining > 0.005 ? remaining : 0;
+                const box = { idle: ['text-slate-400', 'text-slate-300', 'នៅត្រូវទទួល'], short: ['text-amber-200', 'text-amber-200', 'នៅខ្វះ'], ok: ['text-emerald-200', 'text-emerald-100', 'ទូទាត់គត់'] }[state];
+                const amt = state === 'idle' ? due : Math.max(remaining, 0);
                 inner = `
                     <div class="flex items-center justify-between gap-3">
                         <div class="min-w-0">
                             <p class="sm-label ${box[0]}">${box[2]}</p>
-                            ${paid > 0.005 ? `<p class="sm-td-sub text-slate-400 sm-figure">បានទទួល ${fmtUSD(paid)}</p>` : ''}
+                            ${paid > 0.005 ? `<p class="sm-td-sub text-slate-400 sm-figure">បានទទួល ${fmtUSD(paid)}</p>` : '<p class="sm-td-sub text-slate-500">វាយ ឬចុចក្រដាសប្រាក់ដែលអតិថិជនឱ្យ</p>'}
                         </div>
                         <div class="text-right">
-                            <span class="text-[26px] font-bold leading-none ${box[1]} sm-figure block">${fmtUSD(amt)}</span>
-                            ${amt > 0.005 ? `<span class="sm-td-sub text-slate-400 sm-figure block mt-1">${fmtKHR(Math.ceil(toKHR(amt, rate) / 100) * 100)}</span>` : ''}
+                            <span class="text-[26px] font-bold leading-none ${box[1]} sm-figure block">${state === 'ok' ? fmtUSD(0) : fmtUSD(amt)}</span>
+                            ${amt > 0.005 && state !== 'ok' ? `<span class="sm-td-sub text-slate-400 sm-figure block mt-1">${fmtKHR(Math.ceil(toKHR(amt, rate) / 100) * 100)}</span>` : ''}
                         </div>
                     </div>`;
             }
@@ -1312,7 +1400,16 @@
                         ? 'bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg shadow-emerald-900/40'
                         : 'bg-[#374151] text-slate-500 cursor-not-allowed'}">
                     <i class="fas ${canFinish && pay.khqr > 0.005 ? 'fa-qrcode' : 'fa-circle-check'}"></i> ${canFinish && pay.khqr > 0.005 ? 'បង្ហាញកូដស្កេនបាគង' : 'បញ្ចប់ការទូទាត់'}
+                    <span class="hidden xl:!inline sm-td-sub font-medium opacity-70 ml-1">Enter</span>
                 </button>`;
+        }
+
+        function fillRemainder() {
+            const due = saleTotals(cart, discountPercent).gross;
+            const rate = fxRate();
+            const rest = due - (pay.usdCash + toUSD(pay.khrCash, rate));
+            pay.khqr = Math.max(Math.round(rest * 100) / 100, 0);
+            renderCart();
         }
 
         function setPay(key, value) {
@@ -1321,20 +1418,22 @@
             renderCart();
         }
 
+        /* ផ្លូវកាត់ចាស់ (រក្សាទុកសម្រាប់ការធ្វើតេស្ត និងប៊ូតុងផ្សេង) */
         function quickPay(mode) {
             if (!cart.length) return showToast('កន្ត្រកទំនិញនៅទទេ', 'warning');
             const due = saleTotals(cart, discountPercent).gross;
-            if (mode === 'exact') pay = { usdCash: due, khrCash: 0, khqr: 0 };
-            else if (mode === 'khqr') pay = { usdCash: 0, khrCash: 0, khqr: due };
-            else pay = { usdCash: Number(mode), khrCash: 0, khqr: 0 };
-            changeMode = null;
+            if (mode === 'khqr') { setTender('khqr'); return; }
+            tenderMode = 'usd';
+            entry = String(mode === 'exact' ? due.toFixed(2) : Number(mode));
+            applyEntry();
             renderCart();
         }
 
         function quickPayRiel(amount) {
             if (!cart.length) return showToast('កន្ត្រកទំនិញនៅទទេ', 'warning');
-            pay = { usdCash: 0, khrCash: Number(amount), khqr: 0 };
-            changeMode = null;
+            tenderMode = 'khr';
+            entry = String(amount);
+            applyEntry();
             renderCart();
         }
 
@@ -1677,8 +1776,23 @@
             if (document.fonts && document.fonts.ready) document.fonts.ready.then(updatePillFade);
             window.addEventListener('load', updatePillFade);
 
+            /* ផ្លូវកាត់ក្តារចុច (ស្រេចចិត្ត — អេក្រង់ប៉ះនៅតែជាចម្បង)៖ F2 ស្វែងរក · F4 ព្យួរ · F8 គិតលុយ
+               ពេលទូទាត់៖ លេខ = ផ្ទាំងលេខ · Backspace = លុប · Enter = បញ្ចប់ · Esc = ត្រឡប់ទៅកន្ត្រក */
             document.addEventListener('keydown', e => {
-                if (e.key === 'Escape' && checkout && !document.querySelector('[data-floating-active="true"]')) exitCheckout();
+                const modal = document.querySelector('#posOverrideModal[style*="flex"], #posPinModal[style*="flex"], #posNumberPadModal[style*="flex"], #posReasonPickerModal[style*="flex"], #bmsCustomConfirmModal.flex');
+                if (modal || !document.getElementById('lockOverlay').classList.contains('hidden')) return;
+                const typing = document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName) && document.activeElement.id !== 'barcodeInput';
+                if (e.key === 'F2') { e.preventDefault(); exitCheckout(); document.getElementById('barcodeInput').focus(); return; }
+                if (e.key === 'F4') { e.preventDefault(); holdSale(); return; }
+                if (e.key === 'F8') { e.preventDefault(); checkout ? finishSale() : enterCheckout(); return; }
+                if (!checkout || typing) return;
+                if (e.key === 'Escape' && !document.querySelector('[data-floating-active="true"]')) { exitCheckout(); return; }
+                if (tenderMode === 'usd' || tenderMode === 'khr') {
+                    if (/^[0-9]$/.test(e.key)) { e.preventDefault(); keypad(e.key); return; }
+                    if (e.key === '.') { e.preventDefault(); keypad('.'); return; }
+                    if (e.key === 'Backspace') { e.preventDefault(); keypad('back'); return; }
+                }
+                if (e.key === 'Enter') { e.preventDefault(); finishSale(); }
             });
 
             if (!fullscreenSupported()) {

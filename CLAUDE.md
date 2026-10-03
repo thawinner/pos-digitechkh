@@ -15,6 +15,9 @@ python3 -m http.server 8000 --directory src   # then open localhost:8000 (login 
 Demo PINs: ចន្ទ មករា 1111 · សុខ ដារ៉ា 2222 · លី សុភា 3333 (cashiers) · សុខ វណ្ណា 2468 · ម៉ៅ ស្រីនាង 1357 (managers).
 They are listed on the login page under «ព័ត៌មានសម្រាប់គំរូសាកល្បង», next to the reset-demo-data button.
 
+Deploy: `src/` is the site root (GitHub Pages workflow in `.github/workflows/deploy-pages.yml`, plus `netlify.toml` and
+`vercel.json`). Never move pages out of `src/`, and keep every path relative so the site works under a subpath.
+
 Verification is visual: open the page in a browser, or drive headless Chrome over the DevTools protocol. Serve over
 HTTP; `file://` storage is unreliable.
 

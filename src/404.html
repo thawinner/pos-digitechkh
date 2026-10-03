@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH POS - រកមិនឃើញទំព័រ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #0b1220; color: #e2e8f0; font-family: 'Kantumruy Pro', sans-serif; padding: 16px; }
+        .card { max-width: 420px; text-align: center; }
+        h1 { font-size: 64px; margin: 0; color: #22d3ee; }
+        p { color: #94a3b8; line-height: 1.7; }
+        a { display: inline-block; margin-top: 16px; padding: 12px 22px; border-radius: 14px; background: #0891b2; color: #fff; text-decoration: none; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>404</h1>
+        <p>រកមិនឃើញទំព័រនេះទេ។ ប្រហែលជាតំណភ្ជាប់ខុស ឬទំព័រត្រូវបានផ្លាស់ទី។</p>
+        <a id="home" href="index.html">ត្រឡប់ទៅទំព័រចូលប្រើ</a>
+    </div>
+    <script>
+        /* ទំព័រ 404 អាចបង្ហាញនៅផ្លូវណាក៏បាន ដូច្នេះរកឫសគេហទំព័រពីផ្លូវបច្ចុប្បន្ន (គាំទ្រ GitHub Pages /ឈ្មោះគម្រោង/) */
+        const parts = location.pathname.split('/').filter(Boolean);
+        const base = location.hostname.endsWith('github.io') && parts.length ? `/${parts[0]}/` : '/';
+        document.getElementById('home').href = base + 'index.html';
+    </script>
+</body>
+</html>

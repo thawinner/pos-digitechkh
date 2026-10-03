@@ -191,12 +191,21 @@
             const asg = assignmentFor(p.id);
             const dest = manager ? 'ផ្ទាំងគ្រប់គ្រង' : sh ? `បន្ត${sh.templateName} លើ ${sh.register}` : `បើក${asg ? asg.template.name : 'វេន'}លើ ${resolveRegister(p.id)}`;
             document.getElementById('stepPin').innerHTML = `
-                <div class="h-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center fade-up">
+                <div class="h-full flex flex-col fade-up">
+                <div class="flex items-center justify-between gap-3 pb-5 border-b border-slate-100">
+                    <button onclick="backToPick()" type="button"
+                        class="sm-td h-11 pl-3 pr-4 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-semibold inline-flex items-center gap-2">
+                        <i class="fas fa-arrow-left"></i> ប្តូរអ្នកប្រើ
+                    </button>
+                    <div class="flex items-center gap-2 sm-td-sub text-slate-400">
+                        <span class="w-6 h-6 rounded-full bg-emerald-500 text-white inline-flex items-center justify-center text-[11px]"><i class="fas fa-check"></i></span>ជ្រើសរើសអ្នកប្រើ
+                        <span class="w-6 h-px bg-slate-200"></span>
+                        <span class="w-6 h-6 rounded-full bg-cyan-600 text-white inline-flex items-center justify-center text-[11px] font-bold">2</span><span class="text-slate-700 font-semibold">លេខសម្ងាត់</span>
+                    </div>
+                </div>
+                <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8 items-center pt-6">
                     <div>
-                        <button onclick="backToPick()" type="button" class="sm-td text-slate-500 hover:text-slate-800 inline-flex items-center gap-2 min-h-[44px]">
-                            <i class="fas fa-arrow-left"></i> ប្តូរអ្នកប្រើ
-                        </button>
-                        <div class="mt-6 flex items-center gap-4">
+                        <div class="flex items-center gap-4">
                             ${avatarHtml(p.id, `w-24 h-24 ring-8 ${manager ? 'ring-indigo-100' : 'ring-cyan-100'}`)}
                             <div>
                                 <p class="text-[24px] font-bold text-slate-900 leading-tight">${p.name}</p>
@@ -229,6 +238,7 @@
                             ចូលប្រើ <i class="fas fa-arrow-right"></i>
                         </button>
                     </div>
+                </div>
                 </div>`;
             clearTimeout(lockTick);
             if (locked) lockTick = setTimeout(() => renderPin(), 1000);

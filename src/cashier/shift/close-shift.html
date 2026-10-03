@@ -449,12 +449,21 @@
                     <div class="flex items-center gap-1.5 flex-shrink-0 ml-auto sm:ml-0">
                         ${btn(-1, 'fa-minus', 'បន្ថយ', 'border-slate-200 text-slate-500 hover:bg-slate-50')}
                         <input id="${currency}In-${note}" type="number" inputmode="numeric" min="0" step="1" value="${map[note] || ''}" placeholder="0"
-                            oninput="setCount('${currency}', ${note}, this.value)" aria-label="ចំនួនសន្លឹក ${label}"
+                            oninput="setCount('${currency}', ${note}, this.value)" onkeydown="countKey(event, this)" onfocus="this.select()" aria-label="ចំនួនសន្លឹក ${label}"
                             class="pos-num sm-value w-16 h-10 px-1 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-center focus:outline-none focus:border-teal-600 focus:bg-white transition">
                         ${btn(1, 'fa-plus', 'បន្ថែម', 'border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100')}
                     </div>
                     <span data-line="${currency}-${note}" class="hidden sm:!block sm-value sm-figure flex-1 text-right text-slate-300 whitespace-nowrap">—</span>
                 </div>`;
+        }
+
+        /* Enter = ទៅក្រដាសប្រាក់បន្ទាប់ (ដុល្លារ → រៀល) ដូច្នេះរាប់ដោយក្តារចុចបានលឿន */
+        function countKey(e, el) {
+            if (e.key !== 'Enter') return;
+            e.preventDefault();
+            const all = Array.from(document.querySelectorAll('#usdNotes input, #khrNotes input'));
+            const next = all[all.indexOf(el) + 1];
+            if (next) next.focus(); else nextStep();
         }
 
         function bumpCount(currency, note, delta) {

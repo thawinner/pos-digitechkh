@@ -310,6 +310,16 @@ html.dark #portalSidebar .sb-accent-soft { color: #BAE6FD; }
 html.dark #portalSidebar .sb-avatar      { background: rgba(14, 165, 233, .2); border-color: rgba(56, 189, 248, .3); color: #E0F2FE; }
 html.dark .sb-nav-item[aria-current="page"]::before { background: #7DD3FC; }
 
+/* អ្នកគិតលុយ — របារចំហៀងពណ៌ខៀវងងឹត និងខៀវផ្ទៃមេឃ ដូចផ្ទាំងគិតលុយ
+   ដូច្នេះការចេញពីផ្ទាំងគិតលុយទៅទំព័រវិក្កយបត្រ ឬបិទវេន មិនប្តូរអត្តសញ្ញាណពណ៌ឡើយ */
+#posPortal aside { background-color: #0f172a !important; border-right-color: rgba(255, 255, 255, .08) !important; }
+#posPortal #portalSidebar .sb-icon        { color: #67E8F9; }
+#posPortal #portalSidebar .sb-accent      { color: #A5F3FC; }
+#posPortal #portalSidebar .sb-accent-soft { color: rgba(207, 250, 254, .8); }
+#posPortal #portalSidebar .sb-avatar      { background: rgba(34, 211, 238, .14); border-color: rgba(34, 211, 238, .3); color: #CFFAFE; }
+#posPortal .sb-nav-item[aria-current="page"]::before { background: #22D3EE; }
+#posPortal .sb-nav-item[aria-current="page"] { background: rgba(8, 145, 178, .22) !important; border-color: rgba(34, 211, 238, .25) !important; }
+
 /* អ្នកគ្រប់គ្រងវេន — របារចំហៀងពណ៌ឆ្លុះ (indigo) ដើម្បីឱ្យរូបថតអេក្រង់ប្រាប់ភ្លាមថាជាតួនាទីណា
    (ឯកសាររចនាលេខ 02 ផ្នែក 1) ។ custom.css បង្ខំ <aside> ឱ្យទៅពណ៌បៃតង ដូច្នេះត្រូវប្រើ !important */
 #managerPortal aside { background-color: #1e1b4b !important; }

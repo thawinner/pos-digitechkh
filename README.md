@@ -30,6 +30,22 @@ Open <http://localhost:8000> to reach the login page. Demo PINs are under «ព�
 Serve over HTTP. All state lives in the browser's `localStorage`, which is unreliable under `file://`. The login page's
 «កំណត់ទិន្នន័យគំរូឡើងវិញ» button wipes and regenerates it.
 
+## Deploy
+
+`src/` is the whole website (static files, no build). **Don't move `index.html` to the repo root.** Every page
+reaches shared files through relative paths, so the host should publish `src/` as the site root instead:
+
+| Host | Setup |
+|---|---|
+| GitHub Pages | `.github/workflows/deploy-pages.yml` publishes `src/` on every push to `main`. One-time: repo **Settings → Pages → Source: GitHub Actions**. Site: `https://thawinner.github.io/pos-digitechkh/` |
+| Netlify | `netlify.toml` sets `publish = "src"`. Import the repo, no build command |
+| Vercel | `vercel.json` sets `outputDirectory: "src"`. Framework preset: Other |
+| Cloudflare Pages | Build command empty, output directory `src` |
+| Any web server | Copy the contents of `src/` to the web root |
+
+All paths are relative, so the site works at a domain root or under a subpath. `src/404.html` sends lost visitors
+back to the login page. HTTPS is required in production (every host above provides it).
+
 ## What a real deployment still needs
 
 This is a working prototype, not production software. Before real use:

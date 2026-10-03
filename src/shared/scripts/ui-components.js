@@ -1505,3 +1505,62 @@ function showOptionDialog(opts = {}) {
         document.addEventListener('keydown', host.__keyHandler, true);
     });
 }
+
+/* opts: { title, subtitle, value, min, max, unit, dark } → Promise<number|null>
+   ផ្ទាំងលេខសម្រាប់អេក្រង់ប៉ះ (ឧ. កំណត់ចំនួនទំនិញ 12 ដោយមិនចាំបាច់ចុច + ១២ ដង) */
+function showNumberPad(opts = {}) {
+    return new Promise(resolve => {
+        const th = POS_DIALOG_THEME[opts.dark ? 'dark' : 'light'];
+        const host = posDialogHost('posNumberPadModal');
+        const min = opts.min != null ? opts.min : 0;
+        const max = opts.max != null ? opts.max : 9999;
+        let val = '';
+        const initial = opts.value != null ? String(opts.value) : '';
+
+        const render = () => {
+            const shown = val || initial || '0';
+            const n = Number(val || initial || 0);
+            const bad = val && (n < min || n > max);
+            host.innerHTML = `
+                <div class="w-full max-w-xs rounded-3xl shadow-2xl ${th.panel} p-5" onclick="event.stopPropagation()">
+                    <p class="sm-card-title ${th.title} text-center">${posEsc(opts.title || 'បញ្ចូលចំនួន')}</p>
+                    ${opts.subtitle ? `<p class="sm-td-sub ${th.sub} text-center mt-0.5">${opts.subtitle}</p>` : ''}
+                    <div class="mt-4 rounded-2xl ${th.box} px-4 py-3 flex items-baseline justify-center gap-2">
+                        <span class="text-[36px] font-bold leading-none sm-figure ${val ? th.title : 'opacity-40 ' + th.title}">${shown}</span>
+                        ${opts.unit ? `<span class="sm-td-sub ${th.sub}">${posEsc(opts.unit)}</span>` : ''}
+                    </div>
+                    <p class="sm-td-sub text-center mt-1 min-h-[20px] ${bad ? 'text-rose-500' : th.sub}">${bad ? `ចន្លោះ ${min} ទៅ ${max}` : `អតិបរមា ${max}`}</p>
+                    ${posKeypadHtml(th)}
+                    <div class="grid grid-cols-2 gap-2 mt-3">
+                        <button type="button" data-act="cancel" class="sm-value h-12 rounded-2xl ${th.ghost} font-semibold">បោះបង់</button>
+                        <button type="button" data-act="ok" class="sm-value h-12 rounded-2xl font-semibold ${bad ? 'bg-slate-500/30 text-slate-400' : th.primary}">យល់ព្រម</button>
+                    </div>
+                </div>`;
+            host.querySelectorAll('[data-key]').forEach(b => b.onclick = () => press(b.dataset.key));
+            host.querySelector('[data-act="cancel"]').onclick = () => finish(null);
+            host.querySelector('[data-act="ok"]').onclick = submit;
+        };
+        const press = k => {
+            if (k === 'C') val = '';
+            else if (k === '⌫') val = val.slice(0, -1);
+            else if (val.length < 5) val = (val + k).replace(/^0+(?=\d)/, '');
+            render();
+        };
+        const submit = () => {
+            if (!val) return finish(null);
+            const n = Number(val);
+            if (n < min || n > max) return render();
+            finish(n);
+        };
+        const finish = v => { posDialogClose(host); resolve(v); };
+        host.__keyHandler = e => {
+            if (/^[0-9]$/.test(e.key)) { press(e.key); e.preventDefault(); e.stopPropagation(); }
+            else if (e.key === 'Backspace') { press('⌫'); e.preventDefault(); e.stopPropagation(); }
+            else if (e.key === 'Enter') { submit(); e.preventDefault(); e.stopPropagation(); }
+            else if (e.key === 'Escape') { finish(null); e.preventDefault(); e.stopPropagation(); }
+        };
+        document.addEventListener('keydown', host.__keyHandler, true);
+        host.onclick = () => finish(null);
+        render();
+    });
+}

@@ -1,0 +1,4 @@
+# Netlify: no build step, publish src/ as the site root.
+[build]
+  publish = "src"
+  command = ""
