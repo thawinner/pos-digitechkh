@@ -2,8 +2,344 @@
 <html lang="km">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=cashier/terminal/pos-terminal.html">
-    <title>DIGITECHKH POS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH POS - ចូលប្រើ</title>
+    <link rel="icon" type="image/png" href="shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { primary: "#0891b2", 'primary-dark': "#0e7490" }, fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] } } }
+        }
+    </script>
+    <link rel="stylesheet" href="shared/styles/custom.css">
+    <link rel="stylesheet" href="shared/styles/portal.css">
+    <style>
+        .login-bg {
+            background:
+                radial-gradient(1200px 600px at 10% -10%, rgba(8, 145, 178, .28), transparent 60%),
+                radial-gradient(900px 500px at 110% 110%, rgba(79, 70, 229, .22), transparent 60%),
+                #0b1220;
+        }
+        .clock-big { font-size: 56px; line-height: 1; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+        .pin-key { height: 68px; font-size: 26px !important; font-weight: 600 !important; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+        .shake { animation: shake .35s ease; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+        .fade-up { animation: fadeUp .22s ease; }
+        .tile:focus-visible, .pin-key:focus-visible { outline: 3px solid #22d3ee; outline-offset: 2px; }
+    </style>
 </head>
-<body></body>
+<body id="loginPortal" data-role-root="." class="login-bg min-h-screen font-sans text-slate-100 text-[16px]">
+
+    <main class="min-h-screen w-full flex items-center justify-center px-4 py-8 lg:py-10">
+        <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-5 lg:min-h-[660px]">
+
+            <!-- ===== ផ្ទាំងឆ្វេង៖ ម៉ាក នាឡិកា និងស្ថានភាពបញ្ជរ ===== -->
+            <section class="lg:col-span-4 rounded-3xl bg-white/[0.04] border border-white/10 p-6 sm:p-7 flex flex-col gap-6">
+                <div class="flex items-center gap-3">
+                    <img src="shared/assets/logo-mark-transparent.png" alt="DIGITECHKH" class="w-11 h-11 object-contain">
+                    <div>
+                        <p class="sm-card-title text-white text-[19px] tracking-wide">DIGITECHKH</p>
+                        <p class="sm-td-sub text-cyan-200/80">ប្រព័ន្ធគិតលុយលក់រាយ</p>
+                    </div>
+                </div>
+
+                <div>
+                    <p id="clockBig" class="clock-big text-white"></p>
+                    <p id="dateBig" class="sm-card-sub text-slate-300 mt-2"></p>
+                    <p class="sm-td-sub text-slate-400 mt-1"><i class="fas fa-location-dot mr-1.5 text-cyan-300"></i><span id="branchLabel"></span></p>
+                </div>
+
+                <div>
+                    <p class="sm-eyebrow text-slate-400 mb-2">ស្ថានភាពបញ្ជរ</p>
+                    <div id="registerBoard" class="space-y-2"></div>
+                </div>
+
+                <div class="mt-auto">
+                    <button onclick="toggleDemo()" type="button" class="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-2xl bg-amber-400/10 border border-amber-300/20 text-amber-100 hover:bg-amber-400/15 transition">
+                        <span class="sm-td inline-flex items-center gap-2"><i class="fas fa-flask"></i> ព័ត៌មានសម្រាប់គំរូសាកល្បង</span>
+                        <i id="demoChevron" class="fas fa-chevron-down text-xs transition-transform"></i>
+                    </button>
+                    <div id="demoBox" class="hidden mt-2 rounded-2xl bg-black/30 border border-white/10 p-4">
+                        <div id="demoPins" class="space-y-1.5"></div>
+                        <button onclick="resetDemo()" type="button"
+                            class="mt-3 w-full sm-badge px-3 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold transition inline-flex items-center justify-center gap-2">
+                            <i class="fas fa-rotate-left"></i> កំណត់ទិន្នន័យគំរូឡើងវិញ
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== ផ្ទាំងស្តាំ៖ ជំហានទី 1 ជ្រើសរើសអ្នកប្រើ · ជំហានទី 2 វាយលេខសម្ងាត់ ===== -->
+            <section class="lg:col-span-8 rounded-3xl bg-white text-slate-800 shadow-2xl shadow-black/30 overflow-hidden flex flex-col">
+                <div id="stepPick" class="flex-1 flex flex-col p-6 sm:p-8 fade-up">
+                    <div class="flex flex-wrap items-end justify-between gap-3">
+                        <div>
+                            <p class="sm-eyebrow text-cyan-700">ចូលប្រើប្រព័ន្ធ</p>
+                            <h1 class="text-[26px] leading-tight font-bold text-slate-900 mt-1">តើលោកអ្នកជានរណា?</h1>
+                            <p class="sm-card-sub text-slate-500 mt-1">ចុចលើឈ្មោះ ហើយវាយលេខសម្ងាត់ផ្ទាល់ខ្លួន។ រាល់ការលក់ និងការអនុម័តត្រូវបានកត់ត្រាតាមឈ្មោះអ្នកចូលប្រើ។</p>
+                        </div>
+                        <div id="lastUser"></div>
+                    </div>
+
+                    <div class="mt-7">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="w-8 h-8 rounded-lg bg-cyan-50 text-cyan-700 inline-flex items-center justify-center"><i class="fas fa-cash-register text-sm"></i></span>
+                            <p class="sm-value text-slate-700">អ្នកគិតលុយ</p>
+                            <span class="sm-td-sub text-slate-400">· បញ្ជរតាមកាលវិភាគវេន</span>
+                        </div>
+                        <div id="cashierTiles" class="grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
+                    </div>
+
+                    <div class="mt-7">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 inline-flex items-center justify-center"><i class="fas fa-user-shield text-sm"></i></span>
+                            <p class="sm-value text-slate-700">អ្នកគ្រប់គ្រងវេន</p>
+                            <span class="sm-td-sub text-slate-400">· ផ្ទាំងគ្រប់គ្រង · អាចប្តូរទៅលក់បាន</span>
+                        </div>
+                        <div id="managerTiles" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+                    </div>
+
+                    <div id="facts" class="mt-auto pt-7 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
+                </div>
+
+                <div id="stepPin" class="hidden flex-1 p-6 sm:p-8"></div>
+            </section>
+        </div>
+    </main>
+
+    <script src="shared/scripts/ui-components.js"></script>
+    <script src="shared/scripts/data.js"></script>
+    <script>
+        /* ទំព័រចូលប្រើ — គ្មានម៉ាស៊ីនមេទេ ដូច្នេះលេខសម្ងាត់ផ្ទៀងផ្ទាត់ក្នុងកម្មវិធីរុករក (គំរូសាកល្បងប៉ុណ្ណោះ)
+           ជំហានទី 1៖ ជ្រើសរើសមនុស្ស · ជំហានទី 2៖ ផ្ទាំងលេខធំៗនៅលើផ្ទាំងដដែល (មិនមែនផ្ទាំងលោត)
+           ដូចឧបករណ៍គិតលុយពិត ដែលអ្នកគិតលុយចូលប្រើដោយប៉ះ មិនមែនវាយឈ្មោះអ្នកប្រើ */
+
+        let pinUser = null;
+        let pin = '';
+        let pinMsg = '';
+        let lockTick = null;
+
+        function openShiftOf(id) {
+            return liveShifts().find(s => s.status === 'open' && s.cashierId === id) || null;
+        }
+
+        function tile(p, role) {
+            const sh = openShiftOf(p.id);
+            const ring = role === 'manager' ? 'ring-indigo-100' : 'ring-cyan-100';
+            const status = sh
+                ? `<span class="inline-flex items-center gap-1.5 sm-td-sub text-emerald-700"><span class="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></span>កំពុងបើក${sh.templateName} · ${sh.register}</span>`
+                : (() => {
+                    const a = assignmentFor(p.id);
+                    return a
+                        ? `<span class="inline-flex items-center gap-1.5 sm-td-sub text-slate-500"><i class="fas fa-calendar-check text-[11px] text-cyan-600"></i>${a.template.name} · ${a.register}</span>`
+                        : `<span class="sm-td-sub text-slate-400">${role === 'manager' ? ROLE_NAME.manager : 'មិនមានក្នុងកាលវិភាគ'}</span>`;
+                })();
+            return `<button onclick="pickUser('${p.id}')" type="button"
+                class="tile group text-left p-4 rounded-2xl border-2 ${sh ? 'border-emerald-200 bg-emerald-50/40' : 'border-slate-200 bg-white'} hover:border-cyan-500 hover:shadow-lg hover:shadow-cyan-900/5 transition flex items-center gap-3.5 min-h-[88px]">
+                ${avatarHtml(p.id, `w-14 h-14 ring-4 ${ring}`)}
+                <span class="min-w-0 flex-1">
+                    <span class="sm-card-title text-slate-800 block truncate">${p.name}</span>
+                    <span class="block mt-0.5">${status}</span>
+                </span>
+                <i class="fas fa-chevron-right text-slate-300 group-hover:text-cyan-600 transition"></i>
+            </button>`;
+        }
+
+        function renderFacts() {
+            const fact = (icon, title, text) => `<div class="rounded-2xl bg-slate-50 border border-slate-100 p-3.5 flex gap-3">
+                <i class="fas ${icon} text-slate-400 mt-1"></i>
+                <div><p class="sm-td text-slate-700">${title}</p><p class="sm-td-sub text-slate-400">${text}</p></div></div>`;
+            document.getElementById('facts').innerHTML =
+                fact('fa-shield-halved', 'សុវត្ថិភាព', 'វាយខុស 3 ដង ចាក់សោរ 60 វិនាទី') +
+                fact('fa-user-lock', 'មួយថត មួយអ្នក', 'អ្នកគិតលុយម្នាក់ទទួលខុសត្រូវថតប្រាក់មួយ') +
+                fact('fa-mug-hot', 'ពេលសម្រាក', 'ចាក់សោរបញ្ជរ មិនចាំបាច់បិទវេន');
+        }
+
+        /* ===== ជំហានទី 2៖ លេខសម្ងាត់ ===== */
+
+        function pickUser(id) {
+            pinUser = personById(id);
+            pin = '';
+            pinMsg = '';
+            document.getElementById('stepPick').classList.add('hidden');
+            document.getElementById('stepPin').classList.remove('hidden');
+            renderPin();
+        }
+
+        function backToPick() {
+            pinUser = null;
+            clearTimeout(lockTick);
+            document.getElementById('stepPin').classList.add('hidden');
+            const pick = document.getElementById('stepPick');
+            pick.classList.remove('hidden', 'fade-up');
+            void pick.offsetWidth;
+            pick.classList.add('fade-up');
+        }
+
+        function renderPin(shake) {
+            const p = pinUser;
+            const manager = isManagerId(p.id);
+            const sh = openShiftOf(p.id);
+            const lockedFor = Math.ceil((POS_PIN_GUARD.lockedUntil - Date.now()) / 1000);
+            const locked = lockedFor > 0;
+            const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '⌫'];
+            const asg = assignmentFor(p.id);
+            const dest = manager ? 'ផ្ទាំងគ្រប់គ្រង' : sh ? `បន្ត${sh.templateName} លើ ${sh.register}` : `បើក${asg ? asg.template.name : 'វេន'}លើ ${resolveRegister(p.id)}`;
+            document.getElementById('stepPin').innerHTML = `
+                <div class="h-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center fade-up">
+                    <div>
+                        <button onclick="backToPick()" type="button" class="sm-td text-slate-500 hover:text-slate-800 inline-flex items-center gap-2 min-h-[44px]">
+                            <i class="fas fa-arrow-left"></i> ប្តូរអ្នកប្រើ
+                        </button>
+                        <div class="mt-6 flex items-center gap-4">
+                            ${avatarHtml(p.id, `w-24 h-24 ring-8 ${manager ? 'ring-indigo-100' : 'ring-cyan-100'}`)}
+                            <div>
+                                <p class="text-[24px] font-bold text-slate-900 leading-tight">${p.name}</p>
+                                <p class="sm-card-sub text-slate-500">${manager ? ROLE_NAME.manager : ROLE_NAME.cashier}</p>
+                            </div>
+                        </div>
+                        <div class="mt-6 rounded-2xl bg-slate-50 border border-slate-100 p-4 space-y-2">
+                            <p class="sm-td text-slate-600 flex items-center gap-2"><i class="fas fa-arrow-right-to-bracket text-slate-400 w-4"></i> ${dest}</p>
+                            ${sh ? `<p class="sm-td-sub text-emerald-700 flex items-center gap-2"><span class="w-4 inline-flex justify-center"><span class="w-2 h-2 rounded-full bg-emerald-500"></span></span> វេនបើកតាំងពីម៉ោង ${fmtTime(sh.openedAt)}</p>` : ''}
+                            <p class="sm-td-sub text-slate-400 flex items-center gap-2"><i class="fas fa-keyboard w-4"></i> អាចវាយលេខពីក្តារចុចបានដែរ</p>
+                        </div>
+                    </div>
+
+                    <div class="w-full max-w-sm mx-auto">
+                        <p class="sm-value text-slate-700 text-center">វាយលេខសម្ងាត់</p>
+                        <div class="flex items-center justify-center gap-3.5 h-8 mt-3 ${shake ? 'shake' : ''}">
+                            ${[0, 1, 2, 3, 4, 5].map(i => `<span class="w-4 h-4 rounded-full transition ${i < pin.length ? 'bg-cyan-600 scale-110' : 'bg-slate-200'} ${i >= 4 && i >= pin.length ? 'opacity-50' : ''}"></span>`).join('')}
+                        </div>
+                        <p class="sm-td-sub text-center mt-1 min-h-[24px] ${locked || pinMsg ? 'text-rose-600 font-semibold' : 'text-slate-400'}">
+                            ${locked ? `វាយខុស 3 ដង · សូមរង់ចាំ ${lockedFor} វិនាទី` : pinMsg || '4 ទៅ 6 ខ្ទង់'}
+                        </p>
+                        <div class="grid grid-cols-3 gap-2.5 mt-3">
+                            ${keys.map(k => `<button onclick="press('${k}')" type="button" ${locked ? 'disabled' : ''}
+                                class="pin-key rounded-2xl ${k === 'C' || k === '⌫' ? 'bg-slate-100 text-slate-500' : 'bg-slate-50 text-slate-800 border border-slate-200'} hover:bg-cyan-50 hover:border-cyan-300 active:scale-95 transition disabled:opacity-40">
+                                ${k === 'C' ? '<i class="fas fa-eraser text-lg"></i>' : k === '⌫' ? '<i class="fas fa-delete-left text-lg"></i>' : k}</button>`).join('')}
+                        </div>
+                        <button onclick="submitPin()" type="button" ${pin.length >= 4 && !locked ? '' : 'disabled'}
+                            class="mt-3 w-full h-14 rounded-2xl sm-card-title font-bold transition inline-flex items-center justify-center gap-2 ${pin.length >= 4 && !locked
+                                ? 'bg-cyan-600 hover:bg-cyan-700 text-white shadow-lg shadow-cyan-900/20' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}">
+                            ចូលប្រើ <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>`;
+            clearTimeout(lockTick);
+            if (locked) lockTick = setTimeout(() => renderPin(), 1000);
+        }
+
+        function press(k) {
+            if (!pinUser || POS_PIN_GUARD.lockedUntil > Date.now()) return;
+            if (k === 'C') pin = '';
+            else if (k === '⌫') pin = pin.slice(0, -1);
+            else if (pin.length < 6) pin += k;
+            pinMsg = '';
+            renderPin();
+            // ចូលដោយស្វ័យប្រវត្តិពេលលេខគ្រប់ និងត្រឹមត្រូវ — មិនបង្ហាញថាខុសមុនពេលចុច «ចូលប្រើ»
+            if (pin.length === effectivePin(pinUser.id).length && verifyPin(pinUser.id, pin)) submitPin();
+        }
+
+        function submitPin() {
+            if (!pinUser || pin.length < 4 || POS_PIN_GUARD.lockedUntil > Date.now()) return;
+            if (verifyPin(pinUser.id, pin)) {
+                POS_PIN_GUARD.fails = 0;
+                posLogin(pinUser.id);
+                const next = new URLSearchParams(location.search).get('next');
+                const manager = isManagerId(pinUser.id);
+                const allowed = next && /^(cashier|manager)\/[a-z-]+\/[a-z-]+\.html$/.test(next) && (manager || next.startsWith('cashier/'));
+                document.getElementById('stepPin').innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center fade-up">
+                    ${avatarHtml(pinUser.id, 'w-20 h-20 ring-8 ring-emerald-100')}
+                    <p class="sm-card-title text-slate-800 mt-4"><i class="fas fa-circle-check text-emerald-500 mr-1.5"></i>សូមស្វាគមន៍ ${pinUser.name}</p></div>`;
+                setTimeout(() => {
+                    location.href = allowed ? next : manager ? 'manager/dashboard/dashboard.html' : 'cashier/terminal/pos-terminal.html';
+                }, 450);
+                return;
+            }
+            POS_PIN_GUARD.fails += 1;
+            pin = '';
+            if (POS_PIN_GUARD.fails >= 3) {
+                POS_PIN_GUARD.fails = 0;
+                POS_PIN_GUARD.lockedUntil = Date.now() + 60000;
+                pinMsg = '';
+            } else {
+                pinMsg = `លេខសម្ងាត់មិនត្រឹមត្រូវ · នៅសល់ ${3 - POS_PIN_GUARD.fails} ដង`;
+            }
+            renderPin(true);
+        }
+
+        /* ===== ផ្ទាំងឆ្វេង ===== */
+
+        function renderRegisters() {
+            document.getElementById('registerBoard').innerHTML = REGISTERS.map(r => {
+                const sh = liveShifts().find(s => s.register === r && s.status === 'open');
+                return `<div class="flex items-center gap-3 rounded-2xl bg-white/[0.04] border border-white/10 px-3.5 py-3">
+                    ${sh ? avatarHtml(sh.cashierId, 'w-9 h-9') : '<span class="w-9 h-9 rounded-xl bg-white/5 text-slate-500 inline-flex items-center justify-center"><i class="fas fa-cash-register text-sm"></i></span>'}
+                    <div class="min-w-0 flex-1">
+                        <p class="sm-value text-white">${r}</p>
+                        <p class="sm-td-sub ${sh ? 'text-emerald-300' : 'text-slate-500'} truncate">${sh ? `${personName(sh.cashierId)} · ${sh.templateName}` : 'មិនមានវេនបើក'}</p>
+                    </div>
+                    <span class="w-2.5 h-2.5 rounded-full ${sh ? 'bg-emerald-400 shadow-[0_0_0_4px_rgba(52,211,153,.15)]' : 'bg-slate-600'}"></span>
+                </div>`;
+            }).join('');
+        }
+
+        function toggleDemo() {
+            const box = document.getElementById('demoBox');
+            box.classList.toggle('hidden');
+            document.getElementById('demoChevron').classList.toggle('rotate-180', !box.classList.contains('hidden'));
+        }
+
+        async function resetDemo() {
+            const ok = await showCustomConfirm({
+                title: 'កំណត់ទិន្នន័យគំរូឡើងវិញ',
+                message: 'វេន ការលក់ សំណើ ចលនាសាច់ប្រាក់ ការកំណត់ និងការចូលប្រើទាំងអស់នៅលើកម្មវិធីរុករកនេះ នឹងត្រូវលុប ហើយបង្កើតឡើងវិញ។',
+                confirmText: 'កំណត់ឡើងវិញ',
+                danger: true
+            });
+            if (!ok) return;
+            resetDemoData();
+            location.reload();
+        }
+
+        function tick() {
+            const now = new Date();
+            document.getElementById('clockBig').textContent = `${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
+            const tpl = templateAt(now);
+            document.getElementById('dateBig').textContent = `${fmtKhDate(now)} · ${tpl ? `${tpl.name} ${tpl.start}–${tpl.end}` : 'ក្រៅម៉ោងវេន'}`;
+        }
+
+        document.addEventListener('keydown', e => {
+            if (!pinUser) return;
+            if (/^[0-9]$/.test(e.key)) press(e.key);
+            else if (e.key === 'Backspace') press('⌫');
+            else if (e.key === 'Enter') submitPin();
+            else if (e.key === 'Escape') backToPick();
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('branchLabel').textContent = MERCHANT.branch;
+            tick();
+            setInterval(tick, 10000);
+            document.getElementById('cashierTiles').innerHTML = CASHIERS.map(p => tile(p, 'cashier')).join('');
+            document.getElementById('managerTiles').innerHTML = MANAGERS.map(p => tile(p, 'manager')).join('');
+            document.getElementById('demoPins').innerHTML = CASHIERS.concat(MANAGERS).map(p =>
+                `<p class="sm-td-sub text-slate-300 flex items-center gap-2.5">${avatarHtml(p.id, 'w-6 h-6')}<span class="flex-1">${p.name}</span><span class="sm-figure text-white font-semibold tracking-widest">${effectivePin(p.id)}</span></p>`).join('');
+            const s = posSession();
+            if (s) {
+                const p = personById(s.userId);
+                document.getElementById('lastUser').innerHTML = `<button onclick="pickUser('${p.id}')" type="button"
+                    class="sm-td-sub pl-1.5 pr-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 hover:border-cyan-400 text-slate-600 inline-flex items-center gap-2">
+                    ${avatarHtml(p.id, 'w-7 h-7')} ចុងក្រោយ៖ <span class="text-slate-800 font-semibold">${p.name}</span></button>`;
+            }
+            renderRegisters();
+            renderFacts();
+        });
+    </script>
+</body>
 </html>

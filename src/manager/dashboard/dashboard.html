@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - ផ្ទាំងគ្រប់គ្រង</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+</head>
+<body id="managerPortal" data-role-root="../.." data-active="dashboard" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="ផ្ទាំងគ្រប់គ្រង"
+             data-subtitle="ថ្ងៃប្រតិបត្តិការ"></div>
+        <main class="flex-1 overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <div class="w-full space-y-5">
+                <div id="kpiRow" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+                    <section class="xl:col-span-2 space-y-3">
+                        <div class="flex items-center justify-between gap-3">
+                            <h3 class="sm-card-title text-slate-700">បញ្ជរគិតលុយ</h3>
+                            <a href="../shifts/shifts.html" class="sm-badge text-indigo-700 hover:text-indigo-900 font-semibold">វេនទាំងអស់ <i class="fas fa-arrow-right text-[10px]"></i></a>
+                        </div>
+                        <div id="registerBoard" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
+                    </section>
+                    <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col">
+                        <div class="p-4 border-b border-slate-100 flex items-center justify-between gap-2">
+                            <div>
+                                <h3 class="sm-card-title text-slate-700">សំណើរង់ចាំអនុម័ត</h3>
+                                <p class="sm-card-sub text-slate-500">ចាស់មុនគេ</p>
+                            </div>
+                            <a href="../approvals/approvals.html" class="sm-badge text-indigo-700 hover:text-indigo-900 font-semibold">ទាំងអស់ <i class="fas fa-arrow-right text-[10px]"></i></a>
+                        </div>
+                        <div id="approvalList" class="divide-y divide-slate-100 flex-1"></div>
+                    </section>
+                </div>
+
+                <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4">
+                    <div class="flex items-center justify-between gap-3 mb-3">
+                        <h3 class="sm-card-title text-slate-700">ករណីមិនប្រក្រតីថ្ងៃនេះ</h3>
+                        <a href="../exceptions/exceptions.html" class="sm-badge text-indigo-700 hover:text-indigo-900 font-semibold">មើលលម្អិត <i class="fas fa-arrow-right text-[10px]"></i></a>
+                    </div>
+                    <div id="exceptionStrip" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2"></div>
+                </section>
+
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+                    <section class="xl:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5">
+                        <h3 class="sm-card-title text-slate-700">ការលក់តាមម៉ោង</h3>
+                        <p class="sm-card-sub text-slate-500">លក់សរុប (ដុល្លារ) គ្រប់បញ្ជរ</p>
+                        <div id="hourBars" class="mt-4"></div>
+                    </section>
+                    <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5">
+                        <h3 class="sm-card-title text-slate-700">វិធីទូទាត់</h3>
+                        <p class="sm-card-sub text-slate-500">ចំណែកនៃការលក់ថ្ងៃនេះ</p>
+                        <div id="paySplit" class="mt-4"></div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        /* ផ្ទាំងគ្រប់គ្រង (ឯកសាររចនាលេខ 02 ផ្នែក 5.1) — អ្វីដែលត្រូវការខ្ញុំឥឡូវនេះ និងថ្ងៃនេះទៅយ៉ាងណា
+           គ្មាន ECharts នៅទំព័រផ្ទាំងគ្រប់គ្រងទេ (បញ្ជីពិនិត្យលេខ 06 ផ្នែក ខ) — ប្រើរបារ CSS */
+
+        function renderKpis() {
+            const today = mgrToday();
+            const agg = aggregateSales(salesInRange(today));
+            const pend = pendingApprovals().length;
+            document.getElementById('kpiRow').innerHTML =
+                kpiCard('លក់សុទ្ធថ្ងៃនេះ', fmtUSD(agg.netSales), `${fmtKHR(toKHR(agg.netSales))} · ${fmtKhDate(businessDate() + 'T12:00')}`, 'text-emerald-600') +
+                kpiCard('វិក្កយបត្រ', `${agg.tx}`, `${agg.qty} ឯកតា · លុបចោល ${agg.voids}`) +
+                kpiCard('មធ្យមក្នុងមួយវិក្កយបត្រ', fmtUSD(agg.avg), 'តម្លៃកន្ត្រកជាមធ្យម') +
+                kpiCard('សំណើរង់ចាំអនុម័ត', `${pend}`, pend ? 'ត្រូវការការសម្រេចរបស់អ្នក' : 'គ្មានសំណើរង់ចាំ', pend ? 'text-amber-600' : 'text-slate-800');
+        }
+
+        function timelineHtml(register) {
+            const bd = businessDate();
+            const now = new Date();
+            const shifts = mgrAllShifts().filter(s => s.register === register && s.date === bd);
+            return `<div class="flex gap-1 mt-3">${shiftTemplates().map(t => {
+                const sh = shifts.find(s => s.templateCode === t.code);
+                const start = dateAt(bd, t.start);
+                let cls = 'bg-slate-100 text-slate-400';
+                let label = 'មិនទាន់';
+                if (sh && sh.status === 'open') {
+                    const over = now > shiftEndDate(sh);
+                    const opened = now - new Date(sh.openedAt);
+                    cls = opened > 12 * 3600000 ? 'bg-rose-100 text-rose-700' : over ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700';
+                    label = over ? 'ហួសម៉ោង' : 'កំពុងបើក';
+                } else if (sh) {
+                    cls = sh.status === 'reviewed' ? 'bg-indigo-100 text-indigo-700' : 'bg-amber-50 text-amber-700';
+                    label = SHIFT_STATUS[sh.status].label;
+                } else if (start < now) {
+                    cls = 'bg-slate-100 text-slate-400 line-through';
+                    label = 'មិនបានបើក';
+                }
+                return `<div class="flex-1 min-w-0 rounded-lg px-2 py-1 ${cls}">
+                    <p class="text-[11px] font-semibold truncate">${t.name} ${t.start}</p>
+                    <p class="text-[11px] truncate">${label}</p>
+                </div>`;
+            }).join('')}</div>`;
+        }
+
+        function registerCard(register) {
+            const open = mgrAllShifts().find(s => s.register === register && s.status === 'open');
+            const last = mgrAllShifts().find(s => s.register === register);
+            const sh = open || last;
+            const st = posSettings();
+            const menuId = `regMenu-${register}`;
+            let body = '';
+            if (open) {
+                const s = summaryOf(open);
+                const sales = salesOfAnyShift(open.id);
+                const lastSale = sales[0];
+                const pct = Math.min(Math.max(s.expectedUSD / st.drawerLimitUSD, s.expectedKHR / st.drawerLimitKHR) * 100, 100);
+                const over = s.expectedUSD > st.drawerLimitUSD || s.expectedKHR > st.drawerLimitKHR;
+                const held = open.generated ? 0 : heldOfShift(open.id).length;
+                const overrun = new Date() - shiftEndDate(open);
+                body = `
+                    <div class="mt-3 grid grid-cols-2 gap-2">
+                        <div><p class="sm-td-sub text-slate-400">លក់</p><p class="sm-value text-slate-800 sm-figure">${fmtUSD(s.netSales)}</p></div>
+                        <div><p class="sm-td-sub text-slate-400">វិក្កយបត្រ</p><p class="sm-value text-slate-800 sm-figure">${s.count}</p></div>
+                    </div>
+                    <div class="mt-3">
+                        <div class="flex justify-between sm-td-sub"><span class="text-slate-400">សាច់ប្រាក់ក្នុងថត</span>
+                            <span class="sm-figure ${over ? 'text-rose-600 font-semibold' : 'text-slate-600'}">${fmtUSD(s.expectedUSD)} · ${fmtKHR(s.expectedKHR)}</span></div>
+                        <div class="h-2 rounded-full bg-slate-100 mt-1 overflow-hidden"><div class="h-full rounded-full ${over ? 'bg-rose-500' : pct > 75 ? 'bg-amber-400' : 'bg-indigo-500'}" style="width:${pct}%"></div></div>
+                        ${over ? '<p class="sm-td-sub text-rose-600 mt-1"><i class="fas fa-vault mr-1"></i>ត្រូវផ្ទេរចូលទូដែក</p>' : ''}
+                    </div>
+                    <p class="sm-td-sub text-slate-500 mt-2">${lastSale ? `លក់ចុងក្រោយ ${fmtDuration(new Date() - new Date(lastSale.time))}មុន` : 'មិនទាន់មានការលក់'}${held ? ` · ព្យួរ ${held}` : ''}${s.pendingDrops ? ` · ផ្ទេររង់ចាំ ${s.pendingDrops}` : ''}</p>
+                    ${overrun > 0 ? `<p class="sm-td-sub text-amber-700 mt-1"><i class="fas fa-clock mr-1"></i>ហួសម៉ោងវេន ${fmtDuration(overrun)}</p>` : ''}`;
+            } else if (last) {
+                const v = shiftVariance(last);
+                body = `<p class="sm-td-sub text-slate-500 mt-3">វេនចុងក្រោយ ${last.templateName} · ${fmtDate(last.openedAt)} · ${personName(last.cashierId)}</p>
+                    ${v ? `<p class="sm-td-sub mt-1 ${v.level === 'large' ? 'text-rose-600' : v.level === 'small' ? 'text-amber-700' : 'text-emerald-700'}">${DIRECTION_LABEL[v.direction]} ${fmtUSD(v.abs)}</p>` : ''}`;
+            }
+            const status = open ? SHIFT_STATUS.open : { label: 'មិនទាន់បើក', cls: 'bg-white text-slate-500 border-slate-200' };
+            return `
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 min-w-0">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="min-w-0">
+                            <p class="sm-card-title text-slate-800">${register}</p>
+                            <div class="mt-1">${statusChip(status)}</div>
+                        </div>
+                        <div class="relative">
+                            <button onclick="toggleRowActionMenu(event, '${menuId}')" type="button" aria-label="សកម្មភាព"
+                                class="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200/70 inline-flex items-center justify-center">
+                                <i class="fas fa-ellipsis-vertical text-sm"></i></button>
+                            <div id="${menuId}" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 text-left">
+                                ${sh ? `<a href="../shifts/view-shift.html?id=${sh.id}" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50"><i class="fas fa-eye w-5 text-slate-500"></i>${open ? 'មើលរបាយការណ៍ពាក់កណ្តាលវេន' : 'មើលវេនចុងក្រោយ'}</a>` : ''}
+                                ${open ? '' : `<button type="button" onclick="location.href='../cash/create-movement.html?type=float&register=${register}'" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 text-left"><i class="fas fa-hand-holding-dollar w-5 text-sky-600"></i>ចេញប្រាក់បាតថត</button>`}
+                                ${open ? `<button type="button" onclick="location.href='../cash/create-movement.html?type=payout&register=${register}'" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 text-left"><i class="fas fa-money-bill-transfer w-5 text-rose-600"></i>ដកប្រាក់ចំណាយ</button>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    ${open ? `<div class="mt-3">${personChip(open.cashierId)}<p class="sm-td-sub text-slate-400 mt-1">${open.templateName} · បើកម៉ោង ${fmtTime(open.openedAt)}</p></div>` : ''}
+                    ${body}
+                    ${timelineHtml(register)}
+                </div>`;
+        }
+
+        function renderRegisters() {
+            document.getElementById('registerBoard').innerHTML = REGISTERS.map(registerCard).join('');
+        }
+
+        function renderApprovals() {
+            const list = pendingApprovals().slice(0, 6);
+            const host = document.getElementById('approvalList');
+            if (!list.length) {
+                host.innerHTML = emptyState('fa-circle-check', 'គ្មានសំណើរង់ចាំ', 'សំណើលុបចោល និងប្រគល់ទំនិញវិញពីបញ្ជរនឹងបង្ហាញនៅទីនេះ');
+                return;
+            }
+            host.innerHTML = list.map(a => {
+                const age = new Date() - new Date(a.raisedAt);
+                const t = APPROVAL_TYPE[a.type];
+                return `<a href="../approvals/view-request.html?id=${a.id}" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50">
+                    <span class="w-10 h-10 rounded-xl bg-${t.tone}-50 text-${t.tone}-600 flex items-center justify-center flex-shrink-0"><i class="fas ${t.icon}"></i></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="sm-value text-slate-700 block truncate">${t.label} · ${fmtUSD(a.amount)}</span>
+                        <span class="sm-td-sub text-slate-400 block truncate">${a.saleId} · ${personName(a.cashierId)} · ${a.register}</span>
+                    </span>
+                    <span class="sm-td-sub sm-figure flex-shrink-0 ${age > 10 * 60000 ? 'text-rose-600 font-semibold' : 'text-slate-500'}">${fmtDuration(age)}</span>
+                </a>`;
+            }).join('');
+        }
+
+        function renderExceptions() {
+            const { rows } = exceptionStats(mgrToday());
+            const sum = k => rows.reduce((n, r) => n + r[k], 0);
+            const item = (label, value, icon, filter) => `
+                <a href="../exceptions/exceptions.html${filter ? '?type=' + filter : ''}" class="rounded-xl border ${value ? 'border-amber-200 bg-amber-50/60' : 'border-slate-200 bg-slate-50/50'} px-3 py-2.5 hover:border-indigo-300 transition">
+                    <p class="sm-td-sub text-slate-500 truncate"><i class="fas ${icon} mr-1"></i>${label}</p>
+                    <p class="sm-value sm-figure ${value ? 'text-amber-700' : 'text-slate-400'}">${value}</p>
+                </a>`;
+            document.getElementById('exceptionStrip').innerHTML =
+                item('លុបចោល', sum('voids'), 'fa-ban', 'voids') +
+                item('ប្រគល់វិញ', sum('returns'), 'fa-rotate-left', 'returns') +
+                item('បញ្ចុះលើសកំណត់', sum('overrides'), 'fa-tag', 'overrides') +
+                item('ដកទំនិញមុនទូទាត់', sum('lineRemovals'), 'fa-minus', 'lineRemovals') +
+                item('លេខសម្ងាត់ខុស', sum('wrongPins'), 'fa-key', 'wrongPins') +
+                item('ភាពខុសគ្នាធំ', sum('largeVariances'), 'fa-scale-unbalanced', '');
+        }
+
+        function renderHours() {
+            const sales = salesInRange(mgrToday()).filter(s => !isVoided(s));
+            const hours = {};
+            const tpls = shiftTemplates();
+            const overnight = tpls.some(t => minutesOf(t.end) <= minutesOf(t.start));
+            const first = overnight ? 0 : Math.floor(Math.min(...tpls.map(t => minutesOf(t.start))) / 60);
+            const last = overnight ? 24 : Math.ceil(Math.max(...tpls.map(t => minutesOf(t.end) || 1440)) / 60);
+            for (let h = first; h < last; h++) hours[h] = 0;
+            sales.forEach(s => {
+                const h = new Date(s.time).getHours();
+                hours[h] = (hours[h] || 0) + saleTotals(s.items, s.discountPercent).gross;
+            });
+            const max = Math.max(1, ...Object.values(hours));
+            const nowH = new Date().getHours();
+            document.getElementById('hourBars').innerHTML = `
+                <div class="flex items-end gap-1.5 h-44">
+                    ${Object.keys(hours).map(h => `
+                        <div class="flex-1 min-w-0 h-full flex flex-col justify-end items-center gap-1">
+                            <span class="text-[10px] text-slate-500 sm-figure">${hours[h] ? Math.round(hours[h]) : ''}</span>
+                            <div class="w-full rounded-t-md ${Number(h) === nowH ? 'bg-indigo-600' : 'bg-indigo-300'}" style="height:${Math.max(hours[h] / max * 100, hours[h] ? 3 : 0)}%"></div>
+                        </div>`).join('')}
+                </div>
+                <div class="flex gap-1.5 mt-1">${Object.keys(hours).map(h => `<span class="flex-1 text-center text-[10px] text-slate-400 sm-figure">${h}</span>`).join('')}</div>
+                ${sales.length ? '' : '<p class="sm-td-sub text-slate-400 text-center mt-3">មិនទាន់មានការលក់ក្នុងថ្ងៃប្រតិបត្តិការនេះទេ</p>'}`;
+        }
+
+        function renderPaySplit() {
+            const a = aggregateSales(salesInRange(mgrToday()));
+            const total = a.usdCash + a.khrCashUSD + a.khqr;
+            const parts = [
+                { label: 'សាច់ប្រាក់ដុល្លារ', v: a.usdCash, cls: 'bg-emerald-500' },
+                { label: 'សាច់ប្រាក់រៀល', v: a.khrCashUSD, cls: 'bg-amber-400' },
+                { label: 'ស្កេនកូដបាគង', v: a.khqr, cls: 'bg-cyan-500' }
+            ];
+            document.getElementById('paySplit').innerHTML = total ? `
+                <div class="h-4 rounded-full overflow-hidden flex">${parts.map(p => `<div class="${p.cls}" style="width:${p.v / total * 100}%"></div>`).join('')}</div>
+                <div class="mt-4 space-y-2.5">${parts.map(p => `
+                    <div class="flex items-center gap-3">
+                        <span class="w-3 h-3 rounded ${p.cls} flex-shrink-0"></span>
+                        <span class="sm-td text-slate-600 flex-1">${p.label}</span>
+                        <span class="sm-value text-slate-800 sm-figure">${fmtUSD(p.v)}</span>
+                        <span class="sm-td-sub text-slate-400 sm-figure w-12 text-right">${Math.round(p.v / total * 100)}%</span>
+                    </div>`).join('')}</div>`
+                : '<p class="sm-td-sub text-slate-400 py-6 text-center">មិនទាន់មានការលក់</p>';
+        }
+
+        function renderAll() {
+            renderKpis();
+            renderRegisters();
+            renderApprovals();
+            renderExceptions();
+            renderHours();
+            renderPaySplit();
+            updatePortalBadges();
+            refreshPortalNotifications();
+        }
+
+        window.onStoreChanged = renderAll;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setPortalSubtitle(`ថ្ងៃប្រតិបត្តិការ ${fmtKhDate(businessDate() + 'T12:00')} · ${MERCHANT.branch} · ${personName(ME_MANAGER)}`);
+            renderAll();
+            setInterval(renderAll, 60000);
+        });
+    </script>
+</body>
+</html>

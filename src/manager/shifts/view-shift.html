@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - មើលវេន</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+<style>
+    @media print {
+        body * { visibility: hidden !important; }
+        #zReport, #zReport * { visibility: visible !important; }
+        #zReport { position: absolute; left: 0; top: 0; width: 100%; border: 0 !important; }
+        @page { size: A4; margin: 14mm; }
+    }
+</style>
+</head>
+<body id="managerPortal" data-role-root="../.." data-active="shifts" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="មើលវេន"
+             data-subtitle=""
+             data-back="shifts.html"></div>
+
+        <main class="flex-1 overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <div id="page" class="w-full space-y-5"></div>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        /* មើលវេន (ឯកសាររចនាលេខ 02 ផ្នែក 5.3)
+           វេនបើក = របាយការណ៍ពាក់កណ្តាលវេន (មិនរក្សាទុក) · វេនបិទ = ត្រួតពិនិត្យ និងចុះហត្ថលេខា
+           ការចុះហត្ថលេខាត្រូវបានរារាំងពេលការផ្ទេរចូលទូដែកមិនទាន់បញ្ជាក់ (ស្រាវជ្រាវ §4) */
+
+        const shiftId = new URLSearchParams(location.search).get('id');
+        let exceptionFilter = '';
+
+        function SHIFT() {
+            return findAnyShift(shiftId);
+        }
+
+        function denomTable(count, notes, fmt) {
+            if (!count) return '<p class="sm-td-sub text-slate-400 py-3">មិនមានការរាប់តាមក្រដាសប្រាក់ (ទិន្នន័យសរុប)</p>';
+            const rows = notes.filter(n => count[n]);
+            if (!rows.length) return '<p class="sm-td-sub text-slate-400 py-3">គ្មាន</p>';
+            return rows.map(n => `<div class="flex justify-between py-1 border-b border-slate-50"><span class="sm-td text-slate-600">${fmt(n)} × ${count[n]}</span><span class="sm-td sm-figure text-slate-800">${fmt(n * count[n])}</span></div>`).join('');
+        }
+
+        function shiftEvents(sh) {
+            const sales = salesOfAnyShift(sh.id);
+            const list = [];
+            sales.filter(isVoided).forEach(s => list.push({ at: s.voidedAt || s.time, type: 'លុបចោល', tone: 'rose', saleId: s.id, amount: saleTotals(s.items, s.discountPercent).gross, reason: s.voidReason, by: s.voidedBy }));
+            sales.forEach(s => (s.returns || []).forEach(r => list.push({ at: r.at, type: 'ប្រគល់វិញ', tone: 'amber', saleId: s.id, amount: r.amount, reason: r.reason, by: r.approvedBy })));
+            sales.filter(s => s.discountPercent > 0 && !isVoided(s)).forEach(s => list.push({ at: s.time, type: `បញ្ចុះ ${s.discountPercent}%`, tone: s.discountApproverId ? 'indigo' : 'slate', saleId: s.id, amount: saleTotals(s.items, s.discountPercent).discount, reason: s.discountReason, by: s.discountApproverId }));
+            mgrAllEvents().filter(e => e.shiftId === sh.id && ['line_removed', 'cart_cleared', 'hold_discarded', 'override_denied', 'recount', 'reprint', 'terminal_locked'].includes(e.type))
+                .forEach(e => list.push({ at: e.at, type: EVENT_LABEL[e.type], tone: e.type === 'override_denied' ? 'rose' : 'slate', saleId: e.saleId, amount: e.amount, reason: e.reason || e.note, by: e.approverId }));
+            return list.sort((a, b) => b.at.localeCompare(a.at));
+        }
+
+        function render() {
+            const sh = SHIFT();
+            const host = document.getElementById('page');
+            if (!sh) {
+                host.innerHTML = `<div class="bg-white rounded-2xl border border-slate-200 shadow-sm">${emptyState('fa-circle-question', 'រកមិនឃើញវេន', '', '<a href="shifts.html" class="sm-badge inline-block mt-4 px-4 py-2 rounded-xl bg-indigo-600 text-white font-semibold">ត្រឡប់ទៅបញ្ជីវេន</a>')}</div>`;
+                return;
+            }
+            const s = summaryOf(sh);
+            const v = shiftVariance(sh);
+            const live = sh.status === 'open';
+            const moves = movementsOfAnyShift(sh.id);
+            const pendingDrops = moves.filter(m => m.type === 'drop' && m.status === 'pending');
+            const self = sh.cashierId === ME_MANAGER;
+            setPortalTitle(`${sh.register} · ${sh.templateName} · ${fmtDate(sh.openedAt)}`);
+            setPortalSubtitle(`${sh.id} · ${personName(sh.cashierId)}`);
+
+            const tone = !v ? 'slate' : v.level === 'large' ? 'rose' : v.level === 'small' ? 'amber' : 'emerald';
+            const evs = shiftEvents(sh);
+            const evTypes = [...new Set(evs.map(e => e.type))];
+
+            host.innerHTML = `
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 flex flex-wrap items-center gap-4">
+                    <div class="min-w-0 flex-1">
+                        <div class="flex flex-wrap items-center gap-2">${statusChip(SHIFT_STATUS[sh.status])}
+                            ${live && new Date() > shiftEndDate(sh) ? `<span class="sm-badge px-2.5 py-0.5 rounded-full border bg-amber-50 text-amber-700 border-amber-200">ហួសម៉ោងវេន ${fmtDuration(new Date() - shiftEndDate(sh))}</span>` : ''}
+                            ${sh.firstCount ? '<span class="sm-badge px-2.5 py-0.5 rounded-full border bg-amber-50 text-amber-700 border-amber-200">បានរាប់ឡើងវិញ</span>' : ''}
+                        </div>
+                        <p class="sm-td text-slate-600 mt-2">${personChip(sh.cashierId)}</p>
+                        <p class="sm-td-sub text-slate-400 mt-1">${sh.templateName} ${sh.start}–${sh.end} · បើក ${fmtTime(sh.openedAt)}${sh.closedAt ? ` · បិទ ${fmtTime(sh.closedAt)}` : ''} · ប្រាក់បាតថតអនុម័តដោយ ${personName(sh.floatApprovedBy)}</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="window.print()" type="button" class="sm-badge h-11 px-4 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center gap-2"><i class="fas fa-print"></i> បោះពុម្ព A4</button>
+                        ${sh.status !== 'open' && !self && !mgrAllShifts().some(x => x.register === sh.register && x.status === 'open') && sh.date >= isoDate(addDays(new Date(), -1))
+                            ? '<button onclick="reopen()" type="button" class="sm-badge h-11 px-4 rounded-xl bg-white border border-amber-300 hover:bg-amber-50 text-amber-800 font-semibold inline-flex items-center gap-2"><i class="fas fa-lock-open"></i> បើកវេនឡើងវិញ</button>' : ''}
+                        ${sh.status === 'closed' && !self ? `<button onclick="countersign()" type="button" ${pendingDrops.length ? 'disabled' : ''} class="sm-badge h-11 px-4 rounded-xl font-semibold inline-flex items-center gap-2 ${pendingDrops.length ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white'}"><i class="fas fa-signature"></i> ចុះហត្ថលេខាត្រួតពិនិត្យ</button>` : ''}
+                    </div>
+                </div>
+
+                ${pendingDrops.length ? `<div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 flex flex-wrap items-center gap-3 text-amber-800">
+                    <i class="fas fa-vault"></i><p class="sm-card-sub flex-1">ការផ្ទេរចូលទូដែក ${pendingDrops.length} ដងមិនទាន់បញ្ជាក់ការទទួល · ការចុះហត្ថលេខាត្រូវបានរារាំង</p>
+                    <a href="../cash/cash.html" class="sm-badge px-4 py-2 rounded-xl bg-white border border-amber-300 font-semibold">ទៅចលនាសាច់ប្រាក់</a></div>` : ''}
+                ${self && sh.status === 'closed' ? '<div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 sm-card-sub text-amber-800">នេះជាវេនរបស់លោកអ្នកផ្ទាល់ · អ្នកគ្រប់គ្រងម្នាក់ទៀតត្រូវត្រួតពិនិត្យ និងចុះហត្ថលេខា</div>' : ''}
+
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up">
+                    ${kpiCard('លក់សុទ្ធ', fmtUSD(s.netSales), `${s.count} វិក្កយបត្រ · មធ្យម ${fmtUSD(s.avgTicket)}`, 'text-emerald-600')}
+                    ${kpiCard('សាច់ប្រាក់រំពឹងទុក', fmtUSD(s.expectedUSD), fmtKHR(s.expectedKHR))}
+                    ${kpiCard(live ? 'រាប់បាន' : 'រាប់បានជាក់ស្តែង', live ? '—' : fmtUSD(sh.countedUSD), live ? 'វេននៅបើក' : fmtKHR(sh.countedKHR))}
+                    ${kpiCard('ភាពខុសគ្នា', v ? fmtSigned(v.diff, fmtUSD) : '—', v ? `${DIRECTION_LABEL[v.direction]} · ល្បឹម ${fmtUSD(posSettings().varianceTolerance)}` : 'មិនទាន់រាប់', `text-${tone}-600`)}
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+                    <section class="xl:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 md:p-8" id="zReport">${zReportHtml(sh, s, { live })}</section>
+                    <div class="space-y-5">
+                        <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5">
+                            <h3 class="sm-card-title text-slate-700">ការរាប់តាមក្រដាសប្រាក់</h3>
+                            ${live ? '<p class="sm-td-sub text-slate-400 mt-2">អ្នកគិតលុយរាប់ពេលបិទវេន</p>' : `
+                            <p class="sm-td-sub text-slate-400 mt-3 mb-1">ដុល្លារ</p>${denomTable(sh.countUSD, USD_NOTES, n => fmtUSD(n))}
+                            <p class="sm-td-sub text-slate-400 mt-3 mb-1">រៀល</p>${denomTable(sh.countKHR, KHR_NOTES, n => fmtKHR(n))}`}
+                        </section>
+                        <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5">
+                            <h3 class="sm-card-title text-slate-700">ចលនាសាច់ប្រាក់</h3>
+                            <div class="mt-2 divide-y divide-slate-100">${moves.length ? moves.map(m => `
+                                <div class="py-2 flex items-center gap-3">
+                                    <i class="fas ${MOVEMENT_TYPE[m.type].icon} text-${MOVEMENT_TYPE[m.type].tone}-600 w-5"></i>
+                                    <div class="min-w-0 flex-1"><p class="sm-td text-slate-700">${MOVEMENT_TYPE[m.type].label}</p><p class="sm-td-sub text-slate-400">${fmtTime(m.createdAt)} · ${personName(m.createdBy)}${m.reason ? ' · ' + escapeText(m.reason) : ''}</p></div>
+                                    <div class="text-right"><p class="sm-td sm-figure text-slate-800">${fmtUSD(m.usd)}</p><p class="sm-td-sub sm-figure text-slate-400">${fmtKHR(m.khr)}</p>${m.status === 'pending' ? statusChip(MOVEMENT_STATUS.pending) : ''}</div>
+                                </div>`).join('') : '<p class="sm-td-sub text-slate-400 py-3">គ្មាន</p>'}</div>
+                        </section>
+                    </div>
+                </div>
+
+                <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                        <div><h3 class="sm-card-title text-slate-700">ករណីមិនប្រក្រតីក្នុងវេននេះ</h3><p class="sm-card-sub text-slate-500">${evs.length} ព្រឹត្តិការណ៍</p></div>
+                        <div class="flex flex-wrap gap-1.5">${['', ...evTypes].map(t => `<button onclick="exceptionFilter='${t}'; render()" type="button" class="sm-badge px-3 py-1.5 rounded-lg ${exceptionFilter === t ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">${t || 'ទាំងអស់'}</button>`).join('')}</div>
+                    </div>
+                    <div class="divide-y divide-slate-100">${evs.filter(e => !exceptionFilter || e.type === exceptionFilter).slice(0, 60).map(e => `
+                        <div class="px-5 py-3 flex flex-wrap items-center gap-3">
+                            <span class="sm-td-sub sm-figure text-slate-400 w-12">${fmtTime(e.at)}</span>
+                            <span class="sm-badge px-2.5 py-0.5 rounded-full border bg-${e.tone}-50 text-${e.tone}-700 border-${e.tone}-200">${e.type}</span>
+                            <span class="sm-td text-slate-600 flex-1 min-w-0 truncate">${e.saleId ? `<a class="text-indigo-700 hover:underline" href="../approvals/approvals.html">${e.saleId}</a> · ` : ''}${escapeText(e.reason || '')}</span>
+                            ${e.by ? `<span class="sm-td-sub text-slate-500">${personName(e.by)}</span>` : ''}
+                            <span class="sm-td sm-figure text-slate-800 w-20 text-right">${e.amount ? fmtUSD(e.amount) : ''}</span>
+                        </div>`).join('') || '<p class="px-5 py-8 text-center sm-td-sub text-slate-400">គ្មានករណីមិនប្រក្រតី</p>'}</div>
+                </section>`;
+        }
+
+        async function countersign() {
+            const sh = SHIFT();
+            const v = shiftVariance(sh);
+            let note = '';
+            if (v && v.level === 'large') {
+                note = await showReasonPrompt({
+                    title: 'កំណត់ចំណាំការត្រួតពិនិត្យ',
+                    message: `${DIRECTION_LABEL[v.direction]} ${fmtUSD(v.abs)} លើសល្បឹម · ត្រូវមានកំណត់ចំណាំមុនចុះហត្ថលេខា`,
+                    placeholder: 'ឧទាហរណ៍៖ បានពិនិត្យកាមេរ៉ា · បានជជែកជាមួយអ្នកគិតលុយ · តាមដានវេនបន្ទាប់...',
+                    confirmText: 'បន្ត'
+                });
+                if (!note) return;
+            }
+            const ok = await showPinConfirm({ title: 'ចុះហត្ថលេខាត្រួតពិនិត្យវេន', message: `${sh.id}<br>ហត្ថលេខានេះមិនអាចដកវិញបានទេ`, userId: ME_MANAGER, confirmText: 'ចុះហត្ថលេខា' });
+            if (!ok) return;
+            updateAnyShift(sh.id, { status: 'reviewed', reviewedBy: ME_MANAGER, reviewedAt: isoLocal(new Date()), reviewNote: note });
+            logPosEvent('shift_reviewed', { shiftId: sh.id, register: sh.register, cashierId: sh.cashierId, actorId: ME_MANAGER, approverId: ME_MANAGER, amount: v ? v.diff : 0, note });
+            showToast(`បានចុះហត្ថលេខាត្រួតពិនិត្យ ${sh.id}`, 'success');
+            render();
+            updatePortalBadges();
+            refreshPortalNotifications();
+        }
+
+        async function reopen() {
+            const sh = SHIFT();
+            const reason = await showReasonPrompt({
+                title: 'បើកវេនឡើងវិញ',
+                message: `${sh.id} · អ្នកគិតលុយនឹងអាចលក់បន្ត ហើយត្រូវរាប់ និងបិទវេនម្តងទៀត`,
+                placeholder: 'ឧទាហរណ៍៖ បិទវេនមុនម៉ោងដោយច្រឡំ...',
+                confirmText: 'បន្ត',
+                danger: true
+            });
+            if (!reason) return;
+            const ok = await showPinConfirm({ title: 'បញ្ជាក់ការបើកវេនឡើងវិញ', userId: ME_MANAGER, confirmText: 'បើកវេនឡើងវិញ', danger: true });
+            if (!ok) return;
+            updateAnyShift(sh.id, {
+                status: 'open', reopenedBy: ME_MANAGER, reopenedAt: isoLocal(new Date()), reopenReason: reason,
+                previousClose: { closedAt: sh.closedAt, countedUSD: sh.countedUSD, countedKHR: sh.countedKHR },
+                closedAt: null, countedUSD: null, countedKHR: null, countUSD: null, countKHR: null,
+                reviewedBy: null, reviewedAt: null, reviewNote: ''
+            });
+            logPosEvent('shift_reopened', { shiftId: sh.id, register: sh.register, cashierId: sh.cashierId, actorId: ME_MANAGER, approverId: ME_MANAGER, reason });
+            showToast(`បានបើកវេន ${sh.id} ឡើងវិញ`, 'success');
+            render();
+            updatePortalBadges();
+        }
+
+        window.onStoreChanged = render;
+        document.addEventListener('DOMContentLoaded', render);
+    </script>
+</body>
+</html>

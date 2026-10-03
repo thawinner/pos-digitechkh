@@ -31,13 +31,38 @@ const PORTAL_CONFIGS = {
         roleIcon: 'mdi:cash-register',
         userInitials: 'ចម',
         userName: 'ចន្ទ មករា',
-        userRole: 'អ្នកគិតលុយលក់រាយ (POS)',
-        policyNote: 'ជាប់សោរត្រឹមវេនថ្ងៃនេះ។ មិនអាចរុករកប្រតិបត្តិការ ឬចំណូលពីវេនមុនបានឡើយ។',
+        userRole: 'អ្នកគិតលុយលក់រាយ',
+        policyNote: 'ជាប់សោរត្រឹមវេនបច្ចុប្បន្ន។ មិនអាចរុករកប្រតិបត្តិការ ឬចំណូលពីវេនមុនបានឡើយ។ ការលុបចោល ការប្រគល់ទំនិញវិញ និងការបញ្ចុះតម្លៃលើសកំណត់ ត្រូវការការអនុម័តពីអ្នកគ្រប់គ្រងវេន។',
         nav: [
             { id: 'pos', label: 'ផ្ទាំងគិតលុយ', icon: 'mdi:point-of-sale', href: 'cashier/terminal/pos-terminal.html' },
             { id: 'receipts', label: 'វិក្កយបត្រក្នុងវេន', icon: 'mdi:receipt-text-outline', href: 'cashier/receipts/receipts.html', badge: true },
             { id: 'close-shift', label: 'បិទវេន និងរាប់សាច់ប្រាក់', icon: 'mdi:lock-outline', href: 'cashier/shift/close-shift.html' }
-        ]
+        ],
+        /* គំរូសាកល្បង៖ ប្តូរតួនាទីដោយមិនចាំបាច់ចាកចេញ */
+        switchRole: { label: 'ប្តូរទៅអ្នកគ្រប់គ្រងវេន', icon: 'mdi:shield-account-outline', href: 'manager/dashboard/dashboard.html' }
+    },
+    /* អ្នកគ្រប់គ្រងវេន (ឯកសាររចនាលេខ 02 ផ្នែក 4)
+       badgeFn = ឈ្មោះអនុគមន៍ក្នុង manager-data.js ដែលត្រឡប់ចំនួនសម្រាប់ផ្លាកលេខ */
+    managerPortal: {
+        sidebarV2: true,
+        title: 'អ្នកគ្រប់គ្រងវេន',
+        roleName: 'អ្នកគ្រប់គ្រងវេន',
+        roleIcon: 'mdi:shield-account-outline',
+        userInitials: 'សវ',
+        userName: 'សុខ វណ្ណា',
+        userRole: 'អ្នកគ្រប់គ្រងវេន · សាខាកណ្តាល',
+        policyNote: 'មើលឃើញគ្រប់វេនក្នុងសាខា · មិនមើលឃើញថ្លៃដើម · មិនអាចអនុម័តសំណើរបស់ខ្លួនឯង · រាល់ការអនុម័តត្រូវបានកត់ត្រា ហើយមិនអាចត្រឡប់វិញបាន។',
+        nav: [
+            { id: 'dashboard', label: 'ផ្ទាំងគ្រប់គ្រង', icon: 'mdi:view-dashboard-outline', href: 'manager/dashboard/dashboard.html' },
+            { id: 'approvals', label: 'សំណើរង់ចាំអនុម័ត', icon: 'mdi:shield-check-outline', href: 'manager/approvals/approvals.html', badgeFn: 'mgrPendingApprovalCount', badgeTone: 'amber' },
+            { id: 'shifts', label: 'វេន និងបញ្ជរគិតលុយ', icon: 'mdi:cash-register', href: 'manager/shifts/shifts.html', badgeFn: 'mgrAwaitingReviewCount', badgeTone: 'amber' },
+            { id: 'roster', label: 'កាលវិភាគវេន', icon: 'mdi:calendar-account-outline', href: 'manager/roster/roster.html' },
+            { id: 'cash', label: 'ចលនាសាច់ប្រាក់', icon: 'mdi:safe', href: 'manager/cash/cash.html', badgeFn: 'mgrPendingDropCount', badgeTone: 'amber' },
+            { id: 'exceptions', label: 'ករណីមិនប្រក្រតី', icon: 'mdi:alert-octagon-outline', href: 'manager/exceptions/exceptions.html' },
+            { id: 'reports', label: 'របាយការណ៍លក់', icon: 'mdi:chart-box-outline', href: 'manager/reports/sales-report.html' },
+            { id: 'settings', label: 'ការកំណត់', icon: 'mdi:cog-outline', href: 'manager/settings/settings.html' }
+        ],
+        switchRole: { label: 'ប្តូរទៅផ្ទាំងគិតលុយ', icon: 'mdi:point-of-sale', href: 'cashier/terminal/pos-terminal.html' }
     }
 };
 
@@ -93,6 +118,26 @@ function togglePolicyNote() {
     if (icon) icon.setAttribute('icon', hidden ? 'mdi:chevron-down' : 'mdi:chevron-up');
 }
 
+/* អ្នកដែលបានចូលប្រើ (data.js) ជំនួសឈ្មោះថេរក្នុងការកំណត់ច្រក
+   ប៊ូតុងប្តូរតួនាទីបង្ហាញលើផ្ទាំងគិតលុយ តែពេលអ្នកចូលប្រើជាអ្នកគ្រប់គ្រងវេនប៉ុណ្ណោះ */
+function sessionPortalConfig(cfg, portalId) {
+    if (typeof posSession !== 'function') return cfg;
+    const session = posSession();
+    const person = session && personById(session.userId);
+    if (!person) return cfg;
+    const manager = isManagerId(person.id);
+    const out = Object.assign({}, cfg, {
+        userId: person.id,
+        userInitials: person.initials,
+        userName: person.name,
+        userRole: manager
+            ? (portalId === 'posPortal' ? `អ្នកគ្រប់គ្រងវេន · លក់លើ ${MY_REGISTER}` : 'អ្នកគ្រប់គ្រងវេន · សាខាកណ្តាល')
+            : `អ្នកគិតលុយលក់រាយ · ${MY_REGISTER}`
+    });
+    if (portalId === 'posPortal' && !manager) out.switchRole = null;
+    return out;
+}
+
 function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
     const collapsed = sidebarCollapsed();
 
@@ -105,6 +150,10 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
         }
         if (item.alertBadge) {
             badgeHtml += '<span id="navAlertBadge" class="sb-badge sm-badge bg-amber-500 text-white px-2 py-0.5 rounded-full flex-shrink-0 hidden">0</span>';
+        }
+        if (item.badgeFn) {
+            const tone = item.badgeTone === 'amber' ? 'bg-amber-500' : 'bg-rose-500';
+            badgeHtml += `<span data-badge-fn="${item.badgeFn}" class="sb-badge sm-badge ${tone} text-white px-2 py-0.5 rounded-full flex-shrink-0 hidden">0</span>`;
         }
         if (badgeHtml) badgeHtml = `<span class="flex items-center gap-1 flex-shrink-0">${badgeHtml}</span>`;
         return `
@@ -160,9 +209,9 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
 
             <div class="border-t border-white/10 bg-black/20 p-3 space-y-2">
                 <div class="sb-user relative flex items-center gap-3 px-2 py-1.5 rounded-xl">
-                    <div class="w-9 h-9 rounded-full sb-avatar border flex items-center justify-center font-semibold text-xs flex-shrink-0">
-                        ${cfg.userInitials}
-                    </div>
+                    ${cfg.userId && typeof avatarHtml === 'function'
+                        ? avatarHtml(cfg.userId, 'w-9 h-9 ring-2 ring-white/20')
+                        : `<div class="w-9 h-9 rounded-full sb-avatar border flex items-center justify-center font-semibold text-xs flex-shrink-0">${cfg.userInitials}</div>`}
                     <div class="min-w-0 sb-expand-only">
                         <p class="sm-value text-white truncate">${cfg.userName}</p>
                         <p class="sm-nav-note sb-accent truncate">${cfg.userRole}</p>
@@ -170,6 +219,12 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
                     <span class="sb-tip">${cfg.userName} · ${cfg.userRole}</span>
                 </div>
 
+                ${cfg.switchRole ? `<a href="${roleRoot}/${cfg.switchRole.href}" aria-label="${cfg.switchRole.label}"
+                    class="sb-nav-item relative w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/15 sb-text hover:text-white font-semibold transition border border-white/10">
+                    ${getIconHtml(cfg.switchRole.icon)}
+                    <span class="sm-nav-label sb-expand-only">${cfg.switchRole.label}</span>
+                    <span class="sb-tip">${cfg.switchRole.label}</span>
+                </a>` : ''}
                 <button onclick="handleLogout()" type="button" aria-label="ចាកចេញពីប្រព័ន្ធ"
                     class="sb-nav-item relative w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-white/10 hover:bg-rose-600 sb-text hover:text-white font-semibold transition border border-white/10 shadow-sm cursor-pointer group">
                     <iconify-icon icon="mdi:logout" class="text-lg text-rose-300 group-hover:text-white transition-colors"></iconify-icon>
@@ -389,7 +444,7 @@ function renderPortalSidebar() {
     const sharedRoot = `${roleRoot}/shared`;
 
     if (cfg.sidebarV2) {
-        renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot);
+        renderPortalSidebarV2(host, sessionPortalConfig(cfg, portalId), roleRoot, activeId, sharedRoot);
         return;
     }
 
@@ -462,6 +517,7 @@ function handleLogout() {
         cancelText: 'បោះបង់',
         danger: true,
         onConfirm: () => {
+            if (typeof posLogout === 'function') posLogout();
             showToast('កំពុងចាកចេញពីប្រព័ន្ធ...', 'info');
             const roleRoot = getRoleRoot();
             setTimeout(() => {
@@ -841,6 +897,12 @@ function updatePortalBadges() {
     };
     if (typeof totalPending === 'function') paint('navQueueBadge', totalPending());
     if (typeof totalAlerts === 'function') paint('navAlertBadge', totalAlerts());
+    document.querySelectorAll('[data-badge-fn]').forEach(el => {
+        const fn = window[el.dataset.badgeFn];
+        const value = typeof fn === 'function' ? fn() : 0;
+        el.textContent = value;
+        el.classList.toggle('hidden', !value);
+    });
 }
 
 /* ពេលឃ្លាំងទិន្នន័យផ្លាស់ប្តូរ (ក្នុងផ្ទាំងនេះ ឬផ្ទាំងរុករកផ្សេង) ធ្វើបច្ចុប្បន្នភាពផ្លាកលេខ ជូនដំណឹង

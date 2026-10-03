@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -23,7 +24,6 @@
     <link rel="stylesheet" href="../../shared/styles/custom.css">
     <link rel="stylesheet" href="../../shared/styles/portal.css">
     <style>
-        /* បោះពុម្ពតែវិក្កយបត្រ 80mm ប៉ុណ្ណោះ */
         @media print {
             body * { visibility: hidden !important; }
             #printArea, #printArea * { visibility: visible !important; }
@@ -38,12 +38,11 @@
 
     <div class="flex-1 flex flex-col h-full overflow-hidden">
         <div id="headerHost" data-title="វិក្កយបត្រក្នុងវេនបច្ចុប្បន្ន"
-                 data-subtitle="ប្រតិបត្តិការទាំងអស់ក្នុងវេនបច្ចុប្បន្ន"></div>
+             data-subtitle="ប្រតិបត្តិការទាំងអស់ក្នុងវេនបច្ចុប្បន្ន"></div>
 
         <main class="flex-1 overflow-x-hidden overflow-y-auto px-4 md:px-6 py-4">
             <div class="w-full space-y-4">
 
-                <!-- ការជូនដំណឹងអំពីការជាប់សោរវេន -->
                 <div class="bg-teal-50 border border-teal-200 rounded-2xl p-4 flex items-start gap-3">
                     <div class="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center text-lg flex-shrink-0">
                         <i class="fas fa-lock"></i>
@@ -70,7 +69,8 @@
                 </div>
 
                 <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-                    <div class="overflow-x-auto">
+                    <!-- តារាងសម្រាប់អេក្រង់ធំ -->
+                    <div class="hidden sm:!block">
                         <table class="w-full text-left">
                             <thead class="bg-slate-50 text-slate-500 border-b border-slate-100">
                                 <tr>
@@ -85,12 +85,15 @@
                             <tbody id="receiptBody" class="divide-y divide-slate-100 text-slate-700"></tbody>
                         </table>
                     </div>
+                    <!-- កាតសម្រាប់ទូរស័ព្ទ (ផែនការកែលម្អ C14) -->
+                    <div id="receiptCards" class="sm:hidden divide-y divide-slate-100"></div>
                     <div id="receiptEmpty" class="hidden py-14 px-6 text-center">
                         <div class="w-14 h-14 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
                             <i class="fas fa-receipt text-2xl"></i>
                         </div>
                         <h3 class="sm-card-title text-slate-700">គ្មានវិក្កយបត្រក្នុងលក្ខខណ្ឌនេះទេ</h3>
                         <p class="sm-card-sub text-slate-500 mt-1">សូមប្តូរតម្រងរបៀបទូទាត់ ឬពាក្យស្វែងរក។</p>
+                        <button onclick="clearFilters()" type="button" class="sm-badge mt-4 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold">ជម្រះតម្រង</button>
                     </div>
                 </div>
 
@@ -98,7 +101,37 @@
         </main>
     </div>
 
-    <!-- តំបន់បោះពុម្ពវិក្កយបត្រ 80mm -->
+    <!-- ===== ផ្ទាំងជ្រើសរើសទំនិញដែលប្រគល់វិញ ===== -->
+    <div id="returnModal" class="hidden fixed inset-0 z-[9990] bg-slate-900/60 backdrop-blur-sm items-center justify-center p-4 overflow-y-auto">
+        <div class="w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-100 p-5 sm:p-6 my-auto" onclick="event.stopPropagation()">
+            <div class="flex items-start gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl flex-shrink-0"><i class="fas fa-rotate-left"></i></div>
+                <div class="min-w-0">
+                    <p class="sm-card-title text-slate-900">ស្នើប្រគល់ទំនិញវិញ</p>
+                    <p id="returnSub" class="sm-td-sub text-slate-500 mt-0.5"></p>
+                </div>
+            </div>
+            <div id="returnLines" class="mt-4 divide-y divide-slate-100 border border-slate-200 rounded-2xl"></div>
+            <div class="mt-4">
+                <p class="sm-td-sub text-slate-500 mb-1.5">សងប្រាក់តាម</p>
+                <div id="returnMethods" class="flex flex-wrap gap-2"></div>
+            </div>
+            <div class="mt-4">
+                <p class="sm-td-sub text-slate-500 mb-1.5">មូលហេតុ</p>
+                <div id="returnReasons" class="flex flex-wrap gap-2"></div>
+            </div>
+            <div class="mt-4 p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                <span class="sm-value text-slate-600">ទឹកប្រាក់សងវិញ</span>
+                <span id="returnAmount" class="sm-kpi-value text-amber-700 sm-figure"></span>
+            </div>
+            <p id="returnErr" class="hidden sm-td-sub text-rose-600 mt-2"></p>
+            <div class="grid grid-cols-2 gap-2.5 mt-5">
+                <button onclick="closeReturn()" type="button" class="sm-value h-12 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold">បោះបង់</button>
+                <button onclick="submitReturn()" type="button" class="sm-value h-12 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-semibold">បន្ត</button>
+            </div>
+        </div>
+    </div>
+
     <div id="printArea" class="hidden"></div>
 
     <script src="../../shared/scripts/ui-components.js"></script>
@@ -107,41 +140,55 @@
     <script>
         let filterMethod = 'all';
         let expanded = {};
+        let returnDraft = null;
 
         const METHOD_TABS = [
             { id: 'all', label: 'ទាំងអស់' },
             { id: 'usdCash', label: 'សាច់ប្រាក់ដុល្លារ' },
             { id: 'khrCash', label: 'សាច់ប្រាក់រៀល' },
             { id: 'khqr', label: 'ស្កេនកូដបាគង' },
-            { id: 'split', label: 'បែងចែក' }
+            { id: 'split', label: 'បែងចែក' },
+            { id: 'voided', label: 'បានលុបចោល' }
         ];
 
-        function methodOf(sale) {
-            const used = ['usdCash', 'khrCash', 'khqr'].filter(k => sale.pay[k] > 0);
-            if (used.length > 1) return 'split';
-            return used[0] || 'usdCash';
+        function matchesTab(s) {
+            if (filterMethod === 'all') return true;
+            if (filterMethod === 'voided') return isVoided(s);
+            return !isVoided(s) && methodOf(s) === filterMethod;
         }
 
+        /* តួលេខជាចំនួនប៉ុណ្ណោះ — គ្មានទឹកប្រាក់សរុបទេ ព្រោះសរុប − បាគង = សាច់ប្រាក់ក្នុងថត
+           ហើយការរាប់បិទវេនត្រូវតែបិទភ្នែក (ផែនការកែលម្អ C1) */
         function renderSummary() {
-            const s = shiftSummary();
+            const sales = shiftSales();
+            const live = sales.filter(s => !isVoided(s));
+            const qty = live.reduce((n, s) => n + saleTotals(s.items, s.discountPercent).qty, 0);
+            const khqr = live.filter(s => s.pay.khqr > 0.005).length;
+            const sh = cashierShift();
+            const pending = sh ? liveApprovals().filter(a => a.shiftId === sh.id && a.status === 'pending').length : 0;
+            const voided = sales.length - live.length;
+            const returned = live.filter(s => (s.returns || []).length).length;
             const card = (label, value, tone, sub) => `
                 <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm min-w-0">
                     <span class="sm-kpi-label text-slate-500">${label}</span>
                     <h3 class="sm-kpi-value ${tone} mt-1">${value}</h3>
                     <p class="sm-kpi-sub text-slate-500 mt-1">${sub}</p>
                 </div>`;
-
             document.getElementById('summaryRow').innerHTML =
-                card('វិក្កយបត្រក្នុងវេន', s.count, 'text-slate-700', `${s.qty} ឯកតាទំនិញ`) +
-                card('លក់បានសរុប', fmtUSD(s.gross), 'text-emerald-600', fmtKHR(toKHR(s.gross))) +
-                card('ជាមធ្យមក្នុងមួយវិក្កយបត្រ', fmtUSD(s.avgTicket), 'text-slate-700', 'តម្លៃកន្ត្រកជាមធ្យម') +
-                card('ទទួលតាមបាគង', fmtUSD(s.khqr), 'text-cyan-600', 'ទូទាត់តាមកូដស្កេន');
+                card('វិក្កយបត្រក្នុងវេន', live.length, 'text-slate-700', `${qty} ឯកតាទំនិញ`) +
+                card('ទូទាត់តាមបាគង', khqr, 'text-cyan-600', 'វិក្កយបត្រ') +
+                card('លុបចោល · ប្រគល់វិញ', `${voided} · ${returned}`, voided + returned ? 'text-rose-600' : 'text-slate-700', 'ត្រូវបានអនុម័តដោយអ្នកគ្រប់គ្រង') +
+                card('សំណើរង់ចាំអនុម័ត', pending, pending ? 'text-amber-600' : 'text-slate-700', pending ? 'រង់ចាំអ្នកគ្រប់គ្រងវេន' : 'គ្មានសំណើរង់ចាំ');
         }
 
         function renderTabs() {
             const sales = shiftSales();
             document.getElementById('methodTabs').innerHTML = METHOD_TABS.map(t => {
-                const count = t.id === 'all' ? sales.length : sales.filter(s => methodOf(s) === t.id).length;
+                const count = sales.filter(s => {
+                    if (t.id === 'all') return true;
+                    if (t.id === 'voided') return isVoided(s);
+                    return !isVoided(s) && methodOf(s) === t.id;
+                }).length;
                 const active = filterMethod === t.id;
                 return `<button onclick="pickMethod('${t.id}')" class="sm-badge px-4 py-2 rounded-xl transition ${active
                     ? 'bg-teal-600 text-white font-semibold shadow-sm'
@@ -156,103 +203,167 @@
             renderReceipts();
         }
 
+        function clearFilters() {
+            filterMethod = 'all';
+            document.getElementById('searchInput').value = '';
+            renderTabs();
+            renderReceipts();
+        }
+
         function toggleDetail(id) {
             closeAllFloatingDropdowns();
             expanded[id] = !expanded[id];
             renderReceipts();
         }
 
+        /* សំណើអាចធ្វើបានតែលើវិក្កយបត្រក្នុងវេនដែលកំពុងបើកប៉ុណ្ណោះ */
+        function canRequest(s) {
+            const sh = currentShift();
+            return sh && s.shiftId === sh.id && !isVoided(s) && !pendingRequestFor(s.id);
+        }
+
+        function returnableLines(s) {
+            return s.items.map(l => ({ sku: l.sku, max: l.qty - returnedQty(s, l.sku) })).filter(l => l.max > 0);
+        }
+
+        function statusBadge(s) {
+            if (isVoided(s)) return `<span class="sm-badge px-2 py-0.5 rounded-full border bg-rose-50 text-rose-700 border-rose-200">បានលុបចោល</span>`;
+            const req = pendingRequestFor(s.id);
+            if (req) return `<span class="sm-badge px-2 py-0.5 rounded-full border bg-amber-50 text-amber-700 border-amber-200"><i class="fas fa-hourglass-half text-[10px] mr-1"></i>រង់ចាំអនុម័ត${req.type === 'return' ? 'ប្រគល់វិញ' : 'លុបចោល'}</span>`;
+            if ((s.returns || []).length) return `<span class="sm-badge px-2 py-0.5 rounded-full border bg-amber-50 text-amber-700 border-amber-200">ប្រគល់វិញ − ${fmtUSD(returnedAmount(s))}</span>`;
+            return '';
+        }
+
+        function methodBadge(s) {
+            const m = methodOf(s);
+            return `<span class="sm-badge px-2 py-0.5 rounded-full border ${m === 'khqr'
+                ? 'bg-cyan-50 text-cyan-700 border-cyan-200'
+                : m === 'split' ? 'bg-purple-50 text-purple-700 border-purple-200'
+                : 'bg-emerald-50 text-emerald-700 border-emerald-200'}">${payMethodLabel(s.pay)}</span>`;
+        }
+
+        function menuHtml(s, menuId) {
+            const isOpen = expanded[s.id];
+            const item = (onclick, icon, tone, label) => `
+                <button onclick="${onclick}" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition text-left">
+                    <span class="w-7 h-7 rounded-lg ${tone} flex items-center justify-center flex-shrink-0"><i class="fas ${icon} text-[11px]"></i></span>${label}
+                </button>`;
+            const can = canRequest(s);
+            return `
+                <div id="${menuId}" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 text-left">
+                    <div class="px-3 py-2 mb-1 rounded-xl bg-slate-50 border border-slate-100">
+                        <p class="sm-td-sub text-slate-400">សកម្មភាពលើវិក្កយបត្រ</p>
+                        <p class="sm-value text-slate-700">${s.id}</p>
+                    </div>
+                    ${item(`toggleDetail('${s.id}')`, isOpen ? 'fa-eye-slash' : 'fa-eye', 'bg-slate-100 text-slate-600', isOpen ? 'បិទព័ត៌មានលម្អិត' : 'មើលមុខទំនិញលម្អិត')}
+                    ${item(`reprint('${s.id}')`, 'fa-print', 'bg-blue-100 text-blue-700', 'បោះពុម្ពវិក្កយបត្រឡើងវិញ')}
+                    ${can && returnableLines(s).length ? item(`openReturn('${s.id}')`, 'fa-rotate-left', 'bg-amber-100 text-amber-700', 'ស្នើប្រគល់ទំនិញវិញ') : ''}
+                    ${can && !(s.returns || []).length ? item(`requestVoid('${s.id}')`, 'fa-ban', 'bg-rose-100 text-rose-700', 'ស្នើលុបចោលវិក្កយបត្រ') : ''}
+                </div>`;
+        }
+
+        function detailHtml(s) {
+            const t = saleTotals(s.items, s.discountPercent);
+            const req = liveApprovals().filter(a => a.saleId === s.id);
+            return `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <p class="sm-label text-slate-500">មុខទំនិញ</p>
+                        ${s.items.map(l => {
+                            const p = getProduct(l.sku);
+                            const back = returnedQty(s, l.sku);
+                            return `<div class="flex items-center justify-between gap-3">
+                                <span class="sm-td text-slate-700">${p.name} <span class="sm-td-sub text-slate-400">× ${l.qty}${back ? ` · ប្រគល់វិញ ${back}` : ''}</span></span>
+                                <span class="sm-value text-slate-700">${fmtUSD(lineTotal(l))}</span>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                    <div class="space-y-1.5">
+                        <p class="sm-label text-slate-500">ការទូទាត់</p>
+                        ${s.pay.usdCash > 0 ? `<div class="flex justify-between"><span class="sm-td text-slate-600">សាច់ប្រាក់ដុល្លារ</span><span class="sm-value text-slate-700">${fmtUSD(s.pay.usdCash)}</span></div>` : ''}
+                        ${s.pay.khrCash > 0 ? `<div class="flex justify-between"><span class="sm-td text-slate-600">សាច់ប្រាក់រៀល</span><span class="sm-value text-slate-700">${fmtKHR(s.pay.khrCash)}</span></div>` : ''}
+                        ${s.pay.khqr > 0 ? `<div class="flex justify-between"><span class="sm-td text-slate-600">ស្កេនកូដបាគង</span><span class="sm-value text-slate-700">${fmtUSD(s.pay.khqr)}</span></div>` : ''}
+                        <div class="flex justify-between"><span class="sm-td text-slate-600">ប្រាក់អាប់</span><span class="sm-value text-slate-700">${fmtChange(saleChange(s))}</span></div>
+                        ${t.discount > 0.005 ? `<div class="flex justify-between"><span class="sm-td text-slate-600">ការបញ្ចុះតម្លៃ ${t.discountPercent}%</span><span class="sm-value text-amber-700">− ${fmtUSD(t.discount)}</span></div>
+                            <p class="sm-td-sub text-slate-400">${escapeText(s.discountReason || '')}${s.discountApproverId ? ` · អនុម័តដោយ ${personName(s.discountApproverId)}` : ''}</p>` : ''}
+                        <div class="flex justify-between pt-1.5 border-t border-slate-200">
+                            <span class="sm-td text-slate-600">តម្លៃមុនអាករ</span><span class="sm-value text-slate-700">${fmtUSD(t.net)}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="sm-td text-slate-600">អាករលើតម្លៃបន្ថែម 10%</span><span class="sm-value text-slate-700">${fmtUSD(t.vat)}</span>
+                        </div>
+                        ${req.map(a => `<p class="sm-td-sub ${a.status === 'rejected' ? 'text-rose-600' : a.status === 'approved' ? 'text-emerald-700' : 'text-amber-700'}">
+                            ${APPROVAL_TYPE[a.type].label} · ${APPROVAL_STATUS[a.status].label}${a.decidedBy ? ` ដោយ ${personName(a.decidedBy)}` : ''}${a.decisionNote ? ` · ${escapeText(a.decisionNote)}` : ''}</p>`).join('')}
+                    </div>
+                </div>`;
+        }
+
         function renderReceipts() {
             const q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
             const rows = shiftSales()
-                .filter(s => filterMethod === 'all' || methodOf(s) === filterMethod)
+                .filter(matchesTab)
                 .filter(s => !q || s.id.toLowerCase().includes(q)
                     || s.items.some(l => (getProduct(l.sku) || {}).name.toLowerCase().includes(q)));
 
             const body = document.getElementById('receiptBody');
+            const cards = document.getElementById('receiptCards');
             const empty = document.getElementById('receiptEmpty');
             if (!rows.length) {
                 body.innerHTML = '';
-                body.parentElement.classList.add('hidden');
+                cards.innerHTML = '';
                 empty.classList.remove('hidden');
                 return;
             }
-            body.parentElement.classList.remove('hidden');
             empty.classList.add('hidden');
 
             body.innerHTML = rows.map(s => {
                 const t = saleTotals(s.items, s.discountPercent);
                 const menuId = 'rcpMenu-' + s.id;
-                const isOpen = expanded[s.id];
-
-                const detail = isOpen ? `
-                    <tr class="bg-slate-50/70">
-                        <td colspan="6" class="px-4 py-3">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="space-y-1.5">
-                                    <p class="sm-label text-slate-500">មុខទំនិញ</p>
-                                    ${s.items.map(l => {
-                                        const p = getProduct(l.sku);
-                                        return `<div class="flex items-center justify-between gap-3">
-                                            <span class="sm-td text-slate-700">${p.name} <span class="sm-td-sub text-slate-400">× ${l.qty}</span></span>
-                                            <span class="sm-value text-slate-700">${fmtUSD(lineTotal(l))}</span>
-                                        </div>`;
-                                    }).join('')}
-                                </div>
-                                <div class="space-y-1.5">
-                                    <p class="sm-label text-slate-500">ការទូទាត់</p>
-                                    ${s.pay.usdCash > 0 ? `<div class="flex justify-between"><span class="sm-td text-slate-600">សាច់ប្រាក់ដុល្លារ</span><span class="sm-value text-slate-700">${fmtUSD(s.pay.usdCash)}</span></div>` : ''}
-                                    ${s.pay.khrCash > 0 ? `<div class="flex justify-between"><span class="sm-td text-slate-600">សាច់ប្រាក់រៀល</span><span class="sm-value text-slate-700">${fmtKHR(s.pay.khrCash)}</span></div>` : ''}
-                                    ${s.pay.khqr > 0 ? `<div class="flex justify-between"><span class="sm-td text-slate-600">ស្កេនកូដបាគង</span><span class="sm-value text-slate-700">${fmtUSD(s.pay.khqr)}</span></div>` : ''}
-                                    <div class="flex justify-between pt-1.5 border-t border-slate-200">
-                                        <span class="sm-td text-slate-600">តម្លៃមុនអាករ</span><span class="sm-value text-slate-700">${fmtUSD(t.net)}</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="sm-td text-slate-600">អាករលើតម្លៃបន្ថែម 10%</span><span class="sm-value text-slate-700">${fmtUSD(t.vat)}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>` : '';
-
+                const v = isVoided(s);
                 return `
-                    <tr class="hover:bg-slate-50 transition">
+                    <tr class="hover:bg-slate-50 transition ${v ? 'opacity-70' : ''}">
                         <td class="sm-td-strong py-3.5 px-4">${fmtTime(s.time)}</td>
                         <td class="sm-td py-3.5 px-4">${s.id}</td>
                         <td class="py-3.5 px-4">
                             <p class="sm-td text-slate-700">${s.items.length} មុខ</p>
                             <p class="sm-td-sub text-slate-400">${t.qty} ឯកតា</p>
                         </td>
-                        <td class="py-3.5 px-4">
-                            <span class="sm-badge px-2 py-0.5 rounded-full border ${methodOf(s) === 'khqr'
-                                ? 'bg-cyan-50 text-cyan-700 border-cyan-200'
-                                : methodOf(s) === 'split'
-                                    ? 'bg-purple-50 text-purple-700 border-purple-200'
-                                    : 'bg-emerald-50 text-emerald-700 border-emerald-200'}">${payMethodLabel(s.pay)}</span>
-                        </td>
-                        <td class="sm-td-strong py-3.5 px-4 text-right">${fmtUSD(t.gross)}</td>
+                        <td class="py-3.5 px-4"><div class="flex flex-wrap gap-1.5">${methodBadge(s)}${statusBadge(s)}</div></td>
+                        <td class="sm-td-strong py-3.5 px-4 text-right ${v ? 'line-through text-slate-400' : ''}">${fmtUSD(t.gross)}</td>
                         <td class="py-3.5 px-4 text-right">
                             <button onclick="toggleRowActionMenu(event, '${menuId}')" type="button" aria-label="សកម្មភាព"
                                 class="w-12 h-12 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 border border-slate-200/70 inline-flex items-center justify-center transition">
                                 <i class="fas fa-ellipsis-vertical text-sm"></i>
                             </button>
-                            <div id="${menuId}" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 text-left">
-                                <div class="px-3 py-2 mb-1 rounded-xl bg-slate-50 border border-slate-100">
-                                    <p class="sm-td-sub text-slate-400">សកម្មភាពលើវិក្កយបត្រ</p>
-                                    <p class="sm-value text-slate-700">${s.id}</p>
-                                </div>
-                                <button onclick="toggleDetail('${s.id}')" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition text-left">
-                                    <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0"><i class="fas fa-${isOpen ? 'eye-slash' : 'eye'} text-[11px]"></i></span>
-                                    ${isOpen ? 'បិទព័ត៌មានលម្អិត' : 'មើលមុខទំនិញលម្អិត'}
-                                </button>
-                                <button onclick="reprint('${s.id}')" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition text-left">
-                                    <span class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0"><i class="fas fa-print text-[11px]"></i></span>
-                                    បោះពុម្ពវិក្កយបត្រឡើងវិញ
-                                </button>
-                            </div>
+                            ${menuHtml(s, menuId)}
                         </td>
                     </tr>
-                    ${detail}`;
+                    ${expanded[s.id] ? `<tr class="bg-slate-50/70"><td colspan="6" class="px-4 py-3">${detailHtml(s)}</td></tr>` : ''}`;
+            }).join('');
+
+            cards.innerHTML = rows.map(s => {
+                const t = saleTotals(s.items, s.discountPercent);
+                const menuId = 'rcpCardMenu-' + s.id;
+                const v = isVoided(s);
+                return `
+                    <div class="p-4 ${v ? 'opacity-70' : ''}">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                                <p class="sm-value text-slate-800">${fmtTime(s.time)} · <span class="sm-td">${s.id}</span></p>
+                                <p class="sm-td-sub text-slate-400 mt-0.5">${s.items.length} មុខ · ${t.qty} ឯកតា</p>
+                            </div>
+                            <div class="flex items-center gap-2 flex-shrink-0">
+                                <span class="sm-value ${v ? 'line-through text-slate-400' : 'text-slate-800'}">${fmtUSD(t.gross)}</span>
+                                <button onclick="toggleRowActionMenu(event, '${menuId}')" type="button" aria-label="សកម្មភាព"
+                                    class="w-11 h-11 rounded-xl bg-slate-50 border border-slate-200/70 text-slate-500 inline-flex items-center justify-center">
+                                    <i class="fas fa-ellipsis-vertical text-sm"></i>
+                                </button>
+                                ${menuHtml(s, menuId)}
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 mt-2">${methodBadge(s)}${statusBadge(s)}</div>
+                        ${expanded[s.id] ? `<div class="mt-3 p-3 rounded-xl bg-slate-50">${detailHtml(s)}</div>` : ''}
+                    </div>`;
             }).join('');
         }
 
@@ -260,21 +371,185 @@
             closeAllFloatingDropdowns();
             const sale = shiftSales().find(s => s.id === id);
             if (!sale) return showToast(`រកមិនឃើញវិក្កយបត្រ ${id}`, 'error');
-
             document.getElementById('printArea').innerHTML = receiptHtml(sale, { reprint: true });
+            logPosEvent('reprint', { saleId: id, shiftId: sale.shiftId });
             showToast(`កំពុងបញ្ជូនវិក្កយបត្រ ${id} ទៅម៉ាស៊ីនបោះពុម្ពកម្តៅ 80mm`, 'info');
             setTimeout(() => window.print(), 400);
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            setPortalSubtitle(`វេន ${SHIFT.id} · ${SHIFT.terminal} · ${SHIFT.cashier}`);
-            document.getElementById('lockNote').textContent = isShiftOpen()
-                ? `បង្ហាញតែប្រតិបត្តិការចាប់ពីម៉ោង ${fmtTime(SHIFT.openedAt)} ថ្ងៃទី ${fmtKhDate(SHIFT.openedAt)} មកប៉ុណ្ណោះ។ ប្រតិបត្តិការពីវេនមុន និងចំណូលប្រចាំខែ មិនអាចចូលមើលបានឡើយ។`
-                : `វេននេះត្រូវបានបិទម៉ោង ${fmtTime(shiftState().closedAt)} រួចហើយ។ ទិន្នន័យនៅអាចមើល និងបោះពុម្ពឡើងវិញបាន ប៉ុន្តែមិនអាចលក់បន្ថែមបានទេ។`;
+        /* ===== សំណើលុបចោល និងប្រគល់ទំនិញវិញ (ផែនការកែលម្អ C5) =====
+           ផ្លូវពីរ៖ អ្នកគ្រប់គ្រងនៅទីនេះ → វាយលេខសម្ងាត់លើអេក្រង់នេះ (អនុវត្តភ្លាម)
+                   អ្នកគ្រប់គ្រងមិននៅ → ផ្ញើទៅបញ្ជីសំណើ ហើយរង់ចាំ */
 
+        async function chooseMode() {
+            return showOptionDialog({
+                title: 'អ្នកគ្រប់គ្រងវេននៅទីនេះទេ?',
+                message: 'អ្នកគិតលុយមិនអាចលុបចោល ឬសងប្រាក់ដោយខ្លួនឯងបានទេ',
+                options: [
+                    { value: 'onsite', icon: 'fa-user-shield', label: 'អ្នកគ្រប់គ្រងនៅទីនេះ', desc: 'អ្នកគ្រប់គ្រងវាយលេខសម្ងាត់ ហើយអនុវត្តភ្លាមៗ' },
+                    { value: 'remote', icon: 'fa-paper-plane', label: 'ផ្ញើសំណើទៅអ្នកគ្រប់គ្រង', desc: 'វិក្កយបត្របង្ហាញ «រង់ចាំអនុម័ត» រហូតដល់អ្នកគ្រប់គ្រងសម្រេច' }
+                ]
+            });
+        }
+
+        async function submitRequest(req, lines) {
+            const mode = await chooseMode();
+            if (!mode) return;
+            const sh = currentShift();
+            const base = Object.assign({
+                id: newId('REQ'), shiftId: sh.id, register: sh.register, cashierId: sh.cashierId,
+                raisedAt: isoLocal(new Date()), mode
+            }, req);
+
+            if (mode === 'onsite') {
+                const ok = await showManagerOverride({
+                    title: `${APPROVAL_TYPE[req.type].label} ${req.saleId}`,
+                    lines,
+                    reason: req.reason,
+                    excludeIds: [sh.cashierId],
+                    confirmText: 'អនុម័ត'
+                });
+                if (!ok) return;
+                const rec = Object.assign(base, { status: 'approved', decidedBy: ok.approverId, decidedAt: isoLocal(new Date()) });
+                saveApproval(rec);
+                applyApprovalToSale(rec, ok.approverId);
+                logPosEvent('override_approved', { saleId: req.saleId, approverId: ok.approverId, amount: req.amount, reason: req.reason, note: APPROVAL_TYPE[req.type].label });
+                showToast(`${APPROVAL_TYPE[req.type].label} ${req.saleId} ត្រូវបានអនុម័តដោយ ${ok.approverName}`, 'success');
+            } else {
+                saveApproval(Object.assign(base, { status: 'pending' }));
+                logPosEvent(req.type === 'void' ? 'void_requested' : 'return_requested', { saleId: req.saleId, amount: req.amount, reason: req.reason });
+                showToast(`បានផ្ញើសំណើ${APPROVAL_TYPE[req.type].label} ${req.saleId} ទៅអ្នកគ្រប់គ្រងវេន`, 'info');
+            }
+            refreshAll();
+        }
+
+        async function requestVoid(id) {
+            closeAllFloatingDropdowns();
+            const s = shiftSales().find(x => x.id === id);
+            if (!s || !canRequest(s)) return;
+            const t = saleTotals(s.items, s.discountPercent);
+            const reason = await showReasonPicker({
+                title: `ស្នើលុបចោលវិក្កយបត្រ ${id}`,
+                message: `${fmtUSD(t.gross)} · ${payMethodLabel(s.pay)} · ប្រាក់ត្រូវប្រគល់ឱ្យអតិថិជនវិញទាំងស្រុង`,
+                reasons: posSettings().reasons.void,
+                confirmText: 'បន្ត',
+                danger: true
+            });
+            if (!reason) return;
+            await submitRequest({ type: 'void', saleId: id, amount: t.gross, reason }, [
+                ['វិក្កយបត្រ', `${id} · ${fmtTime(s.time)}`],
+                ['ទឹកប្រាក់', fmtUSD(t.gross)],
+                ['ទូទាត់តាម', payMethodLabel(s.pay)]
+            ]);
+        }
+
+        /* ===== ផ្ទាំងប្រគល់ទំនិញវិញ ===== */
+
+        function openReturn(id) {
+            closeAllFloatingDropdowns();
+            const s = shiftSales().find(x => x.id === id);
+            if (!s || !canRequest(s)) return;
+            const m = methodOf(s);
+            returnDraft = {
+                sale: s,
+                qty: {},
+                method: m === 'split' ? (s.pay.usdCash > 0 ? 'usdCash' : s.pay.khrCash > 0 ? 'khrCash' : 'khqr') : m,
+                reason: ''
+            };
+            document.getElementById('returnSub').textContent = `${s.id} · ${fmtTime(s.time)} · ${payMethodLabel(s.pay)}`;
+            renderReturn();
+            const modal = document.getElementById('returnModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeReturn() {
+            const modal = document.getElementById('returnModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            returnDraft = null;
+        }
+
+        function returnAmount() {
+            const s = returnDraft.sale;
+            const pct = Math.min(Math.max(Number(s.discountPercent) || 0, 0), 100);
+            return Object.keys(returnDraft.qty).reduce((sum, sku) =>
+                sum + getProduct(sku).price * returnDraft.qty[sku] * (1 - pct / 100), 0);
+        }
+
+        function bumpReturn(sku, delta, max) {
+            returnDraft.qty[sku] = Math.min(Math.max((returnDraft.qty[sku] || 0) + delta, 0), max);
+            if (!returnDraft.qty[sku]) delete returnDraft.qty[sku];
+            renderReturn();
+        }
+
+        function renderReturn() {
+            const d = returnDraft;
+            document.getElementById('returnLines').innerHTML = returnableLines(d.sale).map(l => {
+                const p = getProduct(l.sku);
+                const q = d.qty[l.sku] || 0;
+                return `<div class="p-3 flex items-center gap-3">
+                    <div class="min-w-0 flex-1">
+                        <p class="sm-td text-slate-700 truncate">${p.name}</p>
+                        <p class="sm-td-sub text-slate-400">${fmtUSD(p.price)} · អាចប្រគល់បាន ${l.max} ${p.unit}</p>
+                    </div>
+                    <button onclick="bumpReturn('${l.sku}', -1, ${l.max})" type="button" class="w-10 h-10 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50"><i class="fas fa-minus text-xs"></i></button>
+                    <span class="w-8 text-center sm-value sm-figure ${q ? 'text-amber-700' : 'text-slate-400'}">${q}</span>
+                    <button onclick="bumpReturn('${l.sku}', 1, ${l.max})" type="button" class="w-10 h-10 rounded-xl border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"><i class="fas fa-plus text-xs"></i></button>
+                </div>`;
+            }).join('');
+            const used = ['usdCash', 'khrCash', 'khqr'].filter(k => d.sale.pay[k] > 0);
+            document.getElementById('returnMethods').innerHTML = used.map(k => `
+                <button onclick="returnDraft.method='${k}'; renderReturn()" type="button"
+                    class="sm-badge px-3 py-2 rounded-xl border transition ${d.method === k ? 'bg-amber-600 border-amber-600 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-amber-400'}">${PAY_LABEL[k]}</button>`).join('');
+            document.getElementById('returnReasons').innerHTML = posSettings().reasons.return.map((r, i) => `
+                <button onclick="returnDraft.reason=posSettings().reasons.return[${i}]; renderReturn()" type="button"
+                    class="sm-badge px-3 py-2 rounded-xl border transition ${d.reason === r ? 'bg-amber-600 border-amber-600 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-amber-400'}">${r}</button>`).join('');
+            const amt = returnAmount();
+            const rate = d.sale.fxRate || fxRate();
+            document.getElementById('returnAmount').textContent = d.method === 'khrCash'
+                ? fmtKHR(Math.round(toKHR(amt, rate) / 100) * 100) : fmtUSD(amt);
+            document.getElementById('returnErr').classList.add('hidden');
+        }
+
+        async function submitReturn() {
+            const d = returnDraft;
+            const err = document.getElementById('returnErr');
+            const lines = Object.keys(d.qty).map(sku => ({ sku, qty: d.qty[sku] }));
+            if (!lines.length) { err.textContent = 'សូមជ្រើសរើសទំនិញយ៉ាងហោចណាស់មួយ'; err.classList.remove('hidden'); return; }
+            if (!d.reason) { err.textContent = 'សូមជ្រើសរើសមូលហេតុ'; err.classList.remove('hidden'); return; }
+            const amount = Math.round(returnAmount() * 100) / 100;
+            const sale = d.sale;
+            const req = { type: 'return', saleId: sale.id, lines, amount, method: d.method, reason: d.reason };
+            closeReturn();
+            await submitRequest(req, [
+                ['វិក្កយបត្រ', `${sale.id} · ${fmtTime(sale.time)}`],
+                ['ទំនិញ', lines.map(l => `${getProduct(l.sku).name} × ${l.qty}`).join(' · ')],
+                ['សងប្រាក់', `${fmtUSD(amount)} · ${PAY_LABEL[d.method]}`]
+            ]);
+        }
+
+        function refreshAll() {
             renderSummary();
             renderTabs();
             renderReceipts();
+            updatePortalBadges();
+            refreshPortalNotifications();
+        }
+
+        window.onStoreChanged = refreshAll;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (foreignShift()) { location.replace('../terminal/pos-terminal.html'); return; }
+            const sh = cashierShift();
+            setPortalSubtitle(sh ? `វេន ${sh.id} · ${sh.register} · ${personName(sh.cashierId)}` : 'មិនទាន់មានវេន');
+            document.getElementById('lockNote').textContent = !sh
+                ? 'មិនទាន់មានវេនទេ។ សូមបើកវេនពីផ្ទាំងគិតលុយ។'
+                : sh.status === 'open'
+                    ? `បង្ហាញតែប្រតិបត្តិការចាប់ពីម៉ោង ${fmtTime(sh.openedAt)} ថ្ងៃទី ${fmtKhDate(sh.openedAt)} មកប៉ុណ្ណោះ។ ប្រតិបត្តិការពីវេនមុន និងចំណូលប្រចាំខែ មិនអាចចូលមើលបានឡើយ។`
+                    : `វេននេះត្រូវបានបិទម៉ោង ${fmtTime(sh.closedAt)} រួចហើយ។ ទិន្នន័យនៅអាចមើល និងបោះពុម្ពឡើងវិញបាន ប៉ុន្តែមិនអាចលក់ ឬស្នើលុបចោលបានទេ។`;
+            document.getElementById('returnModal').onclick = closeReturn;
+            refreshAll();
         });
     </script>
 </body>

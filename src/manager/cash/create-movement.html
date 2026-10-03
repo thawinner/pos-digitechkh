@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - កត់ត្រាចលនាសាច់ប្រាក់</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+</head>
+<body id="managerPortal" data-role-root="../.." data-active="cash" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="កត់ត្រាចលនាសាច់ប្រាក់"
+             data-subtitle="ទម្រង់ថ្មី"
+             data-back="cash.html"></div>
+        <main class="flex-1 overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <div class="w-full grid grid-cols-1 xl:grid-cols-3 gap-5">
+                <section class="xl:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 sm:p-6 space-y-5">
+                    <div>
+                        <p class="sm-label text-slate-700 font-semibold mb-2">ប្រភេទចលនា <span class="text-rose-500">*</span></p>
+                        <div id="typeChips" class="grid grid-cols-2 lg:grid-cols-4 gap-2"></div>
+                        <p id="typeHelp" class="sm-td-sub text-slate-500 mt-2"></p>
+                    </div>
+                    <div id="registerRow">
+                        <p class="sm-label text-slate-700 font-semibold mb-2">បញ្ជរ <span class="text-rose-500">*</span></p>
+                        <div id="registerChips" class="flex flex-wrap gap-2"></div>
+                        <p id="registerHelp" class="sm-td-sub mt-2"></p>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <label class="block"><span class="sm-label text-slate-700 font-semibold">ដុល្លារ</span>
+                            <input id="amtUSD" type="number" min="0" step="1" placeholder="0" oninput="renderSummary()" class="sm-value w-full h-12 mt-1.5 px-3 rounded-xl bg-slate-50 border border-slate-200 text-right focus:outline-none focus:border-indigo-500"></label>
+                        <label class="block"><span class="sm-label text-slate-700 font-semibold">រៀល</span>
+                            <input id="amtKHR" type="number" min="0" step="1000" placeholder="0" oninput="renderSummary()" class="sm-value w-full h-12 mt-1.5 px-3 rounded-xl bg-slate-50 border border-slate-200 text-right focus:outline-none focus:border-indigo-500"></label>
+                    </div>
+                    <div>
+                        <p class="sm-label text-slate-700 font-semibold mb-2">មូលហេតុ <span id="reasonStar" class="text-rose-500">*</span></p>
+                        <div id="reasonChips" class="flex flex-wrap gap-2 mb-2"></div>
+                        <input id="reasonText" type="text" oninput="renderSummary()" placeholder="ឬវាយមូលហេតុ..." class="sm-td w-full h-12 px-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <label class="block"><span class="sm-label text-slate-700 font-semibold">លេខយោង · បង្កាន់ដៃ</span>
+                        <input id="refText" type="text" placeholder="ឧទាហរណ៍៖ លេខបង្កាន់ដៃទិញ ឬលេខប្រតិបត្តិការធនាគារ" class="sm-td w-full h-12 mt-1.5 px-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-indigo-500"></label>
+                </section>
+                <aside class="space-y-4">
+                    <div id="summary" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5"></div>
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <a href="cash.html" class="sm-value h-12 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center justify-center">បោះបង់</a>
+                        <button id="saveBtn" onclick="save()" type="button" class="sm-value h-12 rounded-xl font-semibold"></button>
+                    </div>
+                </aside>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        /* កត់ត្រាចលនាសាច់ប្រាក់ — ទំព័រពេញ មិនមែនផ្ទាំងលោត (បញ្ជីពិនិត្យលេខ 06 ផ្នែក ខ)
+           float៖ ចេញឱ្យបញ្ជរដែលមិនទាន់មានវេនបើក · payout / payin៖ ពីថតនៃវេនដែលកំពុងបើក · bank៖ ពីទូដែក */
+
+        const q = new URLSearchParams(location.search);
+        let type = ['float', 'payout', 'payin', 'bank'].includes(q.get('type')) ? q.get('type') : 'float';
+        let register = REGISTERS.includes(q.get('register')) ? q.get('register') : '';
+        let reason = '';
+
+        const HELP = {
+            float: 'ប្រាក់បាតថតសម្រាប់វេនបន្ទាប់។ អ្នកគិតលុយរាប់ចូលពេលបើកវេន ហើយភាពខុសគ្នាត្រូវបានកត់ត្រា។',
+            payout: 'ដកប្រាក់ពីថតនៃវេនដែលកំពុងបើក សម្រាប់ចំណាយក្រៅការលក់។ កាត់បន្ថយសាច់ប្រាក់រំពឹងទុករបស់វេននោះ។',
+            payin: 'បញ្ចូលប្រាក់ (ឧ. ក្រដាសប្រាក់តូចសម្រាប់អាប់) ទៅថតនៃវេនដែលកំពុងបើក។',
+            bank: 'យកប្រាក់ពីទូដែកទៅដាក់ធនាគារ។ ត្រូវមានលេខប្រតិបត្តិការធនាគារ។'
+        };
+
+        function openShiftOn(r) {
+            return mgrAllShifts().find(s => s.register === r && s.status === 'open') || null;
+        }
+
+        function render() {
+            document.getElementById('typeChips').innerHTML = ['float', 'payout', 'payin', 'bank'].map(t => `
+                <button onclick="type='${t}'; reason=''; render()" type="button" class="p-3 rounded-xl border-2 text-left transition ${type === t ? 'border-indigo-600 bg-indigo-50' : 'border-slate-200 hover:border-indigo-300'}">
+                    <i class="fas ${MOVEMENT_TYPE[t].icon} text-${MOVEMENT_TYPE[t].tone}-600"></i>
+                    <span class="sm-value ${type === t ? 'text-indigo-800' : 'text-slate-700'} block mt-1">${MOVEMENT_TYPE[t].label}</span>
+                </button>`).join('');
+            document.getElementById('typeHelp').textContent = HELP[type];
+            document.getElementById('registerRow').classList.toggle('hidden', type === 'bank');
+            document.getElementById('registerChips').innerHTML = REGISTERS.map(r => {
+                const open = openShiftOn(r);
+                const allowed = type === 'float' ? !open : !!open;
+                return `<button onclick="${allowed ? `register='${r}'; render()` : ''}" type="button" ${allowed ? '' : 'disabled'} class="px-4 py-2.5 rounded-xl border-2 text-left transition ${!allowed ? 'border-slate-100 text-slate-300 cursor-not-allowed' : register === r ? 'border-indigo-600 bg-indigo-50 text-indigo-800' : 'border-slate-200 hover:border-indigo-300 text-slate-700'}">
+                    <span class="sm-value block">${r}</span>
+                    <span class="sm-td-sub block">${open ? `${personName(open.cashierId)} · ${open.templateName}` : 'មិនមានវេនបើក'}</span>
+                </button>`;
+            }).join('');
+            const reasons = type === 'payout' ? posSettings().reasons.payout : type === 'bank' ? ['ដាក់ប្រាក់ប្រចាំថ្ងៃ'] : type === 'payin' ? ['ក្រដាសប្រាក់តូចសម្រាប់អាប់'] : [];
+            document.getElementById('reasonChips').innerHTML = reasons.map((r, i) => `<button onclick="reason=${JSON.stringify(r).replace(/"/g, '&quot;')}; document.getElementById('reasonText').value=''; render()" type="button" class="sm-badge px-3 py-2 rounded-xl border transition ${reason === r ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-400'}">${r}</button>`).join('');
+            document.getElementById('reasonStar').classList.toggle('hidden', type === 'float');
+            if (type === 'float' && !document.getElementById('amtUSD').value && !document.getElementById('amtKHR').value) {
+                document.getElementById('amtUSD').value = posSettings().defaultFloatUSD;
+                document.getElementById('amtKHR').value = posSettings().defaultFloatKHR;
+            }
+            renderSummary();
+        }
+
+        function values() {
+            return {
+                usd: Math.max(parseFloat(document.getElementById('amtUSD').value) || 0, 0),
+                khr: Math.max(parseInt(document.getElementById('amtKHR').value, 10) || 0, 0),
+                reason: (document.getElementById('reasonText').value.trim() || reason),
+                ref: document.getElementById('refText').value.trim()
+            };
+        }
+
+        function blocker() {
+            const v = values();
+            if (type !== 'bank' && !register) return 'សូមជ្រើសរើសបញ្ជរ';
+            if (type !== 'bank') {
+                const open = openShiftOn(register);
+                if (type === 'float' && open) return `${register} មានវេនបើករួចហើយ`;
+                if (type !== 'float' && !open) return `${register} មិនមានវេនបើកទេ`;
+            }
+            if (!(v.usd + v.khr)) return 'សូមបញ្ចូលចំនួនប្រាក់';
+            if (type !== 'float' && !v.reason) return 'សូមបញ្ចូលមូលហេតុ';
+            if (type === 'bank' && !v.ref) return 'សូមបញ្ចូលលេខប្រតិបត្តិការធនាគារ';
+            if (type === 'bank') {
+                const safe = safeBalance();
+                if (v.usd > safe.usd || v.khr > safe.khr) return 'ចំនួនលើសសមតុល្យក្នុងទូដែក';
+            }
+            return '';
+        }
+
+        function renderSummary() {
+            const v = values();
+            const why = blocker();
+            const open = register ? openShiftOn(register) : null;
+            document.getElementById('summary').innerHTML = `
+                <p class="sm-eyebrow text-slate-400">សង្ខេប</p>
+                <p class="sm-card-title text-slate-800 mt-1">${MOVEMENT_TYPE[type].label}</p>
+                <div class="mt-3 space-y-1.5">
+                    ${[['បញ្ជរ', type === 'bank' ? 'ទូដែក' : (register || '—')], ['វេន', open ? open.id : type === 'float' ? 'វេនបន្ទាប់' : '—'],
+                       ['ដុល្លារ', fmtUSD(v.usd)], ['រៀល', fmtKHR(v.khr)], ['មូលហេតុ', escapeText(v.reason) || '—'], ['ធ្វើដោយ', personName(ME_MANAGER)]]
+                       .map(([l, x]) => `<div class="flex justify-between gap-3"><span class="sm-td-sub text-slate-500">${l}</span><span class="sm-td text-slate-700 text-right sm-figure">${x}</span></div>`).join('')}
+                </div>
+                ${type === 'bank' ? `<p class="sm-td-sub text-slate-400 mt-3">សមតុល្យទូដែក ${fmtUSD(safeBalance().usd)} · ${fmtKHR(safeBalance().khr)}</p>` : ''}
+                <p class="sm-td-sub mt-3 ${why ? 'text-amber-700' : 'text-emerald-700'}">${why || 'រួចរាល់ · ត្រូវបញ្ជាក់ដោយលេខសម្ងាត់'}</p>`;
+            const btn = document.getElementById('saveBtn');
+            btn.disabled = !!why;
+            btn.className = `sm-value h-12 rounded-xl font-semibold transition inline-flex items-center justify-center gap-2 ${why ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white'}`;
+            btn.innerHTML = '<i class="fas fa-check"></i> រក្សាទុក';
+        }
+
+        async function save() {
+            const why = blocker();
+            if (why) return showToast(why, 'warning');
+            const v = values();
+            const ok = await showPinConfirm({ title: `បញ្ជាក់${MOVEMENT_TYPE[type].label}`, message: `${fmtUSD(v.usd)} · ${fmtKHR(v.khr)}`, userId: ME_MANAGER, confirmText: 'រក្សាទុក' });
+            if (!ok) return;
+            const open = type === 'bank' || type === 'float' ? null : openShiftOn(register);
+            const now = isoLocal(new Date());
+            saveMovement({
+                id: newId('MV'), type, register: type === 'bank' ? '' : register, shiftId: open ? open.id : '',
+                usd: v.usd, khr: v.khr, reason: v.reason, ref: v.ref, createdBy: ME_MANAGER, createdAt: now,
+                status: type === 'float' ? 'pending' : 'confirmed',
+                confirmedBy: type === 'float' ? '' : ME_MANAGER, confirmedAt: type === 'float' ? '' : now
+            });
+            showToast(`បានកត់ត្រា${MOVEMENT_TYPE[type].label}`, 'success');
+            setTimeout(() => { location.href = 'cash.html'; }, 500);
+        }
+
+        document.addEventListener('DOMContentLoaded', render);
+    </script>
+</body>
+</html>

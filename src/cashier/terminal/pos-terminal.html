@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -37,10 +38,8 @@
         .pos-shell button, .pos-shell a.pos-tap, .pos-shell input { min-height: 48px; }
         .pos-tap-sm { min-width: 48px; min-height: 48px; }
 
-        /* គ្រាប់ប្រភេទទំនិញរំកិលផ្តេក ដោយគ្មានរបាររំកិលមើលឃើញ */
         .pos-pills { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
         .pos-pills::-webkit-scrollbar { display: none; }
-        /* គែមរសាត់ — បង្ហាញថាមានប្រភេទលាក់នៅខាងនោះ ដែលអាចអូសមើលបាន */
         .pos-pills.fade-r { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 56px), transparent);
                             mask-image: linear-gradient(to right, #000 calc(100% - 56px), transparent); }
         .pos-pills.fade-l { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 56px), transparent);
@@ -48,44 +47,33 @@
         .pos-pills.fade-l.fade-r { -webkit-mask-image: linear-gradient(to right, transparent, #000 56px, #000 calc(100% - 56px), transparent);
                                    mask-image: linear-gradient(to right, transparent, #000 56px, #000 calc(100% - 56px), transparent); }
 
-        /* ក្រឡាទំនិញ — ទទឹងអប្បបរមា 168 ភិចសែល រួចបំពេញតាមទីធ្លាដែលមាន
-           ដូច្នេះអេក្រង់ធំបង្ហាញទំនិញបានច្រើនជាង ដោយមិនចាំបាច់រំកិល។
-           រូបភាពកម្ពស់ថេរ មិនមែនការេ ព្រោះការេធ្វើឱ្យក្រឡាខ្ពស់ពេក។ */
-        .pos-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
-        @media (min-width: 768px) { .pos-grid { grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); } }
-        /* រូបទំនិញជាការេ — ដូចរូបថតដើមដែលជា 400×400
-           ទម្រង់ការេមិនទុកទីធ្លាទទេសងខាងឡើយ ហើយទំនិញបង្ហាញធំជាង។ */
-        .pos-thumb { aspect-ratio: 1 / 1; }
+        /* ក្រឡាទំនិញ (ផែនការកែលម្អ C11) — រូបភាព 4:3 ជំនួសការេ ដូច្នេះអេក្រង់ 900px
+           បង្ហាញបាន 3 ជួរ ជំនួសឱ្យ 2 ជួរ ហើយក្រឡាតូចជាងបន្តិចដើម្បីបានជួរឈរច្រើន */
+        .pos-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); }
+        @media (min-width: 768px) { .pos-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); } }
+        .pos-thumb { aspect-ratio: 4 / 3; }
 
-        /* ឈ្មោះទំនិញកំណត់ត្រឹម 2 បន្ទាត់ ដើម្បីឱ្យក្រឡាកម្ពស់ស្មើគ្នា */
-        /* បម្រុងទុកពិតប្រាកដ 2 បន្ទាត់ ដើម្បីឱ្យតម្លៃនៅកម្ពស់ដូចគ្នា ទោះឈ្មោះខ្លីឬវែង។
-           ឯកតា lh = កម្ពស់បន្ទាត់ពិតដែលកំពុងប្រើ (portal.css កំណត់ 1.55 ដែលឈ្នះស្ទីលនៅទីនេះ)
-           ដូច្នេះមិនចាំបាច់ទាយលេខ em ទៀតទេ — 3.1em ជាតម្លៃបម្រុងសម្រាប់កម្មវិធីរុករកចាស់ */
         .pos-name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
                     overflow: hidden; min-height: 3.1em; min-height: 2lh; }
 
-        /* ផ្លែបែបភ្លឺពេលបន្ថែមចូលកន្ត្រក */
         @keyframes posFlash { 0% { transform: scale(1); } 45% { transform: scale(0.96); box-shadow: 0 0 0 3px #22d3ee; } 100% { transform: scale(1); } }
         .pos-flash { animation: posFlash .32s ease; }
 
-        /* ទទឹងផ្ទាំងកន្ត្រក */
         @media (min-width: 1024px) { .pos-right { width: 400px; flex-shrink: 0; } }
         @media (min-width: 1536px) { .pos-right { width: 440px; } }
-        /* អេក្រង់តូច៖ ផ្ទាំងកន្ត្រករអិលចូលពីស្តាំ */
         @media (max-width: 1023px) {
             .pos-right { position: fixed; inset: 0 0 0 auto; width: 100%; max-width: 420px; z-index: 40;
                          transform: translateX(100%); transition: transform .3s ease; }
             .pos-right.is-open { transform: translateX(0); }
         }
 
-        /* លេខសរុប — លេខធំជាងគេលើអេក្រង់ */
         .pos-total { font-size: 34px; font-weight: 800; line-height: 1.1; color: #22d3ee; font-variant-numeric: tabular-nums; }
 
-        /* ដកព្រួញឡើងចុះចេញពីប្រអប់លេខ ដើម្បីសន្សំទីធ្លាប៉ះ */
         .pos-num::-webkit-outer-spin-button, .pos-num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .pos-num { -moz-appearance: textfield; }
 
-        /* បោះពុម្ពតែវិក្កយបត្រ 80mm ប៉ុណ្ណោះ */
+        #khqrBox img, #khqrBox canvas { width: 100%; height: auto; image-rendering: pixelated; }
+
         @media print {
             body * { visibility: hidden !important; }
             #printArea, #printArea * { visibility: visible !important; }
@@ -103,14 +91,14 @@
             <img src="../../shared/assets/logo-mark-transparent.png" alt="DIGITECHKH" class="w-7 h-7 object-contain flex-shrink-0">
             <div class="min-w-0 hidden sm:!block">
                 <p class="sm-value text-white leading-tight">ផ្ទាំងគិតលុយ</p>
-                <p class="sm-td-sub text-slate-400 leading-tight">DIGITECHKH</p>
+                <p id="registerLabel" class="sm-td-sub text-slate-400 leading-tight"></p>
             </div>
         </div>
 
-        <!-- ព័ត៌មានវេន និងនាឡិការស់ -->
-        <div class="flex items-center gap-2 md:gap-4 min-w-0 flex-1 justify-center">
-            <span class="hidden md:!inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10">
-                <i class="fas fa-cash-register text-cyan-400 text-xs"></i>
+        <!-- វេន ម៉ោងបិទ និងនាឡិការស់ -->
+        <div class="flex items-center gap-2 md:gap-3 min-w-0 flex-1 justify-center">
+            <span id="shiftChipWrap" class="hidden md:!inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10">
+                <i id="shiftChipIcon" class="fas fa-cash-register text-cyan-400 text-xs"></i>
                 <span id="shiftChip" class="sm-badge text-slate-200 whitespace-nowrap"></span>
             </span>
             <span class="hidden sm:!inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10">
@@ -119,33 +107,65 @@
             </span>
         </div>
 
-        <div class="flex items-center gap-1.5 flex-shrink-0">
+        <div class="flex items-center gap-1 flex-shrink-0">
 
-            <!-- ពេញអេក្រង់ — មានអក្សរដូចធាតុដទៃ ព្រោះរូបតំណាងទទេរកមិនឃើញ -->
-            <button id="fsBtn" onclick="togglePosFullscreen()" type="button"
-                class="pos-tap px-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 inline-flex items-center justify-center gap-2 transition">
-                <i id="fsIcon" class="fas fa-expand"></i>
-                <span id="fsLabel" class="sm-badge hidden md:!inline whitespace-nowrap">ពេញអេក្រង់</span>
-            </button>
+            <!-- ការលក់ព្យួរ (ផែនការកែលម្អ C4) -->
+            <div class="relative">
+                <button id="heldBtn" onclick="toggleRowActionMenu(event, 'heldMenu')" type="button" aria-label="ការលក់ព្យួរ"
+                    class="pos-tap px-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 inline-flex items-center justify-center gap-2 transition">
+                    <i class="fas fa-pause"></i>
+                    <span class="sm-badge hidden lg:!inline">ព្យួរ</span>
+                    <span id="heldCount" class="hidden min-w-[20px] h-5 px-1 rounded-full bg-amber-500 text-white sm-badge font-bold inline-flex items-center justify-center">0</span>
+                </button>
+                <div id="heldMenu" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 text-left"></div>
+            </div>
 
             <a href="../receipts/receipts.html" aria-label="វិក្កយបត្រក្នុងវេន"
                class="pos-tap relative px-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 inline-flex items-center justify-center gap-2 transition">
                 <i class="fas fa-receipt"></i>
-                <span class="sm-badge hidden md:!inline">វិក្កយបត្រ</span>
+                <span class="sm-badge hidden lg:!inline">វិក្កយបត្រ</span>
                 <span id="receiptCount" class="min-w-[20px] h-5 px-1 rounded-full bg-cyan-600 text-white sm-badge font-bold inline-flex items-center justify-center">0</span>
             </a>
 
-            <!-- ប៊ូតុងនេះគ្រាន់តែបើកជំនួយការប៉ុណ្ណោះ មិនបិទវេនភ្លាមទេ
-                 ដូច្នេះវាមានរូបរាងដូចធាតុរុករកដទៃ។ ការការពារពិតស្ថិតនៅក្នុងជំនួយការ
-                 (4 ជំហាន រាប់ប្រាក់ លេខសម្ងាត់ និងប្រអប់បញ្ជាក់)។
-                 ពណ៌ក្រហមលេចឡើងតែពេលដាក់ទស្សន៍ទ្រនិច ដើម្បីបញ្ជាក់ចេតនា។ -->
+            <!-- ចាក់សោរពេលសម្រាក — មិនបិទវេន មិនរាប់ប្រាក់ (ផែនការកែលម្អ C22) -->
+            <button onclick="lockTerminal()" type="button" aria-label="ចាក់សោរបញ្ជរ"
+                class="pos-tap px-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 inline-flex items-center justify-center gap-2 transition">
+                <i class="fas fa-user-lock"></i>
+                <span class="sm-badge hidden lg:!inline">ចាក់សោរ</span>
+            </button>
+
             <a href="../shift/close-shift.html"
                class="pos-tap px-3 rounded-xl text-slate-300 hover:text-rose-200 hover:bg-rose-500/10 inline-flex items-center justify-center gap-2 transition">
                 <i class="fas fa-lock"></i>
-                <span class="sm-badge whitespace-nowrap">បិទវេន</span>
+                <span class="sm-badge whitespace-nowrap hidden sm:!inline">បិទវេន</span>
             </a>
 
-            <!-- ការជូនដំណឹង (ប្រើម៉ាស៊ីនរួមរបស់ portal.js) -->
+            <!-- ម៉ឺនុយបន្ថែម -->
+            <div class="relative">
+                <button onclick="toggleRowActionMenu(event, 'moreMenu')" type="button" aria-label="ម៉ឺនុយបន្ថែម"
+                    class="pos-tap-sm rounded-xl text-slate-300 hover:text-white hover:bg-white/10 inline-flex items-center justify-center transition">
+                    <i class="fas fa-ellipsis-vertical"></i>
+                </button>
+                <div id="moreMenu" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 text-left">
+                    <button id="fsBtn" onclick="closeAllFloatingDropdowns(); togglePosFullscreen()" type="button" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition text-left">
+                        <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0"><i id="fsIcon" class="fas fa-expand text-[11px]"></i></span>
+                        <span id="fsLabel">ពេញអេក្រង់</span>
+                    </button>
+                    <button onclick="closeAllFloatingDropdowns(); openDropDialog()" type="button" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition text-left">
+                        <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center flex-shrink-0"><i class="fas fa-vault text-[11px]"></i></span>
+                        ផ្ទេរប្រាក់ចូលទូដែក
+                    </button>
+                    <a id="switchToManager" href="../../manager/dashboard/dashboard.html" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition text-left border-t border-slate-100 mt-1">
+                        <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center flex-shrink-0"><i class="fas fa-user-shield text-[11px]"></i></span>
+                        ប្តូរទៅតួនាទីអ្នកគ្រប់គ្រងវេន
+                    </a>
+                    <button onclick="closeAllFloatingDropdowns(); handleLogout()" type="button" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-rose-700 hover:bg-rose-50 transition text-left border-t border-slate-100 mt-1">
+                        <span class="w-7 h-7 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center flex-shrink-0"><i class="fas fa-right-from-bracket text-[11px]"></i></span>
+                        ចាកចេញ
+                    </button>
+                </div>
+            </div>
+
             <div class="relative">
                 <button onclick="toggleRowActionMenu(event, 'portalNotifMenu')" type="button" aria-label="ការជូនដំណឹង"
                     class="pos-tap-sm rounded-xl text-slate-300 hover:text-white hover:bg-white/10 inline-flex items-center justify-center transition">
@@ -164,8 +184,8 @@
                 </div>
             </div>
             <span class="flex items-center gap-2 pl-2 ml-1 border-l border-white/10">
-                <span class="w-9 h-9 rounded-full bg-cyan-600 text-white inline-flex items-center justify-center sm-badge font-bold flex-shrink-0">ចម</span>
-                <span class="sm-badge text-slate-200 hidden xl:!inline">ចន្ទ មករា</span>
+                <span id="meInitials" class="inline-flex"></span>
+                <span id="meName" class="sm-badge text-slate-200 hidden xl:!inline"></span>
             </span>
         </div>
     </header>
@@ -174,11 +194,8 @@
 
         <!-- ===== ផ្ទាំងឆ្វេង — ជ្រើសរើសទំនិញ ===== -->
         <div class="pos-left">
-            <!-- ប្រអប់ស្កេន និងគ្រាប់ប្រភេទនៅជួរដាច់ពីគ្នា៖
-                 ពេលរួមជួរ ប្រភេទត្រូវច្របាច់ត្រឹម 170 ភិចសែលលើថេប្លេត (បង្ហាញបានតែ 1 ប្រភេទកន្លះ)
-                 ហើយត្រូវកាត់ចោលលើកុំព្យូទ័រ។ ប្រភេទជាការរុករកចម្បងលើអេក្រង់ប៉ះ
-                 ដូច្នេះវាសមនឹងទទួលបានជួរពេញមួយ ទោះបីត្រូវចំណាយកម្ពស់ 56 ភិចសែលក៏ដោយ -->
             <div class="px-3 md:px-4 pt-3 pb-2.5 flex flex-col gap-2.5 flex-shrink-0">
+                <div id="drawerBanner"></div>
                 <div class="relative w-full">
                     <i class="fas fa-barcode absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400 text-lg"></i>
                     <input id="barcodeInput" type="text" autocomplete="off" autofocus
@@ -191,6 +208,8 @@
             </div>
 
             <div class="pos-scroll px-3 md:px-4 pb-24 lg:pb-4">
+                <!-- ទំនិញញឹកញាប់ — ទំនិញគ្មានបាកូដ (នំប៉័ង នំខេក) ងាយរកបំផុត -->
+                <div id="quickKeys" class="mb-3"></div>
                 <div id="productGrid" class="pos-grid"></div>
                 <div id="gridMore" class="hidden mt-3 p-3 rounded-xl bg-white/5 border border-white/10 text-center">
                     <p id="gridMoreText" class="sm-td-sub text-slate-300"></p>
@@ -205,7 +224,6 @@
             </div>
         </div>
 
-        <!-- ផ្ទាំងបាំងសម្រាប់អេក្រង់តូច -->
         <div id="cartBackdrop" onclick="closeCartPanel()" class="hidden lg:hidden fixed inset-0 bg-black/60 z-30"></div>
 
         <!-- ===== ផ្ទាំងស្តាំ — កន្ត្រក និងការទូទាត់ ===== -->
@@ -213,7 +231,6 @@
 
             <div class="px-4 py-3 border-b border-white/10 flex items-center justify-between gap-2 flex-shrink-0">
                 <div class="flex items-center gap-2 min-w-0">
-                    <!-- ត្រឡប់ពីដំណាក់កាលទូទាត់ទៅកន្ត្រកវិញ — បង្ហាញតែពេលកំពុងទូទាត់ -->
                     <button id="cartBackBtn" onclick="exitCheckout()" type="button" aria-label="ត្រឡប់ទៅកន្ត្រកទំនិញ" style="display:none"
                             class="pos-tap-sm rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 inline-flex items-center justify-center transition flex-shrink-0">
                         <i class="fas fa-arrow-left text-sm"></i>
@@ -224,6 +241,10 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-1.5 flex-shrink-0">
+                    <button id="cartHoldBtn" onclick="holdSale()" type="button" aria-label="ព្យួរការលក់"
+                            class="pos-tap-sm px-3 rounded-xl bg-white/5 hover:bg-amber-500/20 text-slate-300 hover:text-amber-200 inline-flex items-center justify-center gap-1.5 transition">
+                        <i class="fas fa-pause text-sm"></i><span class="sm-badge">ព្យួរ</span>
+                    </button>
                     <button id="cartClearBtn" onclick="askClearCart()" type="button" aria-label="សម្អាតកន្ត្រក"
                             class="pos-tap-sm rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 inline-flex items-center justify-center transition">
                         <i class="fas fa-trash-can text-sm"></i>
@@ -244,7 +265,6 @@
             </div>
         </div>
 
-        <!-- ប៊ូតុងអណ្តែតបើកកន្ត្រក (អេក្រង់តូច) -->
         <button id="cartFab" onclick="openCartPanel()" type="button"
                 class="lg:hidden fixed bottom-5 right-5 z-20 px-5 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white shadow-xl transition inline-flex items-center gap-3">
             <span class="relative">
@@ -255,6 +275,59 @@
         </button>
     </div>
 
+    <!-- ===== ផ្ទាំងទូទាត់តាមកូដស្កេនបាគង (ផែនការកែលម្អ C10) =====
+         នៅលើផ្ទាំងគិតលុយផ្ទាល់ ដូច្នេះអ្នកគិតលុយមិនចាកចេញពីបរិបទលក់ឡើយ -->
+    <div id="khqrOverlay" class="hidden fixed inset-0 z-50 bg-[#0b1220]/95 overflow-y-auto">
+        <div class="min-h-full flex items-center justify-center p-4 sm:p-6">
+            <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                <div class="flex flex-col items-center">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#e11d2a] text-white mb-4">
+                        <span class="font-bold tracking-wide">KHQR</span>
+                        <span class="sm-badge">សូមស្កេនដើម្បីទូទាត់</span>
+                    </div>
+                    <div class="relative bg-white rounded-3xl p-5 w-full max-w-[320px] shadow-2xl">
+                        <div id="khqrBox" class="w-full"></div>
+                        <div id="khqrExpiredMask" class="hidden absolute inset-0 rounded-3xl bg-white/90 flex flex-col items-center justify-center text-center p-6">
+                            <i class="fas fa-clock-rotate-left text-3xl text-rose-500 mb-2"></i>
+                            <p class="sm-value text-rose-700">កូដផុតសុពលភាព</p>
+                        </div>
+                    </div>
+                    <p id="khqrMerchantName" class="sm-value text-white mt-4"></p>
+                    <p id="khqrMerchant" class="sm-td-sub text-slate-400"></p>
+                </div>
+                <div>
+                    <p class="sm-td-sub text-slate-400">ទឹកប្រាក់ត្រូវស្កេន</p>
+                    <p id="khqrAmount" class="text-[46px] leading-tight font-extrabold text-[#22d3ee] sm-figure"></p>
+                    <p id="khqrAmountKHR" class="sm-card-title text-slate-300 sm-figure"></p>
+                    <p id="khqrReceipt" class="sm-td-sub text-slate-500 mt-1 sm-figure"></p>
+
+                    <div class="mt-6">
+                        <div class="flex items-center justify-between sm-td-sub text-slate-400 mb-1.5">
+                            <span>សុពលភាពកូដ</span><span id="khqrTimer" class="sm-figure font-semibold text-white"></span>
+                        </div>
+                        <div class="h-2.5 rounded-full bg-white/10 overflow-hidden">
+                            <div id="khqrBar" class="h-full rounded-full bg-cyan-500 transition-all duration-1000"></div>
+                        </div>
+                    </div>
+
+                    <div id="khqrStatus" class="mt-5"></div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-6">
+                        <button onclick="cancelKhqr()" type="button"
+                            class="sm-value px-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold transition inline-flex items-center justify-center gap-2">
+                            <i class="fas fa-xmark"></i> បោះបង់
+                        </button>
+                        <button id="khqrMainBtn" onclick="khqrMainAction()" type="button"
+                            class="sm-value px-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-white font-semibold transition inline-flex items-center justify-center gap-2"></button>
+                    </div>
+                    <p class="sm-td-sub text-slate-500 mt-3">
+                        ប្រព័ន្ធពិតទទួលការជូនដំណឹងពីបាគងដោយស្វ័យប្រវត្តិ។ នៅក្នុងគំរូសាកល្បងនេះ សូមចុចបញ្ជាក់ពេលឃើញការជូនដំណឹងទទួលប្រាក់។
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== ផ្ទាំងជោគជ័យ ===== -->
     <div id="successOverlay" class="hidden fixed inset-0 z-50 bg-[#0f172a]/95 flex items-center justify-center p-6">
         <div class="w-full max-w-sm text-center">
@@ -263,7 +336,7 @@
             </div>
             <p class="sm-card-title text-white text-[20px]">ទូទាត់ជោគជ័យ</p>
             <p id="successAmount" class="pos-total mt-2"></p>
-            <p id="successChange" class="sm-card-sub text-emerald-300 mt-1"></p>
+            <div id="successChange" class="mt-3"></div>
             <p id="successReceipt" class="sm-td-sub text-slate-400 mt-2 sm-figure"></p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-6">
                 <button onclick="printLastReceipt()" type="button"
@@ -279,32 +352,86 @@
         </div>
     </div>
 
-    <!-- ===== ផ្ទាំងជាប់សោរពេលវេនត្រូវបានបិទ ===== -->
+    <!-- ===== បញ្ជរចាក់សោរពេលសម្រាក ===== -->
     <div id="lockOverlay" class="hidden fixed inset-0 z-[60] bg-[#0f172a] flex items-center justify-center p-6">
         <div class="w-full max-w-md text-center">
-            <div class="w-20 h-20 rounded-2xl bg-rose-500/15 text-rose-400 flex items-center justify-center mx-auto mb-5 text-4xl">
-                <i class="fas fa-lock"></i>
+            <div class="w-20 h-20 rounded-2xl bg-cyan-500/15 text-cyan-300 flex items-center justify-center mx-auto mb-5 text-4xl">
+                <i class="fas fa-user-lock"></i>
             </div>
-            <p class="sm-card-title text-white text-[20px]">វេនត្រូវបានបិទរួចហើយ</p>
+            <p class="sm-card-title text-white text-[20px]">បញ្ជរត្រូវបានចាក់សោរ</p>
             <p id="lockDetail" class="sm-card-sub text-slate-400 mt-2"></p>
-            <div class="mt-5 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-left">
-                <p class="sm-td-sub text-amber-200">
-                    អ្នកគិតលុយមិនអាចបើកវេនឡើងវិញដោយខ្លួនឯងបានទេ។
-                    សូមទាក់ទងអ្នកគ្រប់គ្រងទូទៅ ដើម្បីបើកវេនថ្មី។
+            <div class="mt-5 p-4 rounded-2xl bg-white/5 border border-white/10 text-left">
+                <p class="sm-td-sub text-slate-300">
+                    វេននៅបើកដដែល ហើយថតប្រាក់មិនត្រូវបានរាប់ទេ។ មានតែអ្នកគិតលុយដែលបើកវេននេះទេ ដែលអាចដោះសោរបាន។
+                    អ្នកគិតលុយផ្សេងត្រូវបើកវេន និងថតប្រាក់ផ្ទាល់ខ្លួន។
                 </p>
             </div>
+            <button onclick="unlockTerminal()" type="button"
+                class="mt-5 w-full sm-value px-4 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold transition inline-flex items-center justify-center gap-2">
+                <i class="fas fa-unlock"></i> ដោះសោរដោយលេខសម្ងាត់
+            </button>
+        </div>
+    </div>
+
+    <!-- ===== បញ្ជរមានវេនរបស់អ្នកផ្សេង ===== -->
+    <div id="foreignOverlay" class="hidden fixed inset-0 z-[61] bg-[#0f172a] flex items-center justify-center p-6">
+        <div class="w-full max-w-md text-center">
+            <div class="w-20 h-20 rounded-2xl bg-amber-500/15 text-amber-300 flex items-center justify-center mx-auto mb-5 text-4xl">
+                <i class="fas fa-user-slash"></i>
+            </div>
+            <p class="sm-card-title text-white text-[20px]">បញ្ជរនេះមានវេនរបស់អ្នកផ្សេង</p>
+            <p id="foreignDetail" class="sm-card-sub text-slate-400 mt-2"></p>
+            <div class="mt-5 p-4 rounded-2xl bg-white/5 border border-white/10 text-left">
+                <p class="sm-td-sub text-slate-300">មួយថតប្រាក់ មួយអ្នកទទួលខុសត្រូវ។ អ្នកគិតលុយម្នាក់នោះត្រូវបិទវេនជាមុនសិន ទើបលោកអ្នកអាចបើកវេនផ្ទាល់ខ្លួនបាន។</p>
+            </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-5">
-                <a href="../receipts/receipts.html" class="pos-tap sm-value px-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold transition inline-flex items-center justify-center gap-2">
-                    <i class="fas fa-receipt"></i> មើលវិក្កយបត្រវេន
+                <a id="foreignManagerLink" href="../../manager/dashboard/dashboard.html" class="pos-tap sm-value px-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold transition inline-flex items-center justify-center gap-2">
+                    <i class="fas fa-user-shield"></i> អ្នកគ្រប់គ្រងវេន
                 </a>
-                <a href="../../index.html" class="pos-tap sm-value px-4 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold transition inline-flex items-center justify-center gap-2">
-                    <i class="fas fa-right-from-bracket"></i> ចេញពីប្រព័ន្ធ
-                </a>
+                <button onclick="posLogout(); location.href='../../index.html'" type="button" class="sm-value px-4 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold transition inline-flex items-center justify-center gap-2">
+                    <i class="fas fa-right-from-bracket"></i> ចាកចេញ
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- តំបន់បោះពុម្ពវិក្កយបត្រ 80mm -->
+    <!-- ===== ផ្ទេរប្រាក់ចូលទូដែក (ផែនការកែលម្អ C13) ===== -->
+    <div id="dropModal" class="hidden fixed inset-0 z-[55] bg-slate-950/75 backdrop-blur-sm items-center justify-center p-4">
+        <div class="w-full max-w-md rounded-3xl bg-[#0f172a] border border-white/10 p-5 sm:p-6" onclick="event.stopPropagation()">
+            <div class="flex items-start gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-500/15 text-indigo-300 flex items-center justify-center text-xl flex-shrink-0"><i class="fas fa-vault"></i></div>
+                <div>
+                    <p class="sm-card-title text-white">ផ្ទេរប្រាក់ចូលទូដែក</p>
+                    <p class="sm-td-sub text-slate-400 mt-0.5">រាប់ប្រាក់ដែលដកចេញពីថត ដាក់ក្នុងស្រោមសំបុត្រ ហើយកត់ចំនួននៅទីនេះ</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3 mt-5">
+                <label class="block">
+                    <span class="sm-td-sub text-slate-400">ដុល្លារ</span>
+                    <input id="dropUSD" type="number" inputmode="decimal" min="0" step="1" placeholder="0"
+                        class="pos-num sm-value w-full mt-1 px-3 rounded-xl bg-[#1e293b] border border-white/10 text-white text-right focus:outline-none focus:border-cyan-500">
+                </label>
+                <label class="block">
+                    <span class="sm-td-sub text-slate-400">រៀល</span>
+                    <input id="dropKHR" type="number" inputmode="numeric" min="0" step="1000" placeholder="0"
+                        class="pos-num sm-value w-full mt-1 px-3 rounded-xl bg-[#1e293b] border border-white/10 text-white text-right focus:outline-none focus:border-cyan-500">
+                </label>
+            </div>
+            <p id="dropErr" class="hidden sm-td-sub text-rose-400 mt-2">សូមបញ្ចូលចំនួនប្រាក់ដែលផ្ទេរ</p>
+            <div class="space-y-2.5 mt-5">
+                <button onclick="submitDrop(true)" type="button"
+                    class="w-full sm-value px-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-white font-semibold transition inline-flex items-center justify-center gap-2">
+                    <i class="fas fa-user-shield"></i> អ្នកគ្រប់គ្រងទទួលនៅទីនេះ
+                </button>
+                <button onclick="submitDrop(false)" type="button"
+                    class="w-full sm-value px-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold transition inline-flex items-center justify-center gap-2">
+                    <i class="fas fa-paper-plane"></i> កត់ត្រា ហើយរង់ចាំអ្នកគ្រប់គ្រងទទួល
+                </button>
+                <button onclick="closeDropDialog()" type="button" class="w-full sm-value px-4 rounded-2xl text-slate-400 hover:text-white transition">បោះបង់</button>
+            </div>
+        </div>
+    </div>
+
     <div id="printArea" class="hidden"></div>
 
     <script src="../../shared/scripts/ui-components.js"></script>
@@ -315,40 +442,67 @@
         let activeCategory = 'all';
         let pay = { usdCash: 0, khrCash: 0, khqr: 0 };
         let discountPercent = 0;
+        let discountReason = '';
+        let discountApproverId = '';
         let customerId = '';
+        /* null = តាមលំនាំដើម (មានដុល្លារ → ចម្រុះ · រៀលសុទ្ធ → រៀលទាំងអស់) */
+        let changeMode = null;
         /*
          * ដំណាក់កាលពីរ៖ false = កំពុងបន្ថែមទំនិញ, true = កំពុងទទួលប្រាក់
          * ពីមុន ប្រអប់ទូទាត់ទាំងអស់បង្ហាញជាប់ជានិច្ច ហើយយកកម្ពស់ ~560 ភិចសែល
-         * នៅសល់តែ ~110 ភិចសែលសម្រាប់មុខទំនិញ — អ្នកគិតលុយមើលឃើញតែ 1 មុខប៉ុណ្ណោះ
          */
         let checkout = false;
         let lastSale = null;
         let searchTimer = null;
         let successTimer = null;
+        let khqrTimer = null;
 
-        /* ===== នាឡិការស់ និងព័ត៌មានវេន ===== */
+        function SH() {
+            return currentShift();
+        }
+
+        function persistCart() {
+            saveCart({ items: cart, discountPercent, discountReason, discountApproverId, customerId });
+        }
+
+        /* ===== នាឡិការស់ និងវេន ===== */
 
         function tickClock() {
             const now = new Date();
             const el = document.getElementById('liveClock');
-            if (el) {
-                el.textContent = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
-            }
+            if (el) el.textContent = `${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}`;
         }
 
+        /* បន្ទះវេន៖ គំរូវេន · ម៉ោងបិទ · ពណ៌លឿងពេលហួសម៉ោង ក្រហមពេលលើស 12 ម៉ោង (ផែនការកែលម្អ C22) */
         function renderShiftChip() {
-            const d = shiftDuration();
-            // ម៉ោងបើកលាក់នៅអេក្រង់តូចជាង xl ដើម្បីកុំឲ្យបន្ទះបាក់ជា 2 បន្ទាត់
-            document.getElementById('shiftChip').innerHTML =
-                `${SHIFT.id}<span class="hidden xl:!inline"> · បើកម៉ោង ${fmtTime(SHIFT.openedAt)}</span> · ${d.hours} ម៉ោង ${d.minutes} នាទី`;
-            document.getElementById('receiptCount').textContent = shiftSales().length;
+            const sh = SH();
+            const wrap = document.getElementById('shiftChipWrap');
+            const chip = document.getElementById('shiftChip');
+            const icon = document.getElementById('shiftChipIcon');
+            if (!sh) return;
+            const now = new Date();
+            const over = now - shiftEndDate(sh);
+            const opened = now - new Date(sh.openedAt);
+            let tone = 'bg-white/5 border-white/10';
+            let iconCls = 'fas fa-cash-register text-cyan-400 text-xs';
+            let text = `${sh.templateName} · បិទម៉ោង ${sh.end}<span class="hidden xl:!inline"> · បើកបាន ${fmtDuration(opened)}</span>`;
+            if (opened > 12 * 3600000) {
+                tone = 'bg-rose-500/15 border-rose-500/40';
+                iconCls = 'fas fa-triangle-exclamation text-rose-300 text-xs';
+                text = `${sh.templateName} · បើកលើស 12 ម៉ោង · សូមបិទវេន`;
+            } else if (over > 0) {
+                tone = 'bg-amber-500/15 border-amber-500/40';
+                iconCls = 'fas fa-clock text-amber-300 text-xs';
+                text = `${sh.templateName} · ហួសម៉ោងវេន ${fmtDuration(over)}`;
+            }
+            wrap.className = `hidden md:!inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border ${tone}`;
+            icon.className = iconCls;
+            chip.innerHTML = text;
+            document.getElementById('receiptCount').textContent = shiftSales().filter(s => !isVoided(s)).length;
+            document.getElementById('registerLabel').textContent = `${sh.register} · ${sh.id.split('-').slice(-1)[0]}`;
         }
 
-        /* ===== ពេញអេក្រង់ =====
-           ម៉ាស៊ីនគិតលុយដំណើរការពេញមួយវេន ដូច្នេះការលាក់របាររបស់កម្មវិធីរុករក
-           សន្សំកម្ពស់ប្រមាណ 100 ភិចសែលជូនក្រឡាទំនិញ និងកន្ត្រក។
-           ចំណាំ៖ ពេលពេញអេក្រង់ នាឡិការបស់ប្រព័ន្ធប្រតិបត្តិការត្រូវលាក់
-           ដូច្នេះនាឡិកាលើរបារខាងលើក្លាយជាតម្រូវការ មិនមែនគ្រឿងលម្អឡើយ។ */
+        /* ===== ពេញអេក្រង់ ===== */
 
         function fullscreenSupported() {
             const el = document.documentElement;
@@ -375,7 +529,7 @@
             const label = document.getElementById('fsLabel');
             if (!icon || !label) return;
             const on = isFullscreen();
-            icon.className = 'fas ' + (on ? 'fa-compress' : 'fa-expand');
+            icon.className = 'fas text-[11px] ' + (on ? 'fa-compress' : 'fa-expand');
             label.textContent = on ? 'ចាកចេញពីពេញអេក្រង់' : 'ពេញអេក្រង់';
         }
 
@@ -391,13 +545,29 @@
             document.getElementById('cartBackdrop').classList.add('hidden');
         }
 
-        /* ===== ប្រភេទ និងក្រឡាទំនិញ ===== */
+        /* ===== ផ្ទាំងព្រមានសាច់ប្រាក់ក្នុងថតលើសកំណត់ =====
+           មិនបង្ហាញចំនួនទេ — ការរាប់បិទវេនត្រូវតែបិទភ្នែក (C1) */
+
+        function renderDrawerBanner() {
+            const sh = SH();
+            const host = document.getElementById('drawerBanner');
+            if (!sh) { host.innerHTML = ''; return; }
+            const s = shiftSummary(sh);
+            const st = posSettings();
+            const over = s.expectedUSD > st.drawerLimitUSD || s.expectedKHR > st.drawerLimitKHR;
+            host.innerHTML = over ? `
+                <div class="flex items-center gap-3 p-2.5 pl-3.5 rounded-2xl bg-indigo-500/15 border border-indigo-400/40">
+                    <i class="fas fa-vault text-indigo-300"></i>
+                    <p class="sm-td text-indigo-100 flex-1 min-w-0">សាច់ប្រាក់ក្នុងថតលើសកំណត់ · សូមផ្ទេរប្រាក់ខ្លះចូលទូដែក</p>
+                    <button onclick="openDropDialog()" type="button" class="sm-badge px-3.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-semibold transition flex-shrink-0">ផ្ទេរចូលទូដែក</button>
+                </div>` : '';
+        }
+
+        /* ===== ប្រភេទ ទំនិញញឹកញាប់ និងក្រឡាទំនិញ ===== */
 
         function renderCategories() {
             document.getElementById('categoryPills').innerHTML = CATEGORIES.map(c => {
                 const active = c.id === activeCategory;
-                // ធាតុសកម្មតែមួយគត់មានផ្ទៃពណ៌ ឯធាតុផ្សេងមានត្រឹមបន្ទាត់ស៊ុម
-                // ដូច្នេះភ្នែកឃើញភ្លាមថាកំពុងត្រងប្រភេទណា
                 return `<button onclick="pickCategory('${c.id}')" type="button"
                     class="sm-badge px-3.5 rounded-xl inline-flex items-center gap-2 whitespace-nowrap flex-shrink-0 border transition ${active
                         ? 'bg-cyan-600 border-cyan-600 text-white font-semibold'
@@ -408,7 +578,6 @@
             updatePillFade();
         }
 
-        /* បង្ហាញគែមរសាត់តែនៅខាងដែលមានប្រភេទលាក់ — គ្មានគែមបើទាំងអស់មើលឃើញ */
         function updatePillFade() {
             const el = document.getElementById('categoryPills');
             if (!el) return;
@@ -428,19 +597,39 @@
             searchTimer = setTimeout(renderProducts, 200);
         }
 
-        /* ចំនួននៅសល់ពិតប្រាកដ — ដកចេញទាំងអ្វីដែលមានក្នុងកន្ត្រក */
         function remainingStock(sku) {
             const inCart = cart.find(l => l.sku === sku);
             return availableStock(sku) - (inCart ? inCart.qty : 0);
         }
 
-        /* គូរត្រឹម 60 មុខដំបូង៖ ផ្ទាំងគិតលុយត្រូវបើកក្រោម 2 វិនាទី
-           ហើយកាតាឡុកពិតអាចមានរាប់ពាន់មុខ។ មិនប្រើការបែងចែកទំព័រទេ
-           ព្រោះអ្នកគិតលុយរកទំនិញតាមការស្កេន និងការស្វែងរក មិនមែនតាមការបើកទំព័រ។ */
+        /* ទំនិញញឹកញាប់ (អ្នកគ្រប់គ្រងកំណត់) — បង្ហាញតែពេលមិនកំពុងស្វែងរក ឬត្រងប្រភេទ */
+        function renderQuickKeys(q) {
+            const host = document.getElementById('quickKeys');
+            const keys = (posSettings().quickKeys || []).map(getProduct).filter(Boolean);
+            if (q || activeCategory !== 'all' || !keys.length) { host.innerHTML = ''; return; }
+            host.innerHTML = `
+                <p class="sm-td-sub text-slate-400 mb-1.5 flex items-center gap-1.5"><i class="fas fa-bolt text-amber-300 text-[11px]"></i> ទំនិញញឹកញាប់</p>
+                <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2">
+                    ${keys.map(p => {
+                        const out = remainingStock(p.sku) <= 0;
+                        return `<button onclick="addToCart('${p.sku}')" type="button" ${out ? 'disabled' : ''}
+                            class="flex items-center gap-2 p-1.5 pr-2.5 rounded-xl border text-left transition ${out
+                                ? 'border-white/5 opacity-40 cursor-not-allowed' : 'border-amber-400/25 bg-amber-400/5 hover:border-amber-300'}">
+                            <span class="w-10 h-10 rounded-lg bg-[#0f172a] p-0.5 flex items-center justify-center overflow-hidden flex-shrink-0">${productImgHtml(p, 'text-sm')}</span>
+                            <span class="min-w-0">
+                                <span class="sm-td-sub text-slate-100 block truncate">${p.name}</span>
+                                <span class="sm-td-sub text-[#22d3ee] sm-figure block">${fmtUSD(p.price)}</span>
+                            </span>
+                        </button>`;
+                    }).join('')}
+                </div>`;
+        }
+
         const GRID_LIMIT = 60;
 
         function renderProducts() {
             const q = (document.getElementById('barcodeInput').value || '').trim().toLowerCase();
+            renderQuickKeys(q);
             const matches = PRODUCTS
                 .filter(p => activeCategory === 'all' || p.category === activeCategory)
                 .filter(p => !q || p.name.toLowerCase().includes(q) || p.barcode.includes(q));
@@ -470,15 +659,11 @@
                 const out = left <= 0;
                 const low = !out && left <= 10;
                 const inCart = (cart.find(l => l.sku === p.sku) || {}).qty || 0;
-
-                // ផ្លាកស្តុកបង្ហាញតែពេលមានបញ្ហា — លេខបៃតងលើគ្រប់ក្រឡាគឺជាសំឡេងរំខាន
                 const stockChip = out
                     ? '<span class="sm-badge px-2 py-0.5 rounded-lg bg-rose-500 text-white font-bold">អស់</span>'
                     : low
                         ? `<span class="sm-badge px-2 py-0.5 rounded-lg bg-amber-500 text-white font-bold">នៅ ${left}</span>`
                         : '';
-
-                // ចំនួនដែលមានក្នុងកន្ត្រករួចហើយ — ជួយពេលស្កេនលឿនៗ
                 const cartChip = inCart
                     ? `<span class="absolute top-1.5 left-1.5 min-w-[22px] h-[22px] px-1 rounded-lg bg-cyan-500 text-white sm-badge font-bold inline-flex items-center justify-center">${inCart}</span>`
                     : '';
@@ -491,7 +676,7 @@
                             ? 'bg-[#1e293b] border-cyan-500/60 hover:border-cyan-400'
                             : 'bg-[#1e293b] border-white/10 hover:border-cyan-500 active:border-cyan-400'}">
                     <div class="pos-thumb relative w-full bg-[#0f172a] p-2 flex items-center justify-center overflow-hidden">
-                        ${productImgHtml(p, 'text-5xl')}
+                        ${productImgHtml(p, 'text-4xl')}
                         ${cartChip}
                         ${stockChip ? `<span class="absolute top-1.5 right-1.5">${stockChip}</span>` : ''}
                     </div>
@@ -515,10 +700,9 @@
             const input = document.getElementById('barcodeInput');
             const code = input.value.trim();
             if (!code) return;
-
             const product = findByBarcode(code);
             if (!product) {
-                showToast(`រកមិនឃើញទំនិញសម្រាប់ «${code}»`, 'error');
+                showToast(`រកមិនឃើញទំនិញសម្រាប់ «${escapeText(code)}»`, 'error');
                 input.select();
                 return;
             }
@@ -541,9 +725,8 @@
             }
             const line = cart.find(l => l.sku === sku);
             if (line) line.qty += 1; else cart.push({ sku, qty: 1 });
-            // បន្ថែមទំនិញពេលកំពុងទូទាត់ = ត្រឡប់ទៅកន្ត្រក ដើម្បីឃើញមុខដែលទើបបន្ថែម
             checkout = false;
-            saveCart(cart);
+            persistCart();
             flashCard(sku);
             renderCart();
             renderProducts();
@@ -559,15 +742,12 @@
                 return;
             }
             line.qty += delta;
-            if (line.qty <= 0) cart = cart.filter(l => l.sku !== sku);
-            saveCart(cart);
-            renderCart();
-            renderProducts();
-        }
-
-        function removeLine(sku) {
-            cart = cart.filter(l => l.sku !== sku);
-            saveCart(cart);
+            if (line.qty <= 0) {
+                cart = cart.filter(l => l.sku !== sku);
+                // ការដកទំនិញចេញមុនទូទាត់ត្រូវបានអនុញ្ញាត ប៉ុន្តែកត់ត្រាសម្រាប់អ្នកគ្រប់គ្រង (C9)
+                logPosEvent('line_removed', { amount: getProduct(sku).price, note: getProduct(sku).name });
+            }
+            persistCart();
             renderCart();
             renderProducts();
         }
@@ -576,12 +756,13 @@
             if (!cart.length) return;
             const ok = await showCustomConfirm({
                 title: 'សម្អាតកន្ត្រកទំនិញ',
-                message: 'តើលោកអ្នកពិតជាចង់ដកមុខទំនិញទាំងអស់ចេញពីកន្ត្រកមែនទេ?',
+                message: 'តើលោកអ្នកពិតជាចង់ដកមុខទំនិញទាំងអស់ចេញពីកន្ត្រកមែនទេ? សកម្មភាពនេះត្រូវបានកត់ត្រា។',
                 confirmText: 'សម្អាតកន្ត្រក',
                 cancelText: 'បោះបង់',
                 danger: true
             });
             if (!ok) return;
+            logPosEvent('cart_cleared', { amount: saleTotals(cart, discountPercent).gross, note: `${cart.length} មុខ` });
             resetSale();
             showToast('បានសម្អាតកន្ត្រកទំនិញ', 'info');
         }
@@ -591,10 +772,103 @@
             cart = [];
             pay = { usdCash: 0, khrCash: 0, khqr: 0 };
             discountPercent = 0;
+            discountReason = '';
+            discountApproverId = '';
             customerId = '';
+            changeMode = null;
             clearCart();
             renderCart();
             renderProducts();
+        }
+
+        /* ===== ការលក់ព្យួរ (ផែនការកែលម្អ C4) ===== */
+
+        function renderHeld() {
+            const sh = SH();
+            const held = sh ? heldOfShift(sh.id) : [];
+            const limit = posSettings().holdLimit;
+            const count = document.getElementById('heldCount');
+            count.textContent = held.length;
+            count.classList.toggle('hidden', !held.length);
+            document.getElementById('heldMenu').innerHTML = `
+                <div class="px-3 py-2 mb-1 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+                    <p class="sm-td-sub text-slate-500">ការលក់ព្យួរក្នុងវេននេះ</p>
+                    <span class="sm-td-sub text-slate-400 sm-figure">${held.length} / ${limit}</span>
+                </div>
+                ${held.length ? held.map(h => {
+                    const t = saleTotals(h.items, h.discountPercent);
+                    return `<div class="px-3 py-2.5 rounded-xl hover:bg-slate-50 flex items-center gap-3">
+                        <div class="min-w-0 flex-1">
+                            <p class="sm-value text-slate-700">${h.label} · <span class="sm-figure">${fmtUSD(t.gross)}</span></p>
+                            <p class="sm-td-sub text-slate-400">${fmtTime(h.at)} · ${h.items.length} មុខ · ${t.qty} ឯកតា</p>
+                        </div>
+                        <button onclick="resumeHeld('${h.id}')" type="button" class="sm-badge !min-h-[40px] px-3 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white font-semibold">បន្ត</button>
+                        <button onclick="discardHeld('${h.id}')" type="button" aria-label="បោះបង់" class="!min-h-[40px] w-10 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-500 hover:text-rose-600"><i class="fas fa-trash-can text-xs"></i></button>
+                    </div>`;
+                }).join('') : '<p class="px-3 py-6 text-center sm-td-sub text-slate-400">មិនមានការលក់ព្យួរទេ</p>'}`;
+        }
+
+        function holdSale() {
+            if (!cart.length || !requireOpenShift()) return;
+            const sh = SH();
+            const held = heldOfShift(sh.id);
+            const limit = posSettings().holdLimit;
+            if (held.length >= limit) {
+                return showToast(`ព្យួរបានអតិបរមា ${limit} ការលក់ក្នុងមួយវេន · សូមបន្ត ឬបោះបង់ការលក់ព្យួរចាស់ជាមុន`, 'warning');
+            }
+            const used = held.map(h => Number(h.label.replace('#', ''))).filter(Boolean);
+            let n = 1;
+            while (used.includes(n)) n += 1;
+            const t = saleTotals(cart, discountPercent);
+            saveHeld({
+                id: newId('HOLD'), shiftId: sh.id, label: `#${n}`, at: isoLocal(new Date()),
+                items: cart.map(l => ({ ...l })), discountPercent, discountReason, discountApproverId, customerId
+            });
+            logPosEvent('hold', { amount: t.gross, note: `#${n}` });
+            resetSale();
+            renderHeld();
+            closeCartPanel();
+            showToast(`បានព្យួរការលក់ #${n} (${fmtUSD(t.gross)}) · អាចបន្តពីប៊ូតុង «ព្យួរ» លើរបារខាងលើ`, 'info');
+        }
+
+        function resumeHeld(id) {
+            closeAllFloatingDropdowns();
+            const sh = SH();
+            const h = sh && heldOfShift(sh.id).find(x => x.id === id);
+            if (!h) return;
+            if (cart.length) return showToast('សូមព្យួរ ឬបញ្ចប់ការលក់បច្ចុប្បន្នជាមុនសិន', 'warning');
+            cart = h.items.map(l => ({ ...l }));
+            discountPercent = h.discountPercent || 0;
+            discountReason = h.discountReason || '';
+            discountApproverId = h.discountApproverId || '';
+            customerId = h.customerId || '';
+            removeHeld(id);
+            persistCart();
+            renderHeld();
+            renderCart();
+            renderProducts();
+            openCartPanel();
+            showToast(`បានបន្តការលក់ ${h.label}`, 'success');
+        }
+
+        async function discardHeld(id) {
+            closeAllFloatingDropdowns();
+            const sh = SH();
+            const h = sh && heldOfShift(sh.id).find(x => x.id === id);
+            if (!h) return;
+            const reason = await showReasonPicker({
+                title: `បោះបង់ការលក់ព្យួរ ${h.label}`,
+                message: 'ការបោះបង់ត្រូវបានកត់ត្រា និងបង្ហាញក្នុងរបាយការណ៍របស់អ្នកគ្រប់គ្រងវេន',
+                reasons: posSettings().reasons.holdDiscard,
+                confirmText: 'បោះបង់ការលក់',
+                danger: true,
+                dark: true
+            });
+            if (!reason) return;
+            removeHeld(id);
+            logPosEvent('hold_discarded', { amount: saleTotals(h.items, h.discountPercent).gross, reason, note: h.label });
+            renderHeld();
+            showToast(`បានបោះបង់ការលក់ព្យួរ ${h.label}`, 'info');
         }
 
         function renderCart() {
@@ -608,10 +882,10 @@
             document.getElementById('fabCount').textContent = t.qty;
             document.getElementById('fabTotal').textContent = fmtUSD(t.gross);
 
-            // ក្បាលផ្ទាំងប្តូរតាមដំណាក់កាល
             document.getElementById('cartTitle').textContent = checkout ? 'ការទូទាត់' : 'កន្ត្រកទំនិញ';
             document.getElementById('cartBackBtn').style.display = checkout ? '' : 'none';
-            document.getElementById('cartClearBtn').style.display = checkout ? 'none' : '';
+            document.getElementById('cartClearBtn').style.display = checkout || !cart.length ? 'none' : '';
+            document.getElementById('cartHoldBtn').style.display = checkout || !cart.length ? 'none' : '';
 
             if (checkout) {
                 renderCheckout(t);
@@ -619,14 +893,15 @@
             }
 
             if (!cart.length) {
-                // ផ្ទាំងទទេជាទីធ្លាធំ — បំពេញដោយព័ត៌មានវេនដែលមានប្រយោជន៍
-                // ជាជាងទុករូបតំណាងតូចអណ្តែតក្នុងភាពទទេ
-                const sh = shiftSummary();
+                const sh = SH();
+                const sales = shiftSales().filter(s => !isVoided(s));
+                const held = sh ? heldOfShift(sh.id).length : 0;
                 const stat = (label, value) => `
                     <div class="px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/5">
                         <p class="sm-td-sub text-slate-500">${label}</p>
                         <p class="sm-value text-slate-300 sm-figure mt-0.5">${value}</p>
                     </div>`;
+                // មិនបង្ហាញទឹកប្រាក់សាច់ប្រាក់សរុបទេ — ការរាប់បិទវេនត្រូវតែបិទភ្នែក (C1)
                 lines.innerHTML = `
                     <div class="h-full flex flex-col items-center justify-center px-5 py-8 text-center">
                         <div class="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center mb-3">
@@ -635,16 +910,11 @@
                         <p class="sm-card-title text-slate-200">ត្រៀមរួចរាល់</p>
                         <p class="sm-card-sub text-slate-400 mt-1">ស្កេនបាកូដ ឬចុចលើក្រឡាទំនិញ<br>ដើម្បីចាប់ផ្តើមការលក់</p>
                         <div class="w-full grid grid-cols-2 gap-2 mt-6 text-left">
-                            ${stat('លក់រួចក្នុងវេននេះ', `${sh.count} វិក្កយបត្រ`)}
-                            ${stat('ទឹកប្រាក់សរុប', fmtUSD(sh.gross))}
+                            ${stat('លក់រួចក្នុងវេននេះ', `${sales.length} វិក្កយបត្រ`)}
+                            ${stat('ការលក់ព្យួរ', `${held} ការលក់`)}
                         </div>
                     </div>`;
             } else {
-                /*
-                 * ជួរពីរជាន់៖ ឈ្មោះទទួលបានទទឹងពេញ (ពីមុនត្រូវបាក់ជា 4 បន្ទាត់
-                 * ក្បែរប៊ូតុង − / + ធំៗ)។ នៅពេលចំនួនស្មើ 1 ប៊ូតុង − ប្តូរជារូបធុងសំរាម
-                 * ព្រោះការបន្ថយបន្ថែមទៀតនឹងដកមុខនោះចេញ — ឱ្យអ្នកគិតលុយដឹងមុនពេលចុច
-                 */
                 lines.innerHTML = cart.map(l => {
                     const p = getProduct(l.sku);
                     const last = l.qty === 1;
@@ -688,6 +958,9 @@
 
         function enterCheckout() {
             if (!cart.length || !requireOpenShift()) return;
+            if (discountPercent > 0 && !discountReason) {
+                return showToast('សូមជ្រើសរើសមូលហេតុនៃការបញ្ចុះតម្លៃជាមុនសិន', 'warning');
+            }
             checkout = true;
             renderCart();
             document.getElementById('cartLines').scrollTop = 0;
@@ -698,7 +971,7 @@
             renderCart();
         }
 
-        function renderChargeButton(t) {
+        function renderChargeButton() {
             const ready = cart.length > 0;
             document.getElementById('paymentPanel').innerHTML = `
                 <button onclick="enterCheckout()" type="button" ${ready ? '' : 'disabled'}
@@ -714,11 +987,18 @@
 
         function renderSaleOptions() {
             const c = getCreditCustomer(customerId);
-            // កន្ត្រកទទេ៖ លាក់ជម្រើសទាំងនេះ ព្រោះវាគ្មានអ្វីឱ្យអនុវត្តលើ
             if (!cart.length) {
                 document.getElementById('saleOptions').innerHTML = '';
                 return;
             }
+            const limit = discountLimitFor(ME_CASHIER);
+            const reasonRow = discountPercent > 0 ? `
+                <button onclick="pickDiscountReason()" type="button"
+                    class="w-full px-3 rounded-xl border text-left inline-flex items-center justify-between gap-2 transition ${discountReason
+                        ? 'bg-amber-500/10 border-amber-500/30 text-amber-100' : 'bg-rose-500/10 border-rose-500/40 text-rose-200'}">
+                    <span class="sm-td-sub truncate"><i class="fas fa-tag mr-1.5"></i>${discountReason ? `មូលហេតុ៖ ${escapeText(discountReason)}` : 'សូមជ្រើសរើសមូលហេតុនៃការបញ្ចុះតម្លៃ'}</span>
+                    ${discountApproverId ? `<span class="sm-td-sub text-emerald-300 flex-shrink-0"><i class="fas fa-user-shield mr-1"></i>${personName(discountApproverId)}</span>` : '<i class="fas fa-chevron-right text-[10px] opacity-60"></i>'}
+                </button>` : '';
             document.getElementById('saleOptions').innerHTML = `
                 <div class="grid grid-cols-2 gap-2">
                     <div>
@@ -740,57 +1020,112 @@
                                 <button onclick="pickCustomer('${x.id}')" type="button" class="sm-row-menu-item w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition text-left">
                                     <span class="min-w-0">
                                         <span class="block truncate">${x.name}</span>
-                                        <span class="block sm-td-sub text-slate-400 sm-figure">${x.phone} · ពិដាន ${fmtUSD(x.creditLimit)}</span>
+                                        <span class="block sm-td-sub text-slate-400 sm-figure">${x.phone} · ពិដាន ${fmtUSD(x.creditLimit)}${x.vattin ? ' · ចុះបញ្ជីអាករ' : ''}</span>
                                     </span>
                                     ${customerId === x.id ? '<i class="fas fa-check text-[11px] text-emerald-600 flex-shrink-0"></i>' : ''}
                                 </button>`).join('')}
                         </div>
                     </div>
                     <div>
-                        <label class="sm-td-sub text-slate-400 block mb-1">បញ្ចុះតម្លៃ · អតិបរមា ${SHIFT.discountLimit}%</label>
+                        <label class="sm-td-sub text-slate-400 block mb-1">បញ្ចុះតម្លៃ · ដែនកំណត់ ${limit}%</label>
                         <div class="relative">
-                            <input id="discountInput" type="number" inputmode="numeric" min="0" max="${SHIFT.discountLimit}" step="0.5"
+                            <input id="discountInput" type="number" inputmode="decimal" min="0" max="100" step="0.5"
                                 value="${discountPercent || ''}" placeholder="0"
                                 onchange="setDiscount(this.value)"
-                                class="pos-num sm-td w-full px-3 pr-8 rounded-xl bg-[#0f172a] border border-white/10 text-white text-right focus:outline-none focus:border-cyan-600 transition">
+                                class="pos-num sm-td w-full px-3 pr-8 rounded-xl bg-[#0f172a] border ${discountPercent > limit ? 'border-emerald-500/50' : 'border-white/10'} text-white text-right focus:outline-none focus:border-cyan-600 transition">
                             <span class="absolute right-3 top-1/2 -translate-y-1/2 sm-td text-slate-400">%</span>
                         </div>
                     </div>
-                </div>`;
+                </div>
+                ${reasonRow}`;
         }
 
         function pickCustomer(id) {
             customerId = id;
             closeAllFloatingDropdowns();
+            persistCart();
             renderCart();
         }
 
-        function setDiscount(value) {
-            const want = Math.max(parseFloat(value) || 0, 0);
-            if (want > SHIFT.discountLimit) {
-                discountPercent = SHIFT.discountLimit;
-                showToast(`លោកអ្នកអាចបញ្ចុះតម្លៃបានត្រឹម ${SHIFT.discountLimit}% ប៉ុណ្ណោះ`, 'warning');
-            } else {
-                discountPercent = want;
+        async function pickDiscountReason() {
+            const reason = await showReasonPicker({
+                title: 'មូលហេតុនៃការបញ្ចុះតម្លៃ',
+                message: 'មូលហេតុត្រូវបានបោះពុម្ពក្នុងរបាយការណ៍ករណីមិនប្រក្រតីរបស់អ្នកគ្រប់គ្រងវេន',
+                reasons: posSettings().reasons.discount,
+                dark: true
+            });
+            if (!reason) return false;
+            discountReason = reason;
+            persistCart();
+            renderCart();
+            return true;
+        }
+
+        /* ការបញ្ចុះលើសដែនកំណត់ = អ្នកគ្រប់គ្រងវេនអនុម័តនៅបញ្ជរ ជំនួសការកាត់ដោយស្ងាត់ (C6) */
+        async function setDiscount(value) {
+            const want = Math.min(Math.max(parseFloat(value) || 0, 0), 100);
+            const prev = { discountPercent, discountReason, discountApproverId };
+            if (want === discountPercent) return;
+            if (want === 0) {
+                discountPercent = 0;
+                discountReason = '';
+                discountApproverId = '';
+                persistCart();
+                renderCart();
+                return;
             }
+            const limit = discountLimitFor(ME_CASHIER);
+            discountPercent = want;
+            discountApproverId = '';
+            if (!discountReason && !(await pickDiscountReason())) {
+                discountPercent = prev.discountPercent;
+                discountReason = prev.discountReason;
+                discountApproverId = prev.discountApproverId;
+                renderCart();
+                return;
+            }
+            if (want > limit) {
+                const t = saleTotals(cart, want);
+                const ok = await showManagerOverride({
+                    title: `បញ្ចុះតម្លៃ ${want}% លើសដែនកំណត់ ${limit}%`,
+                    lines: [
+                        ['សរុបរង', fmtUSD(t.list)],
+                        ['បញ្ចុះតម្លៃ', '− ' + fmtUSD(t.discount)],
+                        ['សរុបត្រូវបង់', fmtUSD(t.gross)],
+                        ['អ្នកគិតលុយ', personName(ME_CASHIER)]
+                    ],
+                    reason: discountReason,
+                    excludeIds: [ME_CASHIER],
+                    dark: true
+                });
+                if (!ok) {
+                    discountPercent = prev.discountPercent;
+                    discountReason = prev.discountReason;
+                    discountApproverId = prev.discountApproverId;
+                    persistCart();
+                    renderCart();
+                    showToast(`ការបញ្ចុះតម្លៃត្រូវបានកំណត់ត្រឹម ${prev.discountPercent || 0}%`, 'warning');
+                    return;
+                }
+                discountApproverId = ok.approverId;
+                logPosEvent('override_approved', { approverId: ok.approverId, amount: t.discount, reason: discountReason, note: `បញ្ចុះតម្លៃ ${want}%` });
+                showToast(`បានអនុម័តការបញ្ចុះតម្លៃ ${want}% ដោយ ${ok.approverName}`, 'success');
+            }
+            persistCart();
             renderCart();
         }
 
         /* ===== សង្ខេបហិរញ្ញវត្ថុ (ដំណាក់កាលកន្ត្រក) ===== */
 
-        /*
-         * ក្នុងដំណាក់កាលកន្ត្រក បង្ហាញតែលេខដែលអ្នកគិតលុយត្រូវប្រាប់អតិថិជន
-         * ការបំបែកអាករ និងតម្លៃមុនអាករ ផ្លាស់ទៅដំណាក់កាលទូទាត់វិញ
-         */
         function renderTotals(t) {
             const empty = !cart.length;
+            const rate = fxRate();
             const discountRow = !empty && t.discount > 0.005
                 ? `<div class="flex items-baseline justify-between gap-3">
                        <span class="sm-td-sub text-slate-400">សរុបរង <span class="sm-figure">${fmtUSD(t.list)}</span></span>
                        <span class="sm-td text-amber-300 sm-figure">ការបញ្ចុះតម្លៃ ${t.discountPercent}% − ${fmtUSD(t.discount)}</span>
                    </div>`
                 : '';
-
             document.getElementById('cartTotals').innerHTML = discountRow + `
                 <div class="flex items-center justify-between gap-3">
                     <div class="min-w-0">
@@ -799,17 +1134,13 @@
                     </div>
                     <div class="text-right leading-none">
                         <span class="pos-total block ${empty ? 'opacity-40' : ''}">${fmtUSD(t.gross)}</span>
-                        <span class="sm-td-sub text-slate-400 sm-figure block mt-1">${fmtKHR(toKHR(t.gross))}</span>
+                        <span class="sm-td-sub text-slate-400 sm-figure block mt-1">${fmtKHR(toKHR(t.gross, rate))}</span>
                     </div>
                 </div>`;
         }
 
         /* ===== ដំណាក់កាលទូទាត់ ===== */
 
-        /*
-         * ចំនួនប្រាក់សន្និដ្ឋាន — គ្រប់ចំនួនត្រូវតែគ្រប់ថ្លៃ
-         * ពីមុនប៊ូតុងថេរ $5 $10 $20 ផ្តល់ $5 សម្រាប់ការលក់ $8.95 ដែលមិនគ្រប់ទូទាត់ទេ
-         */
         function cashSuggestions(due) {
             const out = [];
             const add = v => {
@@ -823,9 +1154,8 @@
             return out.sort((x, y) => x - y).slice(0, 4);
         }
 
-        /* អតិថិជនកម្ពុជាច្រើនបង់ជាប្រាក់រៀល — ក្រដាសប្រាក់ធំៗដែលគ្រប់ថ្លៃ */
         function rielSuggestions(due) {
-            const k = toKHR(due);
+            const k = toKHR(due, fxRate());
             const out = [];
             const add = v => { if (v >= k && !out.includes(v)) out.push(v); };
             add(Math.ceil(k / 1000) * 1000);
@@ -835,9 +1165,21 @@
             return out.sort((x, y) => x - y).slice(0, 4);
         }
 
+        function currentChange() {
+            const rate = fxRate();
+            const due = saleTotals(cart, discountPercent).gross;
+            return splitChange(paidTotal(pay, rate) - due, rate, changeMode || defaultChangeMode(pay));
+        }
+
+        function setChangeMode(mode) {
+            changeMode = mode;
+            renderCart();
+        }
+
         function renderCheckout(t) {
+            const rate = fxRate();
             const due = t.gross;
-            const paid = paidTotal(pay);
+            const paid = paidTotal(pay, rate);
             const remaining = due - paid;
             const change = paid - due;
             const canFinish = remaining <= 0.005;
@@ -858,13 +1200,11 @@
                         class="pos-num sm-td w-full px-2.5 rounded-xl bg-[#0f172a] border ${pay[key] > 0.005 ? 'border-cyan-600' : 'border-white/10'} text-white text-right focus:outline-none focus:border-cyan-500 transition">
                 </div>`;
 
-            const chip = (onclick, label, on, accent) => `
+            const chip = (onclick, label, on) => `
                 <button onclick="${onclick}" type="button"
                     class="sm-badge px-3.5 rounded-xl border font-semibold sm-figure transition ${on
                         ? 'bg-cyan-600 border-cyan-600 text-white'
-                        : accent
-                            ? 'bg-cyan-600/15 border-cyan-600/50 text-cyan-200 hover:bg-cyan-600/25'
-                            : 'bg-[#0f172a] border-white/10 text-slate-200 hover:border-cyan-600'}">${label}</button>`;
+                        : 'bg-[#0f172a] border-white/10 text-slate-200 hover:border-cyan-600'}">${label}</button>`;
 
             const usdOnly = pay.khrCash < 0.5 && pay.khqr < 0.005;
             const khrOnly = pay.usdCash < 0.005 && pay.khqr < 0.005;
@@ -875,7 +1215,7 @@
                     <div class="rounded-2xl bg-cyan-500/10 border border-cyan-500/25 p-4 text-center">
                         <p class="sm-td-sub text-cyan-200">ទឹកប្រាក់ត្រូវទូទាត់</p>
                         <p class="pos-total mt-1">${fmtUSD(due)}</p>
-                        <p class="sm-td text-slate-300 sm-figure mt-1">${fmtKHR(toKHR(due))}</p>
+                        <p class="sm-td text-slate-300 sm-figure mt-1">${fmtKHR(toKHR(due, rate))}</p>
                     </div>
 
                     <div class="space-y-1.5 px-1">
@@ -883,6 +1223,7 @@
                         ${t.discount > 0.005 ? row(`ការបញ្ចុះតម្លៃ ${t.discountPercent}%`, '− ' + fmtUSD(t.discount), 'text-amber-300') : ''}
                         ${row('តម្លៃមុនអាករ', fmtUSD(t.net))}
                         ${row('អាករលើតម្លៃបន្ថែម 10%', fmtUSD(t.vat))}
+                        ${row('អត្រាប្តូរប្រាក់', `1 ដុល្លារ = ${rate.toLocaleString('en-US')} ៛`, 'text-slate-400')}
                     </div>
 
                     <div class="space-y-2">
@@ -899,7 +1240,6 @@
                             ${rielSuggestions(due).map(v => chip(`quickPayRiel(${v})`, fmtKHR(v), khrOnly && Math.abs(pay.khrCash - v) < 0.5)).join('')}
                         </div>
                     </div>
-
                     <button onclick="quickPay('khqr')" type="button"
                         class="sm-value w-full px-4 rounded-xl bg-cyan-600/15 border border-cyan-600/50 hover:bg-cyan-600/25 text-cyan-100 font-semibold inline-flex items-center justify-center gap-2 transition">
                         <i class="fas fa-qrcode"></i> ទូទាត់ពេញចំនួនតាមកូដស្កេនបាគង
@@ -917,42 +1257,67 @@
 
             document.getElementById('saleOptions').innerHTML = '';
 
-            // ស្ថានភាពទូទាត់ — នៅជិតប៊ូតុងបញ្ចប់ ដើម្បីឃើញប្រាក់អាប់មុនពេលចុច
+            /*
+             * ប្រាក់អាប់តាមរបៀបហាងនៅកម្ពុជា (C2)៖ ដុល្លារគត់ + នៅសល់ជារៀលបង្គត់ 100 ៛
+             * ពីមុនបង្ហាញប្រាក់អាប់ទាំងមូលជាដុល្លារ ហើយម្តងទៀតជារៀល (ឧ. 1,558 ៛) ដែលអាប់មិនកើត
+             */
             const state = paid < 0.005 ? 'idle' : remaining > 0.005 ? 'short' : 'ok';
-            const box = {
-                idle: ['bg-white/5 border-white/10', 'text-slate-400', 'text-slate-200', 'នៅត្រូវទទួល'],
-                short: ['bg-amber-500/10 border-amber-500/30', 'text-amber-200', 'text-amber-200', 'នៅខ្វះ'],
-                ok: ['bg-emerald-500/10 border-emerald-500/30', 'text-emerald-200', 'text-emerald-100', 'ប្រាក់អាប់']
-            }[state];
-
-            document.getElementById('cartTotals').innerHTML = `
-                <div class="p-3 rounded-xl border ${box[0]}">
+            const ch = currentChange();
+            const mode = ch.mode;
+            let inner;
+            if (state === 'ok' && change > 0.005) {
+                const modeBtn = (m, label) => `<button onclick="setChangeMode('${m}')" type="button"
+                    class="!min-h-[36px] sm-td-sub px-2.5 rounded-lg border transition ${mode === m
+                        ? 'bg-emerald-500 border-emerald-500 text-white font-semibold' : 'border-emerald-500/30 text-emerald-200 hover:bg-emerald-500/15'}">${label}</button>`;
+                inner = `
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="sm-label text-emerald-200">ប្រាក់អាប់</p>
+                            <p class="sm-td-sub text-slate-400 sm-figure">បានទទួល ${fmtUSD(paid)}</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[26px] font-bold leading-none text-emerald-100 sm-figure block">${fmtChange(ch)}</span>
+                            <span class="sm-td-sub text-slate-400 sm-figure block mt-1">ស្មើ ${fmtUSD(change)}${Math.abs(ch.roundingKHR) >= 1 ? ` · បង្គត់ ${fmtSigned(ch.roundingKHR, fmtKHR, 0.5)}` : ''}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 mt-2.5">
+                        ${modeBtn('mixed', 'ដុល្លារ + រៀល')}
+                        ${modeBtn('riel', 'រៀលទាំងអស់')}
+                    </div>`;
+            } else {
+                const box = {
+                    idle: ['text-slate-400', 'text-slate-200', 'នៅត្រូវទទួល'],
+                    short: ['text-amber-200', 'text-amber-200', 'នៅខ្វះ'],
+                    ok: ['text-emerald-200', 'text-emerald-100', 'ទូទាត់គត់']
+                }[state];
+                const amt = remaining > 0.005 ? remaining : 0;
+                inner = `
                     <div class="flex items-center justify-between gap-3">
                         <div class="min-w-0">
-                            <p class="sm-label ${box[1]}">${box[3]}</p>
+                            <p class="sm-label ${box[0]}">${box[2]}</p>
                             ${paid > 0.005 ? `<p class="sm-td-sub text-slate-400 sm-figure">បានទទួល ${fmtUSD(paid)}</p>` : ''}
                         </div>
                         <div class="text-right">
-                            <span class="text-[26px] font-bold leading-none ${box[2]} sm-figure block">
-                                ${fmtUSD(remaining > 0.005 ? remaining : Math.max(change, 0))}
-                            </span>
-                            ${state === 'ok' && change > 0.005
-                                ? `<span class="sm-td-sub text-emerald-300 sm-figure block mt-1">${fmtKHR(toKHR(change))}</span>` : ''}
+                            <span class="text-[26px] font-bold leading-none ${box[1]} sm-figure block">${fmtUSD(amt)}</span>
+                            ${amt > 0.005 ? `<span class="sm-td-sub text-slate-400 sm-figure block mt-1">${fmtKHR(Math.ceil(toKHR(amt, rate) / 100) * 100)}</span>` : ''}
                         </div>
-                    </div>
-                </div>`;
+                    </div>`;
+            }
+            const skin = state === 'ok' ? 'bg-emerald-500/10 border-emerald-500/30' : state === 'short' ? 'bg-amber-500/10 border-amber-500/30' : 'bg-white/5 border-white/10';
+            document.getElementById('cartTotals').innerHTML = `<div class="p-3 rounded-xl border ${skin}">${inner}</div>`;
 
             document.getElementById('paymentPanel').innerHTML = `
                 <button onclick="finishSale()" type="button" ${canFinish ? '' : 'disabled'}
                     class="sm-card-title w-full !min-h-[64px] rounded-2xl font-bold transition inline-flex items-center justify-center gap-2 ${canFinish
                         ? 'bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg shadow-emerald-900/40'
                         : 'bg-[#374151] text-slate-500 cursor-not-allowed'}">
-                    <i class="fas fa-circle-check"></i> ${canFinish && pay.khqr > 0.005 ? 'បន្តទៅស្កេនបាគង' : 'បញ្ចប់ការទូទាត់'}
+                    <i class="fas ${canFinish && pay.khqr > 0.005 ? 'fa-qrcode' : 'fa-circle-check'}"></i> ${canFinish && pay.khqr > 0.005 ? 'បង្ហាញកូដស្កេនបាគង' : 'បញ្ចប់ការទូទាត់'}
                 </button>`;
         }
 
         function setPay(key, value) {
             pay[key] = Math.max(parseFloat(value) || 0, 0);
+            changeMode = null;
             renderCart();
         }
 
@@ -962,12 +1327,14 @@
             if (mode === 'exact') pay = { usdCash: due, khrCash: 0, khqr: 0 };
             else if (mode === 'khqr') pay = { usdCash: 0, khrCash: 0, khqr: due };
             else pay = { usdCash: Number(mode), khrCash: 0, khqr: 0 };
+            changeMode = null;
             renderCart();
         }
 
         function quickPayRiel(amount) {
             if (!cart.length) return showToast('កន្ត្រកទំនិញនៅទទេ', 'warning');
             pay = { usdCash: 0, khrCash: Number(amount), khqr: 0 };
+            changeMode = null;
             renderCart();
         }
 
@@ -982,15 +1349,18 @@
             if (lastSale) printReceipt(lastSale);
         }
 
-        function showSuccess(sale, change) {
+        function showSuccess(sale) {
             const t = saleTotals(sale.items, sale.discountPercent);
+            const ch = saleChange(sale);
             document.getElementById('successAmount').textContent = fmtUSD(t.gross);
-            document.getElementById('successChange').textContent =
-                change > 0.005 ? `ប្រាក់អាប់ ${fmtUSD(change)} · ${fmtKHR(toKHR(change))}` : 'ទូទាត់គត់ · គ្មានប្រាក់អាប់';
+            document.getElementById('successChange').innerHTML = (ch.usd > 0.005 || ch.khr >= 1)
+                ? `<p class="sm-td-sub text-slate-400">ប្រាក់អាប់ឱ្យអតិថិជន</p>
+                   <p class="text-[28px] font-bold text-emerald-300 sm-figure leading-tight">${fmtChange(ch)}</p>`
+                : '<p class="sm-card-sub text-emerald-300">ទូទាត់គត់ · គ្មានប្រាក់អាប់</p>';
             document.getElementById('successReceipt').textContent = sale.id;
             document.getElementById('successOverlay').classList.remove('hidden');
 
-            let left = 3;
+            let left = 4;
             const timerEl = document.getElementById('successTimer');
             timerEl.textContent = `បន្តលក់ដោយស្វ័យប្រវត្តិក្នុង ${left} វិនាទី`;
             clearInterval(successTimer);
@@ -1007,77 +1377,294 @@
             document.getElementById('barcodeInput').focus();
         }
 
-        async function finishSale() {
-            if (!requireOpenShift()) return;
-            const t = saleTotals(cart, discountPercent);
-            const due = t.gross;
-            const paid = paidTotal(pay);
-            if (!cart.length || paid < due - 0.005) return;
-
-            const receiptId = nextReceiptNumber();
-
-            // បើមានផ្នែកបាគង ត្រូវបញ្ជូនទៅទំព័រស្កេនជាមុនសិន
-            if (pay.khqr > 0.005) {
-                savePendingPayment({ receiptId, items: cart, pay, due, discountPercent, customerId });
-                window.location.href = `khqr-payment.html?receipt=${receiptId}&amount=${pay.khqr.toFixed(2)}`;
-                return;
-            }
-
-            const change = paid - due;
-            const sale = {
-                id: receiptId,
+        /* ការលក់កត់ត្រាអ្នកគិតលុយ បញ្ជរ វេន និងអត្រាប្តូរប្រាក់ (C7) */
+        function buildSale(snap, payNow, id) {
+            const rate = fxRate();
+            const due = saleTotals(snap.items, snap.discountPercent).gross;
+            const sh = SH();
+            return {
+                id: id || nextReceiptNumber(MY_REGISTER),
                 time: isoLocal(new Date()),
-                items: cart.map(l => ({ ...l })),
-                pay: { ...pay },
-                discountPercent,
-                customerId
+                shiftId: sh.id,
+                cashierId: ME_CASHIER,
+                register: MY_REGISTER,
+                fxRate: rate,
+                items: snap.items.map(l => ({ ...l })),
+                pay: { ...payNow },
+                discountPercent: snap.discountPercent,
+                discountReason: snap.discountReason,
+                discountApproverId: snap.discountApproverId,
+                customerId: snap.customerId,
+                change: splitChange(paidTotal(payNow, rate) - due, rate, snap.changeMode || defaultChangeMode(payNow)),
+                status: 'completed'
             };
-            saveSale(sale);
-            lastSale = sale;
+        }
 
+        function completeSale(sale) {
+            saveSale(sale);
+            const t = saleTotals(sale.items, sale.discountPercent);
+            if (t.discount > 0.005) {
+                logPosEvent('discount', { saleId: sale.id, amount: t.discount, reason: sale.discountReason,
+                    approverId: sale.discountApproverId, note: `${sale.discountPercent}%` });
+            }
+            lastSale = sale;
             resetSale();
             closeCartPanel();
             renderShiftChip();
+            renderDrawerBanner();
             updatePortalBadges();
             refreshPortalNotifications();
-            showSuccess(sale, change);
+            showSuccess(sale);
         }
 
-        /* ===== ការជាប់សោរវេន ===== */
+        function snapshot() {
+            return { items: cart.map(l => ({ ...l })), discountPercent, discountReason, discountApproverId, customerId, changeMode };
+        }
+
+        function finishSale() {
+            if (!requireOpenShift()) return;
+            const t = saleTotals(cart, discountPercent);
+            const paid = paidTotal(pay, fxRate());
+            if (!cart.length || paid < t.gross - 0.005) return;
+            if (pay.khqr > 0.005) {
+                openKhqr(snapshot(), { ...pay });
+                return;
+            }
+            completeSale(buildSale(snapshot(), pay));
+        }
+
+        /* ===== ផ្ទាំងបាគងក្នុងផ្ទាំងគិតលុយ (C10) =====
+           ការទូទាត់ដែលរង់ចាំត្រូវរក្សាទុក (ពេលបង្កើត ពេលផុតកំណត់ សញ្ញាសម្គាល់កូដ)
+           ដូច្នេះការផ្ទុកទំព័រឡើងវិញ នៅតែបង្ហាញកូដដដែល (ស្រាវជ្រាវ §8) */
+
+        function openKhqr(snap, payNow) {
+            const seconds = Number(posSettings().khqrSeconds) || 300;
+            const now = Date.now();
+            const receiptId = nextReceiptNumber(MY_REGISTER);
+            const pending = { receiptId, snap, pay: payNow, createdAt: now, expiresAt: now + seconds * 1000 };
+            pending.payload = buildKhqrPayload(receiptId, payNow.khqr, pending.createdAt, pending.expiresAt);
+            pending.qrHash = simpleHash(pending.payload);
+            savePendingPayment(pending);
+            showKhqr(pending);
+        }
+
+        function showKhqr(pending) {
+            const rate = fxRate();
+            document.getElementById('khqrOverlay').classList.remove('hidden');
+            document.getElementById('khqrAmount').textContent = fmtUSD(pending.pay.khqr);
+            document.getElementById('khqrAmountKHR').textContent = fmtKHR(toKHR(pending.pay.khqr, rate));
+            document.getElementById('khqrReceipt').textContent = `វិក្កយបត្រ ${pending.receiptId} · សញ្ញាសម្គាល់ ${pending.qrHash.slice(0, 12)}`;
+            document.getElementById('khqrMerchantName').textContent = MERCHANT.name;
+            document.getElementById('khqrMerchant').textContent = MERCHANT.account;
+            const box = document.getElementById('khqrBox');
+            box.innerHTML = '';
+            if (typeof QRCode !== 'undefined') {
+                new QRCode(box, { text: pending.payload, width: 280, height: 280, colorDark: '#0f172a', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+            } else {
+                box.innerHTML = '<div class="aspect-square flex items-center justify-center text-slate-400"><i class="fas fa-qrcode text-7xl"></i></div>';
+            }
+            clearInterval(khqrTimer);
+            tickKhqr();
+            khqrTimer = setInterval(tickKhqr, 1000);
+        }
+
+        function tickKhqr() {
+            const pending = loadPendingPayment();
+            if (!pending) return;
+            const total = pending.expiresAt - pending.createdAt;
+            const left = Math.max(pending.expiresAt - Date.now(), 0);
+            const secs = Math.ceil(left / 1000);
+            const expired = left <= 0;
+            const bar = document.getElementById('khqrBar');
+            bar.style.width = `${(left / total) * 100}%`;
+            bar.className = `h-full rounded-full transition-all duration-1000 ${secs <= 15 ? 'bg-rose-500' : secs <= 60 ? 'bg-amber-400' : 'bg-cyan-500'}`;
+            document.getElementById('khqrTimer').textContent = `${Math.floor(secs / 60)}:${pad2(secs % 60)}`;
+            document.getElementById('khqrExpiredMask').classList.toggle('hidden', !expired);
+            document.getElementById('khqrStatus').innerHTML = expired
+                ? `<div class="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-rose-500/15 border border-rose-500/30">
+                       <i class="fas fa-clock-rotate-left text-rose-300"></i><span class="sm-value text-rose-200">កូដផុតសុពលភាព · សូមបង្កើតកូដថ្មី</span></div>`
+                : `<div class="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-cyan-500/10 border border-cyan-500/25">
+                       <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span><span class="sm-value text-cyan-100">កំពុងរង់ចាំការទូទាត់ពីអតិថិជន...</span></div>`;
+            document.getElementById('khqrMainBtn').innerHTML = expired
+                ? '<i class="fas fa-rotate-right"></i> បង្កើតកូដថ្មី'
+                : '<i class="fas fa-circle-check"></i> បានទទួលប្រាក់';
+            if (expired) clearInterval(khqrTimer);
+        }
+
+        function khqrMainAction() {
+            const pending = loadPendingPayment();
+            if (!pending) return;
+            if (Date.now() >= pending.expiresAt) {
+                clearPendingPayment();
+                openKhqr(pending.snap, pending.pay);
+                showToast('បានបង្កើតកូដស្កេនថ្មី', 'info');
+                return;
+            }
+            clearInterval(khqrTimer);
+            clearPendingPayment();
+            document.getElementById('khqrOverlay').classList.add('hidden');
+            const sale = buildSale(pending.snap, pending.pay, pending.receiptId);
+            sale.khqrRef = pending.qrHash;
+            completeSale(sale);
+        }
+
+        async function cancelKhqr() {
+            const ok = await showCustomConfirm({
+                title: 'បោះបង់ការទូទាត់តាមកូដស្កេន',
+                message: 'កន្ត្រកទំនិញនៅរក្សាទុកដដែល ហើយលោកអ្នកអាចជ្រើសរើសវិធីទូទាត់ផ្សេង។',
+                confirmText: 'បោះបង់ការទូទាត់',
+                cancelText: 'បន្តរង់ចាំ',
+                danger: true
+            });
+            if (!ok) return;
+            clearInterval(khqrTimer);
+            clearPendingPayment();
+            document.getElementById('khqrOverlay').classList.add('hidden');
+            showToast('បានបោះបង់ការទូទាត់តាមកូដស្កេន', 'warning');
+        }
+
+        /* ===== ផ្ទេរប្រាក់ចូលទូដែក (C13) ===== */
+
+        function openDropDialog() {
+            if (!requireOpenShift()) return;
+            const m = document.getElementById('dropModal');
+            document.getElementById('dropUSD').value = '';
+            document.getElementById('dropKHR').value = '';
+            document.getElementById('dropErr').classList.add('hidden');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+            document.getElementById('dropUSD').focus();
+        }
+
+        function closeDropDialog() {
+            const m = document.getElementById('dropModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        async function submitDrop(managerHere) {
+            const usd = Math.max(parseFloat(document.getElementById('dropUSD').value) || 0, 0);
+            const khr = Math.max(parseInt(document.getElementById('dropKHR').value, 10) || 0, 0);
+            if (!(usd + khr)) {
+                document.getElementById('dropErr').classList.remove('hidden');
+                return;
+            }
+            const sh = SH();
+            const now = isoLocal(new Date());
+            const rec = {
+                id: newId('MV'), type: 'drop', register: sh.register, shiftId: sh.id, usd, khr,
+                reason: '', ref: '', createdBy: ME_CASHIER, createdAt: now, status: 'pending'
+            };
+            if (managerHere) {
+                closeDropDialog();
+                const ok = await showManagerOverride({
+                    title: 'ទទួលប្រាក់ផ្ទេរចូលទូដែក',
+                    lines: [['ដុល្លារ', fmtUSD(usd)], ['រៀល', fmtKHR(khr)], ['ពីបញ្ជរ', `${sh.register} · ${personName(ME_CASHIER)}`]],
+                    reason: 'រាប់ ហើយទទួលប្រាក់ត្រឹមត្រូវ',
+                    excludeIds: [ME_CASHIER],
+                    confirmText: 'បានទទួលប្រាក់',
+                    dark: true
+                });
+                if (!ok) return;
+                Object.assign(rec, { status: 'confirmed', confirmedBy: ok.approverId, confirmedAt: now, receivedUSD: usd, receivedKHR: khr });
+            } else {
+                closeDropDialog();
+            }
+            saveMovement(rec);
+            logPosEvent('drop', { amount: usd + toUSD(khr), approverId: rec.confirmedBy || '', note: `${fmtUSD(usd)} · ${fmtKHR(khr)}` });
+            renderDrawerBanner();
+            refreshPortalNotifications();
+            showToast(managerHere ? 'បានផ្ទេរ និងអ្នកគ្រប់គ្រងបានទទួលប្រាក់រួចរាល់' : 'បានកត់ត្រាការផ្ទេរ · រង់ចាំអ្នកគ្រប់គ្រងវេនទទួល', 'success');
+        }
+
+        /* ===== វេន និងសោរបញ្ជរ ===== */
+
+        /* គ្មានវេនបើក = នាំទៅទំព័របើកវេន ជំនួសផ្ទាំងជាប់សោរ (C3) */
+        function showForeign() {
+            const f = foreignShift();
+            document.getElementById('foreignDetail').textContent =
+                `${f.register} · ${f.templateName} · បើកដោយ ${personName(f.cashierId)} ម៉ោង ${fmtTime(f.openedAt)}`;
+            document.getElementById('foreignManagerLink').style.display = isManagerId(ME_CASHIER) ? '' : 'none';
+            document.getElementById('foreignOverlay').classList.remove('hidden');
+        }
 
         function requireOpenShift() {
-            if (isShiftOpen()) return true;
-            showLockOverlay();
+            if (foreignShift()) { showForeign(); return false; }
+            if (SH()) {
+                if (terminalLock()) { showLockOverlay(); return false; }
+                return true;
+            }
+            location.replace('../shift/open-shift.html');
             return false;
         }
 
         function showLockOverlay() {
-            const st = shiftState();
-            document.getElementById('lockDetail').textContent =
-                `វេន ${SHIFT.id} ត្រូវបានបិទ${st.closedAt ? ` ម៉ោង ${fmtTime(st.closedAt)}` : ''} ដោយ ${SHIFT.cashier}។`;
+            const lock = terminalLock();
+            const sh = SH();
+            document.getElementById('lockDetail').textContent = lock
+                ? `${personName(sh.cashierId)} បានចាក់សោរម៉ោង ${fmtTime(lock.at)} · ${sh.templateName} · ${sh.register}`
+                : '';
             document.getElementById('lockOverlay').classList.remove('hidden');
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            cart = loadCart();
+        function lockTerminal() {
+            if (!SH()) return requireOpenShift();
+            closeAllFloatingDropdowns();
+            setTerminalLock(true);
+            logPosEvent('terminal_locked');
+            showLockOverlay();
+        }
 
-            // ត្រឡប់មកវិញពីទំព័របាគងដោយជោគជ័យ
-            const params = new URLSearchParams(location.search);
-            const paidId = params.get('paid');
-            if (paidId) {
-                clearCart();
-                cart = [];
-                history.replaceState(null, '', location.pathname);
-                const sale = shiftSales().find(s => s.id === paidId);
-                if (sale) {
-                    lastSale = sale;
-                    showSuccess(sale, 0);
-                } else {
-                    showToast(`បានបញ្ចប់ការលក់ ${paidId} តាមរយៈបាគង`, 'success');
-                }
+        async function unlockTerminal() {
+            const sh = SH();
+            if (!sh) return requireOpenShift();
+            const ok = await showPinConfirm({
+                title: 'ដោះសោរបញ្ជរ',
+                message: 'វាយលេខសម្ងាត់របស់អ្នកគិតលុយដែលបើកវេននេះ',
+                userId: sh.cashierId,
+                confirmText: 'ដោះសោរ',
+                dark: true
+            });
+            if (!ok) return;
+            setTerminalLock(false);
+            logPosEvent('terminal_unlocked');
+            document.getElementById('lockOverlay').classList.add('hidden');
+            document.getElementById('barcodeInput').focus();
+        }
+
+        /* ផ្ទាំងផ្សេង (អ្នកគ្រប់គ្រង) កែទិន្នន័យ → ធ្វើបច្ចុប្បន្នភាពព័ត៌មានដែលពាក់ព័ន្ធ */
+        window.onStoreChanged = () => {
+            if (!SH()) return requireOpenShift();
+            renderShiftChip();
+            renderHeld();
+            renderDrawerBanner();
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const me = personById(ME_CASHIER);
+            document.getElementById('switchToManager').style.display = isManagerId(ME_CASHIER) ? '' : 'none';
+            if (foreignShift()) {
+                document.getElementById('meInitials').innerHTML = avatarHtml(me.id, 'w-9 h-9 ring-2 ring-cyan-500/40');
+                showForeign();
+                return;
             }
+            if (!SH()) {
+                location.replace('../shift/open-shift.html');
+                return;
+            }
+            document.getElementById('meInitials').innerHTML = avatarHtml(me.id, 'w-9 h-9 ring-2 ring-cyan-500/40');
+            document.getElementById('meName').textContent = me.name;
+
+            const saved = loadCart();
+            cart = saved.items || [];
+            discountPercent = saved.discountPercent || 0;
+            discountReason = saved.discountReason || '';
+            discountApproverId = saved.discountApproverId || '';
+            customerId = saved.customerId || '';
 
             renderShiftChip();
+            renderHeld();
+            renderDrawerBanner();
             renderCategories();
             renderProducts();
             renderCart();
@@ -1085,19 +1672,15 @@
 
             tickClock();
             setInterval(tickClock, 1000);
-            setInterval(renderShiftChip, 60000);
+            setInterval(renderShiftChip, 30000);
             window.addEventListener('resize', updatePillFade);
-            // ទទឹងគ្រាប់ប្រភេទប្តូរពេលពុម្ពអក្សរខ្មែរផ្ទុករួច — ត្រូវវាស់ម្តងទៀត
             if (document.fonts && document.fonts.ready) document.fonts.ready.then(updatePillFade);
             window.addEventListener('load', updatePillFade);
 
-            // Esc ពេលកំពុងទូទាត់ = ត្រឡប់ទៅកន្ត្រក (មិនបោះបង់ការលក់ទេ)
             document.addEventListener('keydown', e => {
                 if (e.key === 'Escape' && checkout && !document.querySelector('[data-floating-active="true"]')) exitCheckout();
             });
 
-            // លាក់ជម្រើសពេញអេក្រង់ទាំងស្រុង បើកម្មវិធីរុករកមិនគាំទ្រ (ឧទាហរណ៍ សាហ្វារីលើទូរស័ព្ទ)
-            // ប្រើ style ដោយផ្ទាល់ ព្រោះថ្នាក់ hidden អាចត្រូវបានឈ្នះដោយថ្នាក់តាមទំហំអេក្រង់
             if (!fullscreenSupported()) {
                 const btn = document.getElementById('fsBtn');
                 if (btn) btn.style.display = 'none';
@@ -1107,11 +1690,12 @@
                 document.addEventListener('webkitfullscreenchange', syncFullscreenIcon);
             }
 
-            if (!isShiftOpen()) {
-                showLockOverlay();
-            } else {
-                document.getElementById('barcodeInput').focus();
-            }
+            // ការទូទាត់បាគងដែលកំពុងរង់ចាំ (ផ្ទុកទំព័រឡើងវិញពេលអតិថិជនកំពុងស្កេន)
+            const pending = loadPendingPayment();
+            if (pending && pending.snap) showKhqr(pending);
+
+            if (terminalLock()) showLockOverlay();
+            else document.getElementById('barcodeInput').focus();
         });
     </script>
 </body>

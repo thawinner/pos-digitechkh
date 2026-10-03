@@ -2,8 +2,11 @@
 
 Static HTML/CSS/JS prototype of the DIGITECHKH point-of-sale system, entirely in Khmer. Two roles:
 
-- **Cashier** — sells, takes cash / KHQR payment, reprints receipts, closes the shift. Built.
-- **Manager (shift supervisor)** — approves voids, refunds and discounts, moves cash, reviews and countersigns closed shifts. Not built yet; spec in [docs/spec/02-manager-pos.md](docs/spec/02-manager-pos.md).
+- **Cashier** — opens a shift with a counted float, sells (cash USD/KHR with Riel change, Bakong KHQR), holds sales,
+  requests voids and returns, records safe drops, locks the till on breaks, and closes with a blind count.
+- **Manager (shift supervisor)** — dashboard of registers, approvals queue, shift review and countersign, shift roster,
+  cash movements and safe, exception report, sales report, settings. Can switch to the till and sell on their own
+  register. Spec: [docs/spec/02-manager-pos.md](docs/spec/02-manager-pos.md).
 
 Split out of the eBMS repo (`ebms_digitechkh/frontend/roles/05-cashier-pos/`, commit `54d8e94`, 2026-10-02).
 No build step, no `package.json`, no backend. Pages use the Tailwind Play CDN and `custom.css`.
@@ -14,8 +17,32 @@ No build step, no `package.json`, no backend. Pages use the Tailwind Play CDN an
 python3 -m http.server 8000 --directory src
 ```
 
-Open <http://localhost:8000>. It redirects to the cashier terminal.
-Serve over HTTP. The cart, sales and shift state live in `sessionStorage` / `localStorage`, which is unreliable under `file://`.
+Open <http://localhost:8000> to reach the login page. Demo PINs are under «ព័ត៌មានសម្រាប់គំរូសាកល្បង» on that page:
+
+| Person | Role | PIN |
+|---|---|---|
+| ចន្ទ មករា | Cashier | 1111 |
+| សុខ ដារ៉ា | Cashier | 2222 |
+| លី សុភា | Cashier | 3333 |
+| សុខ វណ្ណា | Shift manager | 2468 |
+| ម៉ៅ ស្រីនាង | Shift manager | 1357 |
+
+Serve over HTTP. All state lives in the browser's `localStorage`, which is unreliable under `file://`. The login page's
+«កំណត់ទិន្នន័យគំរូឡើងវិញ» button wipes and regenerates it.
+
+## What a real deployment still needs
+
+This is a working prototype, not production software. Before real use:
+
+- **Server and database.** Sales, shifts and approvals live in one browser's storage. A real store needs a backend so
+  every till and the manager see the same data, and nothing is lost when a browser is cleared.
+- **Real authentication.** PINs are checked in the browser and stored in the page source; they must be hashed and
+  verified on the server.
+- **Bakong KHQR integration.** The QR is a simulated payload, and the cashier confirms payment by hand. Production
+  needs a merchant account, real KHQR generation and payment confirmation by MD5 from the Bakong API.
+- **Hardware.** Receipts print through the browser's print dialog. Thermal printers (ESC/POS), cash drawer kick and
+  barcode scanners need a print bridge or native wrapper. Scanners that type plus Enter already work.
+- **Offline mode, backups and an accountant's review** of the receipt format against GDT rules.
 
 ## Structure
 
@@ -31,15 +58,22 @@ pos-digitechkh/
 │   ├── research/                POS market and Cambodia research behind the plans
 │   └── standards/               cross-cutting rules that apply to the POS
 └── src/
-    ├── index.html               redirects to the cashier terminal
+    ├── index.html               login (pick a person, PIN pad)
     ├── cashier/
-    │   ├── terminal/pos-terminal.html    sell: product grid, cart, payment
-    │   ├── terminal/khqr-payment.html    Bakong KHQR payment screen
-    │   ├── receipts/receipts.html        current shift receipts
-    │   └── shift/close-shift.html        end of shift wizard + Z-report
-    ├── manager/                 manager pages (planned)
+    │   ├── terminal/pos-terminal.html    sell: grid, cart, hold, discount, change, KHQR, drop, lock
+    │   ├── receipts/receipts.html        current shift receipts, void / return requests
+    │   ├── shift/open-shift.html         float count + manager approval
+    │   └── shift/close-shift.html        blind count wizard + Z-report
+    ├── manager/
+    │   ├── dashboard/                    registers, approvals, exceptions, sales by hour
+    │   ├── approvals/                    request queue + view-request
+    │   ├── shifts/                       shift list + view-shift (review, countersign, reopen)
+    │   ├── roster/                       default shifts, covers, weekly hours
+    │   ├── cash/                         safe, drops, payouts + create-movement
+    │   ├── exceptions/  reports/  settings/
     └── shared/
-        ├── scripts/data.js            mock data, money/date helpers, storage
+        ├── scripts/data.js            shared data: people, settings, shifts, sales, receipts, storage
+        ├── scripts/manager-data.js    manager-only history, aggregates, overlays
         ├── scripts/ui-components.js   toasts, confirm dialog, dropdowns, date picker
         ├── scripts/portal.js          sidebar renderer, mobile drawer, ⋮ menus
         ├── styles/custom.css          global styles (overrides Tailwind's type scale)

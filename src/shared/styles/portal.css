@@ -310,6 +310,16 @@ html.dark #portalSidebar .sb-accent-soft { color: #BAE6FD; }
 html.dark #portalSidebar .sb-avatar      { background: rgba(14, 165, 233, .2); border-color: rgba(56, 189, 248, .3); color: #E0F2FE; }
 html.dark .sb-nav-item[aria-current="page"]::before { background: #7DD3FC; }
 
+/* អ្នកគ្រប់គ្រងវេន — របារចំហៀងពណ៌ឆ្លុះ (indigo) ដើម្បីឱ្យរូបថតអេក្រង់ប្រាប់ភ្លាមថាជាតួនាទីណា
+   (ឯកសាររចនាលេខ 02 ផ្នែក 1) ។ custom.css បង្ខំ <aside> ឱ្យទៅពណ៌បៃតង ដូច្នេះត្រូវប្រើ !important */
+#managerPortal aside { background-color: #1e1b4b !important; }
+#managerPortal #portalSidebar .sb-icon        { color: #C7D2FE; }
+#managerPortal #portalSidebar .sb-accent      { color: #C7D2FE; }
+#managerPortal #portalSidebar .sb-accent-soft { color: rgba(224, 231, 255, .82); }
+#managerPortal #portalSidebar .sb-avatar      { background: rgba(165, 180, 252, .16); border-color: rgba(165, 180, 252, .35); color: #E0E7FF; }
+#managerPortal .sb-nav-item[aria-current="page"]::before { background: #A5B4FC; }
+html.dark #managerPortal aside { background-color: #0b1329 !important; }
+
 /* ===== ស្តង់ដារបោះពុម្ពឯកសារផ្លូវការ A4 (ស្តង់ដារលេខ 12) ===== */
 .print-footer {
     display: none;

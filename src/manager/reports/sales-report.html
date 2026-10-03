@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - របាយការណ៍លក់</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+<style>
+    @media print {
+        .no-print { display: none !important; }
+        #reportBody { border: 0 !important; box-shadow: none !important; }
+        @page { size: A4; margin: 12mm; }
+    }
+</style>
+</head>
+<body id="managerPortal" data-role-root="../.." data-active="reports" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="របាយការណ៍លក់"
+             data-subtitle="តម្លៃលក់ ចំនួន និងការរាប់ · គ្មានថ្លៃដើម"></div>
+
+        <main class="flex-1 overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <div class="w-full space-y-5">
+                <div class="bg-white rounded-2xl p-2 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-3 no-print">
+                    <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+                        <div id="registerFilter" data-bms-select data-onchange="renderAll()" class="w-[46%] sm:w-[150px] h-9"></div>
+                        <div id="cashierFilter" data-bms-select data-onchange="renderAll()" class="w-[50%] sm:w-[180px] h-9"></div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div id="dateRange" class="flex items-center"></div>
+                        <button onclick="window.print()" type="button" class="sm-badge h-9 px-3.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center gap-2"><i class="fas fa-print"></i> បោះពុម្ព</button>
+                    </div>
+                </div>
+                <div id="kpiRow" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
+                <section id="reportBody" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="p-2 border-b border-slate-100 flex flex-wrap gap-1.5 no-print" id="viewTabs"></div>
+                    <div class="p-5">
+                        <div class="hidden print:block mb-4">
+                            <p id="printHead" class="sm-card-title text-slate-800"></p>
+                        </div>
+                        <p id="viewTitle" class="sm-card-title text-slate-700"></p>
+                        <p id="viewSub" class="sm-card-sub text-slate-500"></p>
+                        <div id="viewBody" class="mt-4"></div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        /* របាយការណ៍លក់ (ឯកសាររចនាលេខ 02 ផ្នែក 5.6) — តម្លៃលក់ ចំនួន និងការរាប់ប៉ុណ្ណោះ គ្មានថ្លៃដើម (M-RULE 2) */
+
+        let view = 'day';
+        const VIEWS = [
+            { id: 'day', label: 'តាមថ្ងៃ' }, { id: 'hour', label: 'តាមម៉ោង' }, { id: 'cashier', label: 'តាមអ្នកគិតលុយ' },
+            { id: 'category', label: 'តាមប្រភេទទំនិញ' }, { id: 'payment', label: 'តាមវិធីទូទាត់' }, { id: 'product', label: 'ទំនិញលក់ដាច់' }
+        ];
+
+        function filter() {
+            return { register: bmsGetSelect('registerFilter'), cashierId: bmsGetSelect('cashierFilter') };
+        }
+
+        function sales() {
+            return salesInRange(getSelectedRange(), filter());
+        }
+
+        function renderKpis(list) {
+            const a = aggregateSales(list);
+            document.getElementById('kpiRow').innerHTML =
+                kpiCard('លក់សុទ្ធ', fmtUSD(a.netSales), `សរុប ${fmtUSD(a.gross)} · ប្រគល់វិញ ${fmtUSD(a.returns)}`, 'text-emerald-600') +
+                kpiCard('វិក្កយបត្រ', `${a.tx}`, `${a.qty} ឯកតា · លុបចោល ${a.voids}`) +
+                kpiCard('មធ្យមក្នុងមួយវិក្កយបត្រ', fmtUSD(a.avg), 'តម្លៃកន្ត្រកជាមធ្យម') +
+                kpiCard('អាករលើតម្លៃបន្ថែម', fmtUSD(a.vat), `តម្លៃមុនអាករ ${fmtUSD(a.net)} · បញ្ចុះ ${fmtUSD(a.discount)}`);
+        }
+
+        /* តារាង + របារ CSS — ជួរនីមួយៗ៖ ស្លាក · តម្លៃ · ព័ត៌មានបន្ថែម */
+        function barTable(rows, valueLabel, fmt) {
+            if (!rows.length) return emptyState('fa-chart-column', 'គ្មានការលក់ក្នុងជួរនេះ', 'សូមប្តូរជួរកាលបរិច្ឆេទ ឬតម្រង');
+            const max = Math.max(...rows.map(r => r.value), 1);
+            return `<div class="overflow-x-auto"><table class="w-full min-w-[560px]">
+                <thead><tr class="border-b border-slate-100">
+                    <th class="sm-th py-2.5 pr-3 text-left text-slate-500"></th>
+                    <th class="sm-th py-2.5 px-3 text-left text-slate-500 w-[45%]"></th>
+                    <th class="sm-th py-2.5 px-3 text-right text-slate-500">${valueLabel}</th>
+                    ${rows[0].extra ? rows[0].extra.map(x => `<th class="sm-th py-2.5 pl-3 text-right text-slate-500">${x[0]}</th>`).join('') : ''}
+                </tr></thead>
+                <tbody>${rows.map(r => `<tr class="border-b border-slate-50">
+                    <td class="py-2 pr-3 sm-td text-slate-700 whitespace-nowrap">${r.label}</td>
+                    <td class="py-2 px-3"><div class="h-3 rounded-full bg-slate-100 overflow-hidden"><div class="h-full rounded-full bg-indigo-500" style="width:${r.value / max * 100}%"></div></div></td>
+                    <td class="py-2 px-3 text-right sm-td-strong sm-figure">${fmt(r.value)}</td>
+                    ${(r.extra || []).map(x => `<td class="py-2 pl-3 text-right sm-td sm-figure text-slate-600">${x[1]}</td>`).join('')}
+                </tr>`).join('')}</tbody></table></div>`;
+        }
+
+        function groupBy(list, keyFn) {
+            const map = {};
+            list.forEach(s => { const k = keyFn(s); (map[k] = map[k] || []).push(s); });
+            return map;
+        }
+
+        function renderView(list) {
+            const live = list.filter(s => !isVoided(s));
+            const meta = VIEWS.find(v => v.id === view);
+            const range = getSelectedRange();
+            document.getElementById('viewTitle').textContent = meta.label;
+            document.getElementById('viewSub').textContent = range.start ? `${fmtDate(range.start)} – ${fmtDate(range.end || range.start)}` : 'គ្រប់កាលបរិច្ឆេទ';
+            let rows = [];
+            if (view === 'day') {
+                const g = groupBy(list, s => s.time.slice(0, 10));
+                rows = Object.keys(g).sort().reverse().map(d => {
+                    const a = aggregateSales(g[d]);
+                    return { label: fmtDate(d + 'T12:00'), value: a.netSales, extra: [['វិក្កយបត្រ', a.tx], ['មធ្យម', fmtUSD(a.avg)], ['លុបចោល', a.voids]] };
+                });
+            } else if (view === 'hour') {
+                const g = groupBy(live, s => new Date(s.time).getHours());
+                rows = Object.keys(g).map(Number).sort((a, b) => a - b).map(h => {
+                    const a = aggregateSales(g[h]);
+                    return { label: `${pad2(h)}:00`, value: a.gross, extra: [['វិក្កយបត្រ', a.tx], ['មធ្យម', fmtUSD(a.avg)]] };
+                });
+            } else if (view === 'cashier') {
+                const g = groupBy(list, s => s.cashierId);
+                rows = Object.keys(g).map(id => {
+                    const a = aggregateSales(g[id]);
+                    return { label: personName(id), value: a.netSales, extra: [['វិក្កយបត្រ', a.tx], ['មធ្យម', fmtUSD(a.avg)], ['ឯកតា/វិក្កយបត្រ', a.tx ? (a.qty / a.tx).toFixed(1) : '0']] };
+                }).sort((a, b) => b.value - a.value);
+            } else if (view === 'category') {
+                const tally = {};
+                live.forEach(s => s.items.forEach(l => {
+                    const p = getProduct(l.sku);
+                    const net = l.qty - returnedQty(s, l.sku);
+                    const t = tally[p.category] = tally[p.category] || { amount: 0, qty: 0 };
+                    t.amount += p.price * net * (1 - (s.discountPercent || 0) / 100);
+                    t.qty += net;
+                }));
+                rows = Object.keys(tally).map(c => ({ label: categoryLabel(c), value: tally[c].amount, extra: [['ឯកតា', tally[c].qty]] })).sort((a, b) => b.value - a.value);
+            } else if (view === 'payment') {
+                const a = aggregateSales(list);
+                const counts = { usdCash: 0, khrCash: 0, khqr: 0, split: 0 };
+                live.forEach(s => { counts[methodOf(s)] += 1; });
+                rows = [
+                    { label: 'សាច់ប្រាក់ដុល្លារ', value: a.usdCash, extra: [['វិក្កយបត្រ', counts.usdCash]] },
+                    { label: 'សាច់ប្រាក់រៀល', value: a.khrCashUSD, extra: [['វិក្កយបត្រ', counts.khrCash]] },
+                    { label: 'ស្កេនកូដបាគង', value: a.khqr, extra: [['វិក្កយបត្រ', counts.khqr]] },
+                    { label: 'បែងចែក', value: 0, extra: [['វិក្កយបត្រ', counts.split]] }
+                ].filter(r => r.value > 0 || r.extra[0][1] > 0);
+            } else {
+                const tally = {};
+                live.forEach(s => s.items.forEach(l => {
+                    const net = l.qty - returnedQty(s, l.sku);
+                    const t = tally[l.sku] = tally[l.sku] || { qty: 0, amount: 0 };
+                    t.qty += net;
+                    t.amount += getProduct(l.sku).price * net * (1 - (s.discountPercent || 0) / 100);
+                }));
+                rows = Object.keys(tally).map(sku => ({ label: getProduct(sku).name, value: tally[sku].qty, extra: [['ឯកតា', getProduct(sku).unit], ['ទឹកប្រាក់', fmtUSD(tally[sku].amount)]] }))
+                    .sort((a, b) => b.value - a.value).slice(0, 15);
+                document.getElementById('viewBody').innerHTML = barTable(rows, 'ចំនួនលក់', n => n);
+                return;
+            }
+            document.getElementById('viewBody').innerHTML = barTable(rows, view === 'payment' ? 'ទឹកប្រាក់ (ដុល្លារ)' : 'លក់សុទ្ធ', fmtUSD);
+        }
+
+        function renderTabs() {
+            document.getElementById('viewTabs').innerHTML = VIEWS.map(v => `<button onclick="view='${v.id}'; renderAll()" class="sm-badge px-3.5 py-2 rounded-xl transition ${view === v.id
+                ? 'bg-indigo-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">${v.label}</button>`).join('');
+        }
+
+        function renderAll() {
+            document.getElementById('printHead').textContent = MERCHANT.name + ' · របាយការណ៍លក់';
+            const list = sales();
+            renderTabs();
+            renderKpis(list);
+            renderView(list);
+        }
+
+        window.onDateRangeApplied = renderAll;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            bmsSetSelectOptions('registerFilter', [{ value: '', label: 'គ្រប់បញ្ជរ' }].concat(REGISTERS.map(r => ({ value: r, label: r }))));
+            bmsSetSelect('registerFilter', '');
+            bmsSetSelectOptions('cashierFilter', [{ value: '', label: 'អ្នកគិតលុយទាំងអស់' }].concat(CASHIERS.concat(MANAGERS).map(c => ({ value: c.id, label: c.name }))));
+            bmsSetSelect('cashierFilter', '');
+            renderDateRangePicker('dateRange');
+            selectPreset('7 ថ្ងៃចុងក្រោយ');
+            renderAll();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - ករណីមិនប្រក្រតី</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+</head>
+<body id="managerPortal" data-role-root="../.." data-active="exceptions" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="ករណីមិនប្រក្រតី"
+             data-subtitle="លុបចោល ប្រគល់វិញ បញ្ចុះលើសកំណត់ ដកទំនិញ និងលេខសម្ងាត់ខុស តាមអ្នកគិតលុយ"></div>
+        <main class="flex-1 overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <div class="w-full space-y-5">
+                <div class="bg-white rounded-2xl p-3 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-3">
+                    <p class="sm-card-sub text-slate-500 px-1">ព្រឹត្តិការណ៍មួយមិនគួរឱ្យសង្ស័យទេ · អ្នកគិតលុយដែលមានអត្រាខ្ពស់ជាងមធ្យមក្រុម 2 ដងឡើងទៅ ទើបគួរពិនិត្យ</p>
+                    <div id="dateRange" class="flex items-center"></div>
+                </div>
+
+                <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="p-5 border-b border-slate-100">
+                        <h3 class="sm-card-title text-slate-700">អ្នកគិតលុយធៀបនឹងមធ្យមក្រុម</h3>
+                        <p class="sm-card-sub text-slate-500">ចំនួន · អត្រាក្នុង 100 វិក្កយបត្រ · <span class="text-amber-600 font-semibold">លឿង ≥ 2 ដង</span> · <span class="text-rose-600 font-semibold">ក្រហម ≥ 3 ដង</span> · ចុចលើក្រឡាដើម្បីមើលលម្អិត</p>
+                    </div>
+                    <div class="overflow-x-auto"><table class="w-full text-left min-w-[980px]" id="cashierTable"></table></div>
+                </section>
+
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+                    <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                        <div class="p-5 border-b border-slate-100">
+                            <h3 class="sm-card-title text-slate-700">តាមអ្នកអនុម័ត</h3>
+                            <p class="sm-card-sub text-slate-500">អ្នកដែលអនុម័តគ្រប់សំណើក៏ជាសញ្ញាត្រូវពិនិត្យដែរ</p>
+                        </div>
+                        <div id="approverTable" class="divide-y divide-slate-100"></div>
+                    </section>
+                    <section class="xl:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                        <div class="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                                <h3 id="drillTitle" class="sm-card-title text-slate-700">លម្អិត</h3>
+                                <p id="drillSub" class="sm-card-sub text-slate-500">ជ្រើសរើសក្រឡាក្នុងតារាងខាងលើ</p>
+                            </div>
+                            <button onclick="drill=null; renderDrill()" type="button" class="sm-badge px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600">ជម្រះ</button>
+                        </div>
+                        <div id="drillList" class="divide-y divide-slate-100 max-h-[520px] overflow-y-auto"></div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        /* ករណីមិនប្រក្រតី (ឯកសាររចនាលេខ 02 ផ្នែក 5.5 · ស្រាវជ្រាវ §6)
+           ប្រៀបធៀបអ្នកគិតលុយនីមួយៗនឹងមធ្យមក្រុម · បែងចែកតាមអ្នកអនុម័ត · ភ្ជាប់ទៅវិក្កយបត្រ */
+
+        let drill = null;
+
+        const EVENT_FOR = { lineRemovals: 'line_removed', cartCleared: 'cart_cleared', holdDiscards: 'hold_discarded', wrongPins: 'override_denied' };
+
+        function range() {
+            return getSelectedRange();
+        }
+
+        function cellTone(ratio, n) {
+            if (!n) return 'text-slate-300';
+            return ratio >= 3 ? 'bg-rose-50 text-rose-700 font-semibold' : ratio >= 2 ? 'bg-amber-50 text-amber-700 font-semibold' : 'text-slate-700';
+        }
+
+        function renderCashiers() {
+            const st = exceptionStats(range());
+            const head = `<thead class="bg-slate-50 text-slate-500 border-b border-slate-100"><tr>
+                <th class="sm-th py-3 px-4">អ្នកគិតលុយ</th>
+                <th class="sm-th py-3 px-3 text-right">វេន</th>
+                <th class="sm-th py-3 px-3 text-right">វិក្កយបត្រ</th>
+                ${EXCEPTION_COLS.map(c => `<th class="sm-th py-3 px-3 text-right">${c.label}</th>`).join('')}
+                <th class="sm-th py-3 px-3 text-right">ភាពខុសគ្នាសរុប</th>
+                <th class="sm-th py-3 px-3 text-right">ក្រៅម៉ោងវេន</th>
+            </tr></thead>`;
+            const body = st.rows.map(r => `<tr class="border-b border-slate-100">
+                <td class="py-3 px-4 sm-td">${personChip(r.cashierId)}</td>
+                <td class="py-3 px-3 text-right sm-td sm-figure">${r.shifts}</td>
+                <td class="py-3 px-3 text-right sm-td sm-figure">${r.tx}</td>
+                ${EXCEPTION_COLS.map(c => `<td class="py-1.5 px-1.5 text-right">
+                    <button onclick="openDrill('${r.cashierId}', '${c.key}')" type="button" class="w-full rounded-lg px-2 py-1.5 text-right hover:ring-2 hover:ring-indigo-200 ${cellTone(r.ratios[c.key], r[c.key])} ${drill && drill.cashierId === r.cashierId && drill.key === c.key ? 'ring-2 ring-indigo-500' : ''}">
+                        <span class="sm-td sm-figure block">${r[c.key]}</span>
+                        <span class="text-[11px] sm-figure opacity-80 block">${r.rates[c.key].toFixed(1)}${r.ratios[c.key] >= 2 ? ` · ×${r.ratios[c.key].toFixed(1)}` : ''}</span>
+                    </button></td>`).join('')}
+                <td class="py-3 px-3 text-right sm-td sm-figure ${r.variance < -posSettings().varianceTolerance ? 'text-rose-600 font-semibold' : 'text-slate-700'}">${fmtSigned(r.variance, fmtUSD)}<span class="block text-[11px] text-slate-400">${r.largeVariances} ធំ</span></td>
+                <td class="py-3 px-3 text-right sm-td sm-figure ${r.afterHours ? 'text-amber-700' : 'text-slate-300'}">${r.afterHours}</td>
+            </tr>`).join('');
+            const avg = `<tr class="bg-slate-50">
+                <td class="py-3 px-4 sm-value text-slate-600">មធ្យមក្រុម</td><td></td><td></td>
+                ${EXCEPTION_COLS.map(c => `<td class="py-3 px-3 text-right sm-td-sub sm-figure text-slate-500">${st.avg[c.key].toFixed(1)}</td>`).join('')}
+                <td></td><td></td></tr>`;
+            document.getElementById('cashierTable').innerHTML = head + `<tbody>${body || `<tr><td colspan="12">${emptyState('fa-chart-simple', 'គ្មានទិន្នន័យក្នុងជួរនេះ', '')}</td></tr>`}${body ? avg : ''}</tbody>`;
+        }
+
+        function renderApprovers() {
+            const rows = approverStats(range());
+            document.getElementById('approverTable').innerHTML = rows.map(r => {
+                const decided = r.approved + r.rejected;
+                const rate = decided ? r.approved / decided * 100 : 0;
+                return `<div class="p-4">
+                    <div class="flex items-center justify-between gap-3">${personChip(r.approverId)}
+                        <span class="sm-value sm-figure ${rate >= 99 && decided >= 10 ? 'text-amber-700' : 'text-slate-700'}">${rate.toFixed(0)}% អនុម័ត</span></div>
+                    <div class="grid grid-cols-4 gap-2 mt-3 text-center">
+                        ${[['អនុម័ត', r.approved], ['បដិសេធ', r.rejected], ['នៅបញ្ជរ', r.onsite], ['បញ្ចុះលើសកំណត់', r.overrides]].map(([l, n]) => `
+                            <div class="rounded-lg bg-slate-50 py-1.5"><p class="sm-value sm-figure text-slate-800">${n}</p><p class="text-[11px] text-slate-500">${l}</p></div>`).join('')}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function openDrill(cashierId, key) {
+            drill = { cashierId, key };
+            renderCashiers();
+            renderDrill();
+        }
+
+        function renderDrill() {
+            const host = document.getElementById('drillList');
+            if (!drill) {
+                document.getElementById('drillTitle').textContent = 'លម្អិត';
+                document.getElementById('drillSub').textContent = 'ជ្រើសរើសក្រឡាក្នុងតារាងខាងលើ';
+                host.innerHTML = emptyState('fa-hand-pointer', 'ចុចលើចំនួនណាមួយ', 'ដើម្បីមើលវិក្កយបត្រ ឬព្រឹត្តិការណ៍ពីក្រោយចំនួននោះ');
+                renderCashiers();
+                return;
+            }
+            const col = EXCEPTION_COLS.find(c => c.key === drill.key);
+            document.getElementById('drillTitle').textContent = `${col.label} · ${personName(drill.cashierId)}`;
+            const r = range();
+            let items = [];
+            const sales = mgrAllSales().filter(s => s.cashierId === drill.cashierId && inRange(s.time, r));
+            if (drill.key === 'voids') items = sales.filter(isVoided).map(s => ({ at: s.voidedAt || s.time, saleId: s.id, amount: saleTotals(s.items, s.discountPercent).gross, reason: s.voidReason, by: s.voidedBy, register: s.register }));
+            else if (drill.key === 'returns') sales.forEach(s => (s.returns || []).forEach(x => items.push({ at: x.at, saleId: s.id, amount: x.amount, reason: x.reason, by: x.approvedBy, register: s.register })));
+            else if (drill.key === 'overrides') items = sales.filter(s => s.discountApproverId && !isVoided(s)).map(s => ({ at: s.time, saleId: s.id, amount: saleTotals(s.items, s.discountPercent).discount, reason: `${s.discountPercent}% · ${s.discountReason}`, by: s.discountApproverId, register: s.register }));
+            else items = mgrAllEvents().filter(e => e.type === EVENT_FOR[drill.key] && e.cashierId === drill.cashierId && inRange(e.at, r))
+                .map(e => ({ at: e.at, saleId: e.saleId, amount: e.amount, reason: e.reason || e.note, by: e.approverId, register: e.register, shiftId: e.shiftId }));
+            items.sort((a, b) => b.at.localeCompare(a.at));
+            document.getElementById('drillSub').textContent = `${items.length} ករណី`;
+            host.innerHTML = items.length ? items.slice(0, 120).map(i => `
+                <div class="px-5 py-3 flex flex-wrap items-center gap-3">
+                    <span class="sm-td-sub sm-figure text-slate-400 w-28">${fmtDate(i.at)} ${fmtTime(i.at)}</span>
+                    <span class="sm-td text-slate-600">${i.register}</span>
+                    <span class="sm-td text-slate-700 flex-1 min-w-0 truncate">${i.saleId ? `<span class="text-indigo-700">${i.saleId}</span> · ` : ''}${escapeText(i.reason || '')}</span>
+                    ${i.by ? `<span class="sm-td-sub text-slate-500">${personName(i.by)}</span>` : ''}
+                    <span class="sm-td sm-figure text-slate-800 w-20 text-right">${i.amount ? fmtUSD(i.amount) : ''}</span>
+                </div>`).join('') : emptyState('fa-circle-check', 'គ្មានករណី', '');
+        }
+
+        function renderAll() {
+            renderCashiers();
+            renderApprovers();
+            renderDrill();
+        }
+
+        window.onDateRangeApplied = renderAll;
+        window.onStoreChanged = renderAll;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDateRangePicker('dateRange');
+            selectPreset('7 ថ្ងៃចុងក្រោយ');
+            const type = new URLSearchParams(location.search).get('type');
+            if (type && EXCEPTION_COLS.some(c => c.key === type)) {
+                const st = exceptionStats(getSelectedRange());
+                const top = st.rows.slice().sort((a, b) => b.ratios[type] - a.ratios[type])[0];
+                if (top) drill = { cashierId: top.cashierId, key: type };
+            }
+            renderAll();
+        });
+    </script>
+</body>
+</html>

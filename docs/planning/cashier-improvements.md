@@ -1,6 +1,6 @@
 # Cashier POS — Improvement Plan
 
-> **Date:** 2026-10-03 · **Status:** Planning, no code yet
+> **Date:** 2026-10-03 · **Status:** Implemented 2026-10-04, except C16 (partly), C17–C21 and D3; see §0
 > **Inputs:** the four built pages (read and screenshotted at 1440×900 and 390×844), [spec/01-cashier-pos.md](../spec/01-cashier-pos.md),
 > [spec/v1-role_cashier_pos.md](../spec/v1-role_cashier_pos.md), [research/pos-market-research.md](../research/pos-market-research.md) (cited below as **R§n**).
 > **Companion:** [spec/02-manager-pos.md](../spec/02-manager-pos.md). Many cashier items here hand work to the manager.
@@ -9,7 +9,30 @@ Line numbers are as of 2026-10-03 and will drift.
 
 ---
 
-## 1. Where the cashier stands today
+## 0. Status (2026-10-04)
+
+| Item | Status |
+|---|---|
+| C1 blind count, one logged recount, counts-only KPIs on receipts | Done |
+| C2 change as $ + ៛ rounded to 100 | Done (two modes; no all-USD mode) |
+| C3 open-shift page with float count + manager PIN | Done |
+| C4 hold / resume (max per shift in settings, blocks close) | Done |
+| C5 void / return requests, on-the-spot or queued | Done |
+| C6 discount above limit → manager override, reason required | Done |
+| C7 sale stores rate, cashier, register, shift | Done |
+| C8 live data in localStorage, cross-tab refresh | Done |
+| C9 event log | Done |
+| C10 KHQR overlay in the terminal; `khqr-payment.html` removed | Done (confirmation still manual) |
+| C11 denser grid + quick keys | Done |
+| C12 per-currency expected cash | Done |
+| C13 safe-drop banner + drop record, blocks close until received | Done |
+| C14 receipt cards on phones | Done |
+| C15 role names | Done |
+| C16 VAT-registered credit customer prints a tax invoice | Done for the receipt; customer VATTIN is mock data |
+| C22 shift templates, overrun chip, terminal lock | Done, extended into the roster model (manager spec §11) |
+| C17–C21, D3 | Not built |
+
+## 1. Where the cashier stood on 2026-10-03
 
 | Page | Built well | Missing vs. spec and research |
 |---|---|---|

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - មើលសំណើ</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+</head>
+<body id="managerPortal" data-role-root="../.." data-active="approvals" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="មើលសំណើ"
+             data-subtitle=""
+             data-back="approvals.html"></div>
+        <main class="flex-1 overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <div id="page" class="w-full"></div>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        /* មើលសំណើ (ឯកសាររចនាលេខ 02 ផ្នែក 5.2)
+           ខាងឆ្វេង៖ វិក្កយបត្រដើម · ខាងស្តាំ៖ សំណើ បរិបទរបស់អ្នកគិតលុយធៀបនឹងក្រុម និងសកម្មភាព
+           ប៊ូតុងសម្រាប់សកម្មភាពដែលមិនអាចធ្វើបាន ត្រូវលាក់ មិនមែនបិទ (បញ្ជីពិនិត្យលេខ 06 ផ្នែក ង) */
+
+        const reqId = new URLSearchParams(location.search).get('id');
+
+        function req() {
+            return mgrAllApprovals().find(a => a.id === reqId) || null;
+        }
+
+        function contextRows(cashierId) {
+            const ranges = [['ថ្ងៃនេះ', mgrToday()], ['7 ថ្ងៃចុងក្រោយ', rangeOfDays(7)]];
+            return ranges.map(([label, range]) => {
+                const st = exceptionStats(range);
+                const r = st.rows.find(x => x.cashierId === cashierId);
+                if (!r) return `<tr><td class="py-2 pr-3 sm-td-sub text-slate-500">${label}</td><td colspan="3" class="py-2 sm-td-sub text-slate-400">មិនមានទិន្នន័យ</td></tr>`;
+                const cell = k => {
+                    const ratio = r.ratios[k];
+                    const tone = ratio >= 3 ? 'text-rose-600 font-semibold' : ratio >= 2 ? 'text-amber-600 font-semibold' : 'text-slate-700';
+                    return `<td class="py-2 px-2 text-right sm-td sm-figure ${tone}">${r[k]}<span class="block text-[11px] text-slate-400">${r.rates[k].toFixed(1)} · មធ្យម ${st.avg[k].toFixed(1)}</span></td>`;
+                };
+                return `<tr class="border-t border-slate-100"><td class="py-2 pr-3 sm-td-sub text-slate-500">${label} · ${r.tx} វិក្កយបត្រ</td>${cell('voids')}${cell('returns')}${cell('overrides')}</tr>`;
+            }).join('');
+        }
+
+        function render() {
+            const a = req();
+            const host = document.getElementById('page');
+            if (!a) {
+                host.innerHTML = `<div class="bg-white rounded-2xl border border-slate-200 shadow-sm">${emptyState('fa-circle-question', 'រកមិនឃើញសំណើ', 'សំណើនេះមិនមាន ឬត្រូវបានលុប',
+                    '<a href="approvals.html" class="sm-badge inline-block mt-4 px-4 py-2 rounded-xl bg-indigo-600 text-white font-semibold">ត្រឡប់ទៅបញ្ជីសំណើ</a>')}</div>`;
+                return;
+            }
+            const sale = findAnySale(a.saleId);
+            const t = APPROVAL_TYPE[a.type];
+            setPortalTitle(`${t.label} ${a.saleId}`);
+            setPortalSubtitle(`${personName(a.cashierId)} · ${a.register} · ស្នើម៉ោង ${fmtTime(a.raisedAt)} ${fmtDate(a.raisedAt)}`);
+            const self = a.cashierId === ME_MANAGER;
+            const rate = sale ? sale.fxRate : fxRate();
+            host.innerHTML = `
+                <div class="grid grid-cols-1 xl:grid-cols-5 gap-5">
+                    <section class="xl:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="sm-card-title text-slate-700">វិក្កយបត្រដើម</h3>
+                            ${sale ? statusChip(isVoided(sale) ? { label: 'បានលុបចោល', cls: 'bg-rose-50 text-rose-700 border-rose-200' } : { label: 'បានទូទាត់', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' }) : ''}
+                        </div>
+                        <div class="rounded-xl bg-slate-50 border border-slate-200 py-4 overflow-x-auto">${sale ? receiptHtml(sale) : '<p class="text-center sm-td-sub text-slate-400">រកមិនឃើញវិក្កយបត្រ</p>'}</div>
+                    </section>
+                    <section class="xl:col-span-3 space-y-5">
+                        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
+                                <div class="flex items-start gap-3">
+                                    <span class="w-12 h-12 rounded-2xl bg-${t.tone}-50 text-${t.tone}-600 flex items-center justify-center text-xl"><i class="fas ${t.icon}"></i></span>
+                                    <div>
+                                        <p class="sm-card-title text-slate-800">${t.label}</p>
+                                        <p class="sm-kpi-value text-slate-800 sm-figure">${fmtUSD(a.amount)}</p>
+                                    </div>
+                                </div>
+                                ${statusChip(APPROVAL_STATUS[a.status])}
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 mt-4">
+                                ${[
+                                    ['អ្នកគិតលុយ', personChip(a.cashierId)],
+                                    ['បញ្ជរ · វេន', `${a.register} · ${a.shiftId.split('-').slice(-1)[0]}`],
+                                    ['មូលហេតុ', escapeText(a.reason)],
+                                    ['ពេលស្នើ', `${fmtDate(a.raisedAt)} ${fmtTime(a.raisedAt)}`],
+                                    ...(a.type === 'return' ? [
+                                        ['ទំនិញប្រគល់វិញ', (a.lines || []).map(l => `${getProduct(l.sku).name} × ${l.qty}`).join('<br>')],
+                                        ['សងប្រាក់តាម', `${PAY_LABEL[a.method]}${a.method === 'khrCash' ? ' · ' + fmtKHR(Math.round(toKHR(a.amount, rate) / 100) * 100) : ''}`]
+                                    ] : [['ផលប៉ះពាល់', 'វិក្កយបត្រទាំងមូលត្រូវលុបចោល · ប្រាក់ត្រូវប្រគល់ឱ្យអតិថិជនវិញ']]),
+                                    ...(a.status !== 'pending' ? [
+                                        ['សម្រេចដោយ', `${personChip(a.decidedBy)}`],
+                                        ['ពេលសម្រេច', `${fmtDate(a.decidedAt)} ${fmtTime(a.decidedAt)} · ${a.mode === 'onsite' ? 'នៅបញ្ជរ' : 'ពីបញ្ជីសំណើ'}`]
+                                    ] : []),
+                                    ...(a.decisionNote ? [['មូលហេតុបដិសេធ', escapeText(a.decisionNote)]] : [])
+                                ].map(([l, v]) => `<div class="flex justify-between gap-3 py-1 border-b border-slate-50"><span class="sm-td-sub text-slate-500 flex-shrink-0">${l}</span><span class="sm-td text-slate-700 text-right">${v}</span></div>`).join('')}
+                            </div>
+                            ${a.status === 'pending' ? (self
+                                ? '<div class="mt-5 p-3 rounded-xl bg-amber-50 border border-amber-200 sm-td-sub text-amber-800">សំណើនេះមកពីការលក់របស់លោកអ្នកផ្ទាល់ · អ្នកគ្រប់គ្រងម្នាក់ទៀតត្រូវសម្រេច</div>'
+                                : `<div class="grid grid-cols-2 gap-3 mt-5">
+                                    <button onclick="decide(false)" type="button" class="sm-value h-12 rounded-xl bg-white border border-rose-200 text-rose-700 hover:bg-rose-50 font-semibold inline-flex items-center justify-center gap-2"><i class="fas fa-xmark"></i> បដិសេធ</button>
+                                    <button onclick="decide(true)" type="button" class="sm-value h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold inline-flex items-center justify-center gap-2"><i class="fas fa-check"></i> អនុម័ត</button>
+                                </div>`) : ''}
+                        </div>
+
+                        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5">
+                            <h3 class="sm-card-title text-slate-700">បរិបទរបស់ ${personName(a.cashierId)}</h3>
+                            <p class="sm-card-sub text-slate-500">ចំនួន (អត្រាក្នុង 100 វិក្កយបត្រ ធៀបនឹងមធ្យមក្រុម) · ពណ៌លឿង ≥ 2 ដង · ក្រហម ≥ 3 ដង</p>
+                            <div class="overflow-x-auto mt-3">
+                                <table class="w-full">
+                                    <thead><tr class="text-left">
+                                        <th class="py-2 pr-3 sm-td-sub text-slate-400 font-medium"></th>
+                                        <th class="py-2 px-2 text-right sm-td-sub text-slate-400 font-medium">លុបចោល</th>
+                                        <th class="py-2 px-2 text-right sm-td-sub text-slate-400 font-medium">ប្រគល់វិញ</th>
+                                        <th class="py-2 px-2 text-right sm-td-sub text-slate-400 font-medium">បញ្ចុះលើសកំណត់</th>
+                                    </tr></thead>
+                                    <tbody>${contextRows(a.cashierId)}</tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+                </div>`;
+        }
+
+        async function decide(approve) {
+            if (await mgrDecide(reqId, approve)) {
+                render();
+                updatePortalBadges();
+                refreshPortalNotifications();
+            }
+        }
+
+        window.onStoreChanged = render;
+        document.addEventListener('DOMContentLoaded', render);
+    </script>
+</body>
+</html>

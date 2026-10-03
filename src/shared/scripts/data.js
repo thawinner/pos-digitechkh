@@ -1,19 +1,17 @@
-/* ច្រកគិតលុយលក់រាយ (POS) — ឃ្លាំងទិន្នន័យសាកល្បង
+/* ច្រកគិតលុយលក់រាយ (POS) — ឃ្លាំងទិន្នន័យរួមសម្រាប់តួនាទីទាំងពីរ
 
-   ⚠️ គោលការណ៍សុវត្ថិភាពតឹងរ៉ឹង (Shift-Locked Data)
-   ឯកសារនេះផ្ទុកតែប្រតិបត្តិការនៃ "វេនបច្ចុប្បន្នថ្ងៃនេះ" ប៉ុណ្ណោះ។
-   គ្មានប្រវត្តិលក់ពីវេនមុន គ្មានចំណូលប្រចាំខែ ឬប្រចាំឆ្នាំ និងគ្មាន
-   ថ្លៃដើមទិញឡើយ។ ហាមបញ្ចូលទិន្នន័យទាំងនោះចូលក្នុងឯកសារនេះជាដាច់ខាត។ */
+   ⚠️ គោលការណ៍សុវត្ថិភាព
+   • ឯកសារនេះផ្ទុកតែវេនដែលកំពុងដំណើរការលើម៉ាស៊ីននេះ (ទិន្នន័យរស់ក្នុង localStorage)។
+     ប្រវត្តិវេនមុនៗ និងបញ្ជរផ្សេង មាននៅក្នុង manager-data.js ដែលផ្ទុកតែលើទំព័រអ្នកគ្រប់គ្រងប៉ុណ្ណោះ
+     ដូច្នេះទំព័រអ្នកគិតលុយមិនដែលទទួលបានទិន្នន័យវេនផ្សេងឡើយ (ឯកសាររចនាលេខ 02 ផ្នែក 7.1)។
+   • គ្មានថ្លៃដើមទិញនៅទីនេះទេ — ទាំងអ្នកគិតលុយ និងអ្នកគ្រប់គ្រងវេនមិនមានសិទ្ធិមើល។
+   • ពេលវេលាទាំងអស់គណនាធៀបនឹងម៉ោងពិត មិនប្រើកាលបរិច្ឆេទថេរឡើយ (បញ្ជីពិនិត្យលេខ 06 ផ្នែក ឃ)។ */
 
-/* ម៉ោងពិតប្រាកដ — មិនប្រើកាលបរិច្ឆេទថេរឡើយ (បញ្ជីពិនិត្យលេខ 06 ផ្នែក ឃ5)
-   វេនចាប់ផ្តើមម៉ោង 07:30 ថ្ងៃនេះ។ បើពេលនេះនៅមុន 08:00 ចាត់ទុកវេនបានបើក 30 នាទីមុន
-   ដើម្បីកុំឱ្យវេនមានរយៈពេលអវិជ្ជមាន។ */
 const BMS_TODAY = new Date();
 
 const MONTHS_KH = ['មករា', 'កុម្ភៈ', 'មីនា', 'មេសា', 'ឧសភា', 'មិថុនា', 'កក្កដា', 'សីហា', 'កញ្ញា', 'តុលា', 'វិច្ឆិកា', 'ធ្នូ'];
 
-/* អត្រាប្តូរប្រាក់ប្រើក្នុងវេននេះ */
-const FX_RATE = 4100;
+/* ===== ទ្រង់ទ្រាយ ===== */
 
 function pad2(n) {
     return String(n).padStart(2, '0');
@@ -23,29 +21,370 @@ function isoLocal(d) {
     return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
-const SHIFT_OPEN_AT = (() => {
-    const d = new Date(BMS_TODAY);
-    d.setHours(7, 30, 0, 0);
-    const halfHourAgo = new Date(BMS_TODAY.getTime() - 30 * 60000);
-    return d < halfHourAgo ? d : halfHourAgo;
-})();
+function isoDate(d) {
+    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+}
 
-/* វេនបច្ចុប្បន្ន */
-const SHIFT = {
-    id: `SHIFT-${BMS_TODAY.getFullYear()}${pad2(BMS_TODAY.getMonth() + 1)}${pad2(BMS_TODAY.getDate())}-A`,
-    cashier: 'ចន្ទ មករា',
-    initials: 'ចម',
-    terminal: 'POS-01',
-    branch: 'សាខាកណ្តាល ភ្នំពេញ',
-    openedAt: isoLocal(SHIFT_OPEN_AT),
-    openingFloatUSD: 200,
-    openingFloatKHR: 400000,
-    /* ដែនកំណត់បញ្ចុះតម្លៃរបស់អ្នកគិតលុយ (ឯកសាររចនាលេខ 01 ផ្នែក 3.1 គ3) */
-    discountLimit: 5
+function fmtUSD(amount) {
+    return '$' + Number(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmtKHR(amount) {
+    return Number(Math.round(amount || 0)).toLocaleString('en-US') + ' ៛';
+}
+
+/* លេខមានសញ្ញា — ប្រើសម្រាប់ភាពខុសគ្នា */
+function fmtSigned(n, fmt, eps) {
+    if (Math.abs(n) <= (eps || 0.005)) return fmt(0);
+    return (n > 0 ? '+' : '−') + fmt(Math.abs(n));
+}
+
+function fmtKhDate(iso) {
+    const d = new Date(iso);
+    return `${d.getDate()} ${MONTHS_KH[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+/* DD/MM/YYYY (ឯកសារស្តង់ដារលេខ 05 ផ្នែក 6) */
+function fmtDate(iso) {
+    const d = new Date(iso);
+    return `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;
+}
+
+function fmtTime(iso) {
+    const d = new Date(iso);
+    return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+}
+
+function fmtDuration(ms) {
+    const total = Math.max(Math.floor(ms / 60000), 0);
+    const h = Math.floor(total / 60);
+    const m = total % 60;
+    return h ? `${h} ម៉ោង ${m} នាទី` : `${m} នាទី`;
+}
+
+function escapeText(t) {
+    return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/* ===== ការផ្ទុក =====
+   ទិន្នន័យដែលតួនាទីទាំងពីរត្រូវឃើញ ស្ថិតក្នុង localStorage (sessionStorage មួយផ្ទាំងមួយ
+   ដូច្នេះផ្ទាំងអ្នកគ្រប់គ្រងមិនដែលឃើញការលក់ — ផែនការកែលម្អ C8)។
+   មានតែកន្ត្រកបច្ចុប្បន្ន និងការទូទាត់ KHQR ដែលកំពុងរង់ចាំទេ ដែលនៅក្នុង sessionStorage។ */
+
+const POS_KEYS = {
+    seed: 'pos_seed_v3',
+    settings: 'pos_settings',
+    shifts: 'pos_shifts',
+    sales: 'pos_shift_sales',
+    held: 'pos_held_sales',
+    approvals: 'pos_approvals',
+    movements: 'pos_cash_movements',
+    events: 'pos_events',
+    lock: 'pos_terminal_lock',
+    cart: 'pos_cart',
+    pending: 'pos_pending_khqr'
 };
 
-/* ល្បឹមភាពខុសគ្នាសាច់ប្រាក់ — លើសពីនេះត្រូវការការពន្យល់ជាលាយលក្ខណ៍អក្សរ */
-const VARIANCE_TOLERANCE = 5;
+function posRead(key, fallback) {
+    try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+    } catch (e) {
+        return fallback;
+    }
+}
+
+function posWrite(key, value) {
+    try {
+        localStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {
+        // ការផ្ទុកត្រូវបានបិទ — ទិន្នន័យនៅរស់ត្រឹមទំព័របច្ចុប្បន្ន
+    }
+}
+
+function sessRead(key, fallback) {
+    try {
+        const raw = sessionStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+    } catch (e) {
+        return fallback;
+    }
+}
+
+function sessWrite(key, value) {
+    try {
+        sessionStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {
+        // មិនអាចរក្សាទុក
+    }
+}
+
+function sessRemove(key) {
+    try {
+        sessionStorage.removeItem(key);
+    } catch (e) {
+        // មិនអាចសម្អាត
+    }
+}
+
+function newId(prefix) {
+    return `${prefix}-${Date.now().toString(36).toUpperCase()}${Math.random().toString(36).slice(2, 5).toUpperCase()}`;
+}
+
+function upsertById(key, record) {
+    const list = posRead(key, []);
+    const i = list.findIndex(x => x.id === record.id);
+    if (i >= 0) list[i] = record; else list.push(record);
+    posWrite(key, list);
+    return record;
+}
+
+function patchById(key, id, patch) {
+    const list = posRead(key, []);
+    const i = list.findIndex(x => x.id === id);
+    if (i < 0) return null;
+    list[i] = Object.assign({}, list[i], patch);
+    posWrite(key, list);
+    return list[i];
+}
+
+/* ផ្ទាំងរុករកផ្សេង (ឧ. អ្នកគ្រប់គ្រងអនុម័តសំណើ) កែទិន្នន័យ → ជូនដំណឹងទៅ portal.js
+   ដើម្បីធ្វើបច្ចុប្បន្នភាពផ្លាកលេខ និងទំព័រ ដោយមិនចាំបាច់ផ្ទុកឡើងវិញ (បញ្ជីពិនិត្យលេខ 06 ផ្នែក ឆ) */
+window.addEventListener('storage', e => {
+    if (e.key && !e.key.startsWith('pos_')) return;
+    window.dispatchEvent(new CustomEvent('bms-store-changed', { detail: { key: e.key } }));
+});
+
+/* ===== ហាង មនុស្ស និងបញ្ជរ ===== */
+
+const MERCHANT = {
+    name: 'DIGITECHKH RETAIL',
+    branch: 'សាខាកណ្តាល ភ្នំពេញ',
+    tin: 'K001-901234567',
+    phone: '023 999 888',
+    account: 'digitechkh@aclb',
+    city: 'PHNOM PENH'
+};
+
+/* លេខសម្ងាត់សម្រាប់គំរូសាកល្បងប៉ុណ្ណោះ — ប្រព័ន្ធពិតរក្សាទុកជាសញ្ញាកូដនៅម៉ាស៊ីនមេ */
+const CASHIERS = [
+    { id: 'CAS-01', name: 'ចន្ទ មករា', initials: 'ចម', pin: '1111' },
+    { id: 'CAS-02', name: 'សុខ ដារ៉ា', initials: 'សដ', pin: '2222' },
+    { id: 'CAS-03', name: 'លី សុភា', initials: 'លស', pin: '3333' }
+];
+
+const MANAGERS = [
+    { id: 'MGR-01', name: 'សុខ វណ្ណា', initials: 'សវ', pin: '2468' },
+    { id: 'MGR-02', name: 'ម៉ៅ ស្រីនាង', initials: 'មស', pin: '1357' }
+];
+
+const REGISTERS = ['POS-01', 'POS-02', 'POS-03'];
+
+
+const ROLE_NAME = {
+    cashier: 'អ្នកគិតលុយ',
+    manager: 'អ្នកគ្រប់គ្រងវេន'
+};
+
+function personById(id) {
+    return CASHIERS.find(p => p.id === id) || MANAGERS.find(p => p.id === id) || null;
+}
+
+function personName(id) {
+    const p = personById(id);
+    return p ? p.name : '—';
+}
+
+/* រូបប្រវត្តិរូប — shared/assets/avatars/<លេខសម្គាល់>.svg (ឬ .jpg ពេលមានរូបថតពិត)
+   បើឯកសារមិនមាន បង្ហាញអក្សរកាត់ឈ្មោះជំនួស ដូច្នេះមិនដែលឃើញរូបខូច */
+function avatarSrc(id) {
+    const root = (document.body && document.body.dataset.roleRoot) || '.';
+    return `${root}/shared/assets/avatars/${id}.svg`;
+}
+
+function avatarHtml(id, cls) {
+    const p = personById(id);
+    if (!p) return '';
+    const c = cls || 'w-8 h-8';
+    return `<span class="${c} rounded-full overflow-hidden inline-flex items-center justify-center flex-shrink-0 bg-slate-200 text-slate-600 font-semibold text-[11px] relative">${p.initials}<img src="${avatarSrc(id)}" alt="${p.name}" class="absolute inset-0 w-full h-full object-cover" onerror="this.remove()"></span>`;
+}
+
+/* លេខសម្ងាត់ដែលអ្នកគ្រប់គ្រងកំណត់ឡើងវិញ (ទំព័រការកំណត់) ឈ្នះលើតម្លៃលំនាំដើម */
+function effectivePin(id) {
+    const custom = posRead('pos_pins', {});
+    const p = personById(id);
+    return custom[id] || (p ? p.pin : '');
+}
+
+function verifyPin(id, pin) {
+    return !!personById(id) && String(pin) === effectivePin(id);
+}
+
+function isManagerPage() {
+    return !!document.body && document.body.id === 'managerPortal';
+}
+
+function currentActorId() {
+    return isManagerPage() ? ME_MANAGER : ME_CASHIER;
+}
+
+/* ===== ការកំណត់ (អ្នកគ្រប់គ្រងកែប្រែនៅទំព័រការកំណត់ — ឯកសាររចនាលេខ 02 ផ្នែក 5.7) ===== */
+
+const POS_SETTINGS_DEFAULTS = {
+    fxRate: 4100,
+    nbcRate: 0,
+    varianceTolerance: 5,
+    drawerLimitUSD: 500,
+    drawerLimitKHR: 2000000,
+    defaultFloatUSD: 200,
+    defaultFloatKHR: 400000,
+    khqrSeconds: 300,
+    holdLimit: 5,
+    discountLimits: { 'CAS-01': 5, 'CAS-02': 5, 'CAS-03': 3 },
+    /* វេនព្រឹក រសៀល យប់ — ហាងបើក 24 ម៉ោង · ចំនួនវេន = ម៉ោងបើកហាង ÷ ប្រមាណ 8 ម៉ោង (ស្រាវជ្រាវ §11) */
+    shiftTemplates: [
+        { code: 'A', name: 'វេនព្រឹក', start: '06:00', end: '14:00' },
+        { code: 'B', name: 'វេនរសៀល', start: '14:00', end: '22:00' },
+        { code: 'C', name: 'វេនយប់', start: '22:00', end: '06:00' }
+    ],
+    reasons: {
+        void: ['វាយបញ្ចូលខុស', 'អតិថិជនប្តូរចិត្ត', 'ទូទាត់ខុសវិធី', 'ទំនិញខូច'],
+        return: ['ទំនិញខូច ឬមានបញ្ហា', 'អតិថិជនប្តូរចិត្ត', 'ទិញខុសទំនិញ', 'ផុតកំណត់ប្រើប្រាស់'],
+        discount: ['ទំនិញជិតផុតកំណត់', 'អតិថិជនប្រចាំ', 'កញ្ចប់ខូចបន្តិច', 'ការផ្សព្វផ្សាយ'],
+        payout: ['ទិញទឹកកក', 'ថ្លៃដឹកជញ្ជូន', 'សម្ភារសម្អាត', 'ចំណាយផ្សេងៗ'],
+        holdDiscard: ['អតិថិជនមិនត្រឡប់មកវិញ', 'អតិថិជនលែងចង់ទិញ', 'បង្កើតខុស']
+    },
+    quickKeys: ['8860001', '8860004', '8850001', '8850002', '8860002', '8880002'],
+    /* វេនលំនាំដើមរបស់បុគ្គលិកម្នាក់ៗ — template '' = មិនមានវេនប្រចាំ (ឧ. អ្នកគ្រប់គ្រង)
+       dayOff៖ 0 = អាទិត្យ … 6 = សៅរ៍ · ម្នាក់មួយវេន 8 ម៉ោង × 6 ថ្ងៃ = 48 ម៉ោង/សប្តាហ៍ (ត្រឹមកំណត់ច្បាប់)
+       វេនយប់ (22:00–05:00 ជាម៉ោងយប់) ត្រូវបង់ប្រាក់ឈ្នួល 200% តាមច្បាប់ការងារ — ស្រាវជ្រាវ §11 */
+    staffDefaults: {
+        'CAS-01': { template: 'A', register: 'POS-01', dayOff: 0 },
+        'CAS-02': { template: 'B', register: 'POS-02', dayOff: 1 },
+        'CAS-03': { template: 'C', register: 'POS-03', dayOff: 2 },
+        'MGR-01': { template: '', register: '', dayOff: 6 },
+        'MGR-02': { template: '', register: '', dayOff: 0 }
+    }
+};
+
+const SETTING_LABELS = {
+    fxRate: 'អត្រាប្ដូរប្រាក់ថ្ងៃនេះ',
+    nbcRate: 'អត្រាផ្លូវការធនាគារជាតិ',
+    varianceTolerance: 'ល្បឹមភាពខុសគ្នាសាច់ប្រាក់',
+    drawerLimitUSD: 'ពិដានសាច់ប្រាក់ដុល្លារក្នុងថត',
+    drawerLimitKHR: 'ពិដានសាច់ប្រាក់រៀលក្នុងថត',
+    defaultFloatUSD: 'ប្រាក់បាតថតស្តង់ដារជាដុល្លារ',
+    defaultFloatKHR: 'ប្រាក់បាតថតស្តង់ដារជារៀល',
+    khqrSeconds: 'សុពលភាពកូដស្កេនបាគង',
+    holdLimit: 'ការលក់ព្យួរអតិបរមាក្នុងមួយវេន',
+    discountLimits: 'ដែនកំណត់បញ្ចុះតម្លៃរបស់អ្នកគិតលុយ',
+    shiftTemplates: 'គំរូវេន',
+    reasons: 'បញ្ជីមូលហេតុ',
+    quickKeys: 'ទំនិញញឹកញាប់',
+    staffDefaults: 'វេនលំនាំដើមរបស់បុគ្គលិក'
+};
+
+function clone(v) {
+    return JSON.parse(JSON.stringify(v));
+}
+
+function posSettings() {
+    const stored = posRead(POS_KEYS.settings, null);
+    return Object.assign(clone(POS_SETTINGS_DEFAULTS), (stored && stored.values) || {});
+}
+
+function settingsHistory() {
+    const stored = posRead(POS_KEYS.settings, null);
+    return (stored && stored.history) || [];
+}
+
+function savePosSettings(values, actorId) {
+    const before = posSettings();
+    const stored = posRead(POS_KEYS.settings, { values: {}, history: [] });
+    const changes = Object.keys(values)
+        .filter(k => JSON.stringify(before[k]) !== JSON.stringify(values[k]))
+        .map(k => ({ key: k, from: before[k], to: values[k] }));
+    if (!changes.length) return [];
+    stored.values = Object.assign({}, stored.values || {}, values);
+    stored.history = [{ at: isoLocal(new Date()), by: actorId, changes }].concat(stored.history || []).slice(0, 50);
+    posWrite(POS_KEYS.settings, stored);
+    return changes;
+}
+
+function fxRate() {
+    return Number(posSettings().fxRate) || 4100;
+}
+
+function discountLimitFor(cashierId) {
+    const limits = posSettings().discountLimits || {};
+    return Number(limits[cashierId] != null ? limits[cashierId] : 5);
+}
+
+function toKHR(usd, rate) {
+    return usd * (rate || fxRate());
+}
+
+function toUSD(khr, rate) {
+    return khr / (rate || fxRate());
+}
+
+/* ===== គំរូវេន ===== */
+
+function minutesOf(hhmm) {
+    const [h, m] = String(hhmm).split(':').map(Number);
+    return (h || 0) * 60 + (m || 0);
+}
+
+function shiftTemplates() {
+    return posSettings().shiftTemplates || [];
+}
+
+/* គំរូវេនដែលគ្របដណ្តប់ពេលនេះ — គាំទ្រវេនយប់ដែលឆ្លងពាក់កណ្តាលអធ្រាត្រ */
+function templateAt(date) {
+    const m = date.getHours() * 60 + date.getMinutes();
+    return shiftTemplates().find(t => {
+        const s = minutesOf(t.start);
+        const e = minutesOf(t.end);
+        return s < e ? (m >= s && m < e) : (m >= s || m < e);
+    }) || null;
+}
+
+/* គំរូវេនចុងក្រោយដែលបានចាប់ផ្តើមថ្ងៃនេះ (ប្រើពេលហាងហួសម៉ោងបិទ) */
+function lastStartedTemplate(date) {
+    const m = date.getHours() * 60 + date.getMinutes();
+    const started = shiftTemplates().filter(t => minutesOf(t.start) <= m);
+    return started.sort((a, b) => minutesOf(b.start) - minutesOf(a.start))[0] || null;
+}
+
+function templateHours(t) {
+    let span = minutesOf(t.end) - minutesOf(t.start);
+    if (span <= 0) span += 24 * 60;
+    return span / 60;
+}
+
+function dateAt(dateStr, hhmm) {
+    const [y, mo, d] = dateStr.split('-').map(Number);
+    const [h, mi] = hhmm.split(':').map(Number);
+    return new Date(y, mo - 1, d, h, mi, 0, 0);
+}
+
+/* ថ្ងៃដែលវេនចាប់ផ្តើម — វេនយប់ដែលបើកក្រោយពាក់កណ្តាលអធ្រាត្រជារបស់ថ្ងៃមុន */
+function templateDateFor(tpl, now) {
+    const start = dateAt(isoDate(now), tpl.start);
+    const overnight = minutesOf(tpl.end) <= minutesOf(tpl.start);
+    const m = now.getHours() * 60 + now.getMinutes();
+    if (overnight && m < minutesOf(tpl.end)) start.setDate(start.getDate() - 1);
+    return isoDate(start);
+}
+
+function shiftEndDate(shift) {
+    const start = dateAt(shift.date, shift.start);
+    const end = dateAt(shift.date, shift.end);
+    if (end <= start) end.setDate(end.getDate() + 1);
+    return end;
+}
+
+/* ===== កាតាឡុកទំនិញ — មានតែតម្លៃលក់រាយ គ្មានថ្លៃដើមទិញឡើយ ===== */
 
 const CATEGORIES = [
     { id: 'all', label: 'ទាំងអស់', icon: 'fa-border-all' },
@@ -56,7 +395,6 @@ const CATEGORIES = [
     { id: 'electronic', label: 'អេឡិចត្រូនិក', icon: 'fa-plug' }
 ];
 
-/* កាតាឡុកទំនិញ — មានតែតម្លៃលក់រាយ គ្មានថ្លៃដើមទិញឡើយ */
 const PRODUCTS = [
     { sku: '8850001', barcode: '8850001', name: 'ទឹកសុទ្ធ វិតាល 500 មីលីលីត្រ', category: 'drink', price: 0.50, unit: 'ដប', stock: 240, icon: 'fa-bottle-water', tone: 'sky' },
     { sku: '8850002', barcode: '8850002', name: 'កាហ្វេកំប៉ុង នេស្ការ្វេ', category: 'drink', price: 1.25, unit: 'កំប៉ុង', stock: 96, icon: 'fa-mug-hot', tone: 'amber' },
@@ -82,89 +420,28 @@ const PRODUCTS = [
     { sku: '8890003', barcode: '8890003', name: 'អំពូលបំភ្លឺ 9 វ៉ាត់', category: 'electronic', price: 2.20, unit: 'គ្រាប់', stock: 58, icon: 'fa-lightbulb', tone: 'yellow' }
 ];
 
-/* ប្រតិបត្តិការដែលបានបញ្ចប់ក្នុងវេននេះប៉ុណ្ណោះ
-   ម៉ោងលក់ចែកស្មើគ្នាចន្លោះពេលបើកវេន និងពេលឥឡូវនេះ
-   ដូច្នេះវិក្កយបត្រតែងតែស្ថិតក្នុងអតីតកាល មិនថាបើកទំព័រនៅម៉ោងណាក៏ដោយ។ */
-
-const SHIFT_SALE_SEED = [
-    { items: [{ sku: '8850001', qty: 4 }, { sku: '8860002', qty: 2 }], pay: { usdCash: 5.00, khrCash: 0, khqr: 0 } },
-    { items: [{ sku: '8870001', qty: 1 }, { sku: '8870003', qty: 2 }], pay: { usdCash: 0, khrCash: 30000, khqr: 0 } },
-    { items: [{ sku: '8890002', qty: 1 }, { sku: '8890001', qty: 2 }], pay: { usdCash: 0, khrCash: 0, khqr: 8.70 } },
-    { items: [{ sku: '8860001', qty: 3 }, { sku: '8850002', qty: 3 }, { sku: '8860003', qty: 2 }], pay: { usdCash: 11.00, khrCash: 0, khqr: 0 } },
-    { items: [{ sku: '8880001', qty: 10 }, { sku: '8880002', qty: 12 }], pay: { usdCash: 5.00, khrCash: 30000, khqr: 0 } },
-    { items: [{ sku: '8870002', qty: 2 }, { sku: '8870004', qty: 1 }], pay: { usdCash: 0, khrCash: 0, khqr: 11.15 } },
-    { items: [{ sku: '8850003', qty: 2 }, { sku: '8860004', qty: 1 }], pay: { usdCash: 7.00, khrCash: 0, khqr: 0 } },
-    { items: [{ sku: '8890003', qty: 4 }, { sku: '8880003', qty: 2 }], pay: { usdCash: 0, khrCash: 50000, khqr: 0 } },
-    { items: [{ sku: '8850004', qty: 3 }, { sku: '8860003', qty: 4 }], pay: { usdCash: 4.00, khrCash: 0, khqr: 6.10 } }
-];
-
-const SHIFT_SALES = (() => {
-    const openMs = SHIFT_OPEN_AT.getTime();
-    const span = Math.max(BMS_TODAY.getTime() - openMs, 60000);
-    const step = span / (SHIFT_SALE_SEED.length + 1);
-    return SHIFT_SALE_SEED.map((sale, i) => {
-        const at = new Date(openMs + step * (i + 1));
-        return {
-            id: `RCP-${pad2(BMS_TODAY.getMonth() + 1)}${pad2(BMS_TODAY.getDate())}-${String(i + 1).padStart(4, '0')}`,
-            time: isoLocal(at),
-            items: sale.items,
-            pay: sale.pay
-        };
-    });
-})();
-
-/* ក្រដាសប្រាក់សម្រាប់រាប់សាច់ប្រាក់បិទវេន */
+/* ក្រដាសប្រាក់សម្រាប់រាប់សាច់ប្រាក់ */
 const USD_NOTES = [100, 50, 20, 10, 5, 1];
 const KHR_NOTES = [100000, 50000, 20000, 10000, 5000, 1000, 500, 100];
-
-/* ===== អនុគមន៍ធ្វើទ្រង់ទ្រាយ ===== */
-
-function fmtUSD(amount) {
-    return '$' + Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-function fmtKHR(amount) {
-    return Number(Math.round(amount)).toLocaleString('en-US') + ' ៛';
-}
-
-function toKHR(usd) {
-    return usd * FX_RATE;
-}
-
-function toUSD(khr) {
-    return khr / FX_RATE;
-}
-
-function fmtKhDate(iso) {
-    const d = new Date(iso);
-    return `${d.getDate()} ${MONTHS_KH[d.getMonth()]} ${d.getFullYear()}`;
-}
-
-function fmtTime(iso) {
-    const d = new Date(iso);
-    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-}
 
 function getProduct(sku) {
     return PRODUCTS.find(p => p.sku === sku);
 }
 
+function categoryLabel(id) {
+    return (CATEGORIES.find(c => c.id === id) || {}).label || '—';
+}
+
 /* ===== រូបភាពទំនិញ =====
-   រូបថតរក្សាទុកក្នុង shared/assets/products/<sku>.png ជាទម្រង់ដែលផ្ទៃខាងក្រោយថ្លា
-   ដូច្នេះទំនិញអណ្តែតលើផ្ទៃងងឹតរបស់ផ្ទាំងគិតលុយ ដោយគ្មានប្លុកសជុំវិញ។
-   បើឯកសារមិនទាន់មាន ប្រព័ន្ធបង្ហាញរូបតំណាងជំនួសដោយស្វ័យប្រវត្តិ
-   ដូច្នេះផ្ទាំងគិតលុយមិនដែលបង្ហាញរូបភាពខូចឡើយ។ */
+   រូបថតរក្សាទុកក្នុង shared/assets/products/<sku>.png ជាទម្រង់ដែលផ្ទៃខាងក្រោយថ្លា។
+   បើឯកសារមិនទាន់មាន ប្រព័ន្ធបង្ហាញរូបតំណាងជំនួសក្នុងរង្វង់ពណ៌ស្រាល
+   ដូច្នេះក្រឡាមិនដែលមើលទៅដូចរូបភាពខូចឡើយ។ */
 
 function productImageSrc(p) {
     const root = (document.body && document.body.dataset.roleRoot) || '.';
     return `${root}/shared/assets/products/${p.sku}.png`;
 }
 
-/* object-contain ដើម្បីបង្ហាញទំនិញទាំងមូល មិនកាត់ក្បាល ឬជើងដបឡើយ
-   ព្រោះរូបថតទំនិញជាការេ ហើយទំនិញនៅចំកណ្តាល */
-/* រូបតំណាងជំនួសពេលគ្មានរូបថត៖ ដាក់ក្នុងរង្វង់មានពណ៌ស្រាល
-   ដើម្បីឱ្យក្រឡានោះនៅតែមើលទៅជាទំនិញមួយ មិនមែនជាប្រអប់ទទេដែលខូច។
-   បើទុករូបតំណាងតូចអណ្តែតក្នុងការេធំ ក្រឡាពាក់កណ្តាលកាតាឡុកនឹងមើលទៅដូចបរាជ័យ។ */
 function productImgHtml(p, iconSize) {
     return `
         <img src="${productImageSrc(p)}" alt="${p.name}" loading="lazy"
@@ -183,6 +460,21 @@ function findByBarcode(code) {
         || PRODUCTS.find(p => p.name.toLowerCase().includes(q));
 }
 
+/* ===== អតិថិជនឥណទាន =====
+   មានតែឈ្មោះ ទូរស័ព្ទ ពិដានឥណទាន និងព័ត៌មានអាករ (សម្រាប់អតិថិជនដែលចុះបញ្ជីអាករ
+   ដើម្បីឱ្យវិក្កយបត្រក្លាយជាវិក្កយបត្រអាករ — ស្រាវជ្រាវ §9)។ គ្មានថ្លៃដើម គ្មានប្រវត្តិទិញ។ */
+
+const CREDIT_CUSTOMERS = [
+    { id: 'POS-C-01', name: 'ហាង សុខសប្បាយ', phone: '012 884 221', creditLimit: 500 },
+    { id: 'POS-C-02', name: 'ភោជនីយដ្ឋាន អង្គរថ្មី', phone: '017 332 908', creditLimit: 1200,
+      vattin: 'K002-100045678', address: 'ផ្លូវ 271 សង្កាត់ទួលទំពូង ខណ្ឌចំការមន ភ្នំពេញ' },
+    { id: 'POS-C-03', name: 'សាលារៀន ចំណេះដឹងថ្មី', phone: '078 554 110', creditLimit: 800 }
+];
+
+function getCreditCustomer(id) {
+    return CREDIT_CUSTOMERS.find(c => c.id === id) || null;
+}
+
 /* ===== ការគណនាវិក្កយបត្រ ===== */
 
 function lineTotal(line) {
@@ -190,11 +482,12 @@ function lineTotal(line) {
     return p ? p.price * line.qty : 0;
 }
 
-/* អាករលើតម្លៃបន្ថែម 10% រួមបញ្ចូលក្នុងតម្លៃលក់រាយរួចហើយ ដូច្នេះត្រូវបំបែកចេញវិញ។
-   ការបញ្ចុះតម្លៃកាត់លើតម្លៃរួមបញ្ចូលអាករ បន្ទាប់មកទើបបំបែកអាករចេញ។ */
+/* អាករលើតម្លៃបន្ថែម 10% រួមក្នុងតម្លៃលក់រាយរួចហើយ ដូច្នេះត្រូវបំបែកចេញវិញ។
+   ការបញ្ចុះតម្លៃកាត់លើតម្លៃរួមអាករ បន្ទាប់មកទើបបំបែកអាករចេញ។
+   មិនកាត់ត្រឹមដែនកំណត់របស់អ្នកគិតលុយទេ — ការបញ្ចុះលើសកំណត់ដែលបានអនុម័តត្រូវតែគិតពេញ។ */
 function saleTotals(items, discountPercent) {
     const list = items.reduce((sum, it) => sum + lineTotal(it), 0);
-    const pct = Math.min(Math.max(Number(discountPercent) || 0, 0), SHIFT.discountLimit);
+    const pct = Math.min(Math.max(Number(discountPercent) || 0, 0), 100);
     const discount = list * (pct / 100);
     const gross = list - discount;
     const net = gross / 1.10;
@@ -209,8 +502,48 @@ function saleTotals(items, discountPercent) {
     };
 }
 
-function paidTotal(pay) {
-    return pay.usdCash + toUSD(pay.khrCash) + pay.khqr;
+function paidTotal(pay, rate) {
+    return pay.usdCash + toUSD(pay.khrCash, rate) + pay.khqr;
+}
+
+/* ===== ប្រាក់អាប់តាមរបៀបហាងនៅកម្ពុជា (ផែនការកែលម្អ C2) =====
+   «ចម្រុះ»៖ ដុល្លារគត់ + នៅសល់ជារៀលបង្គត់ទៅ 100 ៛ ជិតបំផុត (ឧ. $2.38 → $2 + 1,600 ៛)
+   «រៀលទាំងអស់»៖ ប្រាក់អាប់ទាំងមូលជារៀលបង្គត់ទៅ 100 ៛
+   មិនមានរបៀប «ដុល្លារទាំងអស់» ទេ ព្រោះកាក់សេនមិនចរាចរនៅកម្ពុជា។
+   roundingKHR = រៀលដែលផ្តល់លើស (+) ឬខ្វះ (−) ពីការបង្គត់ — រក្សាទុកដើម្បីកុំឱ្យប៉ះពាល់ការផ្ទៀងផ្ទាត់ថត */
+
+function splitChange(changeUSD, rate, mode) {
+    const r = rate || fxRate();
+    if (changeUSD < 0.005) return { usd: 0, khr: 0, roundingKHR: 0, mode: mode || 'mixed' };
+    if (mode === 'riel') {
+        const exact = changeUSD * r;
+        const khr = Math.round(exact / 100) * 100;
+        return { usd: 0, khr, roundingKHR: khr - exact, mode };
+    }
+    const usd = Math.floor(changeUSD + 1e-9);
+    const exact = (changeUSD - usd) * r;
+    const khr = Math.round(exact / 100) * 100;
+    return { usd, khr, roundingKHR: khr - exact, mode: 'mixed' };
+}
+
+/* អតិថិជនបង់ជារៀលសុទ្ធ ជាធម្មតាចង់បានប្រាក់អាប់ជារៀល */
+function defaultChangeMode(pay) {
+    return pay.usdCash > 0.005 ? 'mixed' : 'riel';
+}
+
+function fmtChange(ch) {
+    if (!ch || (ch.usd < 0.005 && ch.khr < 1)) return 'គ្មានប្រាក់អាប់';
+    const parts = [];
+    if (ch.usd > 0.005) parts.push(fmtUSD(ch.usd));
+    if (ch.khr >= 1) parts.push(fmtKHR(ch.khr));
+    return parts.join(' + ');
+}
+
+function saleChange(sale) {
+    if (sale.change) return sale.change;
+    const rate = sale.fxRate || fxRate();
+    const t = saleTotals(sale.items, sale.discountPercent);
+    return splitChange(paidTotal(sale.pay, rate) - t.gross, rate, defaultChangeMode(sale.pay));
 }
 
 const PAY_LABEL = {
@@ -225,169 +558,366 @@ function payMethodLabel(pay) {
     return parts.length > 1 ? 'បែងចែក៖ ' + parts.join(' និង ') : parts[0];
 }
 
-/* ===== អតិថិជនឥណទាន =====
-   ផ្ទាំងគិតលុយលក់អតិថិជនដើរចូលជាសាច់ប្រាក់ជាធម្មតា។
-   បញ្ជីនេះមានតែអតិថិជនដែលមានគណនីឥណទាន ដើម្បីភ្ជាប់វិក្កយបត្រទៅគណនីរបស់គេ។
-   គ្មានថ្លៃដើម គ្មានប្រវត្តិទិញ — មានត្រឹមឈ្មោះ ទូរស័ព្ទ និងពិដានឥណទានប៉ុណ្ណោះ។ */
-
-const CREDIT_CUSTOMERS = [
-    { id: 'POS-C-01', name: 'ហាង សុខសប្បាយ', phone: '012 884 221', creditLimit: 500 },
-    { id: 'POS-C-02', name: 'ភោជនីយដ្ឋាន អង្គរថ្មី', phone: '017 332 908', creditLimit: 1200 },
-    { id: 'POS-C-03', name: 'សាលារៀន ចំណេះដឹងថ្មី', phone: '078 554 110', creditLimit: 800 }
-];
-
-function getCreditCustomer(id) {
-    return CREDIT_CUSTOMERS.find(c => c.id === id) || null;
+function methodOf(sale) {
+    const used = ['usdCash', 'khrCash', 'khqr'].filter(k => sale.pay[k] > 0);
+    if (used.length > 1) return 'split';
+    return used[0] || 'usdCash';
 }
 
-/* ===== ប្រតិបត្តិការក្នុងវេន (រួមទាំងអ្វីដែលបានលក់ក្នុងវេនបច្ចុប្បន្ន) ===== */
+/* ===== វេន =====
+   វេនមួយ = អ្នកគិតលុយម្នាក់ ថតប្រាក់មួយ ពីការបើកដល់ការបិទដោយរាប់បិទភ្នែក។
+   ស្ថានភាព៖ open → closed (រង់ចាំត្រួតពិនិត្យ) → reviewed (អ្នកគ្រប់គ្រងបានចុះហត្ថលេខា)។ */
 
-const SALES_KEY = 'pos_shift_sales';
+const SHIFT_STATUS = {
+    open: { label: 'កំពុងបើក', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
+    closed: { label: 'រង់ចាំត្រួតពិនិត្យ', cls: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'bg-amber-500' },
+    reviewed: { label: 'បានត្រួតពិនិត្យ', cls: 'bg-indigo-50 text-indigo-700 border-indigo-200', dot: 'bg-indigo-500' }
+};
 
-function loadNewSales() {
-    try {
-        return JSON.parse(sessionStorage.getItem(SALES_KEY)) || [];
-    } catch (e) {
-        return [];
-    }
+function liveShifts() {
+    return posRead(POS_KEYS.shifts, []);
 }
 
-function saveSale(sale) {
-    const all = loadNewSales();
-    all.push(sale);
-    try {
-        sessionStorage.setItem(SALES_KEY, JSON.stringify(all));
-    } catch (e) {
-        // វេនឯកជន ឬការផ្ទុកត្រូវបានបិទ — ការលក់នៅរស់ត្រឹមទំព័របច្ចុប្បន្ន
-    }
+function saveLiveShift(shift) {
+    return upsertById(POS_KEYS.shifts, shift);
 }
 
-/* ប្រតិបត្តិការទាំងអស់ក្នុងវេននេះ — ថ្មីមុនគេ */
-function shiftSales() {
-    return SHIFT_SALES.concat(loadNewSales())
-        .sort((a, b) => new Date(b.time) - new Date(a.time));
+/* វេនដែលកំពុងបើកលើបញ្ជរនេះ */
+function currentShift() {
+    return liveShifts()
+        .filter(s => s.register === MY_REGISTER && s.status === 'open')
+        .sort((a, b) => b.openedAt.localeCompare(a.openedAt))[0] || null;
 }
 
-function nextReceiptNumber() {
-    const n = SHIFT_SALES.length + loadNewSales().length + 1;
-    return `RCP-${pad2(BMS_TODAY.getMonth() + 1)}${pad2(BMS_TODAY.getDate())}-${String(n).padStart(4, '0')}`;
+function lastShiftFor(register) {
+    return liveShifts()
+        .filter(s => s.register === register)
+        .sort((a, b) => b.openedAt.localeCompare(a.openedAt))[0] || null;
 }
 
-/* ===== កន្ត្រកទំនិញបច្ចុប្បន្ន ===== */
-
-const CART_KEY = 'pos_cart';
-
-function loadCart() {
-    try {
-        return JSON.parse(sessionStorage.getItem(CART_KEY)) || [];
-    } catch (e) {
-        return [];
-    }
+/* វេនដែលទំព័រអ្នកគិតលុយបង្ហាញ — វេនបើក ឬបើគ្មាន វេនចុងក្រោយដែលទើបបិទ */
+function cashierShift() {
+    const last = lastShiftFor(MY_REGISTER);
+    return currentShift() || (last && last.cashierId === ME_CASHIER ? last : null);
 }
 
-function saveCart(items) {
-    try {
-        sessionStorage.setItem(CART_KEY, JSON.stringify(items));
-    } catch (e) {
-        // មិនអាចរក្សាទុក — កន្ត្រកនៅរស់ត្រឹមទំព័របច្ចុប្បន្ន
-    }
-}
-
-function clearCart() {
-    try {
-        sessionStorage.removeItem(CART_KEY);
-    } catch (e) {
-        // មិនអាចសម្អាត — មិនប៉ះពាល់ដំណើរការទេ
-    }
-}
-
-/* ការទូទាត់ KHQR ដែលកំពុងរង់ចាំ (បញ្ជូនរវាងទំព័រ) */
-const PENDING_KEY = 'pos_pending_khqr';
-
-function savePendingPayment(data) {
-    try {
-        sessionStorage.setItem(PENDING_KEY, JSON.stringify(data));
-    } catch (e) {
-        // មិនអាចរក្សាទុក
-    }
-}
-
-function loadPendingPayment() {
-    try {
-        return JSON.parse(sessionStorage.getItem(PENDING_KEY));
-    } catch (e) {
-        return null;
-    }
-}
-
-function clearPendingPayment() {
-    try {
-        sessionStorage.removeItem(PENDING_KEY);
-    } catch (e) {
-        // មិនអាចសម្អាត
-    }
-}
-
-/* ===== ស្ថានភាពវេន =====
-   ការបិទវេនត្រូវរក្សាទុក ដើម្បីឱ្យផ្ទាំងគិតលុយជាប់សោរពិតប្រាកដ
-   មិនមែនត្រឹមសារជូនដំណឹងប៉ុណ្ណោះ (ឯកសាររចនាលេខ 01 ផ្នែក 3.3)។
-   អ្នកគិតលុយមិនអាចបើកវេនឡើងវិញបានទេ — នោះជាសិទ្ធិរបស់អ្នកគ្រប់គ្រងទូទៅ។ */
-
-const SHIFT_STATE_KEY = 'pos_shift_state_v2';
-
-function shiftState() {
-    try {
-        const raw = JSON.parse(localStorage.getItem(SHIFT_STATE_KEY));
-        if (raw && raw.shiftId === SHIFT.id) return raw;
-    } catch (e) {
-        // ការផ្ទុកមិនអាចអានបាន — ចាត់ទុកវេនជាបើក
-    }
-    return { shiftId: SHIFT.id, status: 'open' };
+/* វេនដែលបើកលើបញ្ជរនេះដោយអ្នកផ្សេង — អ្នកចូលប្រើបច្ចុប្បន្នមិនអាចលក់លើថតប្រាក់របស់គេបានទេ */
+function foreignShift() {
+    const sh = currentShift();
+    return sh && sh.cashierId !== ME_CASHIER ? sh : null;
 }
 
 function isShiftOpen() {
-    return shiftState().status !== 'closed';
+    return !!currentShift();
 }
 
-function recordShiftClose(detail) {
-    const payload = {
-        shiftId: SHIFT.id,
-        status: 'closed',
-        closedAt: isoLocal(new Date()),
-        ...detail
+function shiftIdFor(dateStr, register, code) {
+    const base = `SHIFT-${dateStr.replace(/-/g, '')}-${register.replace('-', '')}-${code}`;
+    const taken = liveShifts().map(s => s.id);
+    if (!taken.includes(base)) return base;
+    let n = 2;
+    while (taken.includes(`${base}${n}`)) n += 1;
+    return `${base}${n}`;
+}
+
+function openShiftRecord(opts) {
+    const now = new Date();
+    const tpl = opts.template;
+    const dateStr = templateDateFor(tpl, now);
+    const shift = {
+        id: shiftIdFor(dateStr, opts.register, tpl.code),
+        date: dateStr,
+        register: opts.register,
+        cashierId: opts.cashierId,
+        templateCode: tpl.code,
+        templateName: tpl.name,
+        start: tpl.start,
+        end: tpl.end,
+        openedAt: isoLocal(now),
+        fxRate: fxRate(),
+        floatUSD: opts.floatUSD,
+        floatKHR: opts.floatKHR,
+        floatIssuedUSD: opts.floatIssuedUSD,
+        floatIssuedKHR: opts.floatIssuedKHR,
+        floatNote: opts.floatNote || '',
+        floatApprovedBy: opts.approverId,
+        status: 'open'
     };
-    try {
-        localStorage.setItem(SHIFT_STATE_KEY, JSON.stringify(payload));
-    } catch (e) {
-        // មិនអាចរក្សាទុក — ការបិទវេននៅរស់ត្រឹមទំព័របច្ចុប្បន្ន
+    saveLiveShift(shift);
+    return shift;
+}
+
+/* ===== ការលក់ ===== */
+
+function liveSales() {
+    return posRead(POS_KEYS.sales, []);
+}
+
+function salesOfShift(shiftId) {
+    return liveSales()
+        .filter(s => s.shiftId === shiftId)
+        .sort((a, b) => b.time.localeCompare(a.time));
+}
+
+/* ការលក់ក្នុងវេនដែលអ្នកគិតលុយកំពុងមើល — ថ្មីមុនគេ */
+function shiftSales() {
+    const sh = cashierShift();
+    return sh ? salesOfShift(sh.id) : [];
+}
+
+function saveSale(sale) {
+    return upsertById(POS_KEYS.sales, sale);
+}
+
+function updateLiveSale(id, patch) {
+    return patchById(POS_KEYS.sales, id, patch);
+}
+
+function findLiveSale(id) {
+    return liveSales().find(s => s.id === id) || null;
+}
+
+/* RCP-01-1003-0012 = បញ្ជរ 01 · ថ្ងៃទី 3 ខែ 10 · លេខរៀងប្រចាំថ្ងៃ (លំដាប់ជាប់គ្នា — ស្រាវជ្រាវ §9) */
+function receiptPrefix(register, date) {
+    return `RCP-${register.slice(-2)}-${pad2(date.getMonth() + 1)}${pad2(date.getDate())}-`;
+}
+
+function nextReceiptNumber(register) {
+    const reg = register || MY_REGISTER;
+    const prefix = receiptPrefix(reg, new Date());
+    const n = liveSales().filter(s => s.id.startsWith(prefix)).length + 1;
+    return prefix + String(n).padStart(4, '0');
+}
+
+function isVoided(sale) {
+    return sale.status === 'voided';
+}
+
+function returnedQty(sale, sku) {
+    return (sale.returns || []).reduce((sum, r) =>
+        sum + r.lines.filter(l => l.sku === sku).reduce((n, l) => n + l.qty, 0), 0);
+}
+
+function returnedAmount(sale) {
+    return (sale.returns || []).reduce((sum, r) => sum + r.amount, 0);
+}
+
+/* ===== ការលក់ព្យួរ (ផែនការកែលម្អ C4) ===== */
+
+function heldOfShift(shiftId) {
+    return posRead(POS_KEYS.held, []).filter(h => h.shiftId === shiftId)
+        .sort((a, b) => a.at.localeCompare(b.at));
+}
+
+function saveHeld(record) {
+    return upsertById(POS_KEYS.held, record);
+}
+
+function removeHeld(id) {
+    posWrite(POS_KEYS.held, posRead(POS_KEYS.held, []).filter(h => h.id !== id));
+}
+
+/* ===== សំណើអនុម័ត =====
+   ប្រភេទ៖ void (លុបចោលវិក្កយបត្រ) · return (ប្រគល់ទំនិញវិញ)
+   ស្ថានភាព៖ pending → approved | rejected
+   mode៖ onsite (អ្នកគ្រប់គ្រងវាយលេខសម្ងាត់នៅបញ្ជរ) · remote (ពីបញ្ជីសំណើ) */
+
+const APPROVAL_TYPE = {
+    void: { label: 'លុបចោលវិក្កយបត្រ', icon: 'fa-ban', tone: 'rose' },
+    return: { label: 'ប្រគល់ទំនិញវិញ', icon: 'fa-rotate-left', tone: 'amber' }
+};
+
+const APPROVAL_STATUS = {
+    pending: { label: 'រង់ចាំអនុម័ត', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
+    approved: { label: 'បានអនុម័ត', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    rejected: { label: 'បានបដិសេធ', cls: 'bg-rose-50 text-rose-700 border-rose-200' }
+};
+
+function liveApprovals() {
+    return posRead(POS_KEYS.approvals, []);
+}
+
+function saveApproval(rec) {
+    return upsertById(POS_KEYS.approvals, rec);
+}
+
+function pendingRequestFor(saleId) {
+    return liveApprovals().find(a => a.saleId === saleId && a.status === 'pending') || null;
+}
+
+/* អនុវត្តលទ្ធផលនៃការអនុម័តលើការលក់ — ប្រើដោយទាំងការអនុម័តនៅបញ្ជរ និងពីបញ្ជីសំណើ
+   updateFn ត្រូវបានផ្តល់ដោយ manager-data.js សម្រាប់ការលក់ក្នុងប្រវត្តិ */
+function applyApprovalToSale(req, approverId, updateFn) {
+    const update = updateFn || updateLiveSale;
+    const at = isoLocal(new Date());
+    if (req.type === 'void') {
+        update(req.saleId, { status: 'voided', voidedBy: approverId, voidedAt: at, voidReason: req.reason });
+    } else if (req.type === 'return') {
+        const sale = typeof findAnySale === 'function' ? findAnySale(req.saleId) : findLiveSale(req.saleId);
+        if (!sale) return;
+        const returns = (sale.returns || []).concat([{
+            id: req.id, lines: req.lines, amount: req.amount, method: req.method,
+            amountKHR: req.method === 'khrCash' ? Math.round(toKHR(req.amount, sale.fxRate) / 100) * 100 : 0,
+            reason: req.reason, approvedBy: approverId, at
+        }]);
+        update(req.saleId, { returns });
     }
-    return payload;
 }
 
-/* ប្រើដោយប៊ូតុង «កំណត់ទិន្នន័យគំរូឡើងវិញ» នៅទំព័រចូលប្រើ */
-function resetShiftState() {
-    try {
-        localStorage.removeItem(SHIFT_STATE_KEY);
-        sessionStorage.removeItem(SALES_KEY);
-        sessionStorage.removeItem(CART_KEY);
-        sessionStorage.removeItem(PENDING_KEY);
-    } catch (e) {
-        // មិនអាចសម្អាត
+/* ===== ចលនាសាច់ប្រាក់ (ឯកសាររចនាលេខ 02 ផ្នែក 5.4) =====
+   float៖ ប្រាក់បាតថតដែលអ្នកគ្រប់គ្រងចេញ (រង់ចាំរហូតដល់អ្នកគិតលុយរាប់ចូលពេលបើកវេន)
+   drop៖ ផ្ទេរពីថតចូលទូដែក (អ្នកគិតលុយធ្វើ អ្នកគ្រប់គ្រងបញ្ជាក់ការទទួល)
+   payout / payin៖ ដក ឬបញ្ចូលប្រាក់ក្រៅការលក់ · bank៖ ដាក់ប្រាក់ពីទូដែកចូលធនាគារ */
+
+const MOVEMENT_TYPE = {
+    float: { label: 'ចេញប្រាក់បាតថត', icon: 'fa-hand-holding-dollar', tone: 'sky' },
+    drop: { label: 'ផ្ទេរចូលទូដែក', icon: 'fa-vault', tone: 'indigo' },
+    payout: { label: 'ដកប្រាក់ចំណាយ', icon: 'fa-money-bill-transfer', tone: 'rose' },
+    payin: { label: 'បញ្ចូលប្រាក់បន្ថែម', icon: 'fa-circle-plus', tone: 'emerald' },
+    bank: { label: 'ដាក់ប្រាក់ចូលធនាគារ', icon: 'fa-building-columns', tone: 'slate' }
+};
+
+const MOVEMENT_STATUS = {
+    pending: { label: 'រង់ចាំទទួល', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
+    confirmed: { label: 'បានបញ្ជាក់', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' }
+};
+
+function liveMovements() {
+    return posRead(POS_KEYS.movements, []);
+}
+
+function movementsOfShift(shiftId) {
+    return liveMovements().filter(m => m.shiftId === shiftId);
+}
+
+function saveMovement(m) {
+    return upsertById(POS_KEYS.movements, m);
+}
+
+function pendingFloatFor(register) {
+    return liveMovements()
+        .filter(m => m.type === 'float' && m.register === register && m.status === 'pending')
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0] || null;
+}
+
+/* ===== កំណត់ហេតុព្រឹត្តិការណ៍ (ផែនការកែលម្អ C9) =====
+   ប្រភពទិន្នន័យសម្រាប់ទំព័រ «ករណីមិនប្រក្រតី» របស់អ្នកគ្រប់គ្រង។ អ្នកគិតលុយមិនឃើញវាទេ។ */
+
+const EVENT_LABEL = {
+    line_removed: 'ដកទំនិញចេញមុនទូទាត់',
+    cart_cleared: 'សម្អាតកន្ត្រក',
+    discount: 'បញ្ចុះតម្លៃ',
+    hold: 'ព្យួរការលក់',
+    hold_discarded: 'បោះបង់ការលក់ព្យួរ',
+    void_requested: 'ស្នើលុបចោល',
+    return_requested: 'ស្នើប្រគល់ទំនិញវិញ',
+    override_approved: 'អនុម័តនៅបញ្ជរ',
+    override_denied: 'លេខសម្ងាត់ខុស',
+    request_approved: 'អនុម័តសំណើ',
+    request_rejected: 'បដិសេធសំណើ',
+    reprint: 'បោះពុម្ពឡើងវិញ',
+    terminal_locked: 'ចាក់សោរបញ្ជរ',
+    terminal_unlocked: 'ដោះសោរបញ្ជរ',
+    shift_opened: 'បើកវេន',
+    shift_closed: 'បិទវេន',
+    shift_reviewed: 'ត្រួតពិនិត្យវេន',
+    shift_reopened: 'បើកវេនឡើងវិញ',
+    recount: 'រាប់ប្រាក់ឡើងវិញ',
+    drop: 'ផ្ទេរចូលទូដែក'
+};
+
+function logPosEvent(type, detail) {
+    const d = detail || {};
+    const sh = d.shiftId ? null : currentShift();
+    const list = posRead(POS_KEYS.events, []);
+    list.push({
+        id: newId('EV'),
+        type,
+        at: isoLocal(new Date()),
+        shiftId: d.shiftId || (sh ? sh.id : ''),
+        register: d.register || (sh ? sh.register : MY_REGISTER),
+        actorId: d.actorId || currentActorId(),
+        cashierId: d.cashierId || (sh ? sh.cashierId : ''),
+        approverId: d.approverId || '',
+        saleId: d.saleId || '',
+        amount: d.amount || 0,
+        reason: d.reason || '',
+        note: d.note || ''
+    });
+    posWrite(POS_KEYS.events, list.slice(-3000));
+}
+
+function liveEvents() {
+    return posRead(POS_KEYS.events, []);
+}
+
+/* ===== សោរបញ្ជរពេលសម្រាក (ផែនការកែលម្អ C22) ===== */
+
+function terminalLock() {
+    const lock = posRead(POS_KEYS.lock, null);
+    const sh = currentShift();
+    return lock && sh && lock.shiftId === sh.id ? lock : null;
+}
+
+function setTerminalLock(on) {
+    const sh = currentShift();
+    if (on && sh) posWrite(POS_KEYS.lock, { shiftId: sh.id, at: isoLocal(new Date()) });
+    else {
+        try { localStorage.removeItem(POS_KEYS.lock); } catch (e) { /* មិនអាចសម្អាត */ }
     }
 }
 
-/* រយៈពេលបើកវេនគិតជាម៉ោង និងនាទី */
-function shiftDuration() {
-    const ms = Math.max(new Date() - new Date(SHIFT.openedAt), 0);
-    return { hours: Math.floor(ms / 3600000), minutes: Math.floor(ms / 60000) % 60 };
+/* ===== កន្ត្រក និងការទូទាត់បាគងដែលរង់ចាំ (sessionStorage) ===== */
+
+function loadCart() {
+    return sessRead(POS_KEYS.cart, null) || { items: [] };
 }
 
-/* ===== សង្ខេបវេន (X/Z Report) ===== */
+function saveCart(state) {
+    sessWrite(POS_KEYS.cart, state);
+}
 
-function shiftSummary() {
-    const sales = shiftSales();
-    const totals = sales.reduce((acc, s) => {
+function clearCart() {
+    sessRemove(POS_KEYS.cart);
+}
+
+function savePendingPayment(data) {
+    sessWrite(POS_KEYS.pending, data);
+}
+
+function loadPendingPayment() {
+    return sessRead(POS_KEYS.pending, null);
+}
+
+function clearPendingPayment() {
+    sessRemove(POS_KEYS.pending);
+}
+
+/* ===== សង្ខេបវេន =====
+   គណនាដាច់ដោយឡែកតាមរូបិយប័ណ្ណ (ផែនការកែលម្អ C12)៖
+   រំពឹងទុក = បាតថត + ទទួលជាសាច់ប្រាក់ − ប្រាក់អាប់ − សងប្រាក់ − ផ្ទេរចូលទូដែក − ដកចំណាយ + បញ្ចូលបន្ថែម
+   វិក្កយបត្រដែលបានលុបចោល មិនរាប់ចូលទេ ព្រោះប្រាក់ត្រូវបានប្រគល់ឱ្យអតិថិជនវិញទាំងស្រុង។ */
+
+function summarizeShift(shift, sales, movements) {
+    const acc = {
+        count: 0, qty: 0, list: 0, gross: 0, net: 0, vat: 0, discount: 0,
+        usdCash: 0, khrCash: 0, khqr: 0, changeUSD: 0, changeKHR: 0, roundingKHR: 0,
+        khqrCount: 0, discountCount: 0, overrideCount: 0,
+        voidCount: 0, voidAmount: 0, returnCount: 0, returnAmount: 0,
+        refundUSD: 0, refundKHR: 0, refundKHQR: 0,
+        dropUSD: 0, dropKHR: 0, payoutUSD: 0, payoutKHR: 0, payinUSD: 0, payinKHR: 0,
+        pendingDrops: 0
+    };
+    sales.forEach(s => {
         const t = saleTotals(s.items, s.discountPercent);
+        if (isVoided(s)) {
+            acc.voidCount += 1;
+            acc.voidAmount += t.gross;
+            return;
+        }
+        acc.count += 1;
+        acc.qty += t.qty;
+        acc.list += t.list;
         acc.gross += t.gross;
         acc.net += t.net;
         acc.vat += t.vat;
@@ -395,60 +925,104 @@ function shiftSummary() {
         acc.usdCash += s.pay.usdCash;
         acc.khrCash += s.pay.khrCash;
         acc.khqr += s.pay.khqr;
-        acc.qty += t.qty;
-        return acc;
-    }, { gross: 0, net: 0, vat: 0, discount: 0, usdCash: 0, khrCash: 0, khqr: 0, qty: 0 });
+        if (s.pay.khqr > 0.005) acc.khqrCount += 1;
+        if (t.discount > 0.005) acc.discountCount += 1;
+        if (s.discountApproverId) acc.overrideCount += 1;
+        const ch = saleChange(s);
+        acc.changeUSD += ch.usd;
+        acc.changeKHR += ch.khr;
+        acc.roundingKHR += ch.roundingKHR || 0;
+        (s.returns || []).forEach(r => {
+            acc.returnCount += 1;
+            acc.returnAmount += r.amount;
+            if (r.method === 'usdCash') acc.refundUSD += r.amount;
+            else if (r.method === 'khrCash') acc.refundKHR += r.amountKHR || 0;
+            else acc.refundKHQR += r.amount;
+        });
+    });
+    (movements || []).forEach(m => {
+        if (m.type === 'drop') {
+            acc.dropUSD += m.usd;
+            acc.dropKHR += m.khr;
+            if (m.status === 'pending') acc.pendingDrops += 1;
+        } else if (m.type === 'payout') {
+            acc.payoutUSD += m.usd;
+            acc.payoutKHR += m.khr;
+        } else if (m.type === 'payin') {
+            acc.payinUSD += m.usd;
+            acc.payinKHR += m.khr;
+        }
+    });
+    const floatUSD = shift ? Number(shift.floatUSD) || 0 : 0;
+    const floatKHR = shift ? Number(shift.floatKHR) || 0 : 0;
+    acc.floatUSD = floatUSD;
+    acc.floatKHR = floatKHR;
+    acc.netSales = acc.gross - acc.returnAmount;
+    acc.avgTicket = acc.count ? acc.gross / acc.count : 0;
+    acc.rate = (shift && shift.fxRate) || fxRate();
+    acc.expectedUSD = floatUSD + acc.usdCash - acc.changeUSD - acc.refundUSD - acc.dropUSD - acc.payoutUSD + acc.payinUSD;
+    acc.expectedKHR = floatKHR + acc.khrCash - acc.changeKHR - acc.refundKHR - acc.dropKHR - acc.payoutKHR + acc.payinKHR;
+    return acc;
+}
 
+function shiftSummary(shift) {
+    const sh = shift || cashierShift();
+    if (!sh) return summarizeShift(null, [], []);
+    return summarizeShift(sh, salesOfShift(sh.id), movementsOfShift(sh.id));
+}
+
+/* ភាពខុសគ្នាសរុបគិតជាដុល្លារ តាមអត្រារបស់វេន */
+function varianceOf(countedUSD, countedKHR, expectedUSD, expectedKHR, rate) {
+    const dUSD = countedUSD - expectedUSD;
+    const dKHR = countedKHR - expectedKHR;
+    const diff = dUSD + toUSD(dKHR, rate);
+    const abs = Math.abs(diff);
+    const tol = Number(posSettings().varianceTolerance) || 5;
     return {
-        ...totals,
-        count: sales.length,
-        avgTicket: sales.length ? totals.gross / sales.length : 0,
-        expectedUSD: SHIFT.openingFloatUSD + totals.usdCash,
-        expectedKHR: SHIFT.openingFloatKHR + totals.khrCash
+        dUSD, dKHR, diff, abs,
+        level: abs <= 0.005 ? 'exact' : abs <= tol ? 'small' : 'large',
+        direction: diff > 0.005 ? 'over' : diff < -0.005 ? 'short' : 'exact'
     };
 }
 
-/* មុខទំនិញលក់ដាច់ក្នុងវេន */
-function topSellers(limit = 5) {
+const DIRECTION_LABEL = { over: 'លើសប្រាក់', short: 'ខ្វះប្រាក់', exact: 'ត្រឹមត្រូវគត់' };
+
+function topSellers(sales, limit) {
     const tally = {};
-    shiftSales().forEach(s => {
+    sales.filter(s => !isVoided(s)).forEach(s => {
         s.items.forEach(it => {
-            tally[it.sku] = (tally[it.sku] || 0) + it.qty;
+            tally[it.sku] = (tally[it.sku] || 0) + it.qty - returnedQty(s, it.sku);
         });
     });
     return Object.keys(tally)
         .map(sku => ({ product: getProduct(sku), qty: tally[sku] }))
-        .filter(r => r.product)
+        .filter(r => r.product && r.qty > 0)
         .sort((a, b) => b.qty - a.qty)
-        .slice(0, limit);
-}
-
-/* ផ្លាកលេខក្នុងម៉ឺនុយចំហៀង (ហៅដោយ portal.js) */
-function totalPending() {
-    return shiftSales().length;
+        .slice(0, limit || 5);
 }
 
 /* ===== ស្តុកនៅសល់ក្នុងវេន ===== */
 
-/* ចំនួនដែលបានលក់រួចក្នុងវេននេះ */
 function soldQty(sku) {
-    return shiftSales().reduce((sum, s) =>
-        sum + s.items.filter(i => i.sku === sku).reduce((n, i) => n + i.qty, 0), 0);
+    return shiftSales().filter(s => !isVoided(s)).reduce((sum, s) =>
+        sum + s.items.filter(i => i.sku === sku).reduce((n, i) => n + i.qty, 0) - returnedQty(s, sku), 0);
 }
 
-/* ស្តុកដែលនៅអាចលក់បាន — ស្តុកដើមដកចេញនូវអ្វីដែលលក់រួច */
 function availableStock(sku) {
     const p = getProduct(sku);
     return p ? Math.max(p.stock - soldQty(sku), 0) : 0;
 }
 
-/* ===== ទម្រង់វិក្កយបត្រក្រដាសកម្តៅ 80mm =====
-   ប្រើរួមគ្នាដោយផ្ទាំងគិតលុយ និងទំព័របោះពុម្ពឡើងវិញ ដូច្នេះទម្រង់ដូចគ្នាជានិច្ច */
+/* ===== វិក្កយបត្រក្រដាសកម្តៅ 80mm =====
+   អានអ្នកគិតលុយ បញ្ជរ និងអត្រាប្តូរប្រាក់ពីការលក់ផ្ទាល់ (ផែនការកែលម្អ C7)
+   ដូច្នេះការបោះពុម្ពឡើងវិញ ឬការមើលពីទំព័រអ្នកគ្រប់គ្រង បង្ហាញព័ត៌មានពិតនៃពេលលក់ */
+
 function receiptHtml(sale, options) {
     const opts = options || {};
+    const rate = sale.fxRate || fxRate();
     const t = saleTotals(sale.items, sale.discountPercent);
-    const paid = paidTotal(sale.pay);
-    const change = paid - t.gross;
+    const ch = saleChange(sale);
+    const voided = isVoided(sale);
 
     const row = (label, value, strong) => `
         <div style="display:flex;justify-content:space-between;gap:8px;${strong ? 'font-weight:600;padding-top:4px;border-top:1px dashed #94a3b8;' : ''}">
@@ -457,11 +1031,12 @@ function receiptHtml(sale, options) {
 
     const items = sale.items.map(l => {
         const p = getProduct(l.sku);
+        const back = returnedQty(sale, l.sku);
         return `
             <div style="margin-bottom:6px;">
                 <div>${p.name}</div>
                 <div style="display:flex;justify-content:space-between;gap:8px;color:#475569;">
-                    <span>${l.qty} ${p.unit} × ${fmtUSD(p.price)}</span>
+                    <span>${l.qty} ${p.unit} × ${fmtUSD(p.price)}${back ? ` · ប្រគល់វិញ ${back}` : ''}</span>
                     <span>${fmtUSD(lineTotal(l))}</span>
                 </div>
             </div>`;
@@ -471,27 +1046,36 @@ function receiptHtml(sale, options) {
         sale.pay.usdCash > 0 ? row(PAY_LABEL.usdCash, fmtUSD(sale.pay.usdCash)) : '',
         sale.pay.khrCash > 0 ? row(PAY_LABEL.khrCash, fmtKHR(sale.pay.khrCash)) : '',
         sale.pay.khqr > 0 ? row(PAY_LABEL.khqr, fmtUSD(sale.pay.khqr)) : '',
-        change > 0.005 ? row('ប្រាក់អាប់', `${fmtUSD(change)} · ${fmtKHR(toKHR(change))}`) : ''
+        (ch.usd > 0.005 || ch.khr >= 1) ? row('ប្រាក់អាប់', fmtChange(ch)) : ''
     ].join('');
 
+    const returns = (sale.returns || []).map(r =>
+        row(`ប្រគល់វិញ ${fmtTime(r.at)}`, '− ' + fmtUSD(r.amount))).join('');
+
     const customer = sale.customerId ? getCreditCustomer(sale.customerId) : null;
+    const taxInvoice = customer && customer.vattin;
 
     return `
-        <div style="width:72mm;margin:0 auto;font-family:'Kantumruy Pro',sans-serif;font-size:12px;line-height:1.5;color:#0f172a;">
+        <div style="width:72mm;margin:0 auto;font-family:'Kantumruy Pro',sans-serif;font-size:12px;line-height:1.5;color:#0f172a;position:relative;">
             <div style="text-align:center;padding-bottom:8px;border-bottom:1px dashed #94a3b8;">
-                <div style="font-size:15px;font-weight:700;">DIGITECHKH RETAIL</div>
-                <div style="color:#475569;">${SHIFT.branch}</div>
+                <div style="font-size:15px;font-weight:700;">${MERCHANT.name}</div>
+                <div style="color:#475569;">${MERCHANT.branch}</div>
                 <div style="color:#475569;">លេខអត្តសញ្ញាណកម្មអាករ ${MERCHANT.tin}</div>
-                <div style="color:#475569;">ទូរស័ព្ទ 023 999 888</div>
+                <div style="color:#475569;">ទូរស័ព្ទ ${MERCHANT.phone}</div>
+                <div style="margin-top:6px;font-weight:600;">${taxInvoice ? 'វិក្កយបត្រអាករ' : 'វិក្កយបត្រ'}</div>
             </div>
+
+            ${voided ? `<div style="margin:8px 0;padding:6px;border:2px solid #e11d48;color:#e11d48;text-align:center;font-weight:700;">បានលុបចោល · ${fmtTime(sale.voidedAt)}</div>` : ''}
 
             <div style="padding:8px 0;border-bottom:1px dashed #94a3b8;">
                 ${row('លេខវិក្កយបត្រ', sale.id)}
-                ${row('កាលបរិច្ឆេទ', fmtKhDate(sale.time))}
+                ${row('កាលបរិច្ឆេទ', fmtDate(sale.time))}
                 ${row('ម៉ោង', fmtTime(sale.time))}
-                ${row('អ្នកគិតលុយ', SHIFT.cashier)}
-                ${row('ម៉ាស៊ីន', SHIFT.terminal)}
+                ${row('អ្នកគិតលុយ', personName(sale.cashierId))}
+                ${row('ម៉ាស៊ីន', sale.register || MY_REGISTER)}
                 ${customer ? row('អតិថិជន', customer.name) : ''}
+                ${taxInvoice ? row('លេខអត្តសញ្ញាណកម្មអាករអតិថិជន', customer.vattin) : ''}
+                ${taxInvoice ? `<div style="color:#475569;">${customer.address}</div>` : ''}
             </div>
 
             <div style="padding:8px 0;border-bottom:1px dashed #94a3b8;">${items}</div>
@@ -503,92 +1087,490 @@ function receiptHtml(sale, options) {
                 ${row('តម្លៃមុនអាករ', fmtUSD(t.net))}
                 ${row('អាករលើតម្លៃបន្ថែម 10%', fmtUSD(t.vat))}
                 ${row('សរុបត្រូវបង់', fmtUSD(t.gross), true)}
-                ${row('គិតជារៀល', fmtKHR(toKHR(t.gross)))}
+                ${row('គិតជារៀល', fmtKHR(toKHR(t.gross, rate)))}
             </div>
 
-            <div style="padding:8px 0;border-bottom:1px dashed #94a3b8;">${payLines}</div>
+            <div style="padding:8px 0;border-bottom:1px dashed #94a3b8;">${payLines}${returns}</div>
 
             <div style="text-align:center;padding-top:10px;color:#475569;">
-                <div>អត្រាប្តូរប្រាក់ 1 ដុល្លារ = ${FX_RATE.toLocaleString('en-US')} ៛</div>
+                <div>អត្រាប្តូរប្រាក់ 1 ដុល្លារ = ${rate.toLocaleString('en-US')} ៛</div>
                 <div style="margin-top:6px;font-weight:600;color:#0f172a;">សូមអរគុណ · ជួបគ្នាពេលក្រោយ</div>
                 ${opts.reprint ? '<div style="margin-top:6px;font-weight:600;">-- បោះពុម្ពឡើងវិញ --</div>' : ''}
             </div>
         </div>`;
 }
 
-/* ===== ការជូនដំណឹងសម្រាប់ក្បាលទំព័រ =====
-   បង្កើតចេញពីទិន្នន័យវេនពិតប្រាកដ មិនមែនបញ្ជីថេរឡើយ */
+/* ===== របាយការណ៍បិទវេន A4 =====
+   ប្រើរួមដោយទំព័របិទវេនរបស់អ្នកគិតលុយ និងទំព័រមើលវេនរបស់អ្នកគ្រប់គ្រង
+   ដូច្នេះតួនាទីទាំងពីរបោះពុម្ពឯកសារតែមួយ (ឯកសាររចនាលេខ 02 ផ្នែក 5.3)។
+   opts.live = true → របាយការណ៍ពាក់កណ្តាលវេន (វេននៅបើក មិនរក្សាទុក) */
+
+function zReportHtml(shift, s, opts) {
+    const o = opts || {};
+    const live = !!o.live;
+    const rate = shift.fxRate || fxRate();
+    const v = shift.status !== 'open' && shift.countedUSD != null
+        ? varianceOf(shift.countedUSD, shift.countedKHR, s.expectedUSD, s.expectedKHR, rate)
+        : null;
+
+    const line = (label, value, strong) => `
+        <div class="flex justify-between gap-4 py-1.5 ${strong ? 'border-t border-slate-300 mt-1 pt-2' : ''}">
+            <span class="${strong ? 'sm-value' : 'sm-td'} text-slate-600">${label}</span>
+            <span class="${strong ? 'sm-value' : 'sm-td'} text-slate-800 sm-figure text-right">${value}</span>
+        </div>`;
+
+    const cashRow = (label, usd, khr, opts2) => {
+        const x = opts2 || {};
+        return `<tr class="${x.rule ? 'border-t border-slate-300' : ''}">
+            <td class="py-1.5 pr-3 ${x.strong ? 'sm-value text-slate-800' : 'sm-td text-slate-600'}">${label}</td>
+            <td class="py-1.5 px-3 text-right sm-figure ${x.strong ? 'sm-value' : 'sm-td'} ${x.usdTone || 'text-slate-800'}">${usd}</td>
+            <td class="py-1.5 pl-3 text-right sm-figure ${x.strong ? 'sm-value' : 'sm-td'} ${x.khrTone || 'text-slate-800'}">${khr}</td>
+        </tr>`;
+    };
+    const neg = (n, fmt) => n > 0.004 ? '− ' + fmt(n) : fmt(0);
+    const tone = n => Math.abs(n) <= 0.5 ? 'text-emerald-700' : n > 0 ? 'text-amber-700' : 'text-rose-700';
+
+    const reviewer = shift.reviewedBy ? personName(shift.reviewedBy) : '';
+
+    return `
+        <div class="text-center pb-5 border-b-2 border-slate-800">
+            <p class="sm-card-title text-slate-800 text-[18px]">${MERCHANT.name}</p>
+            <p class="sm-card-sub text-slate-500">${MERCHANT.branch}</p>
+            <p class="sm-card-sub text-slate-500">លេខអត្តសញ្ញាណកម្មអាករ ${MERCHANT.tin}</p>
+            <p class="sm-card-title text-slate-800 text-[20px] mt-4">${live ? 'របាយការណ៍ពាក់កណ្តាលវេន' : 'របាយការណ៍បិទវេន'}</p>
+            ${live ? '<p class="sm-td-sub text-amber-700 mt-1">វេននៅបើក · តួលេខនៅប្រែប្រួល · មិនរក្សាទុកឡើយ</p>' : ''}
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-10 mt-5">
+            <div>
+                ${line('លេខវេន', shift.id)}
+                ${line('ម៉ាស៊ីន', shift.register)}
+                ${line('អ្នកគិតលុយ', personName(shift.cashierId))}
+                ${line('គំរូវេន', `${shift.templateName} ${shift.start}–${shift.end}`)}
+            </div>
+            <div>
+                ${line('កាលបរិច្ឆេទ', fmtDate(shift.openedAt))}
+                ${line('បើកវេន', fmtTime(shift.openedAt))}
+                ${line('បិទវេន', shift.closedAt ? fmtTime(shift.closedAt) : '—')}
+                ${line('អត្រាប្តូរប្រាក់', `1 ដុល្លារ = ${rate.toLocaleString('en-US')} ៛`)}
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <p class="sm-eyebrow text-slate-400 pb-2 border-b border-slate-200">ការលក់ក្នុងវេន</p>
+            <div class="mt-2">
+                ${line('ចំនួនវិក្កយបត្រ', `${s.count}`)}
+                ${line('ចំនួនឯកតាលក់', `${s.qty}`)}
+                ${line('តម្លៃមុនអាករ', fmtUSD(s.net))}
+                ${line(`ការបញ្ចុះតម្លៃ · ${s.discountCount} វិក្កយបត្រ`, fmtUSD(s.discount))}
+                ${line('អាករលើតម្លៃបន្ថែម 10%', fmtUSD(s.vat))}
+                ${line('លក់បានសរុប', fmtUSD(s.gross), true)}
+                ${line(`លុបចោល · ${s.voidCount} វិក្កយបត្រ`, fmtUSD(s.voidAmount))}
+                ${line(`ប្រគល់ទំនិញវិញ · ${s.returnCount} ដង`, '− ' + fmtUSD(s.returnAmount))}
+                ${line('លក់សុទ្ធក្រោយប្រគល់វិញ', fmtUSD(s.netSales), true)}
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <p class="sm-eyebrow text-slate-400 pb-2 border-b border-slate-200">ទទួលតាមវិធីទូទាត់</p>
+            <div class="mt-2">
+                ${line('សាច់ប្រាក់ដុល្លារ', fmtUSD(s.usdCash))}
+                ${line('សាច់ប្រាក់រៀល', fmtKHR(s.khrCash))}
+                ${line(`ស្កេនកូដបាគង · ${s.khqrCount} វិក្កយបត្រ`, fmtUSD(s.khqr))}
+            </div>
+        </div>
+
+        <div class="mt-6" style="page-break-inside: avoid">
+            <p class="sm-eyebrow text-slate-400 pb-2 border-b border-slate-200">ការផ្ទៀងផ្ទាត់សាច់ប្រាក់តាមថត</p>
+            <table class="w-full mt-1">
+                <thead>
+                    <tr class="border-b border-slate-200">
+                        <th class="py-2 pr-3 text-left sm-td-sub text-slate-400 font-medium"></th>
+                        <th class="py-2 px-3 text-right sm-td-sub text-slate-400 font-medium">ថតដុល្លារ</th>
+                        <th class="py-2 pl-3 text-right sm-td-sub text-slate-400 font-medium">ថតរៀល</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${cashRow('ប្រាក់បាតថត', fmtUSD(s.floatUSD), fmtKHR(s.floatKHR))}
+                    ${cashRow('បូក ទទួលជាសាច់ប្រាក់', fmtUSD(s.usdCash), fmtKHR(s.khrCash))}
+                    ${cashRow('ដក ប្រាក់អាប់', neg(s.changeUSD, fmtUSD), neg(s.changeKHR, fmtKHR))}
+                    ${s.refundUSD || s.refundKHR ? cashRow('ដក សងប្រាក់ប្រគល់ទំនិញ', neg(s.refundUSD, fmtUSD), neg(s.refundKHR, fmtKHR)) : ''}
+                    ${s.dropUSD || s.dropKHR ? cashRow('ដក ផ្ទេរចូលទូដែក', neg(s.dropUSD, fmtUSD), neg(s.dropKHR, fmtKHR)) : ''}
+                    ${s.payoutUSD || s.payoutKHR ? cashRow('ដក ប្រាក់ចំណាយ', neg(s.payoutUSD, fmtUSD), neg(s.payoutKHR, fmtKHR)) : ''}
+                    ${s.payinUSD || s.payinKHR ? cashRow('បូក បញ្ចូលបន្ថែម', fmtUSD(s.payinUSD), fmtKHR(s.payinKHR)) : ''}
+                    ${cashRow('ប្រព័ន្ធរំពឹងទុក', fmtUSD(s.expectedUSD), fmtKHR(s.expectedKHR), { strong: true, rule: true })}
+                    ${v ? cashRow('រាប់បានជាក់ស្តែង', fmtUSD(shift.countedUSD), fmtKHR(shift.countedKHR), { strong: true }) : ''}
+                    ${v ? cashRow('ភាពខុសគ្នា', fmtSigned(v.dUSD, fmtUSD), fmtSigned(v.dKHR, fmtKHR, 0.5),
+                        { rule: true, strong: true, usdTone: tone(v.dUSD * 100), khrTone: tone(v.dKHR) }) : ''}
+                </tbody>
+            </table>
+            ${v ? `<div class="mt-2 pt-2 border-t-2 border-slate-300 flex justify-between gap-4">
+                <span class="sm-value text-slate-700">សរុបគិតជាដុល្លារ · ${DIRECTION_LABEL[v.direction]}</span>
+                <span class="sm-value sm-figure ${v.level === 'exact' ? 'text-emerald-700' : v.level === 'small' ? 'text-amber-700' : 'text-rose-700'}">${fmtSigned(v.diff, fmtUSD)}</span>
+            </div>` : ''}
+            ${shift.firstCount ? `
+            <div class="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-200">
+                <p class="sm-td-sub text-amber-800">ការរាប់លើកទី 1 (មុនរាប់ឡើងវិញ)</p>
+                <p class="sm-td text-amber-900 mt-0.5 sm-figure">${fmtUSD(shift.firstCount.countedUSD)} · ${fmtKHR(shift.firstCount.countedKHR)}</p>
+            </div>` : ''}
+            ${shift.reason ? `
+            <div class="mt-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
+                <p class="sm-td-sub text-slate-500">ការពន្យល់របស់អ្នកគិតលុយ</p>
+                <p class="sm-td text-slate-700 mt-1">${escapeText(shift.reason)}</p>
+            </div>` : ''}
+            ${shift.reviewNote ? `
+            <div class="mt-3 p-3 rounded-xl bg-indigo-50 border border-indigo-200">
+                <p class="sm-td-sub text-indigo-700">កំណត់ចំណាំរបស់អ្នកគ្រប់គ្រងវេន</p>
+                <p class="sm-td text-indigo-900 mt-1">${escapeText(shift.reviewNote)}</p>
+            </div>` : ''}
+        </div>
+
+        ${live ? '' : `
+        <div class="grid grid-cols-2 gap-10 mt-10 pt-6 border-t border-slate-300 signature-block" style="page-break-inside: avoid">
+            <div class="text-center">
+                <div class="h-14 border-b border-slate-400 flex items-end justify-center pb-1">
+                    ${shift.closedAt ? `<span class="sm-td-sub text-slate-500">បានបញ្ជាក់ដោយលេខសម្ងាត់ ${fmtDate(shift.closedAt)} ${fmtTime(shift.closedAt)}</span>` : ''}
+                </div>
+                <p class="sm-td text-slate-600 mt-2">អ្នកគិតលុយ</p>
+                <p class="sm-td-sub text-slate-400">${personName(shift.cashierId)}</p>
+            </div>
+            <div class="text-center">
+                <div class="h-14 border-b border-slate-400 flex items-end justify-center pb-1">
+                    ${shift.reviewedAt ? `<span class="sm-td-sub text-slate-500">បានបញ្ជាក់ដោយលេខសម្ងាត់ ${fmtDate(shift.reviewedAt)} ${fmtTime(shift.reviewedAt)}</span>` : ''}
+                </div>
+                <p class="sm-td text-slate-600 mt-2">${ROLE_NAME.manager}</p>
+                <p class="sm-td-sub text-slate-400">${reviewer || 'ហត្ថលេខា និងកាលបរិច្ឆេទ'}</p>
+            </div>
+        </div>`}
+
+        <p class="sm-td-sub text-slate-400 text-center mt-6">
+            បោះពុម្ព ${fmtDate(new Date())} ម៉ោង ${fmtTime(new Date())}
+        </p>`;
+}
+
+/* ===== ការជូនដំណឹងសម្រាប់អ្នកគិតលុយ =====
+   មិនបង្ហាញ «សាច់ប្រាក់រំពឹងទុកក្នុងថត» ឡើយ ព្រោះការរាប់បិទវេនត្រូវតែបិទភ្នែក (C1)។
+   manager-data.js កំណត់អនុគមន៍នេះឡើងវិញសម្រាប់ទំព័រអ្នកគ្រប់គ្រង។ */
+
 function portalNotifications() {
     const list = [];
-    const s = shiftSummary();
+    const sh = currentShift();
 
-    // ទំនិញជិតអស់ស្តុក
-    const low = PRODUCTS
-        .map(p => ({ p, left: availableStock(p.sku) }))
-        .filter(x => x.left <= 5)
-        .sort((a, b) => a.left - b.left);
-
-    low.slice(0, 3).forEach(x => {
+    if (!sh) {
+        const last = lastShiftFor(MY_REGISTER);
         list.push({
-            icon: x.left === 0 ? 'mdi:package-variant-remove' : 'mdi:alert-outline',
-            tone: x.left === 0 ? 'danger' : 'warning',
-            title: x.left === 0 ? `${x.p.name} អស់ស្តុក` : `${x.p.name} នៅសល់ ${x.left} ${x.p.unit}`,
-            note: x.left === 0 ? 'មិនអាចលក់បន្ថែមបានទេ' : 'សូមជូនដំណឹងដល់ផ្នែកឃ្លាំង'
-        });
-    });
-
-    // ព័ត៌មានវេនបច្ចុប្បន្ន
-    const d = shiftDuration();
-    if (!isShiftOpen()) {
-        list.unshift({
             icon: 'mdi:lock-outline',
             tone: 'danger',
-            title: `វេន ${SHIFT.id} ត្រូវបានបិទ`,
-            note: 'សូមទាក់ទងអ្នកគ្រប់គ្រងទូទៅ ដើម្បីបើកវេនថ្មី'
+            title: last ? `វេន ${last.id} បានបិទរួចហើយ` : 'មិនទាន់មានវេនបើកទេ',
+            note: 'សូមបើកវេនថ្មី ដោយរាប់ប្រាក់បាតថតជាមួយអ្នកគ្រប់គ្រងវេន',
+            href: `${document.body.dataset.roleRoot || '../..'}/cashier/shift/open-shift.html`
         });
         return list;
     }
 
+    const now = new Date();
+    const end = shiftEndDate(sh);
+    const over = now - end;
+    const opened = now - new Date(sh.openedAt);
+    if (opened > 12 * 3600000) {
+        list.push({ icon: 'mdi:alert-octagon-outline', tone: 'danger', title: 'វេនបើកលើស 12 ម៉ោង',
+            note: 'លើសម៉ោងធ្វើការអតិបរមាតាមច្បាប់ · សូមបិទវេនឥឡូវនេះ' });
+    } else if (over > 0) {
+        list.push({ icon: 'mdi:clock-alert-outline', tone: 'warning', title: `ហួសម៉ោងវេន ${fmtDuration(over)}`,
+            note: `${sh.templateName} ត្រូវបិទម៉ោង ${sh.end} · សូមបិទវេន` });
+    } else if (-over <= 15 * 60000) {
+        list.push({ icon: 'mdi:cash-lock-open', tone: 'warning', title: 'ដល់ពេលត្រៀមបិទវេនហើយ',
+            note: `${sh.templateName} បិទម៉ោង ${sh.end} · នៅសល់ ${fmtDuration(-over)}` });
+    }
+
+    // លទ្ធផលសំណើដែលអ្នកគ្រប់គ្រងបានសម្រេច
+    liveApprovals()
+        .filter(a => a.shiftId === sh.id && a.status !== 'pending' && a.mode === 'remote')
+        .sort((a, b) => (b.decidedAt || '').localeCompare(a.decidedAt || ''))
+        .slice(0, 3)
+        .forEach(a => list.push({
+            icon: a.status === 'approved' ? 'mdi:check-decagram-outline' : 'mdi:close-octagon-outline',
+            tone: a.status === 'approved' ? 'success' : 'danger',
+            title: `${APPROVAL_TYPE[a.type].label} ${a.saleId} ${APPROVAL_STATUS[a.status].label}`,
+            note: `ដោយ ${personName(a.decidedBy)}${a.decisionNote ? ' · ' + a.decisionNote : ''}`,
+            time: fmtTime(a.decidedAt),
+            href: `${document.body.dataset.roleRoot || '../..'}/cashier/receipts/receipts.html`
+        }));
+
+    const s = shiftSummary(sh);
+    const st = posSettings();
+    if (s.expectedUSD > st.drawerLimitUSD || s.expectedKHR > st.drawerLimitKHR) {
+        list.push({ icon: 'mdi:safe', tone: 'warning', title: 'សាច់ប្រាក់ក្នុងថតលើសកំណត់',
+            note: 'សូមផ្ទេរប្រាក់ខ្លះចូលទូដែក ហើយឱ្យអ្នកគ្រប់គ្រងវេនទទួល' });
+    }
+
+    PRODUCTS
+        .map(p => ({ p, left: availableStock(p.sku) }))
+        .filter(x => x.left <= 5)
+        .sort((a, b) => a.left - b.left)
+        .slice(0, 3)
+        .forEach(x => list.push({
+            icon: x.left === 0 ? 'mdi:package-variant-remove' : 'mdi:alert-outline',
+            tone: x.left === 0 ? 'danger' : 'warning',
+            title: x.left === 0 ? `${x.p.name} អស់ស្តុក` : `${x.p.name} នៅសល់ ${x.left} ${x.p.unit}`,
+            note: x.left === 0 ? 'មិនអាចលក់បន្ថែមបានទេ' : 'សូមជូនដំណឹងដល់ផ្នែកឃ្លាំង'
+        }));
+
     list.push({
         icon: 'mdi:clock-outline',
         tone: 'info',
-        title: `វេន ${SHIFT.terminal} បើកបាន ${d.hours} ម៉ោង ${d.minutes} នាទី`,
-        note: `បើកម៉ោង ${fmtTime(SHIFT.openedAt)} · លក់បាន ${s.count} វិក្កយបត្រ`,
-        time: fmtKhDate(SHIFT.openedAt)
+        title: `${sh.templateName} · ${sh.register} បើកបាន ${fmtDuration(opened)}`,
+        note: `បើកម៉ោង ${fmtTime(sh.openedAt)} · លក់បាន ${s.count} វិក្កយបត្រ`,
+        time: fmtKhDate(sh.openedAt)
     });
-
-    // រំលឹកបិទវេន
-    if (d.hours >= 6) {
-        list.push({
-            icon: 'mdi:cash-lock-open',
-            tone: 'warning',
-            title: 'ដល់ពេលត្រៀមបិទវេនហើយ',
-            note: `រំពឹងទុកក្នុងថត ${fmtUSD(s.expectedUSD)} និង ${fmtKHR(s.expectedKHR)}`
-        });
-    }
 
     return list;
 }
 
-/* ===== កូដ KHQR បាគង (គំរូសាកល្បង) ===== */
+/* ផ្លាកលេខក្នុងម៉ឺនុយចំហៀងរបស់អ្នកគិតលុយ (ហៅដោយ portal.js) */
+function totalPending() {
+    return shiftSales().filter(s => !isVoided(s)).length;
+}
 
-const MERCHANT = {
-    name: 'DIGITECHKH RETAIL',
-    account: 'digitechkh@aclb',
-    city: 'PHNOM PENH',
-    tin: 'K001-901234567'
-};
+/* ===== កូដ KHQR បាគង (គំរូសាកល្បង) =====
+   ប្រព័ន្ធពិតបង្កើតកូដ KHQR តាមស្តង់ដារបាគង (ស្លាក 99 មានពេលបង្កើត និងពេលផុតកំណត់)
+   ហើយពិនិត្យការទូទាត់តាម MD5 នៃកូដ (ស្រាវជ្រាវ §8)។ នៅទីនេះយើងគណនាសញ្ញាសម្គាល់សាមញ្ញ
+   ដើម្បីរក្សាទុកជាមួយការទូទាត់ដែលរង់ចាំ — មិនមែន MD5 ពិតទេ។ */
 
-function buildKhqrPayload(receiptId, amount) {
+function buildKhqrPayload(receiptId, amount, createdAt, expiresAt) {
     const amt = Number(amount).toFixed(2);
+    const ts = `00${String(createdAt).length}${createdAt}01${String(expiresAt).length}${expiresAt}`;
     return [
         '00020101',
+        '010212',
         `0212${MERCHANT.account}`,
         '5303840',
         `54${String(amt.length).padStart(2, '0')}${amt}`,
         '5802KH',
         `59${String(MERCHANT.name.length).padStart(2, '0')}${MERCHANT.name}`,
         `60${String(MERCHANT.city.length).padStart(2, '0')}${MERCHANT.city}`,
-        `62${String(receiptId.length + 4).padStart(2, '0')}01${String(receiptId.length).padStart(2, '0')}${receiptId}`
+        `62${String(receiptId.length + 4).padStart(2, '0')}01${String(receiptId.length).padStart(2, '0')}${receiptId}`,
+        `99${String(ts.length).padStart(2, '0')}${ts}`
     ].join('');
 }
+
+function simpleHash(text) {
+    let h1 = 0x811c9dc5;
+    let h2 = 0x01000193;
+    for (let i = 0; i < text.length; i++) {
+        h1 = Math.imul(h1 ^ text.charCodeAt(i), 16777619) >>> 0;
+        h2 = Math.imul(h2 + text.charCodeAt(i), 2246822519) >>> 0;
+    }
+    return (h1.toString(16).padStart(8, '0') + h2.toString(16).padStart(8, '0')).repeat(2);
+}
+
+/* ===== ទិន្នន័យគំរូសម្រាប់ការបង្ហាញ =====
+   ពេលបើកលើកដំបូង បង្កើតវេនរបស់ POS-01 ដែលកំពុងបើកតាមគំរូវេនដែលបានចាប់ផ្តើមថ្ងៃនេះ
+   រួមទាំងការលក់ 9 ដែលចែកស្មើតាមពេលវេលាក្នុងវេន។ បើមុនម៉ោងវេនដំបូង គ្មានវេនបើកទេ
+   ហើយផ្ទាំងគិតលុយនាំទៅទំព័របើកវេន។ */
+
+const SHIFT_SALE_SEED = [
+    { items: [{ sku: '8850001', qty: 4 }, { sku: '8860002', qty: 2 }], pay: { usdCash: 5.00, khrCash: 0, khqr: 0 } },
+    { items: [{ sku: '8870001', qty: 1 }, { sku: '8870003', qty: 2 }], pay: { usdCash: 0, khrCash: 30000, khqr: 0 } },
+    { items: [{ sku: '8890002', qty: 1 }, { sku: '8890001', qty: 2 }], pay: { usdCash: 0, khrCash: 0, khqr: 8.70 } },
+    { items: [{ sku: '8860001', qty: 3 }, { sku: '8850002', qty: 3 }, { sku: '8860003', qty: 2 }], pay: { usdCash: 11.00, khrCash: 0, khqr: 0 } },
+    { items: [{ sku: '8880001', qty: 10 }, { sku: '8880002', qty: 12 }], pay: { usdCash: 5.00, khrCash: 30000, khqr: 0 } },
+    { items: [{ sku: '8870002', qty: 2 }, { sku: '8870004', qty: 1 }], pay: { usdCash: 0, khrCash: 0, khqr: 11.15 } },
+    { items: [{ sku: '8850003', qty: 2 }, { sku: '8860004', qty: 1 }], pay: { usdCash: 7.00, khrCash: 0, khqr: 0 } },
+    { items: [{ sku: '8890003', qty: 4 }, { sku: '8880003', qty: 2 }], pay: { usdCash: 0, khrCash: 50000, khqr: 0 } },
+    { items: [{ sku: '8850004', qty: 3 }, { sku: '8860003', qty: 4 }], pay: { usdCash: 4.00, khrCash: 0, khqr: 6.10 } }
+];
+
+function ensurePosSeed() {
+    if (posRead(POS_KEYS.seed, null)) return;
+    const now = new Date();
+    const tpl = templateAt(now) || lastStartedTemplate(now);
+    const crew = tpl ? rosterFor(templateDateFor(tpl, now), tpl.code) : [];
+    const lead = crew.find(a => a.register === 'POS-01') || crew[0];
+    if (tpl && lead) {
+        const dateStr = templateDateFor(tpl, now);
+        const openedAt = dateAt(dateStr, tpl.start);
+        const rate = POS_SETTINGS_DEFAULTS.fxRate;
+        const shift = {
+            id: `SHIFT-${dateStr.replace(/-/g, '')}-${lead.register.replace('-', '')}-${tpl.code}`,
+            date: dateStr,
+            register: lead.register,
+            cashierId: lead.cashierId,
+            templateCode: tpl.code,
+            templateName: tpl.name,
+            start: tpl.start,
+            end: tpl.end,
+            openedAt: isoLocal(openedAt),
+            fxRate: rate,
+            floatUSD: 200,
+            floatKHR: 400000,
+            floatIssuedUSD: 200,
+            floatIssuedKHR: 400000,
+            floatApprovedBy: 'MGR-01',
+            status: 'open'
+        };
+        // ការលក់ឈប់ត្រឹមម៉ោងបិទវេន ទោះហួសម៉ោងក៏ដោយ
+        const endMs = Math.min(now.getTime() - 5 * 60000, shiftEndDate(shift).getTime());
+        const startMs = openedAt.getTime() + 10 * 60000;
+        const span = Math.max(endMs - startMs, 60000);
+        const step = span / SHIFT_SALE_SEED.length;
+        const prefix = receiptPrefix(lead.register, now);
+        const sales = SHIFT_SALE_SEED.map((seed, i) => {
+            const sale = {
+                id: prefix + String(i + 1).padStart(4, '0'),
+                time: isoLocal(new Date(startMs + step * i)),
+                shiftId: shift.id,
+                cashierId: lead.cashierId,
+                register: lead.register,
+                fxRate: rate,
+                items: seed.items,
+                pay: seed.pay,
+                discountPercent: 0,
+                customerId: '',
+                status: 'completed'
+            };
+            const due = saleTotals(sale.items, 0).gross;
+            sale.change = splitChange(paidTotal(sale.pay, rate) - due, rate, defaultChangeMode(sale.pay));
+            return sale;
+        });
+        posWrite(POS_KEYS.shifts, [shift]);
+        posWrite(POS_KEYS.sales, sales);
+        posWrite(POS_KEYS.movements, [{
+            id: 'MV-SEED-FLOAT', type: 'float', register: lead.register, shiftId: shift.id,
+            usd: 200, khr: 400000, reason: '', ref: '', createdBy: 'MGR-01', createdAt: shift.openedAt,
+            status: 'confirmed', confirmedBy: lead.cashierId, confirmedAt: shift.openedAt
+        }]);
+    }
+    posWrite(POS_KEYS.seed, { at: isoLocal(now) });
+}
+
+/* ប្រើដោយប៊ូតុង «កំណត់ទិន្នន័យគំរូឡើងវិញ» នៅទំព័រដើម */
+function resetDemoData() {
+    try {
+        Object.keys(localStorage).filter(k => k.startsWith('pos_')).forEach(k => localStorage.removeItem(k));
+        Object.keys(sessionStorage).filter(k => k.startsWith('pos_')).forEach(k => sessionStorage.removeItem(k));
+    } catch (e) {
+        // មិនអាចសម្អាត
+    }
+}
+
+/* ===== ការចូលប្រើ =====
+   ទំព័រដើម (index.html) ជាទំព័រចូលប្រើ៖ ជ្រើសរើសអ្នកប្រើ ហើយវាយលេខសម្ងាត់។
+   អ្នកគ្រប់គ្រងវេនអាចប្តូរទៅផ្ទាំងគិតលុយ ហើយលក់លើបញ្ជរផ្ទាល់ខ្លួន (POS-03)
+   ព្រោះអ្នកគ្រប់គ្រងមិនអាចអនុម័តការលក់របស់ខ្លួនឯងបានទេ (ច្បាប់ M-RULE 3)។ */
+
+const SESSION_KEY = 'pos_session';
+
+function posSession() {
+    const s = posRead(SESSION_KEY, null);
+    if (!s || !s.userId) return null;
+    const known = CASHIERS.concat(MANAGERS).some(p => p.id === s.userId);
+    return known ? s : null;
+}
+
+function posLogin(userId) {
+    posWrite(SESSION_KEY, { userId, at: isoLocal(new Date()) });
+}
+
+function posLogout() {
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) { /* មិនអាចសម្អាត */ }
+}
+
+function isManagerId(id) {
+    return MANAGERS.some(m => m.id === id);
+}
+
+/* ===== កាលវិភាគវេន =====
+   វេនមួយ (ឧ. វេនព្រឹក) អាចមានអ្នកគិតលុយច្រើននាក់ ម្នាក់មួយបញ្ជរ និងថតប្រាក់ផ្ទាល់ខ្លួន
+   (មួយថត មួយអ្នកទទួលខុសត្រូវ — ស្រាវជ្រាវ §11)។ អ្នកគ្រប់គ្រងវេនចាត់តាំងនៅទំព័រ «កាលវិភាគវេន»។
+   បើមិនទាន់ចាត់តាំង ប្រើលំនាំដើម៖ អ្នកគិតលុយទី 1 → POS-01 ... */
+
+const ROSTER_KEY = 'pos_roster';
+
+function rosterKey(dateStr, code) {
+    return `${dateStr}|${code}`;
+}
+
+/* កាលវិភាគលំនាំដើមនៃថ្ងៃមួយ = បុគ្គលិកដែលមានវេនប្រចាំជាវេននេះ ហើយមិនមែនថ្ងៃឈប់ */
+function defaultRoster(dateStr, code) {
+    const dow = new Date(dateStr + 'T12:00').getDay();
+    const defs = posSettings().staffDefaults || {};
+    return CASHIERS.concat(MANAGERS)
+        .filter(p => defs[p.id] && defs[p.id].template === code && Number(defs[p.id].dayOff) !== dow && defs[p.id].register)
+        .map(p => ({ cashierId: p.id, register: defs[p.id].register }));
+}
+
+/* ផ្លាស់បុគ្គលិកទៅវេនផ្សេងសម្រាប់ថ្ងៃមួយ (ជំនួសវេន)៖ ដកចេញពីវេនផ្សេងទៀតក្នុងថ្ងៃនោះ
+   ហើយបន្ថែមទៅវេនថ្មី ជាមួយសញ្ញា cover ដើម្បីបង្ហាញថាមិនមែនវេនប្រចាំ */
+function assignShift(dateStr, code, personId, register, meta) {
+    shiftTemplates().forEach(t => {
+        if (t.code === code) return;
+        const list = rosterFor(dateStr, t.code);
+        if (list.some(a => a.cashierId === personId)) saveRoster(dateStr, t.code, list.filter(a => a.cashierId !== personId));
+    });
+    const def = (posSettings().staffDefaults || {})[personId];
+    const isDefault = def && def.template === code && def.register === register;
+    const list = rosterFor(dateStr, code).filter(a => a.cashierId !== personId && a.register !== register);
+    list.push(Object.assign({ cashierId: personId, register }, isDefault ? {} : { cover: true }, meta || {}));
+    saveRoster(dateStr, code, list);
+}
+
+function rosterFor(dateStr, code) {
+    const all = posRead(ROSTER_KEY, {});
+    const k = rosterKey(dateStr, code);
+    return Object.prototype.hasOwnProperty.call(all, k) ? all[k] : defaultRoster(dateStr, code);
+}
+
+function isRosterCustom(dateStr, code) {
+    return Object.prototype.hasOwnProperty.call(posRead(ROSTER_KEY, {}), rosterKey(dateStr, code));
+}
+
+function saveRoster(dateStr, code, list) {
+    const all = posRead(ROSTER_KEY, {});
+    all[rosterKey(dateStr, code)] = list;
+    posWrite(ROSTER_KEY, all);
+}
+
+/* វេនបច្ចុប្បន្ន ឬវេនបន្ទាប់ដែលត្រូវប្រើកាលវិភាគ */
+function rosterSlotNow() {
+    const now = new Date();
+    const tpl = templateAt(now) || shiftTemplates().find(t => minutesOf(t.start) > now.getHours() * 60 + now.getMinutes()) || lastStartedTemplate(now) || shiftTemplates()[0];
+    return tpl ? { date: templateDateFor(tpl, now), template: tpl } : null;
+}
+
+function assignmentFor(personId) {
+    const slot = rosterSlotNow();
+    if (!slot) return null;
+    const a = rosterFor(slot.date, slot.template.code).find(x => x.cashierId === personId);
+    return a ? Object.assign({ date: slot.date, template: slot.template }, a) : null;
+}
+
+/* បញ្ជររបស់អ្នកចូលប្រើ៖ វេនដែលកំពុងបើកផ្ទាល់ខ្លួន → កាលវិភាគ → លំនាំដើម */
+function resolveRegister(personId) {
+    const open = posRead(POS_KEYS.shifts, []).find(s => s.status === 'open' && s.cashierId === personId);
+    if (open) return open.register;
+    const a = assignmentFor(personId);
+    if (a) return a.register;
+    const slot = rosterSlotNow();
+    const taken = slot ? rosterFor(slot.date, slot.template.code).map(x => x.register) : [];
+    const busy = posRead(POS_KEYS.shifts, []).filter(s => s.status === 'open').map(s => s.register);
+    return REGISTERS.find(r => !taken.includes(r) && !busy.includes(r))
+        || REGISTERS.find(r => !busy.includes(r)) || REGISTERS[REGISTERS.length - 1];
+}
+
+const SESSION = posSession();
+const ME_CASHIER = SESSION ? SESSION.userId : 'CAS-01';
+const ME_MANAGER = SESSION && isManagerId(SESSION.userId) ? SESSION.userId : 'MGR-01';
+const MY_REGISTER = resolveRegister(ME_CASHIER);
+
+/* ការពារទំព័រ៖ ទំព័រអ្នកគិតលុយត្រូវការអ្នកចូលប្រើណាម្នាក់ · ទំព័រអ្នកគ្រប់គ្រងត្រូវការអ្នកគ្រប់គ្រង */
+(function guardPage() {
+    const path = location.pathname;
+    const root = path.includes('/cashier/') || path.includes('/manager/') ? '../../' : '';
+    if ((path.includes('/cashier/') && !SESSION) || (path.includes('/manager/') && !(SESSION && isManagerId(SESSION.userId)))) {
+        location.replace(`${root}index.html?next=${encodeURIComponent(path.split('/').slice(-3).join('/'))}`);
+    }
+})();
+
+
+ensurePosSeed();

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - វេន និងបញ្ជរគិតលុយ</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+</head>
+<body id="managerPortal" data-role-root="../.." data-active="shifts" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="វេន និងបញ្ជរគិតលុយ"
+             data-subtitle="វេនទាំងអស់ក្នុងសាខា · រង់ចាំត្រួតពិនិត្យមុនគេ"></div>
+        <main class="flex-1 overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <div class="w-full space-y-4">
+                <div id="kpiRow" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
+                <div class="bg-white rounded-2xl p-2 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-3">
+                    <div id="statusTabs" class="flex flex-wrap items-center gap-2"></div>
+                    <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+                        <div id="registerFilter" data-bms-select data-onchange="renderList()" class="w-[46%] sm:w-[150px] h-9"></div>
+                        <div id="cashierFilter" data-bms-select data-onchange="renderList()" class="w-[50%] sm:w-[180px] h-9"></div>
+                        <div id="dateRange" class="flex items-center"></div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="hidden md:!block">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 text-slate-500 border-b border-slate-100">
+                                <tr>
+                                    <th class="sm-th py-3.5 px-4">កាលបរិច្ឆេទ · វេន</th>
+                                    <th class="sm-th py-3.5 px-4">បញ្ជរ</th>
+                                    <th class="sm-th py-3.5 px-4">អ្នកគិតលុយ</th>
+                                    <th class="sm-th py-3.5 px-4">បើក – បិទ</th>
+                                    <th class="sm-th py-3.5 px-4 text-right">លក់សុទ្ធ</th>
+                                    <th class="sm-th py-3.5 px-4 text-right">ភាពខុសគ្នា</th>
+                                    <th class="sm-th py-3.5 px-4">ស្ថានភាព</th>
+                                    <th class="sm-th py-3.5 px-4 text-right">សកម្មភាព</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rows" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                        </table>
+                    </div>
+                    <div id="cards" class="md:hidden divide-y divide-slate-100"></div>
+                    <div id="empty" class="hidden"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        /* វេន និងបញ្ជរគិតលុយ (ឯកសាររចនាលេខ 02 ផ្នែក 5.3) — រង់ចាំត្រួតពិនិត្យមុនគេ ហើយថ្មីមុនគេ */
+
+        let tab = 'all';
+        const TABS = [
+            { id: 'all', label: 'ទាំងអស់' },
+            { id: 'closed', label: 'រង់ចាំត្រួតពិនិត្យ' },
+            { id: 'open', label: 'កំពុងបើក' },
+            { id: 'reviewed', label: 'បានត្រួតពិនិត្យ' }
+        ];
+
+        function filtered(ignoreTab) {
+            const reg = bmsGetSelect('registerFilter');
+            const cas = bmsGetSelect('cashierFilter');
+            const range = getSelectedRange();
+            return mgrAllShifts().filter(s => (ignoreTab || tab === 'all' || s.status === tab)
+                && (!reg || s.register === reg) && (!cas || s.cashierId === cas)
+                && (s.status !== 'reviewed' || inRange(s.openedAt, range)));
+        }
+
+        function renderKpis() {
+            const list = mgrAllShifts().filter(s => inRange(s.openedAt, getSelectedRange()));
+            const vars = list.map(shiftVariance).filter(Boolean);
+            const net = vars.reduce((n, v) => n + v.diff, 0);
+            const large = vars.filter(v => v.level === 'large').length;
+            document.getElementById('kpiRow').innerHTML =
+                kpiCard('វេនក្នុងជួរកាលបរិច្ឆេទ', `${list.length}`, `${list.filter(s => s.status === 'open').length} កំពុងបើក`) +
+                kpiCard('រង់ចាំត្រួតពិនិត្យ', `${mgrAwaitingReviewCount()}`, 'គ្រប់កាលបរិច្ឆេទ', mgrAwaitingReviewCount() ? 'text-amber-600' : 'text-slate-800') +
+                kpiCard('ភាពខុសគ្នាសរុប', fmtSigned(net, fmtUSD), 'លើស (+) ខ្វះ (−) គិតជាដុល្លារ', net < -0.005 ? 'text-rose-600' : 'text-slate-800') +
+                kpiCard('ភាពខុសគ្នាធំ', `${large}`, `លើស ${fmtUSD(posSettings().varianceTolerance)} ក្នុងមួយវេន`, large ? 'text-rose-600' : 'text-slate-800');
+        }
+
+        function renderTabs() {
+            const list = filtered(true);
+            document.getElementById('statusTabs').innerHTML = TABS.map(t => {
+                const n = t.id === 'all' ? list.length : list.filter(s => s.status === t.id).length;
+                return `<button onclick="pickTab('${t.id}')" class="sm-badge px-4 py-2 rounded-xl transition ${tab === t.id
+                    ? 'bg-indigo-600 text-white font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-100 font-medium'}">${t.label} (${n})</button>`;
+            }).join('');
+        }
+
+        function pickTab(id) { tab = id; renderTabs(); renderList(); }
+
+        function clearFilters() {
+            tab = 'all';
+            bmsSetSelect('registerFilter', '');
+            bmsSetSelect('cashierFilter', '');
+            selectPreset('14 ថ្ងៃចុងក្រោយ');
+            renderAll();
+        }
+
+        function varianceCell(s) {
+            const v = shiftVariance(s);
+            if (!v) return '<span class="sm-td-sub text-slate-400">—</span>';
+            const tone = v.level === 'large' ? 'text-rose-600 font-semibold' : v.level === 'small' ? 'text-amber-700' : 'text-emerald-700';
+            return `<span class="sm-td sm-figure ${tone}">${fmtSigned(v.diff, fmtUSD)}</span><p class="sm-td-sub text-slate-400 sm-figure">${fmtSigned(v.dUSD, fmtUSD)} · ${fmtSigned(v.dKHR, fmtKHR, 0.5)}</p>`;
+        }
+
+        function renderList() {
+            const order = { closed: 0, open: 1, reviewed: 2 };
+            const rows = filtered(false).sort((a, b) => order[a.status] - order[b.status] || b.openedAt.localeCompare(a.openedAt)).slice(0, 150);
+            const empty = document.getElementById('empty');
+            if (!rows.length) {
+                document.getElementById('rows').innerHTML = '';
+                document.getElementById('cards').innerHTML = '';
+                empty.classList.remove('hidden');
+                empty.innerHTML = emptyState('fa-filter-circle-xmark', 'គ្មានវេនត្រូវនឹងតម្រង', 'សូមប្តូរជួរកាលបរិច្ឆេទ បញ្ជរ ឬអ្នកគិតលុយ',
+                    '<button onclick="clearFilters()" type="button" class="sm-badge mt-4 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold">ជម្រះតម្រង</button>');
+                return;
+            }
+            empty.classList.add('hidden');
+            const menu = (s, id) => `<div id="${id}" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 text-left">
+                <a href="view-shift.html?id=${s.id}" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50"><span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center"><i class="fas fa-eye text-[11px]"></i></span>${s.status === 'open' ? 'របាយការណ៍ពាក់កណ្តាលវេន' : s.status === 'closed' ? 'ត្រួតពិនិត្យ និងចុះហត្ថលេខា' : 'មើលរបាយការណ៍បិទវេន'}</a>
+            </div>`;
+            document.getElementById('rows').innerHTML = rows.map(s => {
+                const sum = summaryOf(s);
+                return `<tr class="hover:bg-slate-50">
+                    <td class="py-3.5 px-4"><p class="sm-td-strong">${fmtDate(s.openedAt)}</p><p class="sm-td-sub text-slate-400">${s.templateName} ${s.start}–${s.end}</p></td>
+                    <td class="py-3.5 px-4 sm-td">${s.register}</td>
+                    <td class="py-3.5 px-4 sm-td">${personChip(s.cashierId)}</td>
+                    <td class="py-3.5 px-4 sm-td sm-figure">${fmtTime(s.openedAt)} – ${s.closedAt ? fmtTime(s.closedAt) : '…'}</td>
+                    <td class="py-3.5 px-4 text-right"><p class="sm-td-strong sm-figure">${fmtUSD(sum.netSales)}</p><p class="sm-td-sub text-slate-400">${sum.count} វិក្កយបត្រ</p></td>
+                    <td class="py-3.5 px-4 text-right">${varianceCell(s)}</td>
+                    <td class="py-3.5 px-4">${statusChip(SHIFT_STATUS[s.status])}</td>
+                    <td class="py-3.5 px-4 text-right">
+                        <button onclick="toggleRowActionMenu(event, 'm-${s.id}')" type="button" aria-label="សកម្មភាព" class="w-11 h-11 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200/70 inline-flex items-center justify-center"><i class="fas fa-ellipsis-vertical text-sm"></i></button>
+                        ${menu(s, 'm-' + s.id)}
+                    </td>
+                </tr>`;
+            }).join('');
+            document.getElementById('cards').innerHTML = rows.map(s => {
+                const sum = summaryOf(s);
+                return `<a href="view-shift.html?id=${s.id}" class="block p-4">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="sm-value text-slate-800">${s.register} · ${s.templateName} · ${fmtDate(s.openedAt)}</p>
+                            <p class="sm-td-sub text-slate-500">${personName(s.cashierId)} · ${sum.count} វិក្កយបត្រ · ${fmtUSD(sum.netSales)}</p>
+                        </div>
+                        ${statusChip(SHIFT_STATUS[s.status])}
+                    </div>
+                    <div class="mt-1.5 text-left">${varianceCell(s)}</div>
+                </a>`;
+            }).join('');
+        }
+
+        function renderAll() {
+            renderKpis();
+            renderTabs();
+            renderList();
+            updatePortalBadges();
+        }
+
+        window.onDateRangeApplied = renderAll;
+        window.onStoreChanged = renderAll;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            bmsSetSelectOptions('registerFilter', [{ value: '', label: 'គ្រប់បញ្ជរ' }].concat(REGISTERS.map(r => ({ value: r, label: r }))));
+            bmsSetSelect('registerFilter', '');
+            bmsSetSelectOptions('cashierFilter', [{ value: '', label: 'អ្នកគិតលុយទាំងអស់' }].concat(CASHIERS.concat(MANAGERS).map(c => ({ value: c.id, label: c.name }))));
+            bmsSetSelect('cashierFilter', '');
+            renderDateRangePicker('dateRange');
+            selectPreset('14 ថ្ងៃចុងក្រោយ');
+            const st = new URLSearchParams(location.search).get('status');
+            if (st && TABS.some(t => t.id === st)) tab = st;
+            renderAll();
+        });
+    </script>
+</body>
+</html>

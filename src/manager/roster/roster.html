@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - កាលវិភាគវេន</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+</head>
+<body id="managerPortal" data-role-root="../.." data-active="roster" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="កាលវិភាគវេន"
+             data-subtitle="វេនប្រចាំ ការជំនួសវេន និងបញ្ជររបស់អ្នកគិតលុយ"></div>
+        <main class="flex-1 overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <div class="w-full space-y-5">
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-2">
+                        <button onclick="shiftWeek(-7)" type="button" aria-label="សប្តាហ៍មុន" class="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600"><i class="fas fa-chevron-left text-xs"></i></button>
+                        <p id="weekLabel" class="sm-value text-slate-800 min-w-[200px] text-center"></p>
+                        <button onclick="shiftWeek(7)" type="button" aria-label="សប្តាហ៍បន្ទាប់" class="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600"><i class="fas fa-chevron-right text-xs"></i></button>
+                        <button onclick="weekStart=startOfToday(); render()" type="button" class="sm-badge h-10 px-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold">ថ្ងៃនេះ</button>
+                    </div>
+                    <p class="sm-td-sub text-slate-500 max-w-xl">វេនមួយអាចមានអ្នកគិតលុយច្រើននាក់ — ម្នាក់មួយបញ្ជរ និងថតប្រាក់ផ្ទាល់ខ្លួន។ ចុច «បន្ថែម» ដើម្បីឱ្យអ្នកណាម្នាក់ជំនួសវេន ឬ ✕ ពេលឈប់សម្រាក។</p>
+                </div>
+                <div id="hoursCard"></div>
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-x-auto">
+                    <table class="w-full min-w-[1000px]" id="grid"></table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        /* កាលវិភាគវេន — អ្នកគ្រប់គ្រងចាត់តាំងអ្នកគិតលុយច្រើននាក់ក្នុងវេនមួយ ម្នាក់មួយបញ្ជរ
+           អ្នកគិតលុយចូលប្រើ → ប្រព័ន្ធនាំទៅបញ្ជរតាមកាលវិភាគដោយស្វ័យប្រវត្តិ */
+
+        function startOfToday() {
+            const d = new Date();
+            d.setHours(12, 0, 0, 0);
+            return d;
+        }
+
+        let weekStart = startOfToday();
+        const STAFF = CASHIERS.concat(MANAGERS);
+
+        function shiftWeek(n) {
+            weekStart = addDays(weekStart, n);
+            render();
+        }
+
+        function days() {
+            return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+        }
+
+        /* ម៉ោងធ្វើការក្នុងសប្តាហ៍ — ច្បាប់ការងារ 48 ម៉ោង/សប្តាហ៍ (ស្រាវជ្រាវ §11) */
+        function weeklyHours() {
+            const h = {};
+            STAFF.forEach(p => { h[p.id] = 0; });
+            days().forEach(d => shiftTemplates().forEach(t => {
+                rosterFor(isoDate(d), t.code).forEach(a => { if (h[a.cashierId] != null) h[a.cashierId] += templateHours(t); });
+            }));
+            return h;
+        }
+
+        const DOW_KH = ['អាទិត្យ', 'ច័ន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍'];
+
+        /* វេនប្រចាំ + ម៉ោងក្នុងសប្តាហ៍ (ច្បាប់ការងារ 48 ម៉ោង/សប្តាហ៍ — ស្រាវជ្រាវ §11) */
+        function renderHours() {
+            const h = weeklyHours();
+            const defs = posSettings().staffDefaults || {};
+            document.getElementById('hoursCard').innerHTML = `
+                <div class="flex items-center justify-between gap-3 mb-2">
+                    <div><h3 class="sm-card-title text-slate-700">វេនប្រចាំរបស់បុគ្គលិក</h3>
+                    <p class="sm-card-sub text-slate-500">កាលវិភាគបង្កើតចេញពីវេនប្រចាំដោយស្វ័យប្រវត្តិ · ការផ្លាស់ប្តូរតាមថ្ងៃបង្ហាញជា «ជំនួស»</p></div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">${STAFF.map(p => {
+                const over = h[p.id] > 48;
+                const d = defs[p.id] || {};
+                const t = shiftTemplates().find(x => x.code === d.template);
+                return `<div class="bg-white rounded-2xl border ${over ? 'border-rose-200' : 'border-slate-200/80'} shadow-sm p-3">
+                    <div class="flex items-center gap-3">
+                        ${avatarHtml(p.id, 'w-10 h-10')}
+                        <div class="min-w-0 flex-1"><p class="sm-td text-slate-700 truncate">${p.name}</p>
+                        <p class="sm-td-sub sm-figure ${over ? 'text-rose-600 font-semibold' : 'text-slate-500'}">${h[p.id]} ម៉ោង / សប្តាហ៍${over ? ' · លើស 48' : ''}</p></div>
+                        <button onclick="editDefault('${p.id}')" type="button" aria-label="កែវេនប្រចាំ" class="w-9 h-9 rounded-lg bg-slate-50 hover:bg-indigo-50 text-slate-500 hover:text-indigo-700 border border-slate-200 flex-shrink-0"><i class="fas fa-pen text-xs"></i></button>
+                    </div>
+                    <p class="sm-td-sub mt-2 ${t ? 'text-indigo-700' : 'text-slate-400'}"><i class="fas fa-calendar-day mr-1"></i>${t ? `${t.name} · ${d.register}` : 'គ្មានវេនប្រចាំ'}</p>
+                    <p class="sm-td-sub text-slate-400"><i class="fas fa-bed mr-1"></i>ឈប់ថ្ងៃ${DOW_KH[d.dayOff != null ? d.dayOff : 0]}</p>
+                </div>`;
+            }).join('')}</div>`;
+        }
+
+        async function editDefault(id) {
+            const cur = (posSettings().staffDefaults || {})[id] || {};
+            const tpl = await showOptionDialog({
+                title: `វេនប្រចាំ · ${personName(id)}`,
+                message: 'វេនដែលបុគ្គលិកនេះធ្វើជាធម្មតា',
+                options: shiftTemplates().map(t => ({ value: t.code, icon: 'fa-clock', label: `${t.name} ${t.start}–${t.end}`, desc: cur.template === t.code ? 'បច្ចុប្បន្ន' : '' }))
+                    .concat([{ value: 'none', icon: 'fa-ban', label: 'គ្មានវេនប្រចាំ', desc: 'ចាត់តាំងតាមថ្ងៃនីមួយៗប៉ុណ្ណោះ' }])
+            });
+            if (!tpl) return;
+            let register = '';
+            if (tpl !== 'none') {
+                register = await showOptionDialog({
+                    title: 'បញ្ជរប្រចាំ', message: 'បញ្ជរមួយ ថតប្រាក់មួយ',
+                    options: REGISTERS.map(r => ({ value: r, icon: 'fa-cash-register', label: r, desc: cur.register === r ? 'បច្ចុប្បន្ន' : '' }))
+                });
+                if (!register) return;
+            }
+            const dayOff = await showOptionDialog({
+                title: 'ថ្ងៃឈប់សម្រាកប្រចាំសប្តាហ៍', message: 'យ៉ាងហោចណាស់ 24 ម៉ោងជាប់គ្នាក្នុងមួយសប្តាហ៍',
+                options: DOW_KH.map((d, i) => ({ value: String(i), icon: 'fa-bed', label: `ថ្ងៃ${d}`, desc: Number(cur.dayOff) === i ? 'បច្ចុប្បន្ន' : '' }))
+            });
+            if (dayOff == null) return;
+            const ok = await showPinConfirm({ title: 'រក្សាទុកវេនប្រចាំ', message: personName(id), userId: ME_MANAGER, confirmText: 'រក្សាទុក' });
+            if (!ok) return;
+            const defs = clone(posSettings().staffDefaults || {});
+            defs[id] = { template: tpl === 'none' ? '' : tpl, register, dayOff: Number(dayOff) };
+            savePosSettings({ staffDefaults: defs }, ME_MANAGER);
+            showToast(`បានកែវេនប្រចាំរបស់ ${personName(id)}`, 'success');
+            render();
+        }
+
+        function cell(d, t) {
+            const date = isoDate(d);
+            const list = rosterFor(date, t.code);
+            const custom = isRosterCustom(date, t.code);
+            const past = shiftEndDate({ date, start: t.start, end: t.end }) < new Date();
+            const shifts = typeof mgrAllShifts === 'function' ? mgrAllShifts().filter(s => s.date === date && s.templateCode === t.code) : [];
+            return `<td class="align-top p-2 border-l border-slate-100 ${past ? 'bg-slate-50/60' : ''}">
+                <div class="space-y-1.5">
+                    ${list.map((a, i) => {
+                        const actual = shifts.find(s => s.register === a.register);
+                        const mismatch = actual && actual.cashierId !== a.cashierId;
+                        return `<div class="group flex items-center gap-2 rounded-xl border ${mismatch || a.cover ? 'border-amber-300 bg-amber-50/60' : 'border-slate-200 bg-white'} px-2 py-1.5">
+                            ${avatarHtml(a.cashierId, 'w-7 h-7')}
+                            <div class="min-w-0 flex-1">
+                                <p class="text-[12px] font-semibold text-slate-700 truncate">${personName(a.cashierId)}${a.cover ? ' <span class="text-[10px] font-semibold text-amber-700 bg-amber-100 rounded px-1">ជំនួស</span>' : ''}</p>
+                                <p class="text-[11px] text-slate-400 sm-figure">${a.register}${actual ? ` · ${SHIFT_STATUS[actual.status].label}` : ''}${mismatch ? ` · ${personName(actual.cashierId)} ជំនួស` : ''}</p>
+                            </div>
+                            ${past ? '' : `<button onclick="removeAt('${date}', '${t.code}', ${i})" type="button" aria-label="ដកចេញ" class="w-7 h-7 rounded-lg text-slate-300 hover:text-rose-600 hover:bg-rose-50 flex-shrink-0"><i class="fas fa-xmark text-xs"></i></button>`}
+                        </div>`;
+                    }).join('') || (past ? '<p class="text-[12px] text-slate-400 px-1 py-2">គ្មានអ្នកគិតលុយ</p>'
+                        : '<p class="text-[12px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-2 py-2"><i class="fas fa-triangle-exclamation mr-1"></i>គ្មានអ្នកគិតលុយ · ត្រូវរកអ្នកជំនួស</p>')}
+                    ${past ? '' : `<button onclick="addTo('${date}', '${t.code}')" type="button" class="w-full rounded-xl border border-dashed border-slate-300 hover:border-indigo-400 hover:bg-indigo-50 text-[12px] text-slate-500 hover:text-indigo-700 py-1.5"><i class="fas fa-plus mr-1"></i>បន្ថែម</button>`}
+                    ${custom ? '' : '<p class="text-[10px] text-slate-400 px-1">លំនាំដើម</p>'}
+                </div>
+            </td>`;
+        }
+
+        function render() {
+            const ds = days();
+            document.getElementById('weekLabel').textContent = `${fmtDate(ds[0])} – ${fmtDate(ds[6])}`;
+            const today = isoDate(new Date());
+            const DOW = ['អាទិត្យ', 'ច័ន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍'];
+            document.getElementById('grid').innerHTML = `
+                <thead><tr class="bg-slate-50 border-b border-slate-100">
+                    <th class="sm-th py-3 px-3 text-left text-slate-500 w-[130px]">វេន</th>
+                    ${ds.map(d => `<th class="sm-th py-3 px-2 text-left border-l border-slate-100 ${isoDate(d) === today ? 'text-indigo-700' : 'text-slate-500'}">${DOW[d.getDay()]}<span class="block text-[12px] font-medium sm-figure">${fmtDate(d)}</span></th>`).join('')}
+                </tr></thead>
+                <tbody>${shiftTemplates().map(t => `<tr class="border-b border-slate-100">
+                    <td class="align-top p-3"><p class="sm-value text-slate-700">${t.name}</p><p class="sm-td-sub text-slate-400 sm-figure">${t.start}–${t.end}</p></td>
+                    ${ds.map(d => cell(d, t)).join('')}
+                </tr>`).join('')}</tbody>`;
+            renderHours();
+        }
+
+        async function addTo(date, code) {
+            const list = rosterFor(date, code);
+            const tpl = shiftTemplates().find(t => t.code === code);
+            const elsewhere = id => shiftTemplates().filter(t => t.code !== code && rosterFor(date, t.code).some(a => a.cashierId === id));
+            const freeRegs = REGISTERS.filter(r => !list.some(a => a.register === r));
+            const people = STAFF.filter(p => !list.some(a => a.cashierId === p.id));
+            if (!people.length) return showToast('បុគ្គលិកទាំងអស់មានក្នុងវេននេះរួចហើយ', 'info');
+            if (!freeRegs.length) return showToast('បញ្ជរទាំងអស់មានអ្នកគិតលុយរួចហើយ · មួយថតប្រាក់ មួយអ្នក', 'warning');
+            const dow = new Date(date + 'T12:00').getDay();
+            const defs = posSettings().staffDefaults || {};
+            const who = await showOptionDialog({
+                title: `បន្ថែមអ្នកគិតលុយ · ${tpl.name}`,
+                message: `${DOW_KH[dow]} ${fmtDate(date + 'T12:00')} · អ្នកដែលមានវេនផ្សេងនឹងត្រូវផ្លាស់មក (ជំនួសវេន)`,
+                options: people.map(p => {
+                    const other = elsewhere(p.id);
+                    const off = defs[p.id] && Number(defs[p.id].dayOff) === dow;
+                    return { value: p.id, icon: isManagerId(p.id) ? 'fa-user-shield' : 'fa-user', label: p.name,
+                        desc: other.length ? `ផ្លាស់ពី${other.map(t => t.name).join(' · ')}` : off ? 'ថ្ងៃឈប់សម្រាក · ធ្វើការបន្ថែម' : 'ទំនេរ' };
+                })
+            });
+            if (!who) return;
+            const reg = freeRegs.length === 1 ? freeRegs[0] : await showOptionDialog({
+                title: 'ជ្រើសរើសបញ្ជរ', message: `${personName(who)} · បញ្ជរនីមួយៗមានថតប្រាក់ផ្ទាល់ខ្លួន`,
+                options: freeRegs.map(r => ({ value: r, icon: 'fa-cash-register', label: r }))
+            });
+            if (!reg) return;
+            assignShift(date, code, who, reg, { by: ME_MANAGER });
+            showToast(`បានចាត់ ${personName(who)} ទៅ${tpl.name} · ${reg}`, 'success');
+            render();
+        }
+
+        function removeAt(date, code, i) {
+            const list = rosterFor(date, code).slice();
+            const [x] = list.splice(i, 1);
+            saveRoster(date, code, list);
+            showToast(`បានដក ${personName(x.cashierId)} ចេញពីវេន`, 'info');
+            render();
+        }
+
+        window.onStoreChanged = render;
+        document.addEventListener('DOMContentLoaded', render);
+    </script>
+</body>
+</html>

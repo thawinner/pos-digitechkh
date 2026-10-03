@@ -2,7 +2,7 @@
 
 > **Portal ID:** `managerPortal`
 > **Folder:** `src/manager/<feature>/<page>.html` (two levels below `src/`, `data-role-root="../.."`)
-> **Date:** 2026-10-03 · **Status:** Spec, not built
+> **Date:** 2026-10-03 · **Status:** Built 2026-10-04 (see §12 for what differs from this spec)
 > **Inputs:** [v1-role_cashier_pos.md](v1-role_cashier_pos.md) (permission table, workflow 4), [01-cashier-pos.md](01-cashier-pos.md) §3.3,
 > [../research/pos-market-research.md](../research/pos-market-research.md) (cited as **R§n**), [../planning/cashier-improvements.md](../planning/cashier-improvements.md) (cited as **C n**)
 
@@ -390,3 +390,47 @@ the cashier in a second tab and watch the badge change without a refresh).
 | M3 | Do variances become a cashier's personal liability? | Out of scope for software. Record the outcome note only; don't add a "deduct from salary" action without HR/legal input |
 | M4 | Branch scope if a manager covers two branches | Single branch for the prototype. Add a branch switch in the header later |
 | plus | D1–D7 in [../planning/cashier-improvements.md](../planning/cashier-improvements.md) §5 | |
+
+---
+
+## 11. Shift model
+
+The word "shift" covers several things, and the system keeps them apart:
+
+| Concept | Khmer | What it is | Who sets it |
+|---|---|---|---|
+| **Shift template** | វេន | A time window. Default: «វេនព្រឹក» 06:00–14:00, «វេនរសៀល» 14:00–22:00, «វេនយប់» 22:00–06:00 (24-hour shop). Shifts per day = opening hours ÷ about 8 h | Manager, in Settings → គំរូវេន |
+| **Default shift** | វេនប្រចាំ | Each person's regular template, register and weekly day off | Manager, in the roster page (or Settings → បុគ្គលិក) |
+| **Roster** | កាលវិភាគ | For each date and template: who works which register. Built from default shifts. The manager can change any date | Manager, in «កាលវិភាគវេន» |
+| **Cover** | ជំនួសវេន | A roster entry that isn't the person's default. Marked «ជំនួស» | Manager (planned), or automatically when a cashier opens a shift they aren't rostered for, with manager PIN |
+| **Drawer shift** | វេនបញ្ជរ | One cashier + one register + one drawer: open (counted float, manager PIN) → closed (blind count) → reviewed (manager countersign) | Cashier opens/closes, manager reviews |
+
+Rules:
+
+- **A template can have several cashiers**, each on their own register and drawer (one drawer, one accountable
+  person; research §11). Two people never share a drawer. A mid-shift change is a close plus an open.
+- **Breaks lock the terminal** with the cashier's own PIN. There is no count and no new shift.
+- **Labour law guards:** a template longer than 12 h can't be saved (8–12 h shows an overtime warning). Opening a shift
+  that would take a person over 12 h in a day is blocked. The roster shows weekly hours and flags anything over 48.
+- **Login sends a person to their rostered register.** A manager with no roster entry gets the first free register.
+- **Default staffing:** one cashier per shift, each on their own register (morning POS-01, afternoon POS-02, night
+  POS-03): 8 h × 6 days = 48 h/week, exactly the legal limit. On each cashier's day off that shift is empty. The
+  roster shows it in amber («ត្រូវរកអ្នកជំនួស») so the manager assigns a cover.
+- **Night shift** crosses midnight. It belongs to the date it starts on, and the business day rolls over at the first
+  template's start (06:00). Settings shows its night hours (22:00–05:00, paid at 200% under Cambodian labour law).
+
+## 12. Build status (2026-10-04)
+
+Everything in §§1–8 is built, plus these additions and deviations:
+
+| Item | Status |
+|---|---|
+| Login page with PIN pad, session, page guards, logout | Added (spec M1 said role picker; a real login replaced it) |
+| Profile images | Illustrated SVG avatars in `shared/assets/avatars/<id>.svg`, initials if missing |
+| Roster page «កាលវិភាគវេន» + default shifts + covers | Added (§11) |
+| Manager switches to the till | Sells on their own register; can't approve their own sales (M-RULE 3) |
+| Demo PINs | Shown on the login page only, under a demo-info toggle, not inside the product screens |
+| Change modes | Two: «ដុល្លារ + រៀល» and «រៀលទាំងអស់». An all-USD mode was dropped because coins don't circulate |
+| Charts | CSS bars on dashboard and report; ECharts not used |
+| KHQR | In-terminal overlay with expiry and a stored QR hash; payment confirmation is manual (no Bakong API) |
+| Decisions taken | D1 blind count yes · D2 no separate card tender · D3 not built (no cross-shift receipt lookup yet) · D4 nearest 100 ៛ · D5 «អ្នកគ្រប់គ្រងវេន» · D6 manager reopens with reason · D7 shifts are a setting, default 2 |

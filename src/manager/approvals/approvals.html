@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - សំណើរង់ចាំអនុម័ត</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+</head>
+<body id="managerPortal" data-role-root="../.." data-active="approvals" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="សំណើរង់ចាំអនុម័ត"
+             data-subtitle="សំណើលុបចោល និងប្រគល់ទំនិញវិញពីអ្នកគិតលុយ"></div>
+        <main class="flex-1 overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <div class="w-full space-y-4">
+                <div class="bg-white rounded-2xl p-2 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-3">
+                    <div id="statusTabs" class="flex flex-wrap items-center gap-2"></div>
+                    <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                        <div id="cashierFilter" data-bms-select data-onchange="renderList()" class="w-full sm:w-[200px] h-9"></div>
+                        <div class="relative w-full sm:w-[240px]">
+                            <i class="fas fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input id="searchInput" type="text" oninput="renderList()" placeholder="ស្វែងរកលេខវិក្កយបត្រ..."
+                                class="sm-td h-9 pl-9 pr-3 w-full rounded-xl bg-slate-50 border border-slate-200 text-slate-700 focus:outline-none focus:border-indigo-500 transition">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="hidden md:!block">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 text-slate-500 border-b border-slate-100">
+                                <tr>
+                                    <th class="sm-th py-3.5 px-4">ពេលស្នើ</th>
+                                    <th class="sm-th py-3.5 px-4">ប្រភេទ</th>
+                                    <th class="sm-th py-3.5 px-4">វិក្កយបត្រ</th>
+                                    <th class="sm-th py-3.5 px-4">អ្នកគិតលុយ</th>
+                                    <th class="sm-th py-3.5 px-4 text-right">ទឹកប្រាក់</th>
+                                    <th class="sm-th py-3.5 px-4">មូលហេតុ</th>
+                                    <th class="sm-th py-3.5 px-4" id="lastColHead">រង់ចាំ</th>
+                                    <th class="sm-th py-3.5 px-4 text-right">សកម្មភាព</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rows" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                        </table>
+                    </div>
+                    <div id="cards" class="md:hidden divide-y divide-slate-100"></div>
+                    <div id="empty" class="hidden"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        /* សំណើរង់ចាំអនុម័ត (ឯកសាររចនាលេខ 02 ផ្នែក 5.2)
+           បញ្ជីរួមបញ្ចូលទាំងសំណើពីអ្នកគិតលុយ (រង់ចាំ) និងប្រវត្តិការសម្រេច (នៅបញ្ជរ ឬពីបញ្ជីនេះ) */
+
+        let tab = 'pending';
+        const TABS = [
+            { id: 'pending', label: 'រង់ចាំអនុម័ត' },
+            { id: 'approved', label: 'បានអនុម័ត' },
+            { id: 'rejected', label: 'បានបដិសេធ' }
+        ];
+
+        function all() {
+            return tab === 'pending' ? pendingApprovals() : mgrAllApprovals().filter(a => a.status === tab);
+        }
+
+        function renderTabs() {
+            const list = mgrAllApprovals();
+            document.getElementById('statusTabs').innerHTML = TABS.map(t => {
+                const n = t.id === 'pending' ? pendingApprovals().length : list.filter(a => a.status === t.id).length;
+                return `<button onclick="pickTab('${t.id}')" class="sm-badge px-4 py-2 rounded-xl transition ${tab === t.id
+                    ? 'bg-indigo-600 text-white font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-100 font-medium'}">${t.label} (${n})</button>`;
+            }).join('');
+            document.getElementById('lastColHead').textContent = tab === 'pending' ? 'រង់ចាំ' : 'សម្រេចដោយ';
+        }
+
+        function pickTab(id) {
+            tab = id;
+            renderTabs();
+            renderList();
+        }
+
+        function clearFilters() {
+            bmsSetSelect('cashierFilter', '');
+            document.getElementById('searchInput').value = '';
+            renderList();
+        }
+
+        function menu(a, id) {
+            const item = (href, onclick, icon, tone, label) => href
+                ? `<a href="${href}" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50"><span class="w-7 h-7 rounded-lg ${tone} flex items-center justify-center"><i class="fas ${icon} text-[11px]"></i></span>${label}</a>`
+                : `<button onclick="${onclick}" type="button" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 text-left"><span class="w-7 h-7 rounded-lg ${tone} flex items-center justify-center"><i class="fas ${icon} text-[11px]"></i></span>${label}</button>`;
+            return `<div id="${id}" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 text-left">
+                ${item(`view-request.html?id=${a.id}`, '', 'fa-eye', 'bg-slate-100 text-slate-600', 'មើលលម្អិត')}
+                ${a.status === 'pending' ? item('', `decide('${a.id}', true)`, 'fa-check', 'bg-emerald-100 text-emerald-700', 'អនុម័ត') : ''}
+                ${a.status === 'pending' ? item('', `decide('${a.id}', false)`, 'fa-xmark', 'bg-rose-100 text-rose-700', 'បដិសេធ') : ''}
+            </div>`;
+        }
+
+        async function decide(id, approve) {
+            closeAllFloatingDropdowns();
+            if (await mgrDecide(id, approve)) refresh();
+        }
+
+        function lastCol(a) {
+            if (a.status === 'pending') {
+                const age = new Date() - new Date(a.raisedAt);
+                return `<span class="sm-td sm-figure ${age > 10 * 60000 ? 'text-rose-600 font-semibold' : 'text-slate-600'}">${fmtDuration(age)}</span>`;
+            }
+            return `<div>${personChip(a.decidedBy)}<p class="sm-td-sub text-slate-400 mt-0.5">${a.mode === 'onsite' ? 'នៅបញ្ជរ' : 'ពីបញ្ជីសំណើ'} · ${fmtTime(a.decidedAt)}</p></div>`;
+        }
+
+        function renderList() {
+            const cashier = bmsGetSelect('cashierFilter');
+            const q = document.getElementById('searchInput').value.trim().toLowerCase();
+            const rows = all().filter(a => (!cashier || a.cashierId === cashier) && (!q || a.saleId.toLowerCase().includes(q))).slice(0, 200);
+            const empty = document.getElementById('empty');
+            if (!rows.length) {
+                document.getElementById('rows').innerHTML = '';
+                document.getElementById('cards').innerHTML = '';
+                empty.classList.remove('hidden');
+                empty.innerHTML = cashier || q
+                    ? emptyState('fa-filter-circle-xmark', 'គ្មានលទ្ធផល', 'មិនមានសំណើត្រូវនឹងតម្រងនេះទេ',
+                        '<button onclick="clearFilters()" type="button" class="sm-badge mt-4 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold">ជម្រះតម្រង</button>')
+                    : emptyState('fa-circle-check', tab === 'pending' ? 'គ្មានសំណើរង់ចាំទេ' : 'មិនទាន់មានកំណត់ត្រា', 'សំណើលុបចោល និងប្រគល់ទំនិញវិញពីអ្នកគិតលុយនឹងបង្ហាញនៅទីនេះ');
+                return;
+            }
+            empty.classList.add('hidden');
+            const typeChip = a => {
+                const t = APPROVAL_TYPE[a.type];
+                return `<span class="sm-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border bg-${t.tone}-50 text-${t.tone}-700 border-${t.tone}-200"><i class="fas ${t.icon} text-[10px]"></i>${t.label}</span>`;
+            };
+            document.getElementById('rows').innerHTML = rows.map(a => `
+                <tr class="hover:bg-slate-50">
+                    <td class="py-3.5 px-4"><p class="sm-td-strong">${fmtTime(a.raisedAt)}</p><p class="sm-td-sub text-slate-400">${fmtDate(a.raisedAt)}</p></td>
+                    <td class="py-3.5 px-4">${typeChip(a)}</td>
+                    <td class="py-3.5 px-4 sm-td">${a.saleId}</td>
+                    <td class="py-3.5 px-4"><div class="sm-td">${personChip(a.cashierId)}</div><p class="sm-td-sub text-slate-400 mt-0.5">${a.register}</p></td>
+                    <td class="py-3.5 px-4 text-right sm-td-strong sm-figure">${fmtUSD(a.amount)}</td>
+                    <td class="py-3.5 px-4 sm-td text-slate-600 max-w-[220px]"><p class="truncate">${escapeText(a.reason)}</p>${a.decisionNote ? `<p class="sm-td-sub text-rose-600 truncate">${escapeText(a.decisionNote)}</p>` : ''}</td>
+                    <td class="py-3.5 px-4 sm-td">${lastCol(a)}</td>
+                    <td class="py-3.5 px-4 text-right">
+                        <button onclick="toggleRowActionMenu(event, 'm-${a.id}')" type="button" aria-label="សកម្មភាព"
+                            class="w-11 h-11 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200/70 inline-flex items-center justify-center"><i class="fas fa-ellipsis-vertical text-sm"></i></button>
+                        ${menu(a, 'm-' + a.id)}
+                    </td>
+                </tr>`).join('');
+            document.getElementById('cards').innerHTML = rows.map(a => `
+                <div class="p-4">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            ${typeChip(a)}
+                            <p class="sm-value text-slate-800 mt-1.5">${a.saleId} · <span class="sm-figure">${fmtUSD(a.amount)}</span></p>
+                            <p class="sm-td-sub text-slate-500">${personName(a.cashierId)} · ${a.register} · ${fmtTime(a.raisedAt)}</p>
+                            <p class="sm-td-sub text-slate-500 mt-1">${escapeText(a.reason)}</p>
+                        </div>
+                        <div class="flex-shrink-0 relative">
+                            <button onclick="toggleRowActionMenu(event, 'c-${a.id}')" type="button" aria-label="សកម្មភាព"
+                                class="w-11 h-11 rounded-xl bg-slate-50 border border-slate-200/70 text-slate-500 inline-flex items-center justify-center"><i class="fas fa-ellipsis-vertical text-sm"></i></button>
+                            ${menu(a, 'c-' + a.id)}
+                        </div>
+                    </div>
+                    <div class="mt-2 sm-td">${lastCol(a)}</div>
+                </div>`).join('');
+        }
+
+        function refresh() {
+            renderTabs();
+            renderList();
+            updatePortalBadges();
+            refreshPortalNotifications();
+        }
+
+        window.onStoreChanged = refresh;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            bmsSetSelectOptions('cashierFilter', [{ value: '', label: 'អ្នកគិតលុយទាំងអស់' }].concat(CASHIERS.map(c => ({ value: c.id, label: c.name }))));
+            bmsSetSelect('cashierFilter', '');
+            refresh();
+        });
+    </script>
+</body>
+</html>

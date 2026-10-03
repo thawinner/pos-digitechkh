@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - ចលនាសាច់ប្រាក់</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+</head>
+<body id="managerPortal" data-role-root="../.." data-active="cash" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="ចលនាសាច់ប្រាក់"
+             data-subtitle="ទូដែក ប្រាក់បាតថត ការផ្ទេរ និងប្រាក់ចំណាយ"></div>
+        <main class="flex-1 overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <div class="w-full space-y-5">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <p class="sm-card-sub text-slate-500">តាមដានរាល់ដុល្លារ និងរៀលដែលផ្លាស់ទីក្រៅការលក់ · ផ្ទេរចូលទូដែកត្រូវមានអ្នកទទួលបញ្ជាក់</p>
+                    <a href="create-movement.html" class="sm-value h-11 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold inline-flex items-center gap-2"><i class="fas fa-plus"></i> កត់ត្រាចលនាថ្មី</a>
+                </div>
+                <div id="kpiRow" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
+                <section id="pendingCard"></section>
+                <div class="bg-white rounded-2xl p-2 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-3">
+                    <div id="typeTabs" class="flex flex-wrap items-center gap-2"></div>
+                    <div id="dateRange" class="flex items-center"></div>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="hidden md:!block">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 text-slate-500 border-b border-slate-100">
+                                <tr>
+                                    <th class="sm-th py-3.5 px-4">ពេលវេលា</th>
+                                    <th class="sm-th py-3.5 px-4">ប្រភេទ</th>
+                                    <th class="sm-th py-3.5 px-4">បញ្ជរ · វេន</th>
+                                    <th class="sm-th py-3.5 px-4 text-right">ដុល្លារ</th>
+                                    <th class="sm-th py-3.5 px-4 text-right">រៀល</th>
+                                    <th class="sm-th py-3.5 px-4">ធ្វើដោយ</th>
+                                    <th class="sm-th py-3.5 px-4">ទទួលដោយ</th>
+                                    <th class="sm-th py-3.5 px-4">ស្ថានភាព</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rows" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                        </table>
+                    </div>
+                    <div id="cards" class="md:hidden divide-y divide-slate-100"></div>
+                    <div id="empty" class="hidden"></div>
+                </div>
+            </div>
+        </main>
+
+        <div id="receiveModal" class="hidden fixed inset-0 z-[9990] bg-slate-900/60 backdrop-blur-sm items-center justify-center p-4">
+            <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl p-5 sm:p-6" onclick="event.stopPropagation()">
+                <p class="sm-card-title text-slate-900">បញ្ជាក់ការទទួលប្រាក់ផ្ទេរចូលទូដែក</p>
+                <p id="receiveSub" class="sm-td-sub text-slate-500 mt-1"></p>
+                <div class="grid grid-cols-2 gap-3 mt-4">
+                    <label><span class="sm-td-sub text-slate-500">ដុល្លាររាប់បាន</span>
+                        <input id="recvUSD" type="number" min="0" step="1" oninput="syncReceive()" class="sm-value w-full h-12 mt-1 px-3 rounded-xl bg-slate-50 border border-slate-200 text-right focus:outline-none focus:border-indigo-500"></label>
+                    <label><span class="sm-td-sub text-slate-500">រៀលរាប់បាន</span>
+                        <input id="recvKHR" type="number" min="0" step="1000" oninput="syncReceive()" class="sm-value w-full h-12 mt-1 px-3 rounded-xl bg-slate-50 border border-slate-200 text-right focus:outline-none focus:border-indigo-500"></label>
+                </div>
+                <div id="recvDiff" class="mt-3"></div>
+                <div class="grid grid-cols-2 gap-2.5 mt-5">
+                    <button onclick="closeReceive()" type="button" class="sm-value h-12 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold">បោះបង់</button>
+                    <button onclick="submitReceive()" type="button" class="sm-value h-12 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">បញ្ជាក់ការទទួល</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        /* ចលនាសាច់ប្រាក់ (ឯកសាររចនាលេខ 02 ផ្នែក 5.4) — កំណត់ត្រាពីរភាគី (ស្រាវជ្រាវ §4)៖
+           អ្នកគិតលុយកត់ត្រាការផ្ទេរ អ្នកគ្រប់គ្រងរាប់ ហើយបញ្ជាក់ការទទួល */
+
+        let tab = 'all';
+        let receiving = null;
+
+        function renderKpis() {
+            const safe = safeBalance();
+            const today = mgrToday();
+            const payouts = mgrAllMovements().filter(m => m.type === 'payout' && inRange(m.createdAt, today));
+            const pend = mgrPendingDropCount();
+            document.getElementById('kpiRow').innerHTML =
+                kpiCard('ទូដែក · ដុល្លារ', fmtUSD(safe.usd), 'គណនាពីចលនាទាំងអស់', 'text-indigo-700') +
+                kpiCard('ទូដែក · រៀល', fmtKHR(safe.khr), 'គណនាពីចលនាទាំងអស់', 'text-indigo-700') +
+                kpiCard('ផ្ទេររង់ចាំទទួល', `${pend}`, pend ? 'ត្រូវរាប់ និងបញ្ជាក់' : 'គ្មាន', pend ? 'text-amber-600' : 'text-slate-800') +
+                kpiCard('ប្រាក់ចំណាយថ្ងៃនេះ', fmtUSD(payouts.reduce((n, m) => n + m.usd, 0)), `${payouts.length} ដង`);
+        }
+
+        function renderPending() {
+            const list = mgrAllMovements().filter(m => m.type === 'drop' && m.status === 'pending');
+            document.getElementById('pendingCard').innerHTML = list.length ? `
+                <div class="bg-white rounded-2xl border border-amber-200 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-amber-100 bg-amber-50/60"><h3 class="sm-card-title text-amber-800"><i class="fas fa-vault mr-2"></i>ផ្ទេរចូលទូដែករង់ចាំទទួល</h3></div>
+                    <div class="divide-y divide-slate-100">${list.map(m => `
+                        <div class="p-4 flex flex-wrap items-center gap-3">
+                            <div class="min-w-0 flex-1">
+                                <p class="sm-value text-slate-800">${m.register} · ${personName(m.createdBy)}</p>
+                                <p class="sm-td-sub text-slate-500">${fmtDate(m.createdAt)} ${fmtTime(m.createdAt)} · រង់ចាំ ${fmtDuration(new Date() - new Date(m.createdAt))}</p>
+                            </div>
+                            <div class="text-right"><p class="sm-value sm-figure">${fmtUSD(m.usd)}</p><p class="sm-td-sub sm-figure text-slate-500">${fmtKHR(m.khr)}</p></div>
+                            <button onclick="openReceive('${m.id}')" type="button" class="sm-badge h-11 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">រាប់ និងទទួល</button>
+                        </div>`).join('')}</div>
+                </div>` : '';
+        }
+
+        function renderTabs() {
+            const types = ['all', 'float', 'drop', 'payout', 'payin', 'bank'];
+            document.getElementById('typeTabs').innerHTML = types.map(t => `<button onclick="tab='${t}'; renderTabs(); renderList()" class="sm-badge px-3.5 py-2 rounded-xl transition ${tab === t
+                ? 'bg-indigo-600 text-white font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-100 font-medium'}">${t === 'all' ? 'ទាំងអស់' : MOVEMENT_TYPE[t].label}</button>`).join('');
+        }
+
+        function renderList() {
+            const range = getSelectedRange();
+            const rows = mgrAllMovements().filter(m => (tab === 'all' || m.type === tab) && inRange(m.createdAt, range)).slice(0, 200);
+            const empty = document.getElementById('empty');
+            if (!rows.length) {
+                document.getElementById('rows').innerHTML = '';
+                document.getElementById('cards').innerHTML = '';
+                empty.classList.remove('hidden');
+                empty.innerHTML = emptyState('fa-money-bill-transfer', 'គ្មានចលនាសាច់ប្រាក់', 'សូមប្តូរប្រភេទ ឬជួរកាលបរិច្ឆេទ',
+                    `<button onclick="tab='all'; selectPreset('7 ថ្ងៃចុងក្រោយ'); renderTabs(); renderList()" type="button" class="sm-badge mt-4 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold">ជម្រះតម្រង</button>`);
+                return;
+            }
+            empty.classList.add('hidden');
+            const typeChip = m => `<span class="sm-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border bg-${MOVEMENT_TYPE[m.type].tone}-50 text-${MOVEMENT_TYPE[m.type].tone}-700 border-${MOVEMENT_TYPE[m.type].tone}-200"><i class="fas ${MOVEMENT_TYPE[m.type].icon} text-[10px]"></i>${MOVEMENT_TYPE[m.type].label}</span>`;
+            const where = m => m.shiftId ? `<a href="../shifts/view-shift.html?id=${m.shiftId}" class="text-indigo-700 hover:underline">${m.register} · ${m.shiftId.split('-').slice(-1)[0]}</a>` : (m.register || 'ទូដែក');
+            document.getElementById('rows').innerHTML = rows.map(m => `
+                <tr class="hover:bg-slate-50">
+                    <td class="py-3 px-4"><p class="sm-td-strong">${fmtTime(m.createdAt)}</p><p class="sm-td-sub text-slate-400">${fmtDate(m.createdAt)}</p></td>
+                    <td class="py-3 px-4">${typeChip(m)}${m.reason ? `<p class="sm-td-sub text-slate-400 mt-1">${escapeText(m.reason)}${m.ref ? ' · ' + escapeText(m.ref) : ''}</p>` : ''}</td>
+                    <td class="py-3 px-4 sm-td">${where(m)}</td>
+                    <td class="py-3 px-4 text-right sm-td sm-figure">${fmtUSD(m.usd)}</td>
+                    <td class="py-3 px-4 text-right sm-td sm-figure">${fmtKHR(m.khr)}</td>
+                    <td class="py-3 px-4 sm-td">${personChip(m.createdBy)}</td>
+                    <td class="py-3 px-4 sm-td">${m.confirmedBy ? personChip(m.confirmedBy) : '<span class="text-slate-400">—</span>'}${m.diffUSD || m.diffKHR ? `<p class="sm-td-sub text-rose-600">ខុស ${fmtSigned(m.diffUSD || 0, fmtUSD)} · ${fmtSigned(m.diffKHR || 0, fmtKHR, 0.5)}</p>` : ''}</td>
+                    <td class="py-3 px-4">${statusChip(MOVEMENT_STATUS[m.status])}</td>
+                </tr>`).join('');
+            document.getElementById('cards').innerHTML = rows.map(m => `
+                <div class="p-4">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>${typeChip(m)}<p class="sm-td-sub text-slate-500 mt-1">${fmtDate(m.createdAt)} ${fmtTime(m.createdAt)} · ${where(m)}</p></div>
+                        <div class="text-right"><p class="sm-value sm-figure">${fmtUSD(m.usd)}</p><p class="sm-td-sub sm-figure text-slate-500">${fmtKHR(m.khr)}</p></div>
+                    </div>
+                    <div class="mt-1.5 flex items-center justify-between">${statusChip(MOVEMENT_STATUS[m.status])}<span class="sm-td-sub text-slate-500">${personName(m.createdBy)}</span></div>
+                </div>`).join('');
+        }
+
+        function openReceive(id) {
+            receiving = mgrAllMovements().find(m => m.id === id);
+            if (!receiving) return;
+            document.getElementById('receiveSub').textContent = `${receiving.register} · ${personName(receiving.createdBy)} កត់ត្រា ${fmtUSD(receiving.usd)} · ${fmtKHR(receiving.khr)}`;
+            document.getElementById('recvUSD').value = receiving.usd;
+            document.getElementById('recvKHR').value = receiving.khr;
+            syncReceive();
+            const m = document.getElementById('receiveModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+
+        function closeReceive() {
+            const m = document.getElementById('receiveModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+            receiving = null;
+        }
+
+        function syncReceive() {
+            const dUSD = (parseFloat(document.getElementById('recvUSD').value) || 0) - receiving.usd;
+            const dKHR = (parseInt(document.getElementById('recvKHR').value, 10) || 0) - receiving.khr;
+            document.getElementById('recvDiff').innerHTML = Math.abs(dUSD) < 0.005 && Math.abs(dKHR) < 0.5
+                ? '<p class="sm-td-sub text-emerald-700"><i class="fas fa-check mr-1"></i>ត្រូវនឹងចំនួនដែលអ្នកគិតលុយកត់ត្រា</p>'
+                : `<p class="sm-td-sub text-rose-600"><i class="fas fa-triangle-exclamation mr-1"></i>ខុសគ្នា ${fmtSigned(dUSD, fmtUSD)} · ${fmtSigned(dKHR, fmtKHR, 0.5)} · ត្រូវមានមូលហេតុ</p>`;
+        }
+
+        async function submitReceive() {
+            const m = receiving;
+            const usd = parseFloat(document.getElementById('recvUSD').value) || 0;
+            const khr = parseInt(document.getElementById('recvKHR').value, 10) || 0;
+            const dUSD = usd - m.usd;
+            const dKHR = khr - m.khr;
+            closeReceive();
+            let note = '';
+            if (Math.abs(dUSD) >= 0.005 || Math.abs(dKHR) >= 0.5) {
+                note = await showReasonPrompt({ title: 'មូលហេតុនៃភាពខុសគ្នា', message: `${fmtSigned(dUSD, fmtUSD)} · ${fmtSigned(dKHR, fmtKHR, 0.5)}`, confirmText: 'បន្ត', danger: true });
+                if (!note) return;
+            }
+            if (m.createdBy === ME_MANAGER) return showToast('មិនអាចទទួលប្រាក់ដែលខ្លួនឯងផ្ទេរបានទេ', 'error');
+            const ok = await showPinConfirm({ title: 'បញ្ជាក់ការទទួលប្រាក់', message: `${fmtUSD(usd)} · ${fmtKHR(khr)}`, userId: ME_MANAGER, confirmText: 'បានទទួល' });
+            if (!ok) return;
+            updateAnyMovement(m.id, { status: 'confirmed', confirmedBy: ME_MANAGER, confirmedAt: isoLocal(new Date()), receivedUSD: usd, receivedKHR: khr, diffUSD: dUSD, diffKHR: dKHR, note });
+            showToast(`បានទទួលប្រាក់ពី ${m.register}`, 'success');
+            renderAll();
+        }
+
+        function renderAll() {
+            renderKpis();
+            renderPending();
+            renderTabs();
+            renderList();
+            updatePortalBadges();
+            refreshPortalNotifications();
+        }
+
+        window.onDateRangeApplied = renderList;
+        window.onStoreChanged = renderAll;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDateRangePicker('dateRange');
+            selectPreset('7 ថ្ងៃចុងក្រោយ');
+            document.getElementById('receiveModal').onclick = closeReceive;
+            renderAll();
+        });
+    </script>
+</body>
+</html>
