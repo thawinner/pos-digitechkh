@@ -1,4 +1,4 @@
-# PLANNING-18: Open Decisions & System Configuration
+# STANDARD-04: Open Decisions & System Configuration
 **Version:** 2.0 | **Date:** 2026-09-29 | **Status:** Planning — No Code
 
 ---
@@ -172,7 +172,7 @@ The date picker must compute all relative ranges from the **actual current date*
 | ខែមុន | lastmonth | `start = first day of last month, end = last day of last month` |
 | ត្រីមាសនេះ | thisquarter | `start = first day of current quarter, end = today` |
 
-**Implementation note:** When `portal.js` `selectPreset()` is rewritten, it computes all ranges from `BMS_TODAY` (the single shared "today" defined in `20-shared-mock-data-architecture.md` §3). Mock data is seeded relative to the same date, so filters like "last 7 days" always return records. No static date strings.
+**Implementation note:** When `portal.js` `selectPreset()` is rewritten, it computes all ranges from `BMS_TODAY` (the single shared "today" defined in eBMS `20-shared-mock-data-architecture.md` §3). Mock data is seeded relative to the same date, so filters like "last 7 days" always return records. No static date strings.
 
 ---
 
@@ -243,10 +243,10 @@ External portals: Supplier Portal (complete), Customer Portal (partial — quota
 Shared: portal.js, ui-components.js, custom.css, portal.css
 
 ### Phase 2 (Next Sprint)
-Priority order (superseded in detail by `22-implementation-roadmap.md`):
-1. Fix all code-review bugs from 2026-09-29 review (native selects, script order, date presets, max-width violations) — checklist in `21-page-definition-of-done.md`
-2. Shared mock data store (`20-shared-mock-data-architecture.md`) — replaces the 14 isolated `data.js` stores so cross-role workflows actually connect
-3. Apply the Khmer glossary (`19-khmer-glossary.md`) across all pages
+Priority order (superseded in detail by eBMS `22-implementation-roadmap.md`):
+1. Fix all code-review bugs from 2026-09-29 review (native selects, script order, date presets, max-width violations) — checklist in `06-page-definition-of-done.md`
+2. Shared mock data store (eBMS `20-shared-mock-data-architecture.md`) — replaces the 14 isolated `data.js` stores so cross-role workflows actually connect
+3. Apply the Khmer glossary (`05-khmer-glossary.md`) across all pages
 4. Complete Customer Portal quotation pages (`my-quotes.html`, `view-quote.html`)
 5. Notification bell reading from the shared store in all portals
 6. Empty state components on all list pages

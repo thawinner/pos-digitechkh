@@ -1,4 +1,4 @@
-# PLANNING-19: Khmer Terminology Glossary
+# STANDARD-05: Khmer Terminology Glossary
 **Version:** 2.0 | **Date:** 2026-09-29 | **Status:** Planning — No Code
 
 ---
@@ -45,7 +45,7 @@ One canonical Khmer term for every document, status, money label, action and rol
 
 ## 2. Statuses
 
-Status codes are defined in `15-approval-state-machine.md`. This is the only allowed label for each.
+Status codes are defined in eBMS `15-approval-state-machine.md`. This is the only allowed label for each.
 
 | Code | Canonical Khmer | Badge colour |
 |---|---|---|
@@ -115,7 +115,7 @@ Other money terms:
 
 ## 5. Roles
 
-Canonical names are the login-page labels; the full table with paths is in `17-missing-roles-and-external-portals.md` Part D. Sidebar role badges and "approved by" lines must use the same strings.
+Canonical names are the login-page labels; the full table with paths is in eBMS `17-missing-roles-and-external-portals.md` Part D. Sidebar role badges and "approved by" lines must use the same strings.
 
 ## 6. Number and date formats (reminder)
 
@@ -132,4 +132,4 @@ Canonical names are the login-page labels; the full table with paths is in `17-m
 ## Maintenance
 
 - Adding a new status or document type means adding a row here **first**.
-- A page review (see `21-page-definition-of-done.md`) fails if it uses any variant from the "Replace these variants" column.
+- A page review (see `06-page-definition-of-done.md`) fails if it uses any variant from the "Replace these variants" column.

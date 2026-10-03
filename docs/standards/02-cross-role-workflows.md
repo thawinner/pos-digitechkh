@@ -1,4 +1,4 @@
-# PLANNING-13: Cross-Role Workflow Connections
+# STANDARD-02: Cross-Role Workflow Connections
 **Version:** 2.0 | **Date:** 2026-09-29 | **Status:** Planning — No Code
 
 ---
@@ -77,7 +77,7 @@ Sales Executive (SE) → Sales Manager (SM) → Customer (portal) → AP/AR Acco
 | $5,001 – $20,000 | Sales Manager + General Manager co-sign |
 | > $20,000 | Sales Manager + General Manager + Director |
 
-**Note:** See `16-authority-and-notification-matrix.md` for the full threshold table across all workflows.
+**Note:** See eBMS `16-authority-and-notification-matrix.md` for the full threshold table across all workflows.
 
 ---
 
@@ -221,35 +221,35 @@ Sales Executive (SE) → Sales Manager (SM) → Warehouse Manager (WM) → Cashi
 ## Workflow 5: Delivery Coordination
 
 ### Roles Involved
-Sales Executive (SE) → [Driver Role — see `17-missing-roles-and-external-portals.md`] → Warehouse Staff (WS)
+Sales Executive (SE) → [Driver Role — see eBMS `17-missing-roles-and-external-portals.md`] → Warehouse Staff (WS)
 
-**Status: DEFERRED** — Driver role not built in v2 prototype. Delivery status is simulated in SE pipeline page as static mock. See `17-missing-roles-and-external-portals.md` for decision on Driver role.
+**Status: DEFERRED** — Driver role not built in v2 prototype. Delivery status is simulated in SE pipeline page as static mock. See eBMS `17-missing-roles-and-external-portals.md` for decision on Driver role.
 
 ---
 
 ## Workflow 6: Leave & Payroll (HR)
 
 ### Roles Involved
-All Roles → [HR Staff Role — see `17-missing-roles-and-external-portals.md`] → Chief Accountant (CA)
+All Roles → [HR Staff Role — see eBMS `17-missing-roles-and-external-portals.md`] → Chief Accountant (CA)
 
-**Status: DEFERRED** — HR role not built in v2 prototype. See `17-missing-roles-and-external-portals.md` for decision.
+**Status: DEFERRED** — HR role not built in v2 prototype. See eBMS `17-missing-roles-and-external-portals.md` for decision.
 
 ---
 
 ## Workflow State Glossary
 
-Khmer labels and badge colours for every state code live in **one place only**: `19-khmer-glossary.md` §2. Do not repeat them here or in any other doc — that is how they drifted before.
+Khmer labels and badge colours for every state code live in **one place only**: `05-khmer-glossary.md` §2. Do not repeat them here or in any other doc — that is how they drifted before.
 
 ---
 
 ## Notes for UI Implementation
 
-1. **Status badges:** Label and colour come from `19-khmer-glossary.md` §2. In code, this becomes a single shared `STATUS_META` map (see `20-shared-mock-data-architecture.md`), never per-page badge markup.
+1. **Status badges:** Label and colour come from `05-khmer-glossary.md` §2. In code, this becomes a single shared `STATUS_META` map (see eBMS `20-shared-mock-data-architecture.md`), never per-page badge markup.
 
-2. **Notification triggers:** Every state transition triggers a notification. See `16-authority-and-notification-matrix.md` for the full matrix.
+2. **Notification triggers:** Every state transition triggers a notification. See eBMS `16-authority-and-notification-matrix.md` for the full matrix.
 
 3. **No state skipping:** The UI must enforce valid transitions. A DRAFT document cannot jump to PAID. Invalid transitions are blocked in JS, not just hidden.
 
-4. **Audit trail:** Every state change records (changedBy, changedAt, previousState, newState, reason?). This is part of the mock data structure defined in `14-data-dictionary-and-permissions.md`.
+4. **Audit trail:** Every state change records (changedBy, changedAt, previousState, newState, reason?). This is part of the mock data structure defined in `03-data-dictionary-and-permissions.md`.
 
-5. **Workflows only connect through the shared store.** Today each role reads its own `data.js`, so a hand-off in this document (e.g. SE submits → SM sees it) cannot happen in the prototype. `20-shared-mock-data-architecture.md` is the prerequisite for every workflow above.
+5. **Workflows only connect through the shared store.** Today each role reads its own `data.js`, so a hand-off in this document (e.g. SE submits → SM sees it) cannot happen in the prototype. eBMS `20-shared-mock-data-architecture.md` is the prerequisite for every workflow above.

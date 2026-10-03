@@ -1,4 +1,4 @@
-# PLANNING-14: Data Dictionary & Permission Matrix
+# STANDARD-03: Data Dictionary & Permission Matrix
 **Version:** 2.0 | **Date:** 2026-09-29 | **Status:** Planning — No Code
 
 ---
@@ -78,7 +78,7 @@ Two things in one document:
 
 ## Part B: Data Dictionary
 
-> **ID formats:** the "Format:" notes below are superseded by the canonical ID table in `20-shared-mock-data-architecture.md` §4 (e.g. customers are `CUST-NNNN`, suppliers `SUP-NNN`, products use the SKU code). Field visibility rules in this document remain authoritative and become the whitelists for role projections (doc 20 §5).
+> **ID formats:** the "Format:" notes below are superseded by the canonical ID table in eBMS `20-shared-mock-data-architecture.md` §4 (e.g. customers are `CUST-NNNN`, suppliers `SUP-NNN`, products use the SKU code). Field visibility rules in this document remain authoritative and become the whitelists for role projections (doc 20 §5).
 
 ### Entity 1: Customer
 
@@ -129,7 +129,7 @@ Two things in one document:
 | customerId | string | SM, SE, CA, APAR, CS, GM, SA | |
 | customerName | string | All with access | |
 | createdBy | string | SM, SE, GM, SA | Sales Exec who created |
-| status | enum | SM, SE, CA, APAR, CS, GM, SA | See state glossary in `13-cross-role-workflows.md` |
+| status | enum | SM, SE, CA, APAR, CS, GM, SA | See state glossary in `02-cross-role-workflows.md` |
 | validityDate | date | SM, SE, CA, CS, GM, SA | |
 | lineItems | array | SM, SE, CA, APAR, GM, SA | Array of: {productId, productName, qty, unitPrice, discountPct, lineTotal} |
 | subtotal | number | SM, SE, CA, APAR, GM, SA | Before discount/VAT |

@@ -1,18 +1,22 @@
-# POS Manager (supervisor) — not built yet
+# POS Manager (shift supervisor) — not built yet
 
-The second POS role. The cashier cannot void, refund, change a price or give an unauthorised discount;
-the manager approves those and signs off the shift. Pages go here as `manager/<feature>/<page>.html`,
-at the same depth as the cashier pages, with `data-role-root="../.."`.
+The second POS role. The cashier cannot void, refund, change a price or give a discount above their limit;
+the manager approves those, moves cash (float, safe drops, payouts) and reviews and countersigns each closed shift.
 
-Duties already described in the docs:
+**Spec:** [docs/spec/02-manager-pos.md](../../docs/spec/02-manager-pos.md). Read it before building any page here.
+The cashier-side changes the manager depends on are in [docs/planning/cashier-improvements.md](../../docs/planning/cashier-improvements.md).
 
-| Duty | Source |
-|---|---|
-| Approve a void / refund with a PIN or card scan | `docs/spec/v1-role_cashier_pos.md` — workflow 4 (Manager Void Workflow), permission table |
-| Approve a line discount or price override | `docs/spec/v1-role_cashier_pos.md` — forbidden actions list |
-| Review "Request Void" requests from receipts | `docs/planning/pos-enhancements.md` |
-| Countersign the Z-report (Cashier / Supervisor signature block) | `docs/spec/05-cashier-pos.md` §3.3 Section D |
-| See voids and variances across shifts | `docs/spec/05-cashier-pos.md` §3.3 |
+Pages go here as `manager/<feature>/<page>.html`, at the same depth as the cashier pages, with `data-role-root="../.."`:
 
-To add the role: create the pages, add a `managerPortal` entry to `PORTAL_CONFIGS` in
-`shared/scripts/portal.js`, and give the pages `<body id="managerPortal" ...>`.
+```
+manager/dashboard/dashboard.html
+manager/approvals/approvals.html, view-request.html
+manager/shifts/shifts.html, view-shift.html
+manager/cash/cash.html, create-movement.html
+manager/exceptions/exceptions.html
+manager/reports/sales-report.html
+manager/settings/settings.html
+```
+
+To add the role: add a `managerPortal` entry to `PORTAL_CONFIGS` in `shared/scripts/portal.js`, give the pages
+`<body id="managerPortal" ...>`, and load `shared/scripts/manager-data.js` after `data.js` on manager pages only.
