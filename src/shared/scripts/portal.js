@@ -1211,15 +1211,17 @@ function bmsRenderStepper(hostId) {
     const clickable = typeof cfg.onStep === 'function';
 
     // ទំហំរង្វង់ និងកម្រាស់បន្ទាត់ (ភីកសែល) — ប្រើគណនាទីតាំងបន្ទាត់ភ្ជាប់
-    const R = compact ? 14 : (icons ? 28 : 18);
-    const T = compact ? 2 : (icons ? 5 : 2);
-    const circle = compact ? 'w-7 h-7' : (icons ? 'w-14 h-14' : 'w-9 h-9 text-xs');
+    // size: 'md' = រូបតំណាងទំហំមធ្យម (48px) សម្រាប់ផ្ទាំងតូចដូចទំព័រចូលប្រើ
+    const medium = icons && cfg.size === 'md';
+    const R = compact ? 14 : (medium ? 24 : (icons ? 28 : 18));
+    const T = compact ? 2 : (medium ? 4 : (icons ? 5 : 2));
+    const circle = compact ? 'w-7 h-7' : (medium ? 'w-12 h-12' : (icons ? 'w-14 h-14' : 'w-9 h-9 text-xs'));
     /*
      * ទំហំរូបតំណាងត្រូវដាក់លើ <i> ផ្ទាល់ជារចនាប័ទ្មក្នុងជួរ
      * ព្រោះ custom.css មានច្បាប់ [class*="rounded-full"][class*="text-"]
      * ដែលបង្ខំធាតុមូលទាំងអស់ឲ្យទៅ 13.5px ដោយ !important
      */
-    const iconPx = compact ? 11 : 22;
+    const iconPx = compact ? 11 : (medium ? 18 : 22);
 
     /*
      * បន្ទាត់ចេញពីជំហានបច្ចុប្បន្នបំពេញ 75% (វាស់ពីរូបគំរូ) ដើម្បីបង្ហាញថា
@@ -1315,7 +1317,7 @@ function bmsRenderStepper(hostId) {
                             <span class="relative ${circle} rounded-full flex items-center justify-center font-bold transition ${face(n)}" style="--bms-rgb:${skin.rgb}">${glyph(s, n)}</span>
                             ${badge}
                         </span>
-                        ${compact ? '' : `<span class="${icons ? 'text-sm' : 'sm-badge'} mt-3 px-1 text-center leading-snug ${labelTone(n)}">${s.label}</span>`}`;
+                        ${compact ? '' : `<span class="${medium ? 'text-sm mt-2.5' : icons ? 'text-sm mt-3' : 'sm-badge mt-3'} px-1 text-center leading-snug ${labelTone(n)}">${s.label}</span>`}`;
                     return `<li class="relative flex-1 min-w-0 flex justify-center">
                         ${connector}
                         ${wrap(n, body, 'relative flex flex-col items-center')}
