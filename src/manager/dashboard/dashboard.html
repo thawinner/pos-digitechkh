@@ -34,6 +34,7 @@
         <main class="flex-1 overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
             <div class="w-full space-y-5">
                 <div id="kpiRow" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
+                <section id="todo"></section>
 
                 <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
                     <section class="xl:col-span-2 space-y-3">
@@ -87,41 +88,104 @@
         /* ផ្ទាំងគ្រប់គ្រង (ឯកសាររចនាលេខ 02 ផ្នែក 5.1) — អ្វីដែលត្រូវការខ្ញុំឥឡូវនេះ និងថ្ងៃនេះទៅយ៉ាងណា
            គ្មាន ECharts នៅទំព័រផ្ទាំងគ្រប់គ្រងទេ (បញ្ជីពិនិត្យលេខ 06 ផ្នែក ខ) — ប្រើរបារ CSS */
 
+        /* ប្រៀបធៀបជាមួយថ្ងៃប្រតិបត្តិការមុន ត្រឹមម៉ោងដដែល ដើម្បីឱ្យយុត្តិធម៌ពេលថ្ងៃនេះមិនទាន់ចប់ */
+        function delta(now, before, money) {
+            if (!before) return '<span class="text-slate-400">គ្មានទិន្នន័យម្សិលមិញ</span>';
+            const pct = (now - before) / before * 100;
+            const up = pct >= 0;
+            return `<span class="${up ? 'text-emerald-600' : 'text-rose-600'} font-semibold"><i class="fas fa-arrow-${up ? 'up' : 'down'} text-[10px]"></i> ${Math.abs(pct).toFixed(0)}%</span> <span class="text-slate-400">ធៀបម្សិលមិញ ${money ? fmtUSD(before) : before}</span>`;
+        }
+
         function renderKpis() {
             const today = mgrToday();
+            const yd = addDays(new Date(businessDate() + 'T12:00'), -1);
+            const now = new Date();
+            const cut = s => addDays(new Date(s.time), 1) <= now;
             const agg = aggregateSales(salesInRange(today));
+            const prev = aggregateSales(salesInRange({ start: yd, end: yd }).filter(cut));
             const pend = pendingApprovals().length;
             document.getElementById('kpiRow').innerHTML =
-                kpiCard('លក់សុទ្ធថ្ងៃនេះ', fmtUSD(agg.netSales), `${fmtKHR(toKHR(agg.netSales))} · ${fmtKhDate(businessDate() + 'T12:00')}`, 'text-emerald-600') +
-                kpiCard('វិក្កយបត្រ', `${agg.tx}`, `${agg.qty} ឯកតា · លុបចោល ${agg.voids}`) +
-                kpiCard('មធ្យមក្នុងមួយវិក្កយបត្រ', fmtUSD(agg.avg), 'តម្លៃកន្ត្រកជាមធ្យម') +
+                kpiCard('លក់សុទ្ធថ្ងៃនេះ', fmtUSD(agg.netSales), delta(agg.netSales, prev.netSales, true), 'text-emerald-600') +
+                kpiCard('វិក្កយបត្រ', `${agg.tx}`, delta(agg.tx, prev.tx)) +
+                kpiCard('មធ្យមក្នុងមួយវិក្កយបត្រ', fmtUSD(agg.avg), delta(agg.avg, prev.avg, true)) +
                 kpiCard('សំណើរង់ចាំអនុម័ត', `${pend}`, pend ? 'ត្រូវការការសម្រេចរបស់អ្នក' : 'គ្មានសំណើរង់ចាំ', pend ? 'text-amber-600' : 'text-slate-800');
         }
 
+        /* «ការងាររបស់អ្នក» — អ្វីៗដែលរង់ចាំអ្នកគ្រប់គ្រង ប្រមូលនៅកន្លែងតែមួយ ជាមួយប៊ូតុងទៅធ្វើភ្លាម */
+        function renderTodo() {
+            const now = new Date();
+            const items = [];
+            const pend = pendingApprovals();
+            if (pend.length) {
+                items.push({ icon: 'fa-shield-halved', tone: 'amber', title: `សំណើ ${pend.length} រង់ចាំអនុម័ត`,
+                    note: `ចាស់បំផុត ${fmtDuration(now - new Date(pend[0].raisedAt))}មុន`, href: '../approvals/approvals.html', cta: 'សម្រេច' });
+            }
+            const review = mgrAllShifts().filter(x => x.status === 'closed');
+            if (review.length) {
+                const big = review.filter(x => { const v = shiftVariance(x); return v && v.level === 'large'; }).length;
+                items.push({ icon: 'fa-signature', tone: big ? 'rose' : 'indigo', title: `វេន ${review.length} រង់ចាំត្រួតពិនិត្យ`,
+                    note: big ? `${big} មានភាពខុសគ្នាធំ` : 'ពិនិត្យ និងចុះហត្ថលេខា',
+                    href: review.length === 1 ? `../shifts/view-shift.html?id=${review[0].id}` : '../shifts/shifts.html?status=closed', cta: 'ត្រួតពិនិត្យ' });
+            }
+            const drops = mgrPendingDropCount();
+            if (drops) items.push({ icon: 'fa-vault', tone: 'amber', title: `ប្រាក់ផ្ទេរ ${drops} រង់ចាំទទួល`, note: 'រាប់ និងបញ្ជាក់ការទទួល', href: '../cash/cash.html', cta: 'ទទួល' });
+            mgrAllShifts().filter(x => x.status === 'open' && now > shiftEndDate(x)).forEach(x => items.push({
+                icon: 'fa-clock', tone: 'rose', title: `${x.register} ហួសម៉ោងវេន ${fmtDuration(now - shiftEndDate(x))}`,
+                note: `${personName(x.cashierId)} · ${x.templateName}`, href: `../shifts/view-shift.html?id=${x.id}`, cta: 'មើល'
+            }));
+            const slot = rosterSlotNow();
+            if (slot) {
+                const gaps = shiftTemplates()
+                    .filter(t => dateAt(slot.date, t.start) > now || t.code === slot.template.code)
+                    .filter(t => !rosterFor(slot.date, t.code).length);
+                if (gaps.length) items.push({ icon: 'fa-user-slash', tone: 'rose', title: `${gaps.map(t => t.name).join(' · ')} គ្មានអ្នកគិតលុយ`,
+                    note: 'ត្រូវរកអ្នកជំនួសក្នុងកាលវិភាគ', href: '../roster/roster.html', cta: 'ចាត់តាំង' });
+            }
+            document.getElementById('todo').innerHTML = `
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4">
+                    <div class="flex items-center justify-between gap-3 mb-3">
+                        <h3 class="sm-card-title text-slate-700">ការងាររបស់អ្នក</h3>
+                        <span class="sm-badge px-2.5 py-0.5 rounded-full ${items.length ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}">${items.length ? `${items.length} ត្រូវធ្វើ` : 'រួចរាល់ទាំងអស់'}</span>
+                    </div>
+                    ${items.length ? `<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2.5">${items.map(i => `
+                        <a href="${i.href}" class="group flex items-center gap-3 p-3 rounded-xl border border-${i.tone}-200 bg-${i.tone}-50/50 hover:bg-${i.tone}-50 transition">
+                            <span class="w-10 h-10 rounded-xl bg-white text-${i.tone}-600 border border-${i.tone}-200 flex items-center justify-center flex-shrink-0"><i class="fas ${i.icon}"></i></span>
+                            <span class="min-w-0 flex-1"><span class="sm-value text-slate-800 block truncate">${i.title}</span><span class="sm-td-sub text-slate-500 block truncate">${i.note}</span></span>
+                            <span class="sm-badge px-3 py-1.5 rounded-lg bg-white border border-${i.tone}-200 text-${i.tone}-700 font-semibold flex-shrink-0 group-hover:bg-${i.tone}-600 group-hover:text-white transition">${i.cta}</span>
+                        </a>`).join('')}</div>`
+                    : '<p class="sm-card-sub text-slate-500 flex items-center gap-2"><i class="fas fa-circle-check text-emerald-500"></i>គ្មានអ្វីរង់ចាំអ្នកទេ · បញ្ជរទាំងអស់ដំណើរការធម្មតា</p>'}
+                </div>`;
+        }
+
+        /* វេនថ្ងៃនេះតាមបញ្ជរ — ជួរមួយក្នុងមួយវេន ដូច្នេះអានបានទាំងស្រុង ទោះមាន 3 វេនក៏ដោយ */
         function timelineHtml(register) {
             const bd = businessDate();
             const now = new Date();
             const shifts = mgrAllShifts().filter(s => s.register === register && s.date === bd);
-            return `<div class="flex gap-1 mt-3">${shiftTemplates().map(t => {
+            return `<div class="mt-3 pt-3 border-t border-slate-100 space-y-1.5">${shiftTemplates().map(t => {
                 const sh = shifts.find(s => s.templateCode === t.code);
+                const rostered = rosterFor(bd, t.code).find(a => a.register === register);
                 const start = dateAt(bd, t.start);
-                let cls = 'bg-slate-100 text-slate-400';
-                let label = 'មិនទាន់';
+                // ស្ថានភាពជារូបតំណាងពណ៌ ដើម្បីទុកទីធ្លាឱ្យឈ្មោះអ្នកគិតលុយ
+                let icon = 'fa-circle text-slate-200';
+                let label = 'មិនទាន់ដល់ម៉ោង';
                 if (sh && sh.status === 'open') {
                     const over = now > shiftEndDate(sh);
-                    const opened = now - new Date(sh.openedAt);
-                    cls = opened > 12 * 3600000 ? 'bg-rose-100 text-rose-700' : over ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700';
+                    icon = over ? 'fa-clock text-amber-500' : 'fa-circle-play text-emerald-500';
                     label = over ? 'ហួសម៉ោង' : 'កំពុងបើក';
                 } else if (sh) {
-                    cls = sh.status === 'reviewed' ? 'bg-indigo-100 text-indigo-700' : 'bg-amber-50 text-amber-700';
+                    icon = sh.status === 'reviewed' ? 'fa-circle-check text-indigo-500' : 'fa-hourglass-half text-amber-500';
                     label = SHIFT_STATUS[sh.status].label;
                 } else if (start < now) {
-                    cls = 'bg-slate-100 text-slate-400 line-through';
-                    label = 'មិនបានបើក';
+                    icon = rostered ? 'fa-circle-xmark text-rose-400' : 'fa-minus text-slate-300';
+                    label = rostered ? 'មិនបានបើក' : 'គ្មានវេន';
                 }
-                return `<div class="flex-1 min-w-0 rounded-lg px-2 py-1 ${cls}">
-                    <p class="text-[11px] font-semibold truncate">${t.name} ${t.start}</p>
-                    <p class="text-[11px] truncate">${label}</p>
+                const who = (sh && sh.cashierId) || (rostered && rostered.cashierId);
+                return `<div class="flex items-center gap-2 min-w-0" aria-label="${t.name} · ${label}">
+                    <i class="fas ${icon} text-[12px] w-3.5 text-center flex-shrink-0"></i>
+                    <span class="text-[12px] font-semibold text-slate-600 w-[68px] flex-shrink-0 truncate">${t.name}</span>
+                    ${who ? avatarHtml(who, 'w-5 h-5') : ''}
+                    <span class="text-[12px] ${who ? 'text-slate-600' : 'text-slate-400'} truncate flex-1 min-w-0">${who ? personName(who) : label}</span>
                 </div>`;
             }).join('')}</div>`;
         }
@@ -180,6 +244,9 @@
                     </div>
                     ${open ? `<div class="mt-3">${personChip(open.cashierId)}<p class="sm-td-sub text-slate-400 mt-1">${open.templateName} · បើកម៉ោង ${fmtTime(open.openedAt)}</p></div>` : ''}
                     ${body}
+                    ${open
+                        ? `<a href="../shifts/view-shift.html?id=${open.id}" class="mt-3 w-full sm-badge h-10 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold inline-flex items-center justify-center gap-2"><i class="fas fa-chart-simple"></i> របាយការណ៍ពាក់កណ្តាលវេន</a>`
+                        : `<button type="button" onclick="location.href='../cash/create-movement.html?type=float&register=${register}'" class="mt-3 w-full sm-badge h-10 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 font-semibold inline-flex items-center justify-center gap-2"><i class="fas fa-hand-holding-dollar"></i> ចេញប្រាក់បាតថតសម្រាប់វេនបន្ទាប់</button>`}
                     ${timelineHtml(register)}
                 </div>`;
         }
@@ -274,6 +341,7 @@
 
         function renderAll() {
             renderKpis();
+            renderTodo();
             renderRegisters();
             renderApprovals();
             renderExceptions();

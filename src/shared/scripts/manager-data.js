@@ -265,13 +265,24 @@ function generateHistory() {
                 out.movements.push(...g.movements);
             });
         });
-        // ដាក់ប្រាក់ចូលធនាគាររៀងរាល់ព្រឹកថ្ងៃបន្ទាប់
+        // ដាក់ប្រាក់ចូលធនាគារព្រឹកថ្ងៃបន្ទាប់ ≈ 90% នៃសាច់ប្រាក់សុទ្ធដែលលក់បានក្នុងថ្ងៃ (បង្គត់ចុះ)
+        // ដូច្នេះសមតុល្យទូដែកមិនដែលអវិជ្ជមាន ហើយកើនឡើងបន្តិចៗតាមការលក់
         if (d >= 1) {
-            const r = rngFor(`bank|${dateStr}`);
+            const ids = new Set(out.shifts.filter(x => x.date === dateStr).map(x => x.id));
+            let usd = 0;
+            let khr = 0;
+            out.sales.filter(x => ids.has(x.shiftId) && !isVoided(x)).forEach(x => {
+                const ch = saleChange(x);
+                usd += x.pay.usdCash - ch.usd;
+                khr += x.pay.khrCash - ch.khr;
+            });
             const at = isoLocal(new Date(addDays(date, 1).setHours(9, 30, 0, 0)));
-            if (new Date(at) <= now) {
+            const depUSD = Math.floor(usd * 0.9 / 50) * 50;
+            const depKHR = Math.floor(khr * 0.9 / 100000) * 100000;
+            if (new Date(at) <= now && (depUSD || depKHR)) {
+                const r = rngFor(`bank|${dateStr}`);
                 out.movements.push({
-                    id: `MVG-BANK-${dateStr}`, type: 'bank', register: '', shiftId: '', usd: 300 + Math.floor(r() * 4) * 50, khr: 1000000 + Math.floor(r() * 4) * 200000,
+                    id: `MVG-BANK-${dateStr}`, type: 'bank', register: '', shiftId: '', usd: depUSD, khr: depKHR,
                     reason: 'ដាក់ប្រាក់ប្រចាំថ្ងៃ', ref: `ACLEDA-${dateStr.replace(/-/g, '')}`, createdBy: pick(r, MANAGERS.map(m => m.id)),
                     createdAt: at, status: 'confirmed', generated: true
                 });
@@ -532,9 +543,20 @@ function approverStats(range) {
 
 /* ===== ការលក់តាមជួរ ===== */
 
+/* ថ្ងៃប្រតិបត្តិការនៃការលក់ = ថ្ងៃដែលវេនចាប់ផ្តើម (ការលក់ក្រោយពាក់កណ្តាលអធ្រាត្រក្នុងវេនយប់ ជារបស់ថ្ងៃមុន) */
+let SHIFT_DATE_CACHE = null;
+function saleBizDate(sale) {
+    if (!SHIFT_DATE_CACHE) {
+        SHIFT_DATE_CACHE = {};
+        mgrAllShifts().forEach(x => { SHIFT_DATE_CACHE[x.id] = x.date; });
+    }
+    return SHIFT_DATE_CACHE[sale.shiftId] || sale.time.slice(0, 10);
+}
+window.addEventListener('bms-store-changed', () => { SHIFT_DATE_CACHE = null; });
+
 function salesInRange(range, filter) {
     const f = filter || {};
-    return mgrAllSales().filter(s => inRange(s.time, range)
+    return mgrAllSales().filter(s => inRange(saleBizDate(s), range)
         && (!f.register || s.register === f.register)
         && (!f.cashierId || s.cashierId === f.cashierId));
 }

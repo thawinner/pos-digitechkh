@@ -156,7 +156,7 @@
                 return `<span class="sm-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border bg-${t.tone}-50 text-${t.tone}-700 border-${t.tone}-200"><i class="fas ${t.icon} text-[10px]"></i>${t.label}</span>`;
             };
             document.getElementById('rows').innerHTML = rows.map(a => `
-                <tr class="hover:bg-slate-50">
+                <tr onclick="if (!event.target.closest('button, a, [id^=m-]')) location.href='view-request.html?id=${a.id}'" class="cursor-pointer hover:bg-indigo-50/40 transition">
                     <td class="py-3.5 px-4"><p class="sm-td-strong">${fmtTime(a.raisedAt)}</p><p class="sm-td-sub text-slate-400">${fmtDate(a.raisedAt)}</p></td>
                     <td class="py-3.5 px-4">${typeChip(a)}</td>
                     <td class="py-3.5 px-4 sm-td">${a.saleId}</td>

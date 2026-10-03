@@ -147,7 +147,7 @@
             </div>`;
             document.getElementById('rows').innerHTML = rows.map(s => {
                 const sum = summaryOf(s);
-                return `<tr class="hover:bg-slate-50">
+                return `<tr onclick="if (!event.target.closest('button, a, [id^=m-]')) location.href='view-shift.html?id=${s.id}'" class="cursor-pointer hover:bg-indigo-50/40 transition">
                     <td class="py-3.5 px-4"><p class="sm-td-strong">${fmtDate(s.openedAt)}</p><p class="sm-td-sub text-slate-400">${s.templateName} ${s.start}–${s.end}</p></td>
                     <td class="py-3.5 px-4 sm-td">${s.register}</td>
                     <td class="py-3.5 px-4 sm-td">${personChip(s.cashierId)}</td>

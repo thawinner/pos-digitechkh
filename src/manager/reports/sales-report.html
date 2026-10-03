@@ -130,7 +130,7 @@
             document.getElementById('viewSub').textContent = range.start ? `${fmtDate(range.start)} – ${fmtDate(range.end || range.start)}` : 'គ្រប់កាលបរិច្ឆេទ';
             let rows = [];
             if (view === 'day') {
-                const g = groupBy(list, s => s.time.slice(0, 10));
+                const g = groupBy(list, s => saleBizDate(s));
                 rows = Object.keys(g).sort().reverse().map(d => {
                     const a = aggregateSales(g[d]);
                     return { label: fmtDate(d + 'T12:00'), value: a.netSales, extra: [['វិក្កយបត្រ', a.tx], ['មធ្យម', fmtUSD(a.avg)], ['លុបចោល', a.voids]] };
