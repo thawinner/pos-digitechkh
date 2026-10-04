@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - បញ្ជាក់ថ្លៃដើមស្តុកចូល</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#059669", 'primary-dark': "#047857", accent: "#34d399" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+</head>
+<body id="adminPortal" data-role-root="../.." data-active="stock-in" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="បញ្ជាក់ថ្លៃដើមស្តុកចូល"
+             data-subtitle="ពិនិត្យ និងបញ្ជាក់ថ្លៃដើមជាក់ស្តែងពីវិក្កយបត្រអ្នកផ្គត់ផ្គង់"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+
+            <div class="w-full space-y-5">
+                <!-- KPI សង្ខេប -->
+                <div id="kpiRow" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
+
+                <!-- របារចម្រាញ់ និងស្វែងរក -->
+                <div class="bg-white rounded-2xl p-2 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-3">
+                    <div id="statusTabs" class="flex flex-wrap gap-1"></div>
+                    <label class="relative w-full sm:w-[280px]">
+                        <i class="fas fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input id="search" oninput="renderList()" type="text" placeholder="ស្វែងរកវិក្កយបត្រ ឬអ្នកផ្គត់ផ្គង់"
+                            class="sm-td w-full h-9 pl-8 pr-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:outline-none">
+                    </label>
+                </div>
+
+                <!-- តារាងបញ្ជីស្តុកចូល -->
+                <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="max-md:hidden overflow-x-auto"><table class="w-full min-w-[760px]">
+                        <thead><tr class="border-b border-slate-100 bg-slate-50/60">
+                            <th class="sm-th py-2.5 px-5 text-left text-slate-500">កាលបរិច្ឆេទ</th>
+                            <th class="sm-th py-2.5 px-3 text-left text-slate-500">វិក្កយបត្រ</th>
+                            <th class="sm-th py-2.5 px-3 text-left text-slate-500">អ្នកផ្គត់ផ្គង់</th>
+                            <th class="sm-th py-2.5 px-3 text-right text-slate-500">មុខទំនិញ</th>
+                            <th class="sm-th py-2.5 px-3 text-right text-slate-500">ចំនួនសរុប</th>
+                            <th class="sm-th py-2.5 px-3 text-right text-slate-500">តម្លៃសរុប</th>
+                            <th class="sm-th py-2.5 px-3 text-center text-slate-500">ស្ថានភាព</th>
+                            <th class="sm-th py-2.5 px-3 text-left text-slate-500">អ្នកទទួល</th>
+                            <th class="sm-th py-2.5 px-5 text-right w-24"></th>
+                        </tr></thead>
+                        <tbody id="rows" class="divide-y divide-slate-100"></tbody>
+                    </table></div>
+                    <div id="cards" class="md:hidden divide-y divide-slate-100"></div>
+                    <div id="empty" class="hidden"></div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/admin-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        let currentTab = 'pending';
+        let shipments = [];
+
+        function loadData() {
+            shipments = typeof allStockInShipments === 'function' ? allStockInShipments() : [];
+        }
+
+        function filterShipments() {
+            const q = document.getElementById('search').value.trim().toLowerCase();
+            return shipments.filter(s => {
+                if (currentTab === 'pending' && s.confirmed) return false;
+                if (currentTab === 'confirmed' && !s.confirmed) return false;
+                if (q) {
+                    const matchInv = (s.invoice || '').toLowerCase().includes(q);
+                    const matchSup = (s.supplier || '').toLowerCase().includes(q);
+                    if (!matchInv && !matchSup) return false;
+                }
+                return true;
+            });
+        }
+
+        function renderKpis() {
+            const pendingList = shipments.filter(s => !s.confirmed);
+            const confirmedList = shipments.filter(s => s.confirmed);
+            const totalValue = shipments.reduce((sum, s) => sum + s.totalCost, 0);
+            const totalUnits = shipments.reduce((sum, s) => sum + s.totalQty, 0);
+
+            document.getElementById('kpiRow').innerHTML =
+                kpiCard('រង់ចាំបញ្ជាក់ថ្លៃដើម', `${pendingList.length}`, 'វិក្កយបត្រត្រូវបញ្ចូលថ្លៃដើម', pendingList.length ? 'text-amber-600' : 'text-slate-700') +
+                kpiCard('បានបញ្ជាក់រួចរាល់', `${confirmedList.length}`, 'មានថ្លៃដើមជាក់ស្តែងត្រឹមត្រូវ', 'text-emerald-700') +
+                kpiCard('តម្លៃស្តុកចូលសរុប', fmtUSD(totalValue), 'គិតតាមថ្លៃដើមទិញចូល') +
+                kpiCard('ចំនួនឯកតាសរុប', `${totalUnits}`, 'ឯកតាទំនិញដែលបានទទួលចូលស្តុក');
+        }
+
+        function renderTabs() {
+            const pendingCount = shipments.filter(s => !s.confirmed).length;
+            const confirmedCount = shipments.filter(s => s.confirmed).length;
+
+            const tabs = [
+                { id: 'pending', label: 'រង់ចាំបញ្ជាក់ថ្លៃដើម', count: pendingCount },
+                { id: 'confirmed', label: 'បានបញ្ជាក់រួច', count: confirmedCount },
+                { id: 'all', label: 'ទាំងអស់', count: shipments.length }
+            ];
+
+            document.getElementById('statusTabs').innerHTML = tabs.map(t => {
+                const on = currentTab === t.id;
+                return `<button type="button" onclick="currentTab='${t.id}'; renderTabs(); renderList()"
+                    class="sm-badge h-9 px-3.5 rounded-xl transition inline-flex items-center gap-2 ${on ? 'bg-emerald-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">
+                    ${t.label}
+                    <span class="text-[12px] sm-figure ${on ? 'text-emerald-100' : 'text-slate-400'}">${t.count}</span>
+                </button>`;
+            }).join('');
+        }
+
+        function renderList() {
+            const list = filterShipments();
+            const emptyEl = document.getElementById('empty');
+            emptyEl.classList.toggle('hidden', !!list.length);
+            emptyEl.innerHTML = list.length ? '' : emptyState('fa-truck-ramp-box', 'គ្មានការទទួលស្តុកក្នុងបញ្ជីនេះ', 'សូមសាកល្បងពាក្យស្វែងរកផ្សេង ឬជ្រើសរើសផ្ទាំងផ្សេង');
+
+            document.getElementById('rows').innerHTML = list.map(s => {
+                const statusBadge = s.confirmed
+                    ? '<span class="sm-badge px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium"><i class="fas fa-check mr-1"></i>បានបញ្ជាក់</span>'
+                    : '<span class="sm-badge px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-medium"><i class="fas fa-clock mr-1"></i>រង់ចាំបញ្ជាក់</span>';
+
+                const btnLabel = s.confirmed ? 'មើលលម្អិត' : 'បញ្ជាក់ថ្លៃដើម';
+                const btnTone = s.confirmed ? 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm';
+
+                return `<tr>
+                    <td class="py-3 px-5 sm-td text-slate-600 sm-figure">${fmtDate(s.at)} <span class="sm-td-sub text-slate-400 block">${fmtTime(s.at)}</span></td>
+                    <td class="py-3 px-3 sm-td-strong text-slate-800 font-mono">${escapeText(s.invoice)}</td>
+                    <td class="py-3 px-3 sm-td text-slate-700 font-medium">${escapeText(s.supplier)}</td>
+                    <td class="py-3 px-3 text-right sm-td sm-figure text-slate-600">${s.lines.length} មុខ</td>
+                    <td class="py-3 px-3 text-right sm-td-strong sm-figure text-slate-800">${s.totalQty}</td>
+                    <td class="py-3 px-3 text-right sm-td-strong sm-figure ${s.confirmed ? 'text-emerald-700' : 'text-slate-700'}">${fmtUSD(s.totalCost)}</td>
+                    <td class="py-3 px-3 text-center">${statusBadge}</td>
+                    <td class="py-3 px-3 sm-td text-slate-600">${personName(s.by)}</td>
+                    <td class="py-3 px-5 text-right">
+                        <a href="view-stock-in.html?invoice=${encodeURIComponent(s.invoice)}" class="sm-badge h-8 px-3 rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition ${btnTone}">
+                            ${btnLabel} <i class="fas fa-arrow-right text-[10px]"></i>
+                        </a>
+                    </td>
+                </tr>`;
+            }).join('');
+
+            document.getElementById('cards').innerHTML = list.map(s => {
+                const statusBadge = s.confirmed
+                    ? '<span class="sm-badge px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium">បានបញ្ជាក់</span>'
+                    : '<span class="sm-badge px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-medium">រង់ចាំបញ្ជាក់</span>';
+
+                return `<div class="p-4 space-y-2">
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <p class="sm-value text-slate-800 font-mono">${escapeText(s.invoice)}</p>
+                            <p class="sm-td-sub text-slate-500">${escapeText(s.supplier)}</p>
+                        </div>
+                        ${statusBadge}
+                    </div>
+                    <div class="flex items-center justify-between sm-td-sub text-slate-500 pt-1">
+                        <span>${fmtDate(s.at)} · ${personName(s.by)}</span>
+                        <span class="sm-figure font-medium text-slate-700">${s.lines.length} មុខ (${s.totalQty} ឯកតា)</span>
+                    </div>
+                    <div class="flex items-center justify-between pt-1">
+                        <span class="sm-value text-slate-800 sm-figure">${fmtUSD(s.totalCost)}</span>
+                        <a href="view-stock-in.html?invoice=${encodeURIComponent(s.invoice)}" class="sm-badge h-8 px-3 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold inline-flex items-center gap-1">
+                            ${s.confirmed ? 'មើលលម្អិត' : 'បញ្ជាក់ថ្លៃដើម'} <i class="fas fa-arrow-right text-[10px]"></i>
+                        </a>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function renderAll() {
+            loadData();
+            renderKpis();
+            renderTabs();
+            renderList();
+        }
+
+        window.onStoreChanged = () => renderAll();
+        document.addEventListener('DOMContentLoaded', renderAll);
+    </script>
+</body>
+</html>

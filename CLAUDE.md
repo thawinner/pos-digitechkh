@@ -29,8 +29,8 @@ src/
 ├── cashier/terminal/pos-terminal   sell, hold, discount override, Riel change, in-terminal KHQR, safe drop, lock
 ├── cashier/receipts/receipts       shift receipts, void / return requests (manager PIN on the spot or queued)
 ├── cashier/shift/{open,close}-shift  float count + manager PIN · blind close with one recount + Z-report
-├── manager/{dashboard,approvals,shifts,roster,cash,exceptions,reports,settings}/…  (view-request, view-shift, create-movement)
-├── admin/{dashboard,reports,staff,products,settings,audit}/…   owner: profit, staff, prices, rules, audit log
+├── manager/{dashboard,approvals,shifts,roster,cash,stock,stock-count,stock-history,exceptions,reports,settings}/…  (view-request, view-shift, create-movement, create-stock-in, create-adjustment, create-count)
+├── admin/{dashboard,reports,staff,products,settings,audit,stock}/…   owner: profit, stock value, shrinkage, stock-in cost, staff, prices, rules, audit log (view-stock-in)
 └── shared/{scripts,styles,assets}  assets/avatars/<personId>.svg = profile images
 ```
 
@@ -77,7 +77,7 @@ src/
   `ADMINS` are active only. Use `loadStaff()` for a fresh list after an edit on the same page. Catalogue edits
   (`pos_catalog`: price, active) apply at load; `sellableProducts()` hides paused products.
 - localStorage keys (all `pos_*`): `session`, `settings`, `roster`, `shifts`, `shift_sales`, `held_sales`, `approvals`,
-  `cash_movements`, `events`, `terminal_lock`, `pins`, `stock_opening`, `stock_moves`, `overlay`, `staff`, `catalog`, `costs`, `admin_log`, seeds. sessionStorage: `pos_cart`, `pos_pending_khqr`.
+  `cash_movements`, `events`, `terminal_lock`, `pins`, `stock_opening`, `stock_moves`, `stock_counts`, `stock_costs`, `overlay`, `staff`, `catalog`, `costs`, `admin_log`, seeds. sessionStorage: `pos_cart`, `pos_pending_khqr`.
   A `storage` event re-renders other tabs (`window.onStoreChanged`).
 - **Shift model** (see `docs/spec/02-manager-pos.md` §11): shift template (time window) → staff default shift →
   roster per date (covers marked `cover`; default templates morning / afternoon / night, the night one overnight) → drawer shift (one cashier, one register, one drawer: open → closed →

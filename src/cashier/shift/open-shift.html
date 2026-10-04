@@ -194,7 +194,7 @@
             const status = mine.length
                 ? `<p class="sm-td text-slate-300"><i class="fas fa-calendar-check text-slate-500 mr-2"></i>វេនរបស់អ្នកថ្ងៃនេះ៖ <span class="text-white font-semibold">${mine.map(x => `${x.template.name} ${x.template.start}–${x.template.end} · ${x.register}`).join(' · ')}</span></p>`
                 : `<p class="sm-td text-slate-300"><i class="fas fa-calendar-xmark text-amber-300 mr-2"></i><span class="text-white font-semibold">ថ្ងៃនេះអ្នកមិនមានវេនក្នុងកាលវិភាគទេ</span></p>
-                   <p class="sm-td-sub text-slate-400 mt-1 ml-6">បើមកជំនួសវេនអ្នកណាម្នាក់ សូមជ្រើសរើសវេនខាងក្រោម។ អ្នកគ្រប់គ្រងវេនត្រូវអនុម័ត ហើយកាលវិភាគនឹងកត់ត្រាថា «ជំនួស»។</p>`;
+                   <p class="sm-td-sub text-slate-400 mt-1 ml-6">បើមកជំនួសវេនអ្នកណាម្នាក់ សូមជ្រើសរើសវេនខាងក្រោម។ អ្នកគ្រប់គ្រងត្រូវអនុម័ត ហើយកាលវិភាគនឹងកត់ត្រាថា «ជំនួស»។</p>`;
             return `<div class="os-panel rounded-xl overflow-hidden">
                 <div class="px-5 py-4 flex items-center gap-3 border-b border-white/[0.08]">
                     ${avatarHtml(me.id, 'w-11 h-11')}
@@ -239,7 +239,7 @@
             return `<div class="os-panel rounded-xl divide-y divide-white/[0.08]">`
                 + sec('ប្រាក់បាតថតដែលត្រូវទទួល', `
                     <p class="text-[24px] font-bold text-white sm-figure leading-tight">${fmtUSD(f.usd)} <span class="sm-value text-slate-300 font-medium">+ ${fmtKHR(f.khr)}</span></p>
-                    <p class="sm-td-sub text-slate-500 mt-1">${f.movement ? `ចេញដោយ ${personName(f.by)} ម៉ោង ${fmtTime(f.movement.createdAt)}` : 'ចំនួនស្តង់ដារ · រាប់ជាមួយអ្នកគ្រប់គ្រងវេន'}</p>`)
+                    <p class="sm-td-sub text-slate-500 mt-1">${f.movement ? `ចេញដោយ ${personName(f.by)} ម៉ោង ${fmtTime(f.movement.createdAt)}` : 'ចំនួនស្តង់ដារ · រាប់ជាមួយអ្នកគ្រប់គ្រង'}</p>`)
                 + sec(`បញ្ជរ ${reg()}`, last
                     ? `<div class="flex items-center gap-3">${avatarHtml(last.cashierId, 'w-8 h-8')}
                         <div class="min-w-0"><p class="sm-td text-slate-200 truncate">វេនមុន៖ ${personName(last.cashierId)} · ${last.templateName}</p>
@@ -313,7 +313,7 @@
                             <button onclick="stage='overview'; render()" type="button" class="sm-td px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 inline-flex items-center gap-2">
                                 <i class="fas fa-arrow-left"></i> ត្រឡប់
                             </button>
-                            <p class="sm-td-sub text-slate-400 text-right">${t.name} ${t.start}–${t.end} · ${reg()} · រាប់ជាមួយអ្នកគ្រប់គ្រងវេន</p>
+                            <p class="sm-td-sub text-slate-400 text-right">${t.name} ${t.start}–${t.end} · ${reg()} · រាប់ជាមួយអ្នកគ្រប់គ្រង</p>
                         </div>
                         <section>
                             <p class="sm-value text-slate-200 mb-2.5"><i class="fas fa-money-bill-wave text-emerald-300 mr-1.5"></i>ក្រដាសប្រាក់ដុល្លារ</p>

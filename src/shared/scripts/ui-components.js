@@ -540,7 +540,7 @@ function initSingleDatePicker(id) {
             </div>
             <div id="${id}-days-grid" class="grid grid-cols-7 text-center text-xs gap-y-1"></div>
             <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between">
-                <button type="button" onclick="setSinglePickerToday('${id}')" class="text-xs font-semibold text-primary hover:text-primary-dark px-2 py-1 rounded-lg hover:bg-emerald-50 transition">
+                <button type="button" onclick="setSinglePickerToday('${id}')" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700 px-2.5 py-1 rounded-lg hover:bg-indigo-50 transition">
                     ថ្ងៃនេះ
                 </button>
                 <button type="button" onclick="closeSingleDatePicker('${id}')" class="text-xs text-slate-500 hover:text-slate-700 px-2.5 py-1 rounded-lg hover:bg-slate-100 transition">
@@ -719,7 +719,7 @@ function renderSingleDatePickerGrid(id) {
         if (isSelected) {
             cell.innerHTML = `<span class="w-7 h-7 rounded-full bg-[#0f2b5c] text-white flex items-center justify-center font-bold text-xs shadow-xs">${d}</span>`;
         } else if (isToday) {
-            cell.innerHTML = `<span class="w-7 h-7 rounded-full border border-primary text-primary flex items-center justify-center font-bold text-xs hover:bg-emerald-50">${d}</span>`;
+            cell.innerHTML = `<span class="w-7 h-7 rounded-full border border-indigo-500 text-indigo-600 flex items-center justify-center font-bold text-xs hover:bg-indigo-50">${d}</span>`;
         } else {
             cell.innerHTML = `<span class="w-7 h-7 rounded-full hover:bg-slate-100 text-slate-700 flex items-center justify-center transition text-xs">${d}</span>`;
         }
@@ -1113,7 +1113,7 @@ if (document.readyState === 'loading') {
 }
 
 /* ============================================================================
-   ប្រអប់សម្រាប់ផ្ទាំងគិតលុយ និងអ្នកគ្រប់គ្រងវេន
+   ប្រអប់សម្រាប់ផ្ទាំងគិតលុយ និងអ្នកគ្រប់គ្រង
    ----------------------------------------------------------------------------
    • showManagerOverride() — អ្នកគ្រប់គ្រងវាយលេខសម្ងាត់ផ្ទាល់ខ្លួននៅលើអេក្រង់អ្នកគិតលុយ
      (ឯកសាររចនាលេខ 02 ផ្នែក 3 ក · ស្រាវជ្រាវ §1)
@@ -1216,8 +1216,8 @@ function showManagerOverride(opts = {}) {
                     <div class="flex items-start gap-3">
                         <div class="w-12 h-12 rounded-2xl bg-amber-500/15 text-amber-400 flex items-center justify-center text-xl flex-shrink-0"><i class="fas fa-user-shield"></i></div>
                         <div class="min-w-0">
-                            <p class="sm-card-title ${th.title}">${posEsc(opts.title || 'ទាមទារការអនុម័តពីអ្នកគ្រប់គ្រងវេន')}</p>
-                            <p class="sm-td-sub ${th.sub} mt-0.5">អ្នកគ្រប់គ្រងវេនវាយលេខសម្ងាត់ផ្ទាល់ខ្លួន · ប្រព័ន្ធកត់ត្រាអ្នកអនុម័ត និងពេលវេលា</p>
+                            <p class="sm-card-title ${th.title}">${posEsc(opts.title || 'ទាមទារការអនុម័តពីអ្នកគ្រប់គ្រង')}</p>
+                            <p class="sm-td-sub ${th.sub} mt-0.5">អ្នកគ្រប់គ្រងវាយលេខសម្ងាត់ផ្ទាល់ខ្លួន · ប្រព័ន្ធកត់ត្រាអ្នកអនុម័ត និងពេលវេលា</p>
                         </div>
                     </div>
 

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - របាយការណ៍ការខាតបង់ស្តុក</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#059669", 'primary-dark': "#047857", accent: "#34d399" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            @page { size: A4; margin: 12mm; }
+        }
+    </style>
+</head>
+<body id="adminPortal" data-role-root="../.." data-active="shrinkage" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="របាយការណ៍ការខាតបង់ស្តុក"
+             data-subtitle="ទំហំខាតបង់គិតជាថ្លៃដើម ពីការខូចខាត ផុតកំណត់ បាត់បង់ និងភាពខុសគ្នានៃការរាប់"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+
+            <div class="w-full space-y-5">
+                <!-- របារចម្រាញ់ និងកាលបរិច្ឆេទ -->
+                <div class="bg-white rounded-2xl p-2 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-3 no-print">
+                    <div id="viewTabs" class="flex flex-wrap gap-1"></div>
+                    <div class="flex items-center gap-2">
+                        <div id="dateRange" class="flex items-center"></div>
+                        <button onclick="window.print()" type="button" class="sm-badge h-9 px-3.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center gap-2">
+                            <i class="fas fa-print"></i> បោះពុម្ព
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KPI សង្ខេប -->
+                <div id="kpiRow" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
+
+                <!-- ក្រាហ្វ និងតារាង -->
+                <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                            <p id="viewTitle" class="sm-card-title text-slate-800">ការខាតបង់ស្តុក</p>
+                            <p id="viewSub" class="sm-card-sub text-slate-500">គិតតាមថ្លៃដើមទិញចូលមិនរួមអាករ</p>
+                        </div>
+                        <p class="sm-td-sub text-slate-400">រួមបញ្ចូលការកែតម្រូវខូចខាត ផុតកំណត់ បាត់បង់ និងខ្វះពេលរាប់ស្តុក</p>
+                    </div>
+
+                    <!-- ក្រាហ្វ ECharts -->
+                    <div id="chartContainer" class="px-5 pt-4 pb-2 border-b border-slate-100 no-print">
+                        <div id="chart" class="w-full h-[240px]"></div>
+                    </div>
+
+                    <!-- តារាងទិន្នន័យ -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full min-w-[720px]">
+                            <thead id="thead"></thead>
+                            <tbody id="tbody" class="divide-y divide-slate-100"></tbody>
+                            <tfoot id="tfoot" class="border-t-2 border-slate-200 bg-slate-50/70 font-semibold sm-td"></tfoot>
+                        </table>
+                    </div>
+                    <div id="empty" class="hidden"></div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/admin-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script src="../../shared/scripts/charts.js"></script>
+    <script>
+        let currentView = 'reason'; // 'reason' | 'staff' | 'product' | 'detail'
+
+        const VIEWS = [
+            { id: 'reason', label: 'តាមមូលហេតុ' },
+            { id: 'staff', label: 'តាមបុគ្គលិក' },
+            { id: 'product', label: 'តាមមុខទំនិញ' },
+            { id: 'detail', label: 'កំណត់ត្រាលម្អិត' }
+        ];
+
+        function renderTabs() {
+            document.getElementById('viewTabs').innerHTML = VIEWS.map(v => {
+                const on = currentView === v.id;
+                return `<button type="button" onclick="currentView='${v.id}'; renderTabs(); renderAll()"
+                    class="sm-badge h-9 px-3.5 rounded-xl transition ${on ? 'bg-emerald-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">${v.label}</button>`;
+            }).join('');
+        }
+
+        function renderKpis(stats) {
+            const topReason = stats.byReason.length ? stats.byReason[0].label : '—';
+            document.getElementById('kpiRow').innerHTML =
+                kpiCard('ទឹកប្រាក់ខាតបង់សរុប', fmtUSD(stats.totalValue), 'គិតតាមថ្លៃដើមទិញចូល', stats.totalValue > 0 ? 'text-rose-600' : 'text-slate-700') +
+                kpiCard('ចំនួនឯកតាខាតបង់', `${stats.totalQty}`, 'ឯកតាទំនិញដែលបានកាត់ចេញ') +
+                kpiCard('មូលហេតុចម្បង', topReason, stats.byReason.length ? `ខាតបង់ ${fmtUSD(stats.byReason[0].value)}` : 'គ្មានការខាតបង់') +
+                kpiCard('ចំនួនករណីខាតបង់', `${stats.eventsCount}`, 'លើកនៃការកែតម្រូវ ឬរាប់ខ្វះ');
+        }
+
+        function renderChart(stats) {
+            const chartBox = document.getElementById('chartContainer');
+            if (currentView === 'detail' || !stats.eventsCount) {
+                chartBox.classList.add('hidden');
+                return;
+            }
+            chartBox.classList.remove('hidden');
+
+            let chartData = [];
+            if (currentView === 'reason') {
+                chartData = stats.byReason.map(r => ({ name: r.label, value: +r.value.toFixed(2) }));
+            } else if (currentView === 'staff') {
+                chartData = stats.byStaff.map(s => ({ name: s.label, value: +s.value.toFixed(2) }));
+            } else {
+                chartData = stats.byProduct.slice(0, 8).map(p => ({ name: p.name.split(' ')[0], value: +p.value.toFixed(2) }));
+            }
+
+            posChart('chart', {
+                grid: { left: 8, right: 16, top: 20, bottom: 8, containLabel: true },
+                xAxis: chartCategoryAxis(chartData.map(d => d.name)),
+                yAxis: chartValueAxis(v => '$' + v),
+                tooltip: {
+                    formatter: ps => {
+                        const d = chartData[ps[0].dataIndex];
+                        return chartTipTitle(d.name) +
+                            chartTipRow(CHART_TONE.rose, 'ទឹកប្រាក់ខាតបង់', fmtUSD(d.value));
+                    }
+                },
+                series: [{
+                    name: 'ខាតបង់',
+                    type: 'bar',
+                    barMaxWidth: 40,
+                    itemStyle: { color: CHART_TONE.rose, borderRadius: [4, 4, 0, 0] },
+                    data: chartData.map(d => d.value)
+                }]
+            });
+        }
+
+        function renderTable(stats) {
+            const thead = document.getElementById('thead');
+            const tbody = document.getElementById('tbody');
+            const tfoot = document.getElementById('tfoot');
+            const emptyEl = document.getElementById('empty');
+
+            emptyEl.classList.toggle('hidden', !!stats.eventsCount);
+            emptyEl.innerHTML = stats.eventsCount ? '' : emptyState('fa-shield-heart', 'គ្មានការខាតបង់ស្តុកក្នុងចន្លោះកាលបរិច្ឆេទនេះ', 'ទិន្នន័យស្តុកមានតុល្យភាពល្អ');
+
+            if (currentView === 'reason') {
+                document.getElementById('viewTitle').textContent = 'ការខាតបង់តាមមូលហេតុ';
+                document.getElementById('viewSub').textContent = 'ប្រភេទទំនិញខូច ផុតកំណត់ បាត់បង់ និងភាពខុសគ្នានៃការរាប់';
+
+                thead.innerHTML = `<tr class="border-b border-slate-100 bg-slate-50/60">
+                    <th class="sm-th py-2.5 px-5 text-left text-slate-500">មូលហេតុ</th>
+                    <th class="sm-th py-2.5 px-3 text-right text-slate-500">ចំនួនករណី</th>
+                    <th class="sm-th py-2.5 px-3 text-right text-slate-500">ចំនួនឯកតា</th>
+                    <th class="sm-th py-2.5 px-3 text-right text-slate-500">ទឹកប្រាក់ខាតបង់ (ថ្លៃដើម)</th>
+                    <th class="sm-th py-2.5 px-5 text-left text-slate-500 w-[24%]">ភាគរយនៃការខាតបង់</th>
+                </tr>`;
+
+                tbody.innerHTML = stats.byReason.map(r => {
+                    const pct = stats.totalValue > 0 ? (r.value / stats.totalValue * 100) : 0;
+                    return `<tr>
+                        <td class="py-3 px-5 sm-td font-medium text-slate-800">${escapeText(r.label)}</td>
+                        <td class="py-3 px-3 text-right sm-td sm-figure text-slate-600">${r.count} ករណី</td>
+                        <td class="py-3 px-3 text-right sm-td sm-figure text-slate-700 font-medium">${r.qty}</td>
+                        <td class="py-3 px-3 text-right sm-td-strong sm-figure text-rose-600">${fmtUSD(r.value)}</td>
+                        <td class="py-3 px-5">
+                            <div class="flex items-center gap-2.5">
+                                <div class="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+                                    <div class="h-full bg-rose-500 rounded-full" style="width:${Math.min(pct, 100)}%"></div>
+                                </div>
+                                <span class="sm-td-sub sm-figure w-12 text-right font-medium text-slate-600">${pct.toFixed(1)}%</span>
+                            </div>
+                        </td>
+                    </tr>`;
+                }).join('');
+
+                tfoot.innerHTML = `<tr>
+                    <td class="py-3 px-5 text-slate-800">សរុបទាំងអស់</td>
+                    <td class="py-3 px-3 text-right text-slate-800">${stats.eventsCount} ករណី</td>
+                    <td class="py-3 px-3 text-right text-slate-800">${stats.totalQty}</td>
+                    <td class="py-3 px-3 text-right text-rose-600 sm-figure">${fmtUSD(stats.totalValue)}</td>
+                    <td class="py-3 px-5 text-slate-600 sm-figure">100.0%</td>
+                </tr>`;
+
+            } else if (currentView === 'staff') {
+                document.getElementById('viewTitle').textContent = 'ការខាតបង់តាមបុគ្គលិក';
+                document.getElementById('viewSub').textContent = 'អ្នកគ្រប់គ្រង ឬអ្នកគិតលុយដែលបានកត់ត្រា ឬពាក់ព័ន្ធនឹងការខាតបង់';
+
+                thead.innerHTML = `<tr class="border-b border-slate-100 bg-slate-50/60">
+                    <th class="sm-th py-2.5 px-5 text-left text-slate-500">បុគ្គលិក</th>
+                    <th class="sm-th py-2.5 px-3 text-right text-slate-500">ចំនួនករណី</th>
+                    <th class="sm-th py-2.5 px-3 text-right text-slate-500">ចំនួនឯកតា</th>
+                    <th class="sm-th py-2.5 px-3 text-right text-slate-500">ទឹកប្រាក់ខាតបង់ (ថ្លៃដើម)</th>
+                    <th class="sm-th py-2.5 px-5 text-left text-slate-500 w-[24%]">ភាគរយនៃការខាតបង់</th>
+                </tr>`;
+
+                tbody.innerHTML = stats.byStaff.map(s => {
+                    const pct = stats.totalValue > 0 ? (s.value / stats.totalValue * 100) : 0;
+                    return `<tr>
+                        <td class="py-3 px-5 sm-td font-medium text-slate-800">${escapeText(s.label)}</td>
+                        <td class="py-3 px-3 text-right sm-td sm-figure text-slate-600">${s.count} ករណី</td>
+                        <td class="py-3 px-3 text-right sm-td sm-figure text-slate-700 font-medium">${s.qty}</td>
+                        <td class="py-3 px-3 text-right sm-td-strong sm-figure text-rose-600">${fmtUSD(s.value)}</td>
+                        <td class="py-3 px-5">
+                            <div class="flex items-center gap-2.5">
+                                <div class="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+                                    <div class="h-full bg-rose-500 rounded-full" style="width:${Math.min(pct, 100)}%"></div>
+                                </div>
+                                <span class="sm-td-sub sm-figure w-12 text-right font-medium text-slate-600">${pct.toFixed(1)}%</span>
+                            </div>
+                        </td>
+                    </tr>`;
+                }).join('');
+
+                tfoot.innerHTML = `<tr>
+                    <td class="py-3 px-5 text-slate-800">សរុបទាំងអស់</td>
+                    <td class="py-3 px-3 text-right text-slate-800">${stats.eventsCount} ករណី</td>
+                    <td class="py-3 px-3 text-right text-slate-800">${stats.totalQty}</td>
+                    <td class="py-3 px-3 text-right text-rose-600 sm-figure">${fmtUSD(stats.totalValue)}</td>
+                    <td class="py-3 px-5 text-slate-600 sm-figure">100.0%</td>
+                </tr>`;
+
+            } else if (currentView === 'product') {
+                document.getElementById('viewTitle').textContent = 'ការខាតបង់តាមមុខទំនិញ';
+                document.getElementById('viewSub').textContent = 'មុខទំនិញដែលមានការខាតបង់ច្រើនជាងគេ';
+
+                thead.innerHTML = `<tr class="border-b border-slate-100 bg-slate-50/60">
+                    <th class="sm-th py-2.5 px-5 text-left text-slate-500">ទំនិញ</th>
+                    <th class="sm-th py-2.5 px-3 text-right text-slate-500">ចំនួនករណី</th>
+                    <th class="sm-th py-2.5 px-3 text-right text-slate-500">ចំនួនឯកតា</th>
+                    <th class="sm-th py-2.5 px-3 text-right text-slate-500">ទឹកប្រាក់ខាតបង់ (ថ្លៃដើម)</th>
+                    <th class="sm-th py-2.5 px-5 text-left text-slate-500 w-[24%]">ភាគរយនៃការខាតបង់</th>
+                </tr>`;
+
+                tbody.innerHTML = stats.byProduct.map(p => {
+                    const pct = stats.totalValue > 0 ? (p.value / stats.totalValue * 100) : 0;
+                    return `<tr>
+                        <td class="py-3 px-5 sm-td font-medium text-slate-800">${escapeText(p.name)} <span class="sm-td-sub text-slate-400 font-mono ml-1">${p.sku}</span></td>
+                        <td class="py-3 px-3 text-right sm-td sm-figure text-slate-600">${p.count} ករណី</td>
+                        <td class="py-3 px-3 text-right sm-td sm-figure text-slate-700 font-medium">${p.qty} ${p.unit}</td>
+                        <td class="py-3 px-3 text-right sm-td-strong sm-figure text-rose-600">${fmtUSD(p.value)}</td>
+                        <td class="py-3 px-5">
+                            <div class="flex items-center gap-2.5">
+                                <div class="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+                                    <div class="h-full bg-rose-500 rounded-full" style="width:${Math.min(pct, 100)}%"></div>
+                                </div>
+                                <span class="sm-td-sub sm-figure w-12 text-right font-medium text-slate-600">${pct.toFixed(1)}%</span>
+                            </div>
+                        </td>
+                    </tr>`;
+                }).join('');
+
+                tfoot.innerHTML = `<tr>
+                    <td class="py-3 px-5 text-slate-800">សរុបមុខទំនិញ (${stats.byProduct.length})</td>
+                    <td class="py-3 px-3 text-right text-slate-800">${stats.eventsCount} ករណី</td>
+                    <td class="py-3 px-3 text-right text-slate-800">${stats.totalQty}</td>
+                    <td class="py-3 px-3 text-right text-rose-600 sm-figure">${fmtUSD(stats.totalValue)}</td>
+                    <td class="py-3 px-5 text-slate-600 sm-figure">100.0%</td>
+                </tr>`;
+
+            } else {
+                document.getElementById('viewTitle').textContent = 'កំណត់ត្រាលម្អិតនៃការខាតបង់';
+                document.getElementById('viewSub').textContent = 'បញ្ជីព្រឹត្តិការណ៍នីមួយៗនៃការកែតម្រូវ និងការរាប់ខ្វះ';
+
+                thead.innerHTML = `<tr class="border-b border-slate-100 bg-slate-50/60">
+                    <th class="sm-th py-2.5 px-5 text-left text-slate-500">កាលបរិច្ឆេទ</th>
+                    <th class="sm-th py-2.5 px-3 text-left text-slate-500">ទំនិញ</th>
+                    <th class="sm-th py-2.5 px-3 text-left text-slate-500">មូលហេតុ</th>
+                    <th class="sm-th py-2.5 px-3 text-right text-slate-500">ចំនួន</th>
+                    <th class="sm-th py-2.5 px-3 text-right text-slate-500">ថ្លៃដើម/ឯកតា</th>
+                    <th class="sm-th py-2.5 px-3 text-right text-slate-500">សរុបខាតបង់</th>
+                    <th class="sm-th py-2.5 px-5 text-left text-slate-500">បុគ្គលិក</th>
+                </tr>`;
+
+                tbody.innerHTML = stats.list.map(x => {
+                    const rLabel = x.reason === 'count_shortage' ? 'ខ្វះពេលរាប់ស្តុក' : (STOCK_ADJUST_REASONS[x.reason] ? STOCK_ADJUST_REASONS[x.reason].label : x.reason);
+                    return `<tr>
+                        <td class="py-3 px-5 sm-td text-slate-600 sm-figure">${fmtDate(x.at)} <span class="sm-td-sub text-slate-400 block">${fmtTime(x.at)}</span></td>
+                        <td class="py-3 px-3 sm-td font-medium text-slate-800">${escapeText(x.name)}<span class="sm-td-sub text-slate-400 font-mono block">${x.sku}</span></td>
+                        <td class="py-3 px-3"><span class="sm-badge px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-medium">${escapeText(rLabel)}</span></td>
+                        <td class="py-3 px-3 text-right sm-td sm-figure text-slate-800 font-semibold">${x.qty} ${x.unit}</td>
+                        <td class="py-3 px-3 text-right sm-td sm-figure text-slate-600">${fmtUSD(x.unitCost)}</td>
+                        <td class="py-3 px-3 text-right sm-td-strong sm-figure text-rose-600">${fmtUSD(x.costValue)}</td>
+                        <td class="py-3 px-5 sm-td text-slate-600">${personName(x.by)}</td>
+                    </tr>`;
+                }).join('');
+
+                tfoot.innerHTML = `<tr>
+                    <td class="py-3 px-5 text-slate-800">សរុបទាំងអស់ (${stats.list.length} ករណី)</td>
+                    <td class="py-3 px-3" colspan="2"></td>
+                    <td class="py-3 px-3 text-right text-slate-800">${stats.totalQty}</td>
+                    <td class="py-3 px-3 text-right text-slate-500">—</td>
+                    <td class="py-3 px-3 text-right text-rose-600 sm-figure">${fmtUSD(stats.totalValue)}</td>
+                    <td class="py-3 px-5"></td>
+                </tr>`;
+            }
+        }
+
+        function renderAll() {
+            const range = typeof getSelectedRange === 'function' ? getSelectedRange() : null;
+            const stats = shrinkageStats(range);
+            renderKpis(stats);
+            renderChart(stats);
+            renderTable(stats);
+        }
+
+        window.onDateRangeApplied = renderAll;
+        window.onStoreChanged = () => renderAll();
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTabs();
+            renderDateRangePicker('dateRange');
+            selectPreset('ខែនេះ');
+            renderAll();
+        });
+    </script>
+</body>
+</html>

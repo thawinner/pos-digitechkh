@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - ព័ត៌មានលម្អិតស្តុកចូល</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#059669", 'primary-dark': "#047857", accent: "#34d399" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+</head>
+<body id="adminPortal" data-role-root="../.." data-active="stock-in" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="ព័ត៌មានលម្អិតស្តុកចូល"
+             data-subtitle="ពិនិត្យ និងបញ្ជាក់ថ្លៃដើមជាក់ស្តែងសម្រាប់វិក្កយបត្រនេះ"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+
+            <div class="w-full space-y-5">
+                <!-- របារក្បាលទំព័រ និងប៊ូតុងត្រឡប់ក្រោយ -->
+                <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <a href="stock-in.html" class="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center justify-center transition border border-slate-200/70" title="ត្រឡប់ទៅបញ្ជាក់ថ្លៃដើមស្តុកចូល">
+                            <i class="fas fa-arrow-left text-sm"></i>
+                        </a>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 id="topInvoice" class="font-bold text-lg text-slate-800 font-mono">—</h3>
+                                <span id="topBadge"></span>
+                            </div>
+                            <p id="topSupplier" class="sm-td-sub text-slate-500 font-medium">—</p>
+                        </div>
+                    </div>
+                    <div id="headerMeta" class="flex flex-wrap items-center gap-4 sm-td-sub text-slate-500">
+                        <span><i class="fas fa-calendar-day text-slate-400 mr-1.5"></i><span id="metaDate">—</span></span>
+                        <span><i class="fas fa-user text-slate-400 mr-1.5"></i><span id="metaReceiver">—</span></span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-5 items-start">
+                    <!-- បញ្ជីមុខទំនិញក្នុងវិក្កយបត្រ -->
+                    <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                        <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex items-center justify-between">
+                            <div>
+                                <h3 class="sm-card-title text-slate-800">មុខទំនិញដែលបានទទួល</h3>
+                                <p class="sm-card-sub text-slate-500">បញ្ចូលថ្លៃដើមជាក់ស្តែងក្នុងមួយឯកតាពីវិក្កយបត្រអ្នកផ្គត់ផ្គង់</p>
+                            </div>
+                            <span id="lineCountNote" class="sm-badge px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold sm-figure">0 មុខ</span>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full min-w-[680px]">
+                                <thead><tr class="border-b border-slate-100 bg-slate-50/60">
+                                    <th class="sm-th py-2.5 px-5 text-left text-slate-500">ទំនិញ</th>
+                                    <th class="sm-th py-2.5 px-3 text-right text-slate-500">ចំនួនទទួល</th>
+                                    <th class="sm-th py-2.5 px-3 text-right text-slate-500">ថ្លៃដើមមុន</th>
+                                    <th class="sm-th py-2.5 px-3 text-right text-slate-500 w-[180px]">ថ្លៃដើមជាក់ស្តែង ($)</th>
+                                    <th class="sm-th py-2.5 px-5 text-right text-slate-500">សរុបបន្ទាត់</th>
+                                </tr></thead>
+                                <tbody id="lineRows" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <!-- ប្រអប់សង្ខេប និងការរក្សាទុក -->
+                    <aside class="space-y-4">
+                        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
+                            <h3 class="sm-card-title text-slate-800">សង្ខេបវិក្កយបត្រ</h3>
+                            <div class="space-y-3 divide-y divide-slate-100 sm-td">
+                                <div class="flex items-center justify-between pt-1">
+                                    <span class="text-slate-500">អ្នកផ្គត់ផ្គង់</span>
+                                    <span id="sumSupplier" class="font-medium text-slate-800 text-right truncate max-w-[180px]">—</span>
+                                </div>
+                                <div class="flex items-center justify-between pt-3">
+                                    <span class="text-slate-500">លេខវិក្កយបត្រ</span>
+                                    <span id="sumInvoice" class="font-mono text-slate-800">—</span>
+                                </div>
+                                <div class="flex items-center justify-between pt-3">
+                                    <span class="text-slate-500">កាលបរិច្ឆេទ</span>
+                                    <span id="sumDate" class="font-medium text-slate-800">—</span>
+                                </div>
+                                <div class="flex items-center justify-between pt-3">
+                                    <span class="text-slate-500">មុខទំនិញសរុប</span>
+                                    <span id="sumLines" class="font-semibold text-slate-800 sm-figure">0 មុខ</span>
+                                </div>
+                                <div class="flex items-center justify-between pt-3">
+                                    <span class="text-slate-500">ចំនួនឯកតាសរុប</span>
+                                    <span id="sumQty" class="font-semibold text-slate-800 sm-figure">0</span>
+                                </div>
+                                <div class="flex items-center justify-between pt-3">
+                                    <span class="text-slate-500">ទឹកប្រាក់សរុប</span>
+                                    <span id="sumTotalCost" class="font-bold text-emerald-700 sm-figure text-xl">$0.00</span>
+                                </div>
+                            </div>
+
+                            <div class="pt-2">
+                                <label class="sm-td text-slate-700 block mb-1">កំណត់ចំណាំសវនកម្ម (ស្រេចចិត្ត)</label>
+                                <textarea id="auditNote" rows="2" placeholder="ឧ. បានពិនិត្យផ្ទៀងផ្ទាត់ជាមួយវិក្កយបត្រក្រដាស..."
+                                    class="sm-td w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:outline-none"></textarea>
+                            </div>
+
+                            <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-800 text-xs leading-relaxed">
+                                <i class="fas fa-shield-halved mr-1 text-emerald-600"></i>
+                                ការបញ្ជាក់ថ្លៃដើមនេះ នឹងធ្វើបច្ចុប្បន្នភាពថ្លៃដើមទំនិញចុងក្រោយក្នុងប្រព័ន្ធដោយស្វ័យប្រវត្តិ។
+                            </div>
+
+                            <div class="pt-2">
+                                <button id="confirmBtn" onclick="confirmCosts()" type="button" class="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold inline-flex items-center justify-center gap-2 shadow-sm transition">
+                                    <i class="fas fa-check-double"></i> បញ្ជាក់ថ្លៃដើម
+                                </button>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/admin-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        const q = new URLSearchParams(location.search);
+        const invoiceId = q.get('invoice');
+        let shipment = null;
+        const lineCosts = {};
+
+        function loadShipment() {
+            shipment = findStockInShipment(invoiceId);
+            if (!shipment) {
+                showToast('រកមិនឃើញព័ត៌មានវិក្កយបត្រនេះទេ', 'error');
+                setTimeout(() => location.href = 'stock-in.html', 1500);
+                return;
+            }
+
+            shipment.lines.forEach(l => {
+                const curCost = stockMoveUnitCost(l);
+                lineCosts[l.id] = curCost;
+            });
+        }
+
+        function updateLineCost(moveId, val) {
+            const num = Number(val);
+            lineCosts[moveId] = isNaN(num) || num < 0 ? 0 : num;
+            const lineTotalEl = document.getElementById(`total-${moveId}`);
+            const line = shipment.lines.find(l => l.id === moveId);
+            if (lineTotalEl && line) {
+                lineTotalEl.textContent = fmtUSD(line.qty * lineCosts[moveId]);
+            }
+            updateSummaryTotal();
+        }
+
+        function updateSummaryTotal() {
+            if (!shipment) return;
+            let sum = 0;
+            shipment.lines.forEach(l => {
+                sum += (Number(l.qty) || 0) * (lineCosts[l.id] || 0);
+            });
+            document.getElementById('sumTotalCost').textContent = fmtUSD(sum);
+        }
+
+        function renderShipment() {
+            if (!shipment) return;
+
+            document.getElementById('topInvoice').textContent = shipment.invoice;
+            document.getElementById('topSupplier').textContent = shipment.supplier;
+            document.getElementById('metaDate').textContent = fmtDate(shipment.at) + ' ' + fmtTime(shipment.at);
+            document.getElementById('metaReceiver').textContent = personName(shipment.by);
+
+            const badgeHtml = shipment.confirmed
+                ? '<span class="sm-badge px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium"><i class="fas fa-check mr-1"></i>បានបញ្ជាក់</span>'
+                : '<span class="sm-badge px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-medium"><i class="fas fa-clock mr-1"></i>រង់ចាំបញ្ជាក់</span>';
+            document.getElementById('topBadge').innerHTML = badgeHtml;
+
+            document.getElementById('lineCountNote').textContent = `${shipment.lines.length} មុខ`;
+            document.getElementById('sumSupplier').textContent = shipment.supplier;
+            document.getElementById('sumInvoice').textContent = shipment.invoice;
+            document.getElementById('sumDate').textContent = fmtDate(shipment.at);
+            document.getElementById('sumLines').textContent = `${shipment.lines.length} មុខ`;
+            document.getElementById('sumQty').textContent = `${shipment.totalQty}`;
+
+            const thumb = (p) => `<span class="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 inline-flex items-center justify-center">${productImgHtml(p)}</span>`;
+
+            document.getElementById('lineRows').innerHTML = shipment.lines.map(l => {
+                const p = getProduct(l.sku);
+                const prevCost = costOf(l.sku);
+                const isConfirmed = isStockMoveConfirmed(l);
+                const curCost = lineCosts[l.id] != null ? lineCosts[l.id] : prevCost;
+                const lineTotal = l.qty * curCost;
+
+                return `<tr>
+                    <td class="py-3 px-5">
+                        <div class="flex items-center gap-3">
+                            ${thumb(p)}
+                            <div>
+                                <p class="sm-td-strong text-slate-800">${p ? p.name : l.sku}</p>
+                                <p class="sm-td-sub text-slate-400 font-mono">${l.sku} · ${p ? p.unit : 'ឯកតា'}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-3 px-3 text-right sm-td-strong sm-figure text-slate-800">${l.qty}</td>
+                    <td class="py-3 px-3 text-right sm-td sm-figure text-slate-500">${fmtUSD(prevCost)}</td>
+                    <td class="py-3 px-3 text-right">
+                        <div class="relative w-36 ml-auto">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 sm-td text-slate-400">$</span>
+                            <input type="text" inputmode="decimal" value="${curCost.toFixed(2)}"
+                                oninput="updateLineCost('${l.id}', this.value)"
+                                class="sm-td w-full h-10 pl-7 pr-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 text-right sm-figure font-medium focus:outline-none">
+                        </div>
+                    </td>
+                    <td class="py-3 px-5 text-right sm-td-strong sm-figure text-emerald-700" id="total-${l.id}">
+                        ${fmtUSD(lineTotal)}
+                    </td>
+                </tr>`;
+            }).join('');
+
+            updateSummaryTotal();
+
+            const confirmBtn = document.getElementById('confirmBtn');
+            if (shipment.confirmed) {
+                confirmBtn.innerHTML = '<i class="fas fa-pen-to-square"></i> កែប្រែថ្លៃដើមឡើងវិញ';
+            }
+        }
+
+        async function confirmCosts() {
+            if (!shipment) return;
+
+            const invalidLines = shipment.lines.filter(l => !(lineCosts[l.id] >= 0));
+            if (invalidLines.length) {
+                showToast('សូមបញ្ចូលថ្លៃដើមត្រឹមត្រូវសម្រាប់គ្រប់មុខទំនិញ', 'warning');
+                return;
+            }
+
+            let totalSum = 0;
+            shipment.lines.forEach(l => { totalSum += l.qty * (lineCosts[l.id] || 0); });
+
+            const note = document.getElementById('auditNote').value.trim();
+
+            const ok = await showPinConfirm({
+                title: 'បញ្ជាក់ថ្លៃដើមស្តុកចូល',
+                message: `វិក្កយបត្រ: ${escapeText(shipment.invoice)}<br>អ្នកផ្គត់ផ្គង់: ${escapeText(shipment.supplier)}<br>សរុប ${shipment.lines.length} មុខ · តម្លៃសរុប: ${fmtUSD(totalSum)}`,
+                userId: ME_MANAGER,
+                confirmText: 'បញ្ជាក់'
+            });
+
+            if (!ok) return;
+
+            confirmStockInShipment(shipment.invoice, lineCosts, note || `បញ្ជាក់ថ្លៃដើមវិក្កយបត្រ ${shipment.invoice}`);
+            showToast('បានបញ្ជាក់ថ្លៃដើម និងធ្វើបច្ចុប្បន្នភាពថ្លៃដើមទំនិញដោយជោគជ័យ', 'success');
+
+            setTimeout(() => {
+                location.href = 'stock-in.html';
+            }, 700);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadShipment();
+            renderShipment();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - ទទួលស្តុកថ្មី</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+</head>
+<body id="managerPortal" data-role-root="../.." data-active="stock" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="ទទួលស្តុកថ្មី"
+             data-subtitle="ទម្រង់ទទួលទំនិញពីអ្នកផ្គត់ផ្គង់ចូលស្តុក"
+             data-back="stock.html"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <div class="w-full grid grid-cols-1 xl:grid-cols-3 gap-5 items-start">
+                <section class="xl:col-span-2 space-y-5">
+                    <!-- ព័ត៌មានវិក្កយបត្រ និងអ្នកផ្គត់ផ្គង់ -->
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 sm:p-6 space-y-4">
+                        <h3 class="sm-card-title text-slate-800 flex items-center gap-2">
+                            <i class="fas fa-file-invoice text-indigo-600"></i>
+                            <span>ព័ត៌មានដឹកជញ្ជូន និងអ្នកផ្គត់ផ្គង់</span>
+                        </h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="sm:col-span-2 relative">
+                                <label class="block">
+                                    <span class="sm-label text-slate-700 font-semibold">អ្នកផ្គត់ផ្គង់ <span class="text-rose-500">*</span></span>
+                                    <input id="supplierInput" type="text" placeholder="ជ្រើសរើស ឬវាយឈ្មោះអ្នកផ្គត់ផ្គង់..." oninput="filterSupplierSuggestions()" onfocus="showSupplierSuggestions()" class="sm-td w-full h-12 mt-1.5 px-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-indigo-500">
+                                </label>
+                                <div id="supplierDropdown" class="hidden absolute left-0 right-0 top-full mt-1 bg-white rounded-xl shadow-xl border border-slate-200 p-1.5 z-50 max-h-48 overflow-y-auto"></div>
+                            </div>
+                            <div>
+                                <label class="block">
+                                    <span class="sm-label text-slate-700 font-semibold">កាលបរិច្ឆេទទទួល <span class="text-rose-500">*</span></span>
+                                    <div class="relative bms-date-picker mt-1.5">
+                                        <button type="button" onclick="toggleSingleDatePicker('deliveryDate')" class="w-full h-12 px-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 flex items-center justify-between transition focus:outline-none focus:border-indigo-500 cursor-pointer text-left">
+                                            <span id="deliveryDate-display" class="bms-date-label font-medium text-slate-800 text-sm"></span>
+                                            <i class="fas fa-calendar-days text-indigo-600 text-sm"></i>
+                                        </button>
+                                        <input type="hidden" id="deliveryDate" name="deliveryDate" value="" onchange="renderSummary()" oninput="renderSummary()">
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block">
+                                    <span class="sm-label text-slate-700 font-semibold">លេខវិក្កយបត្រអ្នកផ្គត់ផ្គង់ <span class="text-rose-500">*</span></span>
+                                    <input id="invoiceInput" type="text" placeholder="ឧ. INV-2026-0891" oninput="renderSummary()" class="sm-td w-full h-12 mt-1.5 px-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-indigo-500 font-mono">
+                                </label>
+                            </div>
+                            <div>
+                                <label class="block">
+                                    <span class="sm-label text-slate-700 font-semibold">កំណត់សម្គាល់បន្ថែម</span>
+                                    <input id="noteInput" type="text" placeholder="ចំណាំលក្ខខណ្ឌដឹក ឬអ្នកបើកបរ..." class="sm-td w-full h-12 mt-1.5 px-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-indigo-500">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- បញ្ជីមុខទំនិញទទួលចូល -->
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 sm:p-6 space-y-4">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <h3 class="sm-card-title text-slate-800 flex items-center gap-2">
+                                    <i class="fas fa-boxes-packing text-indigo-600"></i>
+                                    <span>មុខទំនិញទទួលចូលស្តុក</span>
+                                </h3>
+                                <p class="sm-card-sub text-slate-500 mt-0.5">ជ្រើសរើសទំនិញ និងបញ្ចូលចំនួនឯកតាជាក់ស្តែង</p>
+                            </div>
+                            <button onclick="addLine()" type="button" class="sm-badge h-10 px-4 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold inline-flex items-center gap-2 transition">
+                                <i class="fas fa-plus text-xs"></i> បន្ថែមជួរ
+                            </button>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-slate-50 text-slate-500 border-b border-slate-100">
+                                    <tr>
+                                        <th class="sm-th py-3 px-3">មុខទំនិញ <span class="text-rose-500">*</span></th>
+                                        <th class="sm-th py-3 px-3 text-right w-32">ស្តុកបច្ចុប្បន្ន</th>
+                                        <th class="sm-th py-3 px-3 text-right w-36">ចំនួនទទួលចូល <span class="text-rose-500">*</span></th>
+                                        <th class="sm-th py-3 px-3 text-right w-32">ស្តុកក្រោយទទួល</th>
+                                        <th class="sm-th py-3 px-2 text-center w-12"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lineRows" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- សង្ខេប និងការរក្សាទុក -->
+                <div class="xl:col-span-1 space-y-4 xl:sticky xl:top-0">
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
+                        <div class="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm flex-shrink-0">
+                                <i class="fas fa-truck-ramp-box"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-base leading-none">សង្ខេបការទទួលស្តុក</h3>
+                                <p class="text-xs text-slate-400 mt-1">ពិនិត្យព័ត៌មានមុនពេលរក្សាទុក</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3 divide-y divide-slate-100 sm-td">
+                            <div class="flex items-center justify-between pt-1">
+                                <span class="text-slate-500">អ្នកផ្គត់ផ្គង់</span>
+                                <span id="sumSupplier" class="font-medium text-slate-800 text-right truncate max-w-[180px]">—</span>
+                            </div>
+                            <div class="flex items-center justify-between pt-3">
+                                <span class="text-slate-500">លេខវិក្កយបត្រ</span>
+                                <span id="sumInvoice" class="font-mono text-slate-800 font-semibold">—</span>
+                            </div>
+                            <div class="flex items-center justify-between pt-3">
+                                <span class="text-slate-500">កាលបរិច្ឆេទ</span>
+                                <span id="sumDate" class="font-medium text-slate-800">—</span>
+                            </div>
+                            <div class="flex items-center justify-between pt-3">
+                                <span class="text-slate-500">មុខទំនិញសរុប</span>
+                                <span id="sumLines" class="font-semibold text-slate-800 sm-figure">0 មុខ</span>
+                            </div>
+                            <div class="flex items-center justify-between pt-3">
+                                <span class="text-slate-500">ចំនួនឯកតាសរុប</span>
+                                <span id="sumQty" class="font-bold text-indigo-700 sm-figure text-lg">0</span>
+                            </div>
+                        </div>
+
+                        <div class="p-3.5 bg-amber-50/80 rounded-xl border border-amber-200/80 text-amber-800 text-xs flex items-start gap-2.5 leading-relaxed">
+                            <i class="fas fa-circle-info text-amber-600 text-sm mt-0.5 flex-shrink-0"></i>
+                            <div>
+                                ការទទួលស្តុកនេះមិនបង្ហាញថ្លៃដើមឡើយ។ ម្ចាស់ហាងនឹងបញ្ជាក់ថ្លៃដើមតាមក្រោយក្នុងប្រព័ន្ធ។
+                            </div>
+                        </div>
+
+                        <div class="pt-2 grid grid-cols-2 gap-2.5">
+                            <a href="stock.html" class="h-11 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-semibold inline-flex items-center justify-center transition text-sm cursor-pointer">បោះបង់</a>
+                            <button id="saveBtn" onclick="saveStockIn()" type="button" class="h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold inline-flex items-center justify-center gap-2 shadow-sm transition text-sm cursor-pointer">
+                                <i class="fas fa-check text-xs"></i> រក្សាទុក
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ផ្ទាំងជ្រើសរើសមុខទំនិញអណ្ដែតកម្រិតខ្ពស់ (Floating Product Picker) -->
+    <div id="globalProductPicker" class="bms-custom-select-menu hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 z-[99999] min-w-[320px] max-w-sm flex flex-col" onclick="event.stopPropagation()">
+        <div class="p-1 border-b border-slate-100 mb-1 sticky top-0 bg-white">
+            <div class="relative">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input id="globalProductSearch" type="text" placeholder="ស្វែងរកតាមឈ្មោះ ឬបាកូដ..." oninput="filterGlobalProductPicker(this.value)" class="w-full h-9 pl-8 pr-3 rounded-xl bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:border-indigo-500 font-sans">
+            </div>
+        </div>
+        <div id="globalProductList" class="space-y-0.5 overflow-y-auto max-h-64 pr-0.5"></div>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        const q = new URLSearchParams(location.search);
+        let lines = [];
+        let suppliers = [];
+
+        function initSuppliers() {
+            const set = new Set();
+            mgrStockMoves().forEach(m => {
+                if (m.supplier) set.add(m.supplier);
+            });
+            FMCG_SUPPLIERS.forEach(s => set.add(s));
+            suppliers = Array.from(set);
+        }
+
+        function showSupplierSuggestions() {
+            const drop = document.getElementById('supplierDropdown');
+            const v = document.getElementById('supplierInput').value.trim().toLowerCase();
+            const filtered = suppliers.filter(s => !v || s.toLowerCase().includes(v));
+            if (!filtered.length) {
+                drop.classList.add('hidden');
+                return;
+            }
+            drop.innerHTML = filtered.map(s => `
+                <button type="button" onclick="pickSupplier('${escapeText(s)}')" class="w-full text-left px-3 py-2 rounded-lg sm-td text-slate-700 hover:bg-slate-50 truncate transition">
+                    <i class="fas fa-building text-slate-400 text-xs mr-2"></i>${s}
+                </button>
+            `).join('');
+            drop.classList.remove('hidden');
+        }
+
+        function filterSupplierSuggestions() {
+            showSupplierSuggestions();
+            renderSummary();
+        }
+
+        function pickSupplier(name) {
+            document.getElementById('supplierInput').value = name;
+            document.getElementById('supplierDropdown').classList.add('hidden');
+            renderSummary();
+        }
+
+        document.addEventListener('click', e => {
+            if (!e.target.closest('#supplierInput') && !e.target.closest('#supplierDropdown')) {
+                const drop = document.getElementById('supplierDropdown');
+                if (drop) drop.classList.add('hidden');
+            }
+        });
+
+        function addLine(sku = '', qty = 12) {
+            lines.push({ sku: sku || '', qty: Number(qty) || 1 });
+            renderLines();
+            renderSummary();
+        }
+
+        function removeLine(idx) {
+            if (lines.length <= 1) {
+                showToast('ត្រូវមានមុខទំនិញយ៉ាងហោចណាស់ 1 មុខ', 'warning');
+                return;
+            }
+            lines.splice(idx, 1);
+            renderLines();
+            renderSummary();
+        }
+
+        function updateLineSku(idx, sku) {
+            lines[idx].sku = sku;
+            const p = getProduct(sku);
+            if (p && !lines[idx].qty) {
+                lines[idx].qty = p.reorderQty || 12;
+            }
+            renderLines();
+            renderSummary();
+        }
+
+        function updateLineQty(idx, val) {
+            lines[idx].qty = Math.max(1, parseInt(val, 10) || 1);
+            renderLines();
+            renderSummary();
+        }
+
+        let activePickerLineIdx = null;
+
+        function openProductPickerForLine(btn, idx) {
+            activePickerLineIdx = idx;
+            const popover = document.getElementById('globalProductPicker');
+            const searchInput = document.getElementById('globalProductSearch');
+            
+            // Populate list
+            renderGlobalProductPickerList(lines[idx] ? lines[idx].sku : '');
+            
+            // Reset search input
+            if (searchInput) searchInput.value = '';
+
+            // Open using fixed positioning relative to trigger button
+            if (typeof openFloatingDropdown === 'function') {
+                openFloatingDropdown(btn, popover);
+                // Also set specific min-width suited for product search
+                const rect = btn.getBoundingClientRect();
+                const targetW = Math.max(340, Math.min(rect.width, window.innerWidth - 32));
+                popover.style.setProperty('width', `${targetW}px`, 'important');
+                popover.style.setProperty('max-width', 'calc(100vw - 32px)', 'important');
+            } else {
+                popover.classList.remove('hidden');
+            }
+
+            setTimeout(() => {
+                if (searchInput) searchInput.focus();
+            }, 60);
+        }
+
+        function filterGlobalProductPicker(query) {
+            const q = query.trim().toLowerCase();
+            const list = document.querySelectorAll('#globalProductList button');
+            list.forEach(btn => {
+                const text = btn.innerText.toLowerCase();
+                btn.style.display = (!q || text.includes(q)) ? 'flex' : 'none';
+            });
+        }
+
+        function renderGlobalProductPickerList(selectedSku) {
+            const list = document.getElementById('globalProductList');
+            if (!list) return;
+            const prods = sellableProducts();
+            const levels = onHandLevels();
+
+            list.innerHTML = prods.map(prod => {
+                const cur = levels[prod.sku] || 0;
+                const isSel = prod.sku === selectedSku;
+                return `
+                <button type="button" onclick="selectProductForActiveLine('${prod.sku}')" class="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 text-left transition ${isSel ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-700'}">
+                    <span class="flex items-center gap-2.5 min-w-0">
+                        <span class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 inline-flex items-center justify-center p-0.5 shadow-sm">
+                            ${productImgHtml(prod)}
+                        </span>
+                        <span class="min-w-0">
+                            <span class="block text-xs truncate ${isSel ? 'font-semibold text-indigo-700' : 'font-medium text-slate-800'}">${prod.name}</span>
+                            <span class="block text-[11px] text-slate-400 font-mono">${prod.barcode || prod.sku} · ${prod.unit || 'ឯកតា'}</span>
+                        </span>
+                    </span>
+                    <div class="flex items-center gap-2 flex-shrink-0 ml-2">
+                        <span class="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">ស្តុក: ${cur}</span>
+                        ${isSel ? '<i class="fas fa-check text-xs text-indigo-600"></i>' : ''}
+                    </div>
+                </button>`;
+            }).join('');
+        }
+
+        function selectProductForActiveLine(sku) {
+            if (activePickerLineIdx !== null && activePickerLineIdx !== undefined) {
+                updateLineSku(activePickerLineIdx, sku);
+            }
+            closeProductPicker();
+        }
+
+        function closeProductPicker() {
+            const popover = document.getElementById('globalProductPicker');
+            if (popover) {
+                if (typeof closeFloatingDropdown === 'function') {
+                    closeFloatingDropdown(popover);
+                } else {
+                    popover.classList.add('hidden');
+                }
+            }
+            activePickerLineIdx = null;
+        }
+
+        function renderLines() {
+            const tbody = document.getElementById('lineRows');
+            const prods = sellableProducts();
+            const levels = onHandLevels();
+
+            tbody.innerHTML = lines.map((l, idx) => {
+                const cur = l.sku ? (levels[l.sku] || 0) : 0;
+                const after = l.sku ? (cur + (parseInt(l.qty, 10) || 0)) : 0;
+                const p = l.sku ? getProduct(l.sku) : null;
+                const unit = p ? p.unit : 'ឯកតា';
+
+                return `
+                <tr class="hover:bg-slate-50/50">
+                    <td class="py-3 px-3">
+                        <div class="relative">
+                            <button type="button" onclick="openProductPickerForLine(this, ${idx})" class="w-full h-11 px-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 sm-td text-left flex items-center justify-between gap-2 transition cursor-pointer">
+                                ${p ? `
+                                    <span class="flex items-center gap-2 min-w-0">
+                                        <span class="w-7 h-7 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 inline-flex items-center justify-center p-0.5 shadow-sm">
+                                            ${productImgHtml(p)}
+                                        </span>
+                                        <span class="truncate font-medium text-slate-800">${p.name}</span>
+                                    </span>` : `<span class="text-slate-400">ជ្រើសរើសមុខទំនិញ...</span>`}
+                                <i class="fas fa-chevron-down text-[10px] text-slate-400"></i>
+                            </button>
+                        </div>
+                    </td>
+                    <td class="py-3 px-3 text-right sm-td sm-figure font-medium text-slate-600">
+                        ${l.sku ? `${cur} ${unit}` : '—'}
+                    </td>
+                    <td class="py-3 px-3 text-right">
+                        <input type="number" min="1" step="1" value="${l.qty || 1}" oninput="updateLineQty(${idx}, this.value)" class="w-full h-11 px-3 rounded-xl bg-slate-50 border border-slate-200 text-right sm-value font-semibold text-indigo-700 focus:outline-none focus:border-indigo-500 sm-figure">
+                    </td>
+                    <td class="py-3 px-3 text-right sm-td sm-figure font-bold text-emerald-700">
+                        ${l.sku ? `${after} ${unit}` : '—'}
+                    </td>
+                    <td class="py-3 px-2 text-center">
+                        <button onclick="removeLine(${idx})" type="button" class="w-8 h-8 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 flex items-center justify-center transition cursor-pointer" title="លុបជួរនេះ">
+                            <i class="fas fa-trash-can text-sm"></i>
+                        </button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function renderSummary() {
+            const sup = document.getElementById('supplierInput').value.trim();
+            const inv = document.getElementById('invoiceInput').value.trim();
+            const dt = document.getElementById('deliveryDate').value;
+
+            document.getElementById('sumSupplier').textContent = sup || '—';
+            document.getElementById('sumInvoice').textContent = inv || '—';
+            document.getElementById('sumDate').textContent = dt ? fmtDate(dt) : '—';
+
+            const validLines = lines.filter(l => l.sku && l.qty > 0);
+            const totalUnits = validLines.reduce((n, l) => n + Number(l.qty), 0);
+
+            document.getElementById('sumLines').textContent = `${validLines.length} មុខ`;
+            document.getElementById('sumQty').textContent = `${totalUnits}`;
+        }
+
+        async function saveStockIn() {
+            const supplier = document.getElementById('supplierInput').value.trim();
+            const invoice = document.getElementById('invoiceInput').value.trim();
+            const date = document.getElementById('deliveryDate').value;
+            const note = document.getElementById('noteInput').value.trim();
+
+            if (!supplier) {
+                showToast('សូមបញ្ចូល ឬជ្រើសរើសឈ្មោះអ្នកផ្គត់ផ្គង់', 'warning');
+                document.getElementById('supplierInput').focus();
+                return;
+            }
+            if (!invoice) {
+                showToast('សូមបញ្ចូលលេខវិក្កយបត្រអ្នកផ្គត់ផ្គង់', 'warning');
+                document.getElementById('invoiceInput').focus();
+                return;
+            }
+            if (!date) {
+                showToast('សូមជ្រើសរើសកាលបរិច្ឆេទដឹកជញ្ជូន', 'warning');
+                return;
+            }
+
+            const validLines = lines.filter(l => l.sku && l.qty > 0);
+            if (!validLines.length) {
+                showToast('សូមជ្រើសរើសមុខទំនិញយ៉ាងហោចណាស់ 1 មុខ និងចំនួនត្រឹមត្រូវ', 'warning');
+                return;
+            }
+
+            const totalUnits = validLines.reduce((n, l) => n + Number(l.qty), 0);
+
+            const ok = await showPinConfirm({
+                title: 'បញ្ជាក់ការទទួលស្តុក',
+                message: `អ្នកផ្គត់ផ្គង់: ${escapeText(supplier)}<br>វិក្កយបត្រ: ${escapeText(invoice)} · សរុប ${validLines.length} មុខ (${totalUnits} ឯកតា)`,
+                userId: ME_MANAGER,
+                confirmText: 'រក្សាទុក'
+            });
+
+            if (!ok) return;
+
+            const nowIso = isoLocal(new Date());
+            const moves = validLines.map(l => stockMove({
+                type: 'stock_in',
+                sku: l.sku,
+                qty: Number(l.qty),
+                at: nowIso,
+                by: ME_MANAGER,
+                supplier,
+                invoice,
+                date,
+                costConfirmed: false,
+                reason: 'ទទួលទំនិញចូលស្តុក',
+                ref: invoice,
+                note
+            }));
+
+            saveStockMoves(moves);
+            showToast(`បានកត់ត្រាការទទួលស្តុក ${validLines.length} មុខទំនិញ (${totalUnits} ឯកតា)`, 'success');
+
+            setTimeout(() => {
+                location.href = 'stock.html';
+            }, 600);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initSuppliers();
+            setSingleDate('deliveryDate', isoDate(new Date()));
+
+            const preSku = q.get('sku');
+            if (preSku && getProduct(preSku)) {
+                const p = getProduct(preSku);
+                addLine(preSku, p.reorderQty || 12);
+            } else {
+                addLine('', 12);
+            }
+        });
+    </script>
+</body>
+</html>

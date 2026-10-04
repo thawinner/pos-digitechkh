@@ -4,7 +4,7 @@
    • ឯកសារនេះផ្ទុកតែវេនដែលកំពុងដំណើរការលើម៉ាស៊ីននេះ (ទិន្នន័យរស់ក្នុង localStorage)។
      ប្រវត្តិវេនមុនៗ និងបញ្ជរផ្សេង មាននៅក្នុង manager-data.js ដែលផ្ទុកតែលើទំព័រអ្នកគ្រប់គ្រងប៉ុណ្ណោះ
      ដូច្នេះទំព័រអ្នកគិតលុយមិនដែលទទួលបានទិន្នន័យវេនផ្សេងឡើយ (ឯកសាររចនាលេខ 02 ផ្នែក 7.1)។
-   • គ្មានថ្លៃដើមទិញនៅទីនេះទេ — ទាំងអ្នកគិតលុយ និងអ្នកគ្រប់គ្រងវេនមិនមានសិទ្ធិមើល។
+   • គ្មានថ្លៃដើមទិញនៅទីនេះទេ — ទាំងអ្នកគិតលុយ និងអ្នកគ្រប់គ្រងមិនមានសិទ្ធិមើល។
    • ពេលវេលាទាំងអស់គណនាធៀបនឹងម៉ោងពិត មិនប្រើកាលបរិច្ឆេទថេរឡើយ (បញ្ជីពិនិត្យលេខ 06 ផ្នែក ឃ)។ */
 
 const BMS_TODAY = new Date();
@@ -166,7 +166,7 @@ const MERCHANT = {
     city: 'PHNOM PENH'
 };
 
-/* បុគ្គលិក៖ តួនាទី 3 — ម្ចាស់ហាង (admin) · អ្នកគ្រប់គ្រងវេន (manager) · អ្នកគិតលុយ (cashier)
+/* បុគ្គលិក៖ តួនាទី 3 — ម្ចាស់ហាង (admin) · អ្នកគ្រប់គ្រង (manager) · អ្នកគិតលុយ (cashier)
    លេខសម្ងាត់សម្រាប់គំរូសាកល្បងប៉ុណ្ណោះ — ប្រព័ន្ធពិតរក្សាទុកជាសញ្ញាកូដនៅម៉ាស៊ីនមេ។
    ម្ចាស់ហាងបន្ថែមបុគ្គលិក ប្តូរតួនាទី ឬផ្អាកគណនីនៅទំព័រ «បុគ្គលិក» (រក្សាក្នុង pos_staff)។
    គណនីដែលផ្អាកមិនអាចចូលប្រើបាន ប៉ុន្តែឈ្មោះនៅតែបង្ហាញក្នុងប្រវត្តិ (personById រកឃើញជានិច្ច)។ */
@@ -199,7 +199,7 @@ const REGISTERS = ['POS-01', 'POS-02', 'POS-03'];
 
 const ROLE_NAME = {
     cashier: 'អ្នកគិតលុយ',
-    manager: 'អ្នកគ្រប់គ្រងវេន',
+    manager: 'អ្នកគ្រប់គ្រង',
     admin: 'ម្ចាស់ហាង'
 };
 
@@ -1119,7 +1119,7 @@ function topSellers(sales, limit) {
    មិនកាត់ស្តុកទេ ព្រោះទំព័រអ្នកគិតលុយមិនអាចមើលឃើញវា ហើយស្ថានភាពស្តុកត្រូវតែដូចគ្នាគ្រប់ទំព័រ។
    ទំព័រអ្នកគិតលុយប្រើតែ stockStatus() (អស់ · ជិតអស់) មិនបង្ហាញចំនួនឡើយ។ */
 
-const STOCK_KEYS = { opening: 'pos_stock_opening', moves: 'pos_stock_moves' };
+const STOCK_KEYS = { opening: 'pos_stock_opening', moves: 'pos_stock_moves', counts: 'pos_stock_counts' };
 
 const STOCK_MOVE_TYPE = {
     sale: { label: 'លក់', icon: 'fa-cart-shopping', tone: 'slate' },
@@ -1162,6 +1162,17 @@ function storedStockMoves() {
 function saveStockMoves(list) {
     if (!list.length) return;
     posWrite(STOCK_KEYS.moves, storedStockMoves().concat(list));
+}
+
+function storedStockCounts() {
+    return posRead(STOCK_KEYS.counts, []);
+}
+
+function saveStockCount(session) {
+    if (!session) return;
+    const list = storedStockCounts();
+    list.unshift(session);
+    posWrite(STOCK_KEYS.counts, list);
 }
 
 function stockMove(fields) {
@@ -1454,7 +1465,7 @@ function zReportHtml(shift, s, opts) {
             </div>` : ''}
             ${shift.reviewNote ? `
             <div class="mt-3 p-3 rounded-xl bg-indigo-50 border border-indigo-200">
-                <p class="sm-td-sub text-indigo-700">កំណត់ចំណាំរបស់អ្នកគ្រប់គ្រងវេន</p>
+                <p class="sm-td-sub text-indigo-700">កំណត់ចំណាំរបស់អ្នកគ្រប់គ្រង</p>
                 <p class="sm-td text-indigo-900 mt-1">${escapeText(shift.reviewNote)}</p>
             </div>` : ''}
         </div>
@@ -1496,7 +1507,7 @@ function portalNotifications() {
             icon: 'mdi:lock-outline',
             tone: 'danger',
             title: last ? `វេន ${last.id} បានបិទរួចហើយ` : 'មិនទាន់មានវេនបើកទេ',
-            note: 'សូមបើកវេនថ្មី ដោយរាប់ប្រាក់បាតថតជាមួយអ្នកគ្រប់គ្រងវេន',
+            note: 'សូមបើកវេនថ្មី ដោយរាប់ប្រាក់បាតថតជាមួយអ្នកគ្រប់គ្រង',
             href: `${document.body.dataset.roleRoot || '../..'}/cashier/shift/open-shift.html`
         });
         return list;
@@ -1535,7 +1546,7 @@ function portalNotifications() {
     const st = posSettings();
     if (s.expectedUSD > st.drawerLimitUSD || s.expectedKHR > st.drawerLimitKHR) {
         list.push({ icon: 'mdi:safe', tone: 'warning', title: 'សាច់ប្រាក់ក្នុងថតលើសកំណត់',
-            note: 'សូមផ្ទេរប្រាក់ខ្លះចូលទូដែក ហើយឱ្យអ្នកគ្រប់គ្រងវេនទទួល' });
+            note: 'សូមផ្ទេរប្រាក់ខ្លះចូលទូដែក ហើយឱ្យអ្នកគ្រប់គ្រងទទួល' });
     }
 
     // អ្នកគិតលុយឃើញតែស្ថានភាព (អស់ · ជិតអស់) មិនឃើញចំនួនស្តុកឡើយ
@@ -1551,8 +1562,8 @@ function portalNotifications() {
             tone: x.status === 'out' ? 'danger' : 'warning',
             title: x.status === 'out' ? `${x.p.name} អស់ស្តុក` : `${x.p.name} ជិតអស់ស្តុក`,
             note: x.status === 'out'
-                ? (allowNegativeStock() ? 'នៅតែលក់បាន ប៉ុន្តែប្រព័ន្ធនឹងជូនដំណឹងអ្នកគ្រប់គ្រងវេន' : 'មិនអាចលក់បានទេ')
-                : 'សូមជូនដំណឹងដល់អ្នកគ្រប់គ្រងវេន'
+                ? (allowNegativeStock() ? 'នៅតែលក់បាន ប៉ុន្តែប្រព័ន្ធនឹងជូនដំណឹងអ្នកគ្រប់គ្រង' : 'មិនអាចលក់បានទេ')
+                : 'សូមជូនដំណឹងដល់អ្នកគ្រប់គ្រង'
         }));
 
     list.push({
@@ -1771,7 +1782,7 @@ function resetDemoData() {
 
 /* ===== ការចូលប្រើ =====
    ទំព័រដើម (index.html) ជាទំព័រចូលប្រើ៖ ជ្រើសរើសអ្នកប្រើ ហើយវាយលេខសម្ងាត់។
-   អ្នកគ្រប់គ្រងវេនអាចប្តូរទៅផ្ទាំងគិតលុយ ហើយលក់លើបញ្ជរផ្ទាល់ខ្លួន (POS-03)
+   អ្នកគ្រប់គ្រងអាចប្តូរទៅផ្ទាំងគិតលុយ ហើយលក់លើបញ្ជរផ្ទាល់ខ្លួន (POS-03)
    ព្រោះអ្នកគ្រប់គ្រងមិនអាចអនុម័តការលក់របស់ខ្លួនឯងបានទេ (ច្បាប់ M-RULE 3)។ */
 
 const SESSION_KEY = 'pos_session';
@@ -1812,7 +1823,7 @@ const ROLE_HOME = {
 
 /* ===== កាលវិភាគវេន =====
    វេនមួយ (ឧ. វេនព្រឹក) អាចមានអ្នកគិតលុយច្រើននាក់ ម្នាក់មួយបញ្ជរ និងថតប្រាក់ផ្ទាល់ខ្លួន
-   (មួយថត មួយអ្នកទទួលខុសត្រូវ — ស្រាវជ្រាវ §11)។ អ្នកគ្រប់គ្រងវេនចាត់តាំងនៅទំព័រ «កាលវិភាគវេន»។
+   (មួយថត មួយអ្នកទទួលខុសត្រូវ — ស្រាវជ្រាវ §11)។ អ្នកគ្រប់គ្រងចាត់តាំងនៅទំព័រ «កាលវិភាគវេន»។
    បើមិនទាន់ចាត់តាំង ប្រើលំនាំដើម៖ អ្នកគិតលុយទី 1 → POS-01 ... */
 
 const ROSTER_KEY = 'pos_roster';
@@ -1828,7 +1839,7 @@ function defaultRoster(dateStr, code) {
     const owners = CASHIERS.concat(MANAGERS).filter(p => defs[p.id] && defs[p.id].template === code && defs[p.id].register);
     const list = owners.filter(p => Number(defs[p.id].dayOff) !== dow)
         .map(p => ({ cashierId: p.id, register: defs[p.id].register }));
-    // ថ្ងៃឈប់សម្រាករបស់អ្នកគិតលុយ៖ អ្នកគ្រប់គ្រងវេនឈរបញ្ជរជំនួស (ហាងតូចមិនទុកវេនទទេ)
+    // ថ្ងៃឈប់សម្រាករបស់អ្នកគិតលុយ៖ អ្នកគ្រប់គ្រងឈរបញ្ជរជំនួស (ហាងតូចមិនទុកវេនទទេ)
     // ឆ្លាស់គ្នារវាងអ្នកគ្រប់គ្រងទាំងពីរ · ថ្ងៃមួយមានតែម្នាក់ឈប់ ដូច្នេះមិនលើស 12 ម៉ោង
     if (!list.length && owners.length && MANAGERS.length) {
         const off = owners[0];
@@ -1898,12 +1909,12 @@ function resolveRegister(personId) {
 
 const SESSION = posSession();
 const ME_CASHIER = SESSION ? SESSION.userId : 'CAS-01';
-// ម្ចាស់ហាងអាចមើលទំព័រអ្នកគ្រប់គ្រងវេន ហើយសម្រេចក្នុងនាមខ្លួនឯង
+// ម្ចាស់ហាងអាចមើលទំព័រអ្នកគ្រប់គ្រង ហើយសម្រេចក្នុងនាមខ្លួនឯង
 const ME_MANAGER = SESSION && (isManagerId(SESSION.userId) || isAdminId(SESSION.userId)) ? SESSION.userId : 'MGR-01';
 const MY_REGISTER = resolveRegister(ME_CASHIER);
 
-/* ការពារទំព័រ៖ ទំព័រអ្នកគិតលុយ = អ្នកគិតលុយ ឬអ្នកគ្រប់គ្រងវេន (ម្ចាស់ហាងមិនឈរបញ្ជរ)
-   ទំព័រអ្នកគ្រប់គ្រង = អ្នកគ្រប់គ្រងវេន ឬម្ចាស់ហាង · ទំព័រម្ចាស់ហាង = ម្ចាស់ហាងប៉ុណ្ណោះ */
+/* ការពារទំព័រ៖ ទំព័រអ្នកគិតលុយ = អ្នកគិតលុយ ឬអ្នកគ្រប់គ្រង (ម្ចាស់ហាងមិនឈរបញ្ជរ)
+   ទំព័រអ្នកគ្រប់គ្រង = អ្នកគ្រប់គ្រង ឬម្ចាស់ហាង · ទំព័រម្ចាស់ហាង = ម្ចាស់ហាងប៉ុណ្ណោះ */
 (function guardPage() {
     const path = location.pathname;
     const area = path.includes('/cashier/') ? 'cashier' : path.includes('/manager/') ? 'manager' : path.includes('/admin/') ? 'admin' : '';

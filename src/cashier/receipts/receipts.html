@@ -178,7 +178,7 @@
                 card('វិក្កយបត្រក្នុងវេន', live.length, 'text-slate-700', `${qty} ឯកតាទំនិញ`) +
                 card('ទូទាត់តាមបាគង', khqr, 'text-cyan-600', 'វិក្កយបត្រ') +
                 card('លុបចោល · ប្រគល់វិញ', `${voided} · ${returned}`, voided + returned ? 'text-rose-600' : 'text-slate-700', 'ត្រូវបានអនុម័តដោយអ្នកគ្រប់គ្រង') +
-                card('សំណើរង់ចាំអនុម័ត', pending, pending ? 'text-amber-600' : 'text-slate-700', pending ? 'រង់ចាំអ្នកគ្រប់គ្រងវេន' : 'គ្មានសំណើរង់ចាំ');
+                card('សំណើរង់ចាំអនុម័ត', pending, pending ? 'text-amber-600' : 'text-slate-700', pending ? 'រង់ចាំអ្នកគ្រប់គ្រង' : 'គ្មានសំណើរង់ចាំ');
         }
 
         function renderTabs() {
@@ -383,7 +383,7 @@
 
         async function chooseMode() {
             return showOptionDialog({
-                title: 'អ្នកគ្រប់គ្រងវេននៅទីនេះទេ?',
+                title: 'អ្នកគ្រប់គ្រងនៅទីនេះទេ?',
                 message: 'អ្នកគិតលុយមិនអាចលុបចោល ឬសងប្រាក់ដោយខ្លួនឯងបានទេ',
                 options: [
                     { value: 'onsite', icon: 'fa-user-shield', label: 'អ្នកគ្រប់គ្រងនៅទីនេះ', desc: 'អ្នកគ្រប់គ្រងវាយលេខសម្ងាត់ ហើយអនុវត្តភ្លាមៗ' },
@@ -424,7 +424,7 @@
             } else {
                 saveApproval(Object.assign(base, { status: 'pending' }));
                 logPosEvent(req.type === 'void' ? 'void_requested' : 'return_requested', { saleId: req.saleId, amount: req.amount, reason: req.reason });
-                showToast(`បានផ្ញើសំណើ${APPROVAL_TYPE[req.type].label} ${req.saleId} ទៅអ្នកគ្រប់គ្រងវេន`, 'info');
+                showToast(`បានផ្ញើសំណើ${APPROVAL_TYPE[req.type].label} ${req.saleId} ទៅអ្នកគ្រប់គ្រង`, 'info');
             }
             refreshAll();
         }

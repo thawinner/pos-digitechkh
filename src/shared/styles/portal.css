@@ -245,7 +245,7 @@ html.dark .sb-nav-item[aria-current="page"]::before { background: #7DD3FC; }
 #posPortal .sb-nav-item[aria-current="page"]::before { background: #22D3EE; }
 #posPortal .sb-nav-item[aria-current="page"] { background: rgba(8, 145, 178, .2) !important; }
 
-/* អ្នកគ្រប់គ្រងវេន — របារចំហៀងពណ៌ឆ្លុះ (indigo) ដើម្បីឱ្យរូបថតអេក្រង់ប្រាប់ភ្លាមថាជាតួនាទីណា
+/* អ្នកគ្រប់គ្រង — របារចំហៀងពណ៌ឆ្លុះ (indigo) ដើម្បីឱ្យរូបថតអេក្រង់ប្រាប់ភ្លាមថាជាតួនាទីណា
    (ឯកសាររចនាលេខ 02 ផ្នែក 1) ។ custom.css បង្ខំ <aside> ឱ្យទៅពណ៌បៃតង ដូច្នេះត្រូវប្រើ !important */
 #managerPortal aside { background-color: #1e1b4b !important; }
 #managerPortal #portalSidebar .sb-icon        { color: #C7D2FE; }
@@ -328,8 +328,8 @@ html.dark #managerPortal aside { background-color: #0b1329 !important; }
 
 /* ===== របារចំហៀងបែបវិជ្ជាជីវៈ =====
    ផ្ទៃងងឹតអព្យាក្រឹត ជួរកម្ពស់ 36px ស្លាកក្រុមតូចៗ · ពណ៌តួនាទីបង្ហាញតែលើធាតុសកម្ម */
-#managerPortal aside { background-color: #14162b !important; }
-#posPortal aside { background-color: #0d1424 !important; }
+#managerPortal aside#portalSidebar { background-color: #14162b !important; }
+#posPortal aside#portalSidebar { background-color: #0d1424 !important; }
 #portalSidebar { --sb-accent: #a5b4fc; }
 #posPortal #portalSidebar { --sb-accent: #67e8f9; }
 #portalSidebar .sb-row {
@@ -357,13 +357,13 @@ html.dark #managerPortal aside { background-color: #0b1329 !important; }
 .sb-menu button.sb-menu-item:hover { background: rgba(255, 255, 255, .06); color: #fff; }
 
 /* ===== ពណ៌របារចំហៀងតាមតួនាទី — ស្គាល់ភ្លាមថាកំពុងនៅតួនាទីណា (ស្ងប់ មិនឆ្អែតពណ៌) =====
-   អ្នកគិតលុយ = ខៀវដែន + ខៀវផ្ទៃមេឃ · អ្នកគ្រប់គ្រងវេន = ឆ្លុះ (indigo) · ម្ចាស់ហាង = បៃតងស្រអាប់ + មរកត */
-#posPortal aside { background-color: #0c1a2e !important; }
-#managerPortal aside { background-color: #1c1a42 !important; }
-#adminPortal aside { background-color: #0f2b25 !important; }
-html.dark #posPortal aside { background-color: #0a1526 !important; }
-html.dark #managerPortal aside { background-color: #16143a !important; }
-html.dark #adminPortal aside { background-color: #0b231e !important; }
+   អ្នកគិតលុយ = ខៀវដែន + ខៀវផ្ទៃមេឃ · អ្នកគ្រប់គ្រង = ឆ្លុះ (indigo) · ម្ចាស់ហាង = បៃតងស្រអាប់ + មរកត */
+#posPortal aside#portalSidebar { background-color: #0c1a2e !important; }
+#managerPortal aside#portalSidebar { background-color: #1c1a42 !important; }
+#adminPortal aside#portalSidebar { background-color: #0f2b25 !important; }
+html.dark #posPortal aside#portalSidebar { background-color: #0a1526 !important; }
+html.dark #managerPortal aside#portalSidebar { background-color: #16143a !important; }
+html.dark #adminPortal aside#portalSidebar { background-color: #0b231e !important; }
 #adminPortal #portalSidebar { --sb-accent: #6ee7b7; }
 #adminPortal #portalSidebar .sb-accent { color: #A7F3D0; }
 #adminPortal #portalSidebar .sb-accent-soft { color: rgba(209, 250, 229, .75); }

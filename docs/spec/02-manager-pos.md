@@ -16,7 +16,7 @@ prototype.
 
 | Property | Value |
 |---|---|
-| **Khmer role name** | «អ្នកគ្រប់គ្រងវេន». Already used on the Z-report signature block (`close-shift.html:790`). Decision D5 in the cashier plan |
+| **Khmer role name** | «អ្នកគ្រប់គ្រង». Already used on the Z-report signature block (`close-shift.html:790`). Decision D5 in the cashier plan |
 | **Persona** | Supervises 1–4 registers in one branch. Splits time between the shop floor (tablet) and the back office (PC). Interrupted all shift long to approve things at a till. Wants: what needs me now, which register is short or overloaded, and who keeps generating exceptions |
 | **Layout** | Standard sidebar portal (light), like the cashier's receipts / close-shift pages. **Not** Archetype A. The one exception is the override dialog, which appears on the cashier's dark terminal |
 | **Accent** | Distinct from the cashier's teal, so a screenshot shows which role it is. Proposal: indigo `#4f46e5` for active nav, primary buttons and charts. Keep emerald / amber / rose for status |
@@ -77,7 +77,7 @@ float). The terminal opens a dark full-screen dialog **on the cashier's screen**
 
 ```
 ┌──────────────────────────────────────────────┐
-│ 🔐  ទាមទារការអនុម័តពីអ្នកគ្រប់គ្រងវេន          │
+│ 🔐  ទាមទារការអនុម័តពីអ្នកគ្រប់គ្រង          │
 │                                              │
 │  សកម្មភាព   បញ្ចុះតម្លៃ 10%  · − $1.25          │
 │  វិក្កយបត្រ   RCP-1003-0010 · ចន្ទ មករា          │
@@ -112,9 +112,13 @@ update through the `storage` event (DoD §G).
 | 2 | `approvals` | សំណើរង់ចាំអនុម័ត | `mdi:shield-check-outline` | `manager/approvals/approvals.html` | pending count (amber) |
 | 3 | `shifts` | វេន និងបញ្ជរគិតលុយ | `mdi:cash-register` | `manager/shifts/shifts.html` | closed shifts awaiting review |
 | 4 | `cash` | ចលនាសាច់ប្រាក់ | `mdi:safe` | `manager/cash/cash.html` | unconfirmed drops |
-| 5 | `exceptions` | ករណីមិនប្រក្រតី | `mdi:alert-octagon-outline` | `manager/exceptions/exceptions.html` | — |
-| 6 | `reports` | របាយការណ៍លក់ | `mdi:chart-box-outline` | `manager/reports/sales-report.html` | — |
-| 7 | `settings` | ការកំណត់ | `mdi:cog-outline` | `manager/settings/settings.html` | — |
+| 5 | `stock` | ស្តុកទំនិញ | `mdi:package-variant-closed` | `manager/stock/stock.html` | low/out stock count (amber) |
+| 6 | `stock-history` | ប្រវត្តិស្តុក | `mdi:history` | `manager/stock-history/stock-history.html` | — |
+| 7 | `stock-count` | រាប់ស្តុក | `mdi:clipboard-check-outline` | `manager/stock-count/stock-count.html` | — |
+| 8 | `roster` | កាលវិភាគវេន | `mdi:calendar-account-outline` | `manager/roster/roster.html` | — |
+| 9 | `exceptions` | ករណីមិនប្រក្រតី | `mdi:alert-octagon-outline` | `manager/exceptions/exceptions.html` | — |
+| 10 | `reports` | របាយការណ៍លក់ | `mdi:chart-box-outline` | `manager/reports/sales-report.html` | — |
+| 11 | `settings` | ការកំណត់ | `mdi:cog-outline` | `manager/settings/settings.html` | — |
 
 `policyNote`: «មើលឃើញគ្រប់វេនក្នុងសាខា · មិនមើលឃើញថ្លៃដើម · មិនអាចអនុម័តសំណើរបស់ខ្លួនឯង»
 
@@ -433,4 +437,4 @@ Everything in §§1–8 is built, plus these additions and deviations:
 | Change modes | Two: «ដុល្លារ + រៀល» and «រៀលទាំងអស់». An all-USD mode was dropped because coins don't circulate |
 | Charts | ECharts everywhere via `posChart()` (`shared/scripts/charts.js`) |
 | KHQR | In-terminal overlay with expiry and a stored QR hash; payment confirmation is manual (no Bakong API) |
-| Decisions taken | D1 blind count yes · D2 no separate card tender · D3 not built (no cross-shift receipt lookup yet) · D4 nearest 100 ៛ · D5 «អ្នកគ្រប់គ្រងវេន» · D6 manager reopens with reason · D7 shifts are a setting, default 2 |
+| Decisions taken | D1 blind count yes · D2 no separate card tender · D3 not built (no cross-shift receipt lookup yet) · D4 nearest 100 ៛ · D5 «អ្នកគ្រប់គ្រង» · D6 manager reopens with reason · D7 shifts are a setting, default 2 |

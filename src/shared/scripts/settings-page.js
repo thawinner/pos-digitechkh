@@ -1,6 +1,6 @@
-/* ទំព័រការកំណត់ — ប្រើរួមដោយអ្នកគ្រប់គ្រងវេន (manager/settings) និងម្ចាស់ហាង (admin/settings)
+/* ទំព័រការកំណត់ — ប្រើរួមដោយអ្នកគ្រប់គ្រង (manager/settings) និងម្ចាស់ហាង (admin/settings)
    ឯកសាររចនាលេខ 02 ផ្នែក 5.7 និងលេខ 03 (តួនាទីម្ចាស់ហាង)
-   • អ្នកគ្រប់គ្រងវេនកែបានតែការប្រចាំថ្ងៃ៖ អត្រាប្តូរប្រាក់ ទំនិញញឹកញាប់ បញ្ជីមូលហេតុ
+   • អ្នកគ្រប់គ្រងកែបានតែការប្រចាំថ្ងៃ៖ អត្រាប្តូរប្រាក់ ទំនិញញឹកញាប់ បញ្ជីមូលហេតុ
    • ច្បាប់សាច់ប្រាក់ គំរូវេន និងដែនកំណត់បញ្ជរ ជាសិទ្ធិម្ចាស់ហាង (អ្នកគ្រប់គ្រងឃើញតែអាន)
    រចនា៖ ម៉ឺនុយផ្នែកខាងឆ្វេង · ជួរការកំណត់មួយៗ · តម្លៃដែលបានកែមានសញ្ញាចំណុច · រក្សាទុកដោយលេខសម្ងាត់ · កត់ត្រាប្រវត្តិ */
 
@@ -16,6 +16,7 @@ const ALL_SECTIONS = [
     { id: 'cash', icon: 'fa-vault', label: 'សាច់ប្រាក់ក្នុងថត', keys: ['varianceTolerance', 'drawerLimitUSD', 'drawerLimitKHR', 'defaultFloatUSD', 'defaultFloatKHR'], admin: true },
     { id: 'shifts', icon: 'fa-clock', label: 'គំរូវេន', keys: ['shiftTemplates'], admin: true },
     { id: 'till', icon: 'fa-cash-register', label: 'ដែនកំណត់បញ្ជរ', keys: ['khqrSeconds', 'holdLimit', 'discountLimits'], admin: true },
+    { id: 'stock', icon: 'fa-boxes-stacked', label: 'ស្តុក', keys: ['allowNegativeStock', 'adjustLimitQty', 'adjustLimitUSD', 'countSchedule'], admin: true },
     { id: 'quick', icon: 'fa-bolt', label: 'ទំនិញញឹកញាប់', keys: ['quickKeys'] },
     { id: 'reasons', icon: 'fa-list-check', label: 'បញ្ជីមូលហេតុ', keys: ['reasons'] },
     { id: 'rules', icon: 'fa-lock', label: 'ច្បាប់ពីម្ចាស់ហាង', keys: [], managerOnly: true },
@@ -89,12 +90,14 @@ function noteFor(key) {
         case 'defaultFloatKHR': return `ប្រមាណ ${fmtUSD(draft.defaultFloatKHR / r)} · សរុបបាតថត ${fmtUSD(draft.defaultFloatUSD + draft.defaultFloatKHR / r)}`;
         case 'varianceTolerance': return `ខុសលើស ${fmtUSD(draft.varianceTolerance)} ត្រូវពន្យល់យ៉ាងតិច 20 តួអក្សរ ហើយអ្នកគ្រប់គ្រងត្រូវកត់ចំណាំ`;
         case 'khqrSeconds': return `${Math.floor(draft.khqrSeconds / 60)} នាទី ${draft.khqrSeconds % 60} វិនាទី · បាគងណែនាំមិនលើស 10 នាទី`;
+        case 'adjustLimitQty': return 'លើសចំនួននេះ អ្នកគ្រប់គ្រងត្រូវកត់ត្រាមូលហេតុច្បាស់លាស់';
+        case 'adjustLimitUSD': return 'លើសទឹកប្រាក់នេះ ត្រូវបង្ហាញជាករណីមិនប្រក្រតី';
         default: return '';
     }
 }
 
 function refreshNotes() {
-    ['fxRate', 'nbcRate', 'drawerLimitKHR', 'defaultFloatKHR', 'varianceTolerance', 'khqrSeconds'].forEach(k => {
+    ['fxRate', 'nbcRate', 'drawerLimitKHR', 'defaultFloatKHR', 'varianceTolerance', 'khqrSeconds', 'adjustLimitQty', 'adjustLimitUSD'].forEach(k => {
         const el = document.getElementById('note-' + k);
         if (el) el.textContent = noteFor(k);
     });
@@ -232,11 +235,32 @@ function renderTill(s) {
     return sectionHead(s, 'កូដស្កេនបាគង ការលក់ព្យួរ ដែនកំណត់បញ្ចុះតម្លៃ និងទំនិញញឹកញាប់') + `<div class="px-5 sm:px-6">
         ${row('khqrSeconds', 'សុពលភាពកូដស្កេនបាគង', 'ក្រោយពេលនេះ កូដផុតសុពលភាព ហើយអ្នកគិតលុយបង្កើតកូដថ្មី', numInput('khqrSeconds', 'វិនាទី'), noteFor('khqrSeconds'))}
         ${row('holdLimit', 'ការលក់ព្យួរក្នុងមួយវេន', 'ត្រូវបន្ត ឬបោះបង់ទាំងអស់មុនបិទវេន', numInput('holdLimit', 'ដង'))}
-        ${row('discountLimits', 'ដែនកំណត់បញ្ចុះតម្លៃ', 'លើសនេះ អ្នកគ្រប់គ្រងវេនត្រូវវាយលេខសម្ងាត់នៅបញ្ជរ', `<div class="space-y-2">${CASHIERS.map(c => `
+        ${row('discountLimits', 'ដែនកំណត់បញ្ចុះតម្លៃ', 'លើសនេះ អ្នកគ្រប់គ្រងត្រូវវាយលេខសម្ងាត់នៅបញ្ជរ', `<div class="space-y-2">${CASHIERS.map(c => `
             <div class="flex items-center gap-3">${avatarHtml(c.id, 'w-8 h-8')}<span class="sm-td text-slate-700 flex-1 truncate">${c.name}</span>
                 <div class="relative w-28"><input type="text" inputmode="decimal" value="${draft.discountLimits[c.id] != null ? draft.discountLimits[c.id] : 5}"
                     oninput="draft.discountLimits['${c.id}'] = Number(this.value.replace(/[^0-9.]/g, '')) || 0; renderSaveBar()"
                     class="sm-value w-full h-11 pl-3 pr-8 rounded-xl bg-slate-50 border border-slate-200 text-right focus:outline-none focus:border-indigo-500"><span class="absolute right-3 top-1/2 -translate-y-1/2 sm-td-sub text-slate-400">%</span></div></div>`).join('')}</div>`)}
+    </div>`;
+}
+
+function renderStock(s) {
+    const neg = draft.allowNegativeStock;
+    const sched = draft.countSchedule || 'weekly';
+    return sectionHead(s, 'ដែនកំណត់នៃការកែតម្រូវស្តុក កាលវិភាគរាប់ស្តុក និងការលក់ពេលអស់ស្តុក') + `<div class="px-5 sm:px-6">
+        ${row('allowNegativeStock', 'អនុញ្ញាតលក់ពេលស្តុកមិនគ្រប់', 'បើក៖ អនុញ្ញាតឱ្យអ្នកគិតលុយបន្តលក់ទោះបីស្តុកអស់ ឬអវិជ្ជមាន · បិទ៖ បញ្ឈប់ការលក់ពេលអស់ស្តុក', `
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="draft.allowNegativeStock = true; renderSaveBar(); render()" class="sm-badge h-11 px-4 rounded-xl border font-semibold transition ${neg ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}"><i class="fas fa-check mr-1.5"></i>អនុញ្ញាត</button>
+                <button type="button" onclick="draft.allowNegativeStock = false; renderSaveBar(); render()" class="sm-badge h-11 px-4 rounded-xl border font-semibold transition ${!neg ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}"><i class="fas fa-ban mr-1.5"></i>មិនអនុញ្ញាត</button>
+            </div>
+        `)}
+        ${row('adjustLimitQty', 'ដែនកំណត់ចំនួនកែតម្រូវ', 'ចំនួនឯកតាអតិបរមាដែលអាចកែតម្រូវក្នុងមួយលើកដោយគ្មានការត្រួតពិនិត្យបន្ថែម', numInput('adjustLimitQty', 'ឯកតា'), noteFor('adjustLimitQty'))}
+        ${row('adjustLimitUSD', 'ដែនកំណត់ទឹកប្រាក់កែតម្រូវ', 'ទឹកប្រាក់អតិបរមាគិតជាដុល្លារដែលអាចកែតម្រូវស្តុកក្នុងមួយលើក', numInput('adjustLimitUSD', 'ដុល្លារ', { prefix: '$' }), noteFor('adjustLimitUSD'))}
+        ${row('countSchedule', 'កាលវិភាគរាប់ស្តុកទៀងទាត់', 'កំណត់ពេលវេលាដែលអ្នកគ្រប់គ្រងត្រូវរាប់ស្តុកជាក់ស្តែង', `
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="draft.countSchedule = 'weekly'; renderSaveBar(); render()" class="sm-badge h-11 px-4 rounded-xl border font-semibold transition ${sched === 'weekly' ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}"><i class="fas fa-calendar-week mr-1.5"></i>រៀងរាល់សប្តាហ៍ (7 ថ្ងៃ)</button>
+                <button type="button" onclick="draft.countSchedule = 'monthly'; renderSaveBar(); render()" class="sm-badge h-11 px-4 rounded-xl border font-semibold transition ${sched === 'monthly' ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}"><i class="fas fa-calendar-days mr-1.5"></i>រៀងរាល់ខែ (30 ថ្ងៃ)</button>
+            </div>
+        `)}
     </div>`;
 }
 
@@ -254,7 +278,7 @@ function renderRules(s) {
     const v = posSettings();
     const item = (label, value) => `<div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-1 md:gap-6 py-3.5 border-b border-slate-100 last:border-0">
         <span class="sm-td text-slate-600">${label}</span><span class="sm-value text-slate-800 sm-figure md:text-right">${value}</span></div>`;
-    return sectionHead(s, 'កំណត់ដោយម្ចាស់ហាង · អ្នកគ្រប់គ្រងវេនមើលបាន តែមិនអាចកែ') + `<div class="px-5 sm:px-6 py-2">
+    return sectionHead(s, 'កំណត់ដោយម្ចាស់ហាង · អ្នកគ្រប់គ្រងមើលបាន តែមិនអាចកែ') + `<div class="px-5 sm:px-6 py-2">
         ${item('ល្បឹមភាពខុសគ្នាពេលបិទវេន', fmtUSD(v.varianceTolerance))}
         ${item('ពិដានក្នុងថត', `${fmtUSD(v.drawerLimitUSD)} · ${fmtKHR(v.drawerLimitKHR)}`)}
         ${item('ប្រាក់បាតថតស្តង់ដារ', `${fmtUSD(v.defaultFloatUSD)} · ${fmtKHR(v.defaultFloatKHR)}`)}
@@ -262,6 +286,9 @@ function renderRules(s) {
         ${item('សុពលភាពកូដស្កេនបាគង', `${Math.round(v.khqrSeconds / 60)} នាទី`)}
         ${item('ការលក់ព្យួរក្នុងមួយវេន', `${v.holdLimit} ដង`)}
         ${item('ដែនកំណត់បញ្ចុះតម្លៃ', CASHIERS.map(c => `${c.name} ${v.discountLimits[c.id] != null ? v.discountLimits[c.id] : 5}%`).join(' · '))}
+        ${item('អនុញ្ញាតលក់ពេលស្តុកអវិជ្ជមាន', v.allowNegativeStock ? 'អនុញ្ញាត' : 'មិនអនុញ្ញាត')}
+        ${item('ដែនកំណត់កែតម្រូវស្តុក', `${v.adjustLimitQty} ឯកតា · ${fmtUSD(v.adjustLimitUSD)}`)}
+        ${item('កាលវិភាគរាប់ស្តុក', v.countSchedule === 'weekly' ? 'រៀងរាល់សប្តាហ៍ (7 ថ្ងៃ)' : 'រៀងរាល់ខែ (30 ថ្ងៃ)')}
         <p class="sm-td-sub text-slate-500 py-3.5"><i class="fas fa-lock mr-1.5 text-slate-400"></i>ចង់ប្តូរ? សូមស្នើទៅម្ចាស់ហាង ${ADMINS.map(a => a.name).join(' · ')}</p>
     </div>`;
 }
@@ -305,6 +332,7 @@ function navSummary(id) {
         case 'cash': return `ល្បឹម ${fmtUSD(d.varianceTolerance)} · បាត ${fmtUSD(d.defaultFloatUSD)}`;
         case 'shifts': return `${d.shiftTemplates.length} វេន · ${d.shiftTemplates.map(t => t.start).join(' ')}`;
         case 'till': return `KHQR ${Math.round(d.khqrSeconds / 60)} នាទី · ព្យួរ ${d.holdLimit}`;
+        case 'stock': return `${d.allowNegativeStock ? 'លក់អវិជ្ជមាន' : 'ស្តុកវិជ្ជមាន'} · ដែន ${d.adjustLimitQty} · ${d.countSchedule === 'weekly' ? 'សប្តាហ៍' : 'ខែ'}`;
         case 'quick': return `${d.quickKeys.length} មុខ`;
         case 'rules': return 'មើលតែប៉ុណ្ណោះ';
         case 'reasons': return `${Object.values(d.reasons).reduce((n, l) => n + l.length, 0)} មូលហេតុ`;
@@ -329,7 +357,7 @@ function renderNav() {
 
 function render() {
     const s = SECTIONS.find(x => x.id === section) || SECTIONS[0];
-    const fn = { money: renderMoney, cash: renderCash, shifts: renderShifts, till: renderTill, quick: renderQuick, reasons: renderReasons, rules: renderRules, history: renderHistory }[s.id];
+    const fn = { money: renderMoney, cash: renderCash, shifts: renderShifts, till: renderTill, stock: renderStock, quick: renderQuick, reasons: renderReasons, rules: renderRules, history: renderHistory }[s.id];
     document.getElementById('sectionBody').innerHTML = fn(s);
     renderNav();
     renderSaveBar();

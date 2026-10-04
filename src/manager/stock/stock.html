@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - ស្តុកទំនិញ</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+</head>
+<body id="managerPortal" data-role-root="../.." data-active="stock" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="ស្តុកទំនិញ"
+             data-subtitle="ទំនិញក្នុងស្តុក បរិមាណអប្បបរមា និងបញ្ជីត្រូវបញ្ជាទិញ"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <div class="w-full space-y-5">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <p class="sm-card-sub text-slate-500">តាមដានចំនួនស្តុកជាក់ស្តែង កម្រិតសុវត្ថិភាព និងការណែនាំចំនួនបញ្ជាទិញបន្ថែម</p>
+                    <div class="flex flex-wrap items-center gap-2.5">
+                        <a href="create-adjustment.html" class="sm-value h-11 px-4 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center gap-2 shadow-sm transition"><i class="fas fa-sliders text-indigo-600"></i> កែតម្រូវស្តុក</a>
+                        <a href="create-stock-in.html" class="sm-value h-11 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold inline-flex items-center gap-2 shadow-sm transition"><i class="fas fa-truck-ramp-box"></i> ទទួលស្តុកថ្មី</a>
+                    </div>
+                </div>
+
+                <div id="kpiRow" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
+
+                <div class="bg-white rounded-2xl p-3 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-3">
+                    <div id="statusTabs" class="flex flex-wrap items-center gap-2"></div>
+                    <div class="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+                        <div class="relative flex-1 sm:w-48">
+                            <i class="fas fa-filter absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <div class="relative">
+                                <button id="catFilterBtn" type="button" onclick="toggleRowActionMenu(event, 'catDropdown')" class="w-full h-10 pl-9 pr-8 text-left rounded-xl bg-slate-50 border border-slate-200 sm-td text-slate-700 flex items-center justify-between">
+                                    <span id="catFilterLabel" class="truncate">ប្រភេទទាំងអស់</span>
+                                    <i class="fas fa-chevron-down text-[10px] text-slate-400"></i>
+                                </button>
+                                <div id="catDropdown" class="hidden absolute top-full mt-1.5 left-0 w-48 bg-white rounded-xl shadow-xl border border-slate-200 p-1.5 z-50"></div>
+                            </div>
+                        </div>
+                        <div class="relative flex-1 sm:w-64">
+                            <i class="fas fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input id="searchInput" type="text" oninput="searchTerm=this.value.trim().toLowerCase(); renderList()" placeholder="ស្វែងរកឈ្មោះ ឬបាកូដ..." class="w-full h-10 pl-9 pr-3 rounded-xl bg-slate-50 border border-slate-200 sm-td focus:outline-none focus:border-indigo-500">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="hidden md:!block">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 text-slate-500 border-b border-slate-100">
+                                <tr>
+                                    <th class="sm-th py-3.5 px-4">ទំនិញ</th>
+                                    <th class="sm-th py-3.5 px-4">ប្រភេទ</th>
+                                    <th class="sm-th py-3.5 px-4 text-right">តម្លៃលក់</th>
+                                    <th class="sm-th py-3.5 px-4 text-right">ក្នុងស្តុក</th>
+                                    <th class="sm-th py-3.5 px-4 text-right">អប្បបរមា</th>
+                                    <th class="sm-th py-3.5 px-4 text-center">ស្ថានភាព</th>
+                                    <th class="sm-th py-3.5 px-4 text-right">ណែនាំបញ្ជាទិញ</th>
+                                    <th class="sm-th py-3.5 px-4 text-center w-16">សកម្មភាព</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rows" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                        </table>
+                    </div>
+                    <div id="cards" class="md:hidden divide-y divide-slate-100"></div>
+                    <div id="empty" class="hidden"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        const q = new URLSearchParams(location.search);
+        let tab = ['all', 'low', 'out', 'reorder'].includes(q.get('tab')) ? q.get('tab') : 'all';
+        let selectedCategory = 'all';
+        let searchTerm = '';
+
+        function renderKpis() {
+            const levels = onHandLevels();
+            const prods = sellableProducts();
+            const total = prods.length;
+            let okCount = 0;
+            let lowCount = 0;
+            let outCount = 0;
+
+            prods.forEach(p => {
+                const s = stockStatusOf(p, levels[p.sku] || 0);
+                if (s === 'ok') okCount++;
+                else if (s === 'low') lowCount++;
+                else if (s === 'out') outCount++;
+            });
+
+            document.getElementById('kpiRow').innerHTML =
+                kpiCard('មុខទំនិញសរុប', `${total}`, 'ទំនិញសកម្មទាំងអស់') +
+                kpiCard('ស្តុកគ្រប់គ្រាន់', `${okCount}`, `${total ? Math.round(okCount / total * 100) : 0}% នៃទំនិញ`, 'text-emerald-600') +
+                kpiCard('ជិតអស់ស្តុក', `${lowCount}`, 'ដល់ ឬក្រោមអប្បបរមា', lowCount ? 'text-amber-600' : 'text-slate-800') +
+                kpiCard('អស់ពីស្តុក', `${outCount}`, outCount ? 'ត្រូវបំពេញស្តុកជាបន្ទាន់' : 'គ្មានទំនិញអស់ស្តុក', outCount ? 'text-rose-600' : 'text-slate-800');
+        }
+
+        function renderTabs() {
+            const levels = onHandLevels();
+            const prods = sellableProducts();
+            let low = 0;
+            let out = 0;
+            prods.forEach(p => {
+                const s = stockStatusOf(p, levels[p.sku] || 0);
+                if (s === 'low') low++;
+                if (s === 'out') out++;
+            });
+
+            const tabs = [
+                { id: 'all', label: `ទាំងអស់ (${prods.length})` },
+                { id: 'low', label: `ជិតអស់ (${low})` },
+                { id: 'out', label: `អស់ស្តុក (${out})` },
+                { id: 'reorder', label: `បញ្ជីត្រូវបញ្ជាទិញ (${low + out})` }
+            ];
+
+            document.getElementById('statusTabs').innerHTML = tabs.map(t => `
+                <button onclick="tab='${t.id}'; renderTabs(); renderList()" type="button" class="sm-badge px-3.5 py-2 rounded-xl transition ${tab === t.id
+                    ? 'bg-indigo-600 text-white font-semibold shadow-sm'
+                    : 'text-slate-600 hover:bg-slate-100 font-medium'}">${t.label}</button>
+            `).join('');
+        }
+
+        function renderCategories() {
+            const drop = document.getElementById('catDropdown');
+            drop.innerHTML = CATEGORIES.map(c => `
+                <button type="button" onclick="selectCategory('${c.id}')" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg sm-td text-left hover:bg-slate-50 transition ${selectedCategory === c.id ? 'bg-indigo-50 font-semibold text-indigo-700' : 'text-slate-700'}">
+                    <i class="fas ${c.icon} w-4 text-center text-slate-400"></i>
+                    <span>${c.label}</span>
+                </button>
+            `).join('');
+        }
+
+        function selectCategory(id) {
+            selectedCategory = id;
+            const c = CATEGORIES.find(x => x.id === id);
+            document.getElementById('catFilterLabel').textContent = c ? c.label : 'ប្រភេទទាំងអស់';
+            closeRowActionMenus();
+            renderList();
+        }
+
+        function renderList() {
+            const levels = onHandLevels();
+            let list = sellableProducts();
+
+            if (selectedCategory !== 'all') {
+                list = list.filter(p => p.category === selectedCategory);
+            }
+
+            if (searchTerm) {
+                list = list.filter(p => p.name.toLowerCase().includes(searchTerm) || p.sku.includes(searchTerm) || (p.barcode && p.barcode.includes(searchTerm)));
+            }
+
+            if (tab === 'low') {
+                list = list.filter(p => stockStatusOf(p, levels[p.sku] || 0) === 'low');
+            } else if (tab === 'out') {
+                list = list.filter(p => stockStatusOf(p, levels[p.sku] || 0) === 'out');
+            } else if (tab === 'reorder') {
+                list = list.filter(p => stockStatusOf(p, levels[p.sku] || 0) !== 'ok');
+            }
+
+            const empty = document.getElementById('empty');
+            if (!list.length) {
+                document.getElementById('rows').innerHTML = '';
+                document.getElementById('cards').innerHTML = '';
+                empty.classList.remove('hidden');
+                empty.innerHTML = emptyState('fa-boxes-stacked', 'រកមិនឃើញមុខទំនិញ', 'សូមសាកល្បងជម្រះតម្រង ឬស្វែងរកពាក្យផ្សេង',
+                    `<button onclick="tab='all'; selectedCategory='all'; searchTerm=''; document.getElementById('searchInput').value=''; selectCategory('all'); renderTabs(); renderList()" type="button" class="sm-badge mt-4 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold">ជម្រះតម្រងទាំងអស់</button>`);
+                return;
+            }
+
+            empty.classList.add('hidden');
+
+            const catLabel = catId => (CATEGORIES.find(c => c.id === catId) || {}).label || catId;
+
+            document.getElementById('rows').innerHTML = list.map((p, idx) => {
+                const qty = levels[p.sku] || 0;
+                const status = stockStatusOf(p, qty);
+                const sMeta = STOCK_STATUS[status];
+                const menuId = `stockRowMenu-${p.sku}`;
+                const needReorder = status !== 'ok';
+                const reorderSuggested = needReorder ? (p.reorderQty || 24) : null;
+
+                return `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="py-3 px-4">
+                        <div class="flex items-center gap-3">
+                            <span class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 inline-flex items-center justify-center p-0.5 shadow-sm">
+                                ${productImgHtml(p)}
+                            </span>
+                            <div class="min-w-0">
+                                <p class="font-medium text-slate-800 leading-snug truncate">${p.name}</p>
+                                <p class="text-xs text-slate-400 font-mono mt-0.5">បាកូដ: ${p.barcode || p.sku}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-3 px-4 sm-td">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-lg bg-slate-100 text-slate-600 text-xs">${catLabel(p.category)}</span>
+                    </td>
+                    <td class="py-3 px-4 text-right sm-td sm-figure font-medium">${fmtUSD(p.price)}</td>
+                    <td class="py-3 px-4 text-right sm-td sm-figure font-bold ${qty <= 0 ? 'text-rose-600' : (status === 'low' ? 'text-amber-600' : 'text-slate-800')}">${qty} ${p.unit || 'ឯកតា'}</td>
+                    <td class="py-3 px-4 text-right sm-td sm-figure text-slate-500">${p.minStock || 5} ${p.unit || 'ឯកតា'}</td>
+                    <td class="py-3 px-4 text-center">
+                        <span class="sm-badge px-2.5 py-0.5 rounded-full border text-xs font-medium ${sMeta.cls}">${sMeta.label}</span>
+                    </td>
+                    <td class="py-3 px-4 text-right sm-td sm-figure">
+                        ${reorderSuggested ? `<span class="inline-flex items-center gap-1 font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-lg"><i class="fas fa-plus text-[10px]"></i> ${reorderSuggested} ${p.unit || ''}</span>` : '<span class="text-slate-400">—</span>'}
+                    </td>
+                    <td class="py-3 px-4 text-center relative">
+                        <button onclick="toggleRowActionMenu(event, '${menuId}')" type="button" class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-500 flex items-center justify-center mx-auto transition">
+                            <i class="fas fa-ellipsis-vertical text-sm"></i>
+                        </button>
+                        <div id="${menuId}" class="hidden absolute right-4 top-10 w-44 bg-white rounded-2xl shadow-2xl border border-slate-200 p-1.5 text-left z-50">
+                            <button onclick="location.href='../stock-history/stock-history.html?sku=${p.sku}'" type="button" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-50 text-left transition sm-td">
+                                <i class="fas fa-history text-indigo-500 text-xs w-4"></i>ប្រវត្តិស្តុក
+                            </button>
+                            <button onclick="location.href='create-adjustment.html?sku=${p.sku}'" type="button" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-50 text-left transition sm-td">
+                                <i class="fas fa-sliders text-amber-500 text-xs w-4"></i>កែតម្រូវស្តុក
+                            </button>
+                            <button onclick="location.href='create-stock-in.html?sku=${p.sku}'" type="button" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-50 text-left transition sm-td">
+                                <i class="fas fa-truck-ramp-box text-emerald-500 text-xs w-4"></i>ទទួលស្តុក
+                            </button>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+
+            document.getElementById('cards').innerHTML = list.map(p => {
+                const qty = levels[p.sku] || 0;
+                const status = stockStatusOf(p, qty);
+                const sMeta = STOCK_STATUS[status];
+                const needReorder = status !== 'ok';
+
+                return `
+                <div class="p-4 space-y-3">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <span class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 inline-flex items-center justify-center p-0.5 shadow-sm">
+                                ${productImgHtml(p)}
+                            </span>
+                            <div>
+                                <p class="font-medium text-slate-800 leading-snug">${p.name}</p>
+                                <p class="text-xs text-slate-400 mt-0.5">${catLabel(p.category)} · បាកូដ ${p.barcode || p.sku}</p>
+                            </div>
+                        </div>
+                        <span class="sm-badge px-2.5 py-0.5 rounded-full border text-xs font-medium ${sMeta.cls}">${sMeta.label}</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 bg-slate-50 rounded-xl p-2.5 text-center">
+                        <div><p class="text-xs text-slate-400">ក្នុងស្តុក</p><p class="sm-value font-bold ${qty <= 0 ? 'text-rose-600' : 'text-slate-800'} mt-0.5">${qty} ${p.unit || ''}</p></div>
+                        <div><p class="text-xs text-slate-400">អប្បបរមា</p><p class="sm-value text-slate-600 mt-0.5">${p.minStock || 5} ${p.unit || ''}</p></div>
+                        <div><p class="text-xs text-slate-400">តម្លៃលក់</p><p class="sm-value text-slate-700 mt-0.5">${fmtUSD(p.price)}</p></div>
+                    </div>
+                    <div class="flex items-center justify-end gap-2 pt-1">
+                        <a href="../stock-history/stock-history.html?sku=${p.sku}" class="sm-badge px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs">ប្រវត្តិ</a>
+                        <a href="create-adjustment.html?sku=${p.sku}" class="sm-badge px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs">កែតម្រូវ</a>
+                        <a href="create-stock-in.html?sku=${p.sku}" class="sm-badge px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold">ទទួលស្តុក</a>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function renderAll() {
+            renderKpis();
+            renderTabs();
+            renderCategories();
+            renderList();
+            updatePortalBadges();
+            refreshPortalNotifications();
+        }
+
+        window.onStoreChanged = renderAll;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAll();
+        });
+    </script>
+</body>
+</html>

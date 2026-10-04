@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - កែតម្រូវស្តុកទំនិញ</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+</head>
+<body id="managerPortal" data-role-root="../.." data-active="stock" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="កែតម្រូវស្តុកទំនិញ"
+             data-subtitle="កត់ត្រាការខូចខាត ផុតកំណត់ បាត់ រកឃើញ ឬប្រើប្រាស់ក្នុងហាង"
+             data-back="stock.html"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <div class="w-full grid grid-cols-1 xl:grid-cols-3 gap-5 items-start">
+                <section class="xl:col-span-2 space-y-5">
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 sm:p-6 space-y-5">
+                        <!-- ជ្រើសរើសមុខទំនិញ -->
+                        <div>
+                            <label class="block">
+                                <span class="sm-label text-slate-700 font-semibold mb-2 block">មុខទំនិញ <span class="text-rose-500">*</span></span>
+                                <div class="relative">
+                                    <button id="productPickerBtn" type="button" onclick="toggleProdPicker(event)" class="w-full h-12 px-3.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 sm-td text-left flex items-center justify-between gap-2 transition">
+                                        <span id="selectedProductLabel" class="text-slate-400">ជ្រើសរើសមុខទំនិញ...</span>
+                                        <i class="fas fa-chevron-down text-xs text-slate-400"></i>
+                                    </button>
+                                    <div id="productPickerDrop" onclick="event.stopPropagation()" class="hidden absolute left-0 right-0 top-full mt-1.5 bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 z-50 max-h-72 overflow-y-auto">
+                                        <div class="p-1.5 border-b border-slate-100 mb-1 sticky top-0 bg-white">
+                                            <input id="pickerSearch" type="text" placeholder="ស្វែងរកតាមឈ្មោះ ឬបាកូដ..." oninput="filterProdPicker(this.value)" class="w-full h-9 px-3 rounded-lg bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:border-indigo-500">
+                                        </div>
+                                        <div id="pickerList" class="space-y-0.5"></div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- មូលហេតុ -->
+                        <div>
+                            <span class="sm-label text-slate-700 font-semibold mb-2 block">មូលហេតុកែតម្រូវ <span class="text-rose-500">*</span></span>
+                            <div id="reasonChips" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5"></div>
+                            <p id="reasonHelp" class="sm-td-sub text-slate-500 mt-2.5"></p>
+                        </div>
+
+                        <!-- ចំនួនឯកតា -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block">
+                                    <span class="sm-label text-slate-700 font-semibold">ចំនួនឯកតា <span class="text-rose-500">*</span></span>
+                                    <input id="qtyInput" type="number" min="1" step="1" value="1" placeholder="1" oninput="renderCalculation()" class="sm-value w-full h-12 mt-1.5 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-right font-semibold focus:outline-none focus:border-indigo-500 sm-figure">
+                                </label>
+                            </div>
+                            <div>
+                                <label class="block">
+                                    <span class="sm-label text-slate-700 font-semibold">តម្លៃលក់រាយប៉ាន់ស្មាន</span>
+                                    <input id="retailValDisplay" type="text" readonly disabled value="$0.00" class="sm-value w-full h-12 mt-1.5 px-3.5 rounded-xl bg-slate-100 border border-slate-200 text-right text-slate-600 sm-figure">
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- បដាព្រមានលើសដែនកំណត់ -->
+                        <div id="limitWarningBanner" class="hidden p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs sm-td">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-triangle-exclamation text-amber-600 text-base mt-0.5"></i>
+                                <div>
+                                    <p class="font-bold text-amber-900">ការកែតម្រូវនេះលើសដែនកំណត់!</p>
+                                    <p class="mt-0.5 text-amber-700" id="limitWarningText"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- កំណត់សម្គាល់ -->
+                        <div>
+                            <label class="block">
+                                <span class="sm-label text-slate-700 font-semibold">កំណត់សម្គាល់លម្អិត <span class="text-rose-500">*</span></span>
+                                <textarea id="noteInput" rows="3" oninput="renderCalculation()" placeholder="បញ្ជាក់លម្អិតអំពីស្ថានភាពទំនិញ ទីតាំង ឬមូលហេតុជាក់ស្តែង..." class="sm-td w-full mt-1.5 p-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+                            </label>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- សង្ខេប និងការរក្សាទុក -->
+                <div class="xl:col-span-1 space-y-4 xl:sticky xl:top-0">
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
+                        <div class="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm flex-shrink-0">
+                                <i class="fas fa-file-lines"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-base leading-none">សង្ខេបការកែតម្រូវ</h3>
+                                <p class="text-xs text-slate-400 mt-1">ពិនិត្យព័ត៌មានមុនពេលរក្សាទុក</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3 divide-y divide-slate-100 sm-td">
+                            <div class="flex items-center justify-between pt-1">
+                                <span class="text-slate-500">ទំនិញ</span>
+                                <span id="sumProdName" class="font-medium text-slate-800 truncate max-w-[180px] text-right">—</span>
+                            </div>
+                            <div class="flex items-center justify-between pt-3">
+                                <span class="text-slate-500">មូលហេតុ</span>
+                                <span id="sumReason" class="font-medium text-slate-800">—</span>
+                            </div>
+                            <div class="flex items-center justify-between pt-3">
+                                <span class="text-slate-500">ស្តុកបច្ចុប្បន្ន</span>
+                                <span id="sumCurrentStock" class="font-semibold text-slate-700 sm-figure">—</span>
+                            </div>
+                            <div class="flex items-center justify-between pt-3">
+                                <span class="text-slate-500">ការផ្លាស់ប្តូរ</span>
+                                <span id="sumDiff" class="font-bold sm-figure">—</span>
+                            </div>
+                            <div class="flex items-center justify-between pt-3">
+                                <span class="text-slate-500">ស្តុកថ្មីក្រោយកែ</span>
+                                <span id="sumNewStock" class="font-bold text-indigo-700 sm-figure text-lg">—</span>
+                            </div>
+                        </div>
+
+                        <div id="shrinkageNotice" class="hidden p-3.5 bg-rose-50/80 rounded-xl border border-rose-200/80 text-rose-800 text-xs flex items-start gap-2.5 leading-relaxed">
+                            <i class="fas fa-heart-crack text-rose-600 text-sm mt-0.5 flex-shrink-0"></i>
+                            <div>
+                                ចលនានេះនឹងត្រូវរាប់ជា <strong class="font-bold text-rose-900">ការបាត់បង់ និងខូចខាត</strong> ក្នុងរបាយការណ៍ម្ចាស់ហាង។
+                            </div>
+                        </div>
+
+                        <div class="pt-2 grid grid-cols-2 gap-2.5">
+                            <a href="stock.html" class="h-11 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-semibold inline-flex items-center justify-center transition text-sm cursor-pointer">បោះបង់</a>
+                            <button id="saveBtn" onclick="saveAdjustment()" type="button" class="h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold inline-flex items-center justify-center gap-2 shadow-sm transition text-sm cursor-pointer">
+                                <i class="fas fa-check text-xs"></i> រក្សាទុក
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        const q = new URLSearchParams(location.search);
+        let selectedSku = q.get('sku') || '';
+        let selectedReason = 'damaged';
+
+        const REASON_HELP = {
+            damaged: 'ទំនិញខូចខាត បែកបាក់ ឬលែងអាចលក់បាន។ កាត់ស្តុកចេញ (-1) និងរាប់ជាការបាត់បង់។',
+            expired: 'ទំនិញហួសកាលបរិច្ឆេទប្រើប្រាស់។ កាត់ស្តុកចេញ (-1) និងរាប់ជាការបាត់បង់។',
+            lost: 'ទំនិញបាត់ពីហាងដោយមិនដឹងមូលហេតុ។ កាត់ស្តុកចេញ (-1) និងរាប់ជាការបាត់បង់។',
+            found: 'ទំនិញដែលធ្លាប់បាត់ រកឃើញត្រឡប់មកវិញ។ បន្ថែមស្តុកចូល (+1)។',
+            internal: 'ទំនិញយកទៅប្រើប្រាស់ក្នុងដំណើរការហាង។ កាត់ស្តុកចេញ (-1) មិនរាប់ជាការបាត់បង់។'
+        };
+
+        function toggleProdPicker(e) {
+            e.stopPropagation();
+            const drop = document.getElementById('productPickerDrop');
+            const isHidden = drop.classList.contains('hidden');
+            if (isHidden) {
+                drop.classList.remove('hidden');
+                document.getElementById('pickerSearch').focus();
+            } else {
+                drop.classList.add('hidden');
+            }
+        }
+
+        function filterProdPicker(val) {
+            const query = val.trim().toLowerCase();
+            const list = document.querySelectorAll('#pickerList button');
+            list.forEach(btn => {
+                const txt = btn.innerText.toLowerCase();
+                btn.style.display = (!query || txt.includes(query)) ? 'flex' : 'none';
+            });
+        }
+
+        function pickProduct(sku) {
+            selectedSku = sku;
+            document.getElementById('productPickerDrop').classList.add('hidden');
+            renderProductDisplay();
+            renderCalculation();
+        }
+
+        document.addEventListener('click', () => {
+            const drop = document.getElementById('productPickerDrop');
+            if (drop) drop.classList.add('hidden');
+        });
+
+        function renderProductDisplay() {
+            const p = getProduct(selectedSku);
+            const label = document.getElementById('selectedProductLabel');
+            if (p) {
+                const levels = onHandLevels();
+                const cur = levels[p.sku] || 0;
+                label.innerHTML = `
+                    <span class="flex items-center gap-2.5 min-w-0">
+                        <span class="w-7 h-7 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 inline-flex items-center justify-center p-0.5 shadow-sm">
+                            ${productImgHtml(p)}
+                        </span>
+                        <span class="font-medium text-slate-800 truncate">${p.name}</span>
+                        <span class="text-xs text-slate-400 font-mono">(${p.barcode || p.sku})</span>
+                        <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">ស្តុក: ${cur}</span>
+                    </span>`;
+            } else {
+                label.innerHTML = `<span class="text-slate-400">ជ្រើសរើសមុខទំនិញ...</span>`;
+            }
+        }
+
+        function renderProductOptions() {
+            const host = document.getElementById('pickerList');
+            const prods = sellableProducts();
+            const levels = onHandLevels();
+
+            host.innerHTML = prods.map(p => {
+                const cur = levels[p.sku] || 0;
+                return `
+                <button type="button" onclick="pickProduct('${p.sku}')" class="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 text-left transition ${p.sku === selectedSku ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-700'}">
+                    <span class="flex items-center gap-2.5 min-w-0">
+                        <span class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 inline-flex items-center justify-center p-0.5 shadow-sm">
+                            ${productImgHtml(p)}
+                        </span>
+                        <span class="min-w-0">
+                            <span class="block text-xs font-medium truncate">${p.name}</span>
+                            <span class="block text-[10px] text-slate-400 font-mono">${p.barcode || p.sku} · តម្លៃ ${fmtUSD(p.price)}</span>
+                        </span>
+                    </span>
+                    <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md flex-shrink-0">
+                        ស្តុក: ${cur}
+                    </span>
+                </button>`;
+            }).join('');
+        }
+
+        const REASON_ICONS = {
+            damaged: 'fa-triangle-exclamation',
+            expired: 'fa-calendar-xmark',
+            lost: 'fa-magnifying-glass-minus',
+            found: 'fa-circle-plus',
+            internal: 'fa-shop'
+        };
+
+        function renderReasonChips() {
+            const host = document.getElementById('reasonChips');
+            host.innerHTML = Object.entries(STOCK_ADJUST_REASONS).map(([k, meta]) => {
+                const isSel = selectedReason === k;
+                const signTxt = meta.sign > 0 ? '+ បន្ថែម' : '- កាត់ចេញ';
+                const tone = meta.sign > 0 ? 'emerald' : (meta.shrink ? 'rose' : 'slate');
+                const icon = REASON_ICONS[k] || 'fa-box';
+
+                return `
+                <button type="button" onclick="selectedReason='${k}'; renderReasonChips(); renderCalculation()" class="p-3 rounded-xl border text-left transition relative flex flex-col justify-between gap-2.5 cursor-pointer ${isSel
+                    ? 'border-indigo-600 bg-indigo-50/70 ring-2 ring-indigo-500/20 shadow-sm'
+                    : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/60'}">
+                    <div class="flex items-center justify-between">
+                        <span class="w-7 h-7 rounded-lg flex items-center justify-center text-xs ${isSel ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'}">
+                            <i class="fas ${icon}"></i>
+                        </span>
+                        ${isSel ? '<i class="fas fa-circle-check text-indigo-600 text-xs"></i>' : ''}
+                    </div>
+                    <div>
+                        <p class="font-semibold text-xs ${isSel ? 'text-indigo-950 font-bold' : 'text-slate-800'} leading-snug">${meta.label}</p>
+                        <span class="inline-flex items-center mt-1 text-[11px] font-semibold text-${tone}-600 bg-${tone}-50 px-1.5 py-0.5 rounded-md border border-${tone}-200/50">${signTxt}</span>
+                    </div>
+                </button>`;
+            }).join('');
+
+            document.getElementById('reasonHelp').textContent = REASON_HELP[selectedReason] || '';
+            const isShrink = STOCK_ADJUST_REASONS[selectedReason]?.shrink;
+            document.getElementById('shrinkageNotice').classList.toggle('hidden', !isShrink);
+        }
+
+        function renderCalculation() {
+            const p = getProduct(selectedSku);
+            const meta = STOCK_ADJUST_REASONS[selectedReason] || { sign: -1, label: '' };
+            const sign = meta.sign;
+            const qty = Math.max(1, parseInt(document.getElementById('qtyInput').value, 10) || 1);
+
+            document.getElementById('sumProdName').textContent = p ? p.name : '—';
+            const reasonBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${meta.sign > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : (meta.shrink ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-slate-100 text-slate-700 border border-slate-200')}">${meta.label}</span>`;
+            document.getElementById('sumReason').innerHTML = reasonBadge;
+
+            if (!p) {
+                document.getElementById('sumCurrentStock').textContent = '—';
+                document.getElementById('sumDiff').textContent = '—';
+                document.getElementById('sumNewStock').textContent = '—';
+                document.getElementById('retailValDisplay').value = '$0.00';
+                document.getElementById('limitWarningBanner').classList.add('hidden');
+                return;
+            }
+
+            const levels = onHandLevels();
+            const cur = levels[p.sku] || 0;
+            const diff = sign * qty;
+            const next = cur + diff;
+            const retailVal = qty * p.price;
+
+            document.getElementById('retailValDisplay').value = fmtUSD(retailVal);
+            document.getElementById('sumCurrentStock').textContent = `${cur} ${p.unit || ''}`;
+
+            const diffEl = document.getElementById('sumDiff');
+            diffEl.textContent = `${diff > 0 ? '+' : ''}${diff} ${p.unit || ''}`;
+            diffEl.className = `font-bold sm-figure ${diff < 0 ? 'text-rose-600' : 'text-emerald-600'}`;
+
+            document.getElementById('sumNewStock').textContent = `${next} ${p.unit || ''}`;
+
+            // ពិនិត្យដែនកំណត់ (Settings: adjustLimitQty & adjustLimitUSD)
+            const st = posSettings();
+            const limitQty = st.adjustLimitQty || 10;
+            const limitUSD = st.adjustLimitUSD || 50;
+            const overQty = qty > limitQty;
+            const overUSD = retailVal > limitUSD;
+
+            const banner = document.getElementById('limitWarningBanner');
+            const warnText = document.getElementById('limitWarningText');
+
+            if (overQty || overUSD) {
+                banner.classList.remove('hidden');
+                const reasons = [];
+                if (overQty) reasons.push(`ចំនួន ${qty} ឯកតា លើសដែនកំណត់ ${limitQty} ឯកតា`);
+                if (overUSD) reasons.push(`តម្លៃ ${fmtUSD(retailVal)} លើសដែនកំណត់ ${fmtUSD(limitUSD)}`);
+                warnText.innerHTML = `${reasons.join(' និង ')}។ ការកែតម្រូវនេះនឹងត្រូវកត់ត្រាជាករណីមិនប្រក្រតី (Exceptions) ជូនអ្នកគ្រប់គ្រង និងម្ចាស់ហាង។`;
+            } else {
+                banner.classList.add('hidden');
+            }
+        }
+
+        async function saveAdjustment() {
+            const p = getProduct(selectedSku);
+            if (!p) {
+                showToast('សូមជ្រើសរើសមុខទំនិញដែលត្រូវកែតម្រូវ', 'warning');
+                return;
+            }
+            const qty = Math.max(1, parseInt(document.getElementById('qtyInput').value, 10) || 1);
+            const note = document.getElementById('noteInput').value.trim();
+
+            if (!note) {
+                showToast('សូមបញ្ចូលកំណត់សម្គាល់លម្អិតអំពីមូលហេតុកែតម្រូវ', 'warning');
+                document.getElementById('noteInput').focus();
+                return;
+            }
+
+            const meta = STOCK_ADJUST_REASONS[selectedReason];
+            const sign = meta.sign;
+            const totalDiff = sign * qty;
+
+            const ok = await showPinConfirm({
+                title: 'បញ្ជាក់ការកែតម្រូវស្តុក',
+                message: `${p.name} · ${meta.label}<br>ចំនួន: ${totalDiff > 0 ? '+' : ''}${totalDiff} ${p.unit || ''} · ${fmtUSD(qty * p.price)}<br>សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ`,
+                userId: ME_MANAGER,
+                confirmText: 'កែតម្រូវ',
+                danger: meta.sign < 0
+            });
+
+            if (!ok) return;
+
+            const move = stockMove({
+                type: 'adjust',
+                sku: p.sku,
+                qty: totalDiff,
+                at: isoLocal(new Date()),
+                by: ME_MANAGER,
+                reason: selectedReason,
+                ref: '',
+                note
+            });
+
+            saveStockMoves([move]);
+            showToast(`បានកែតម្រូវស្តុក ${p.name} (${totalDiff > 0 ? '+' : ''}${totalDiff})`, 'success');
+
+            setTimeout(() => {
+                location.href = 'stock.html';
+            }, 600);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProductOptions();
+            renderReasonChips();
+            renderProductDisplay();
+            renderCalculation();
+        });
+    </script>
+</body>
+</html>

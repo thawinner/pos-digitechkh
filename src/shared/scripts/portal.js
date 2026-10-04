@@ -32,29 +32,32 @@ const PORTAL_CONFIGS = {
         userInitials: 'ចម',
         userName: 'ចន្ទ មករា',
         userRole: 'អ្នកគិតលុយលក់រាយ',
-        policyNote: 'ជាប់សោរត្រឹមវេនបច្ចុប្បន្ន។ មិនអាចរុករកប្រតិបត្តិការ ឬចំណូលពីវេនមុនបានឡើយ។ ការលុបចោល ការប្រគល់ទំនិញវិញ និងការបញ្ចុះតម្លៃលើសកំណត់ ត្រូវការការអនុម័តពីអ្នកគ្រប់គ្រងវេន។',
+        policyNote: 'ជាប់សោរត្រឹមវេនបច្ចុប្បន្ន។ មិនអាចរុករកប្រតិបត្តិការ ឬចំណូលពីវេនមុនបានឡើយ។ ការលុបចោល ការប្រគល់ទំនិញវិញ និងការបញ្ចុះតម្លៃលើសកំណត់ ត្រូវការការអនុម័តពីអ្នកគ្រប់គ្រង។',
         nav: [
             { id: 'pos', label: 'ផ្ទាំងគិតលុយ', icon: 'mdi:point-of-sale', href: 'cashier/terminal/pos-terminal.html' },
             { id: 'receipts', label: 'វិក្កយបត្រក្នុងវេន', icon: 'mdi:receipt-text-outline', href: 'cashier/receipts/receipts.html', badge: true },
             { id: 'close-shift', label: 'បិទវេន និងរាប់សាច់ប្រាក់', icon: 'mdi:lock-outline', href: 'cashier/shift/close-shift.html' }
         ]
     },
-    /* អ្នកគ្រប់គ្រងវេន (ឯកសាររចនាលេខ 02 ផ្នែក 4)
+    /* អ្នកគ្រប់គ្រង (ឯកសាររចនាលេខ 02 ផ្នែក 4)
        badgeFn = ឈ្មោះអនុគមន៍ក្នុង manager-data.js ដែលត្រឡប់ចំនួនសម្រាប់ផ្លាកលេខ */
     managerPortal: {
         sidebarV2: true,
-        title: 'អ្នកគ្រប់គ្រងវេន',
-        roleName: 'អ្នកគ្រប់គ្រងវេន',
+        title: 'អ្នកគ្រប់គ្រង',
+        roleName: 'អ្នកគ្រប់គ្រង',
         roleIcon: 'mdi:shield-account-outline',
         userInitials: 'សវ',
         userName: 'សុខ វណ្ណា',
-        userRole: 'អ្នកគ្រប់គ្រងវេន · សាខាកណ្តាល',
+        userRole: 'អ្នកគ្រប់គ្រង · សាខាកណ្តាល',
         policyNote: 'មើលឃើញគ្រប់វេនក្នុងសាខា · មិនមើលឃើញថ្លៃដើម · មិនអាចអនុម័តសំណើរបស់ខ្លួនឯង · រាល់ការអនុម័តត្រូវបានកត់ត្រា ហើយមិនអាចត្រឡប់វិញបាន។',
         nav: [
             { group: 'ថ្ងៃនេះ', id: 'dashboard', label: 'ផ្ទាំងគ្រប់គ្រង', icon: 'mdi:view-dashboard-outline', href: 'manager/dashboard/dashboard.html' },
             { id: 'approvals', label: 'សំណើរង់ចាំអនុម័ត', icon: 'mdi:shield-check-outline', href: 'manager/approvals/approvals.html', badgeFn: 'mgrPendingApprovalCount', badgeTone: 'amber' },
             { id: 'shifts', label: 'វេន និងបញ្ជរគិតលុយ', icon: 'mdi:cash-register', href: 'manager/shifts/shifts.html', badgeFn: 'mgrAwaitingReviewCount', badgeTone: 'amber' },
             { id: 'cash', label: 'ចលនាសាច់ប្រាក់', icon: 'mdi:safe', href: 'manager/cash/cash.html', badgeFn: 'mgrPendingDropCount', badgeTone: 'amber' },
+            { group: 'ស្តុក', id: 'stock', label: 'ស្តុកទំនិញ', icon: 'mdi:package-variant-closed', href: 'manager/stock/stock.html', badgeFn: 'mgrLowStockCount', badgeTone: 'amber' },
+            { id: 'stock-history', label: 'ប្រវត្តិស្តុក', icon: 'mdi:history', href: 'manager/stock-history/stock-history.html' },
+            { id: 'stock-count', label: 'រាប់ស្តុក', icon: 'mdi:clipboard-check-outline', href: 'manager/stock-count/stock-count.html' },
             { group: 'បុគ្គលិក', id: 'roster', label: 'កាលវិភាគវេន', icon: 'mdi:calendar-account-outline', href: 'manager/roster/roster.html' },
             { group: 'វិភាគ', id: 'exceptions', label: 'ករណីមិនប្រក្រតី', icon: 'mdi:alert-octagon-outline', href: 'manager/exceptions/exceptions.html' },
             { id: 'reports', label: 'របាយការណ៍លក់', icon: 'mdi:chart-box-outline', href: 'manager/reports/sales-report.html' },
@@ -62,7 +65,7 @@ const PORTAL_CONFIGS = {
         ]
     },
     /* ម្ចាស់ហាង (ឯកសាររចនាលេខ 03) — ទិដ្ឋភាពអាជីវកម្ម បុគ្គលិក ទំនិញ ច្បាប់ និងសវនកម្ម
-       មិនឈរបញ្ជរ · អាចប្តូរទៅទិដ្ឋភាពអ្នកគ្រប់គ្រងវេនដើម្បីជួយសម្រេចពេលចាំបាច់ */
+       មិនឈរបញ្ជរ · អាចប្តូរទៅទិដ្ឋភាពអ្នកគ្រប់គ្រងដើម្បីជួយសម្រេចពេលចាំបាច់ */
     adminPortal: {
         sidebarV2: true,
         title: 'ម្ចាស់ហាង',
@@ -75,6 +78,9 @@ const PORTAL_CONFIGS = {
         nav: [
             { group: 'អាជីវកម្ម', id: 'dashboard', label: 'ទិដ្ឋភាពរួម', icon: 'mdi:view-dashboard-outline', href: 'admin/dashboard/dashboard.html' },
             { id: 'reports', label: 'ចំណូល និងប្រាក់ចំណេញ', icon: 'mdi:finance', href: 'admin/reports/profit-report.html' },
+            { group: 'ស្តុក', id: 'stock-in', label: 'បញ្ជាក់ថ្លៃដើមស្តុកចូល', icon: 'mdi:truck-delivery-outline', href: 'admin/stock/stock-in.html', badgeFn: 'unconfirmedStockInCount', badgeTone: 'amber' },
+            { id: 'stock-value', label: 'តម្លៃស្តុកសរុប', icon: 'mdi:chart-pie', href: 'admin/reports/stock-value.html' },
+            { id: 'shrinkage', label: 'ការខាតបង់ស្តុក', icon: 'mdi:package-variant-closed-remove', href: 'admin/reports/shrinkage.html' },
             { group: 'គ្រប់គ្រង', id: 'staff', label: 'បុគ្គលិក និងតួនាទី', icon: 'mdi:account-group-outline', href: 'admin/staff/staff.html' },
             { id: 'products', label: 'ទំនិញ និងតម្លៃ', icon: 'mdi:tag-outline', href: 'admin/products/products.html' },
             { id: 'settings', label: 'ច្បាប់ និងការកំណត់', icon: 'mdi:tune-variant', href: 'admin/settings/settings.html' },
@@ -113,10 +119,10 @@ function togglePolicyNote() {
 }
 
 /* អ្នកដែលបានចូលប្រើ (data.js) ជំនួសឈ្មោះថេរក្នុងការកំណត់ច្រក
-   ប៊ូតុងប្តូរតួនាទីបង្ហាញលើផ្ទាំងគិតលុយ តែពេលអ្នកចូលប្រើជាអ្នកគ្រប់គ្រងវេនប៉ុណ្ណោះ */
+   ប៊ូតុងប្តូរតួនាទីបង្ហាញលើផ្ទាំងគិតលុយ តែពេលអ្នកចូលប្រើជាអ្នកគ្រប់គ្រងប៉ុណ្ណោះ */
 const ROLE_VIEW = {
     admin: { label: 'ម្ចាស់ហាង', icon: 'mdi:crown-outline', href: 'admin/dashboard/dashboard.html', portal: 'adminPortal' },
-    manager: { label: 'អ្នកគ្រប់គ្រងវេន', icon: 'mdi:shield-account-outline', href: 'manager/dashboard/dashboard.html', portal: 'managerPortal' },
+    manager: { label: 'អ្នកគ្រប់គ្រង', icon: 'mdi:shield-account-outline', href: 'manager/dashboard/dashboard.html', portal: 'managerPortal' },
     cashier: { label: 'ផ្ទាំងគិតលុយ', icon: 'mdi:point-of-sale', href: 'cashier/terminal/pos-terminal.html', portal: 'posPortal' }
 };
 
@@ -132,7 +138,7 @@ function sessionPortalConfig(cfg, portalId) {
         userName: person.name,
         userRole: role === 'admin' ? 'ម្ចាស់ហាង · សាខាកណ្តាល'
             : role === 'manager'
-                ? (portalId === 'posPortal' ? `អ្នកគ្រប់គ្រងវេន · លក់លើ ${MY_REGISTER}` : 'អ្នកគ្រប់គ្រងវេន · សាខាកណ្តាល')
+                ? (portalId === 'posPortal' ? `អ្នកគ្រប់គ្រង · លក់លើ ${MY_REGISTER}` : 'អ្នកគ្រប់គ្រង · សាខាកណ្តាល')
                 : `អ្នកគិតលុយលក់រាយ · ${MY_REGISTER}`
     });
     // ទិដ្ឋភាពដែលអ្នកប្រើម្នាក់ៗអាចប្តូរបាន៖ ម្ចាស់ហាង ↔ អ្នកគ្រប់គ្រង · អ្នកគ្រប់គ្រង ↔ ផ្ទាំងគិតលុយ
@@ -251,7 +257,7 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
     const avatar = cfg.userId && typeof avatarHtml === 'function'
         ? avatarHtml(cfg.userId, 'w-8 h-8')
         : `<div class="w-8 h-8 rounded-full sb-avatar border flex items-center justify-center font-semibold text-xs flex-shrink-0">${cfg.userInitials}</div>`;
-    const roleLabel = { adminPortal: 'ម្ចាស់ហាង', managerPortal: 'អ្នកគ្រប់គ្រងវេន', posPortal: 'ផ្ទាំងគិតលុយ' }[portalId] || cfg.title;
+    const roleLabel = { adminPortal: 'ម្ចាស់ហាង', managerPortal: 'អ្នកគ្រប់គ្រង', posPortal: 'ផ្ទាំងគិតលុយ' }[portalId] || cfg.title;
     const canSwitch = (cfg.views || []).length > 1;
     const menuItem = (icon, label, attrs, tone) => `<button type="button" ${attrs}
         class="sb-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-md text-left ${tone || ''}">

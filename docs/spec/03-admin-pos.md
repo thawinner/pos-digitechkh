@@ -118,7 +118,32 @@ Profit maths (`admin-data.js`):
 - **Price history stays intact.** A sale stores its line price, so old receipts and reports keep the price they were
   sold at.
 
-## 7. Settings — `admin/settings/settings.html`
+## 7. Stock Management
+
+### 7.1 Confirm Stock In Cost — `admin/stock/stock-in.html` & `view-stock-in.html`
+- Lists Stock In deliveries grouped by supplier invoice.
+- Status badge: «រង់ចាំបញ្ជាក់ថ្លៃដើម» (amber) or «បានបញ្ជាក់» (emerald).
+- Owner enters unit cost per line in dedicated page `view-stock-in.html`, defaulting to last known cost (`costOf(sku)`).
+- Confirming with manager PIN updates `pos_stock_costs`, calls `setCost(sku, unitCost)` so it becomes the new last known cost, updates stored moves, and writes an entry to `pos_admin_log`.
+
+### 7.2 Stock Value Report — `admin/reports/stock-value.html`
+- Shows inventory value at cost by category and by individual product.
+- Formula: `onHand(sku) × costOf(sku)`.
+- ECharts category breakdown bar chart (`posChart`).
+- Badges mark products with unconfirmed costs as «មិនទាន់បញ្ជាក់».
+- A4 print support with `@media print`.
+
+### 7.3 Shrinkage Report — `admin/reports/shrinkage.html`
+- Tracks loss value at cost ($) from:
+  - `adjust` moves with `shrink: true` (`damaged`, `expired`, `lost`);
+  - negative `count` differences (`qty < 0`);
+  - damaged returns (`restock === false`).
+- Unified date range picker per GEMINI.md §3.
+- Four views: by reason, by staff, by product, and detailed log.
+- ECharts breakdown chart (`posChart`).
+- A4 print support.
+
+## 8. Settings — `admin/settings/settings.html`
 
 This is the same `settings-page.js` as the manager page, with all sections:
 
@@ -126,19 +151,21 @@ This is the same `settings-page.js` as the manager page, with all sections:
 - cash in drawer
 - shift templates
 - till limits (KHQR timeout, hold limit, discount limits)
+- stock rules (`allowNegativeStock`, `adjustLimitQty`, `adjustLimitUSD`, `countSchedule`)
 - quick keys
 - reasons
 - history
 
-## 8. Audit log — `admin/audit/audit.html`
+## 9. Audit log — `admin/audit/audit.html`
 
 - **Read-only.** It merges these sources (`auditTrail()`):
-  - owner actions (`pos_admin_log`);
+  - owner actions (`pos_admin_log`, including cost confirmations);
   - settings history;
   - approval decisions;
   - wrong manager PINs and discount overrides from events;
-  - shift reviews.
-- **Filters:** type tabs with counts (approval, settings, staff, catalogue, shift, security), person, and search.
+  - shift reviews;
+  - stock movements (stock in, adjustments, counts, returns, voids) with no 14-day limit.
+- **Filters:** type tabs with counts (approval, settings, staff, catalogue, stock, shift, security), person, and search.
 - **Layout:** grouped by day (today, yesterday, then dates). It shows 60 entries at first, with «បង្ហាញបន្ថែម» for
   more.
 

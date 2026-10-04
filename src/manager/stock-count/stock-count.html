@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - រាប់ស្តុក</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+</head>
+<body id="managerPortal" data-role-root="../.." data-active="stock-count" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="រាប់ស្តុក"
+             data-subtitle="កាលវិភាគ និងប្រវត្តិនៃការរាប់ស្តុកជាក់ស្តែង"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <div class="w-full space-y-5">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <p class="sm-card-sub text-slate-500">ការរាប់ស្តុកជាក់ស្តែងដោយមិនបង្ហាញចំនួនក្នុងប្រព័ន្ធ ដើម្បីធានាភាពសុក្រឹត្យ</p>
+                    <a href="create-count.html" class="sm-value h-11 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold inline-flex items-center gap-2 shadow-sm transition"><i class="fas fa-clipboard-check"></i> ចាប់ផ្តើមរាប់ស្តុកថ្មី</a>
+                </div>
+
+                <div id="kpiRow" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
+
+                <!-- កាតស្ថានភាពកាលវិភាគ -->
+                <div id="scheduleBanner"></div>
+
+                <!-- បញ្ជីប្រវត្តិនៃការរាប់ -->
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 flex items-center justify-between gap-2">
+                        <h3 class="sm-card-title text-slate-800">ប្រវត្តិវគ្គរាប់ស្តុក</h3>
+                        <span id="sessionCountBadge" class="sm-badge px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">0 វគ្គ</span>
+                    </div>
+
+                    <div class="hidden md:!block">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 text-slate-500 border-b border-slate-100">
+                                <tr>
+                                    <th class="sm-th py-3.5 px-4">កាលបរិច្ឆេទ</th>
+                                    <th class="sm-th py-3.5 px-4">លេខសម្គាល់វគ្គ</th>
+                                    <th class="sm-th py-3.5 px-4">រាប់ដោយ</th>
+                                    <th class="sm-th py-3.5 px-4 text-center">មុខទំនិញរាប់</th>
+                                    <th class="sm-th py-3.5 px-4 text-center">ភាពខុសគ្នា</th>
+                                    <th class="sm-th py-3.5 px-4 text-right">តម្លៃខុសគ្នាសរុប</th>
+                                    <th class="sm-th py-3.5 px-4 text-center w-28">សកម្មភាព</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rows" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                        </table>
+                    </div>
+                    <div id="cards" class="md:hidden divide-y divide-slate-100"></div>
+                    <div id="empty" class="hidden"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- ផ្ទាំងបង្ហាញលម្អិតនៃវគ្គរាប់ស្តុក (Session Detail Modal) -->
+        <div id="detailModal" class="hidden fixed inset-0 z-[9990] bg-slate-900/60 backdrop-blur-sm items-center justify-center p-4">
+            <div class="w-full max-w-3xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]" onclick="event.stopPropagation()">
+                <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 flex-shrink-0">
+                    <div>
+                        <h3 id="modalTitle" class="sm-card-title text-slate-800 font-bold">លម្អិតវគ្គរាប់ស្តុក</h3>
+                        <p id="modalSub" class="sm-td-sub text-slate-500 mt-0.5"></p>
+                    </div>
+                    <button onclick="closeModal()" type="button" class="w-9 h-9 rounded-xl hover:bg-slate-200 text-slate-500 flex items-center justify-center transition">
+                        <i class="fas fa-xmark text-base"></i>
+                    </button>
+                </div>
+                <div class="p-4 border-b border-slate-100 bg-white grid grid-cols-3 gap-3 flex-shrink-0 text-center">
+                    <div class="bg-slate-50 rounded-xl p-2.5">
+                        <p class="text-xs text-slate-400">មុខទំនិញសរុប</p>
+                        <p id="modalTotalItems" class="sm-value font-bold text-slate-800 mt-0.5">0</p>
+                    </div>
+                    <div class="bg-slate-50 rounded-xl p-2.5">
+                        <p class="text-xs text-slate-400">មុខទំនិញខុសគ្នា</p>
+                        <p id="modalDiffItems" class="sm-value font-bold text-rose-600 mt-0.5">0</p>
+                    </div>
+                    <div class="bg-slate-50 rounded-xl p-2.5">
+                        <p class="text-xs text-slate-400">តម្លៃខុសគ្នាសរុប</p>
+                        <p id="modalDiffUSD" class="sm-value font-bold text-indigo-700 mt-0.5">$0.00</p>
+                    </div>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 text-slate-500 border-b border-slate-100 sticky top-0">
+                            <tr>
+                                <th class="sm-th py-2.5 px-3">មុខទំនិញ</th>
+                                <th class="sm-th py-2.5 px-3 text-right">ស្តុកក្នុងប្រព័ន្ធ</th>
+                                <th class="sm-th py-2.5 px-3 text-right">រាប់ជាក់ស្តែង</th>
+                                <th class="sm-th py-2.5 px-3 text-right">ភាពខុសគ្នា</th>
+                                <th class="sm-th py-2.5 px-3 text-right">តម្លៃខុសគ្នា</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalLines" class="divide-y divide-slate-100 sm-td"></tbody>
+                    </table>
+                </div>
+                <div class="p-4 border-t border-slate-100 bg-slate-50/50 flex justify-end flex-shrink-0">
+                    <button onclick="closeModal()" type="button" class="sm-badge px-5 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold transition">បិទ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        let sessions = [];
+
+        function renderScheduleBanner() {
+            const st = stockCountScheduleStatus();
+            const host = document.getElementById('scheduleBanner');
+
+            let banner = '';
+            if (st.isOverdue) {
+                banner = `
+                <div class="bg-rose-50 border border-rose-200 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-triangle-exclamation text-lg"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-rose-900 leading-snug">ការរាប់ស្តុកហួសកាលបរិច្ឆេទកំណត់ ${st.overdueDays} ថ្ងៃ</h4>
+                            <p class="text-xs text-rose-700 mt-0.5">តាមកាលវិភាគ${st.schedule === 'monthly' ? 'ប្រចាំខែ' : 'ប្រចាំសប្តាហ៍'} ត្រូវធ្វើនៅថ្ងៃទី ${fmtDate(st.nextDueDate)}។ ករណីនេះត្រូវបានកត់ត្រាក្នុងករណីមិនប្រក្រតី (Exceptions)។</p>
+                        </div>
+                    </div>
+                    <a href="create-count.html" class="sm-badge px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold inline-flex items-center gap-2 transition">
+                        <i class="fas fa-clipboard-check"></i> រាប់ស្តុកឥឡូវនេះ
+                    </a>
+                </div>`;
+            } else if (st.isDue) {
+                banner = `
+                <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-clock text-lg"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-amber-900 leading-snug">ដល់កាលបរិច្ឆេទរាប់ស្តុកហើយ</h4>
+                            <p class="text-xs text-amber-700 mt-0.5">តាមកាលវិភាគ${st.schedule === 'monthly' ? 'ប្រចាំខែ' : 'ប្រចាំសប្តាហ៍'} ដល់ពេលរាប់ស្តុកជាក់ស្តែងប្រចាំវគ្គ។</p>
+                        </div>
+                    </div>
+                    <a href="create-count.html" class="sm-badge px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold inline-flex items-center gap-2 transition">
+                        <i class="fas fa-clipboard-check"></i> រាប់ស្តុកឥឡូវនេះ
+                    </a>
+                </div>`;
+            } else {
+                banner = `
+                <div class="bg-white border border-slate-200/80 rounded-2xl p-4 flex items-center justify-between gap-3 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-calendar-check text-lg"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-800 leading-snug">កាលវិភាគរាប់ស្តុកដំណើរការធម្មតា</h4>
+                            <p class="text-xs text-slate-500 mt-0.5">កាលវិភាគ${st.schedule === 'monthly' ? 'ប្រចាំខែ (រៀងរាល់ 30 ថ្ងៃ)' : 'ប្រចាំសប្តាហ៍ (រៀងរាល់ 7 ថ្ងៃ)'} · វគ្គបន្ទាប់នៅថ្ងៃ ${fmtDate(st.nextDueDate)}</p>
+                        </div>
+                    </div>
+                    <span class="sm-badge px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold text-xs">ស្ថានភាពល្អ</span>
+                </div>`;
+            }
+            host.innerHTML = banner;
+        }
+
+        function renderKpis() {
+            const st = stockCountScheduleStatus();
+            sessions = mgrAllStockCounts();
+
+            const lastDate = sessions.length ? fmtDate(sessions[0].at) : 'មិនទាន់មាន';
+            const statusLabel = st.isOverdue ? 'ហួសកំណត់' : (st.isDue ? 'ដល់កាលបរិច្ឆេទ' : 'ធម្មតា');
+            const statusTone = st.isOverdue ? 'text-rose-600' : (st.isDue ? 'text-amber-600' : 'text-emerald-600');
+
+            document.getElementById('kpiRow').innerHTML =
+                kpiCard('កាលវិភាគរាប់ស្តុក', st.schedule === 'monthly' ? 'ប្រចាំខែ' : 'ប្រចាំសប្តាហ៍', 'កំណត់ដោយម្ចាស់ហាង') +
+                kpiCard('ស្ថានភាពកាលវិភាគ', statusLabel, `បន្ទាប់: ${fmtDate(st.nextDueDate)}`, statusTone) +
+                kpiCard('ការរាប់ចុងក្រោយ', lastDate, sessions.length ? fmtTime(sessions[0].at) : '') +
+                kpiCard('ចំនួនដងរាប់សរុប', `${sessions.length}`, 'វគ្គរាប់ដែលបានកត់ត្រា');
+        }
+
+        function renderList() {
+            sessions = mgrAllStockCounts();
+            document.getElementById('sessionCountBadge').textContent = `${sessions.length} វគ្គ`;
+
+            const empty = document.getElementById('empty');
+            if (!sessions.length) {
+                document.getElementById('rows').innerHTML = '';
+                document.getElementById('cards').innerHTML = '';
+                empty.classList.remove('hidden');
+                empty.innerHTML = emptyState('fa-clipboard-check', 'មិនទាន់មានវគ្គរាប់ស្តុកនៅឡើយ', 'សូមចុចប៊ូតុងខាងលើដើម្បីចាប់ផ្តើមរាប់ស្តុកលើកដំបូង');
+                return;
+            }
+
+            empty.classList.add('hidden');
+
+            document.getElementById('rows').innerHTML = sessions.map(s => {
+                const lines = s.lines || [];
+                const diffLines = lines.filter(l => (l.diff !== 0 && l.diff != null) || (l.counted !== l.system));
+                const totalDiffUSD = diffLines.reduce((sum, l) => {
+                    const p = getProduct(l.sku);
+                    const diff = (l.diff != null) ? l.diff : (l.counted - l.system);
+                    return sum + Math.abs(diff) * (p ? p.price : 0);
+                }, 0);
+
+                const hasDiff = diffLines.length > 0;
+
+                return `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="py-3 px-4 sm-td sm-figure">
+                        <span class="block font-medium text-slate-800">${fmtDate(s.at)}</span>
+                        <span class="text-xs text-slate-400">${fmtTime(s.at)}</span>
+                    </td>
+                    <td class="py-3 px-4 font-mono sm-td text-indigo-700 font-semibold">${s.id}</td>
+                    <td class="py-3 px-4 sm-td">${personChip(s.by)}</td>
+                    <td class="py-3 px-4 text-center sm-td sm-figure font-medium">${lines.length} មុខ</td>
+                    <td class="py-3 px-4 text-center">
+                        ${hasDiff
+                            ? `<span class="sm-badge px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-semibold">${diffLines.length} មុខខុសគ្នា</span>`
+                            : `<span class="sm-badge px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold">ត្រូវ 100%</span>`}
+                    </td>
+                    <td class="py-3 px-4 text-right sm-td sm-figure font-semibold ${totalDiffUSD ? 'text-rose-600' : 'text-slate-500'}">
+                        ${fmtUSD(totalDiffUSD)}
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        <button onclick="openDetailModal('${s.id}')" type="button" class="sm-badge px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs inline-flex items-center gap-1.5 transition">
+                            <i class="fas fa-eye text-xs text-indigo-600"></i> លម្អិត
+                        </button>
+                    </td>
+                </tr>`;
+            }).join('');
+
+            document.getElementById('cards').innerHTML = sessions.map(s => {
+                const lines = s.lines || [];
+                const diffLines = lines.filter(l => (l.diff !== 0 && l.diff != null) || (l.counted !== l.system));
+                const totalDiffUSD = diffLines.reduce((sum, l) => {
+                    const p = getProduct(l.sku);
+                    const diff = (l.diff != null) ? l.diff : (l.counted - l.system);
+                    return sum + Math.abs(diff) * (p ? p.price : 0);
+                }, 0);
+
+                return `
+                <div class="p-4 space-y-2.5">
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="font-mono text-xs font-semibold text-indigo-700">${s.id}</span>
+                        <span class="text-xs text-slate-400">${fmtDate(s.at)} ${fmtTime(s.at)}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        ${personChip(s.by)}
+                        <span class="text-xs font-semibold ${diffLines.length ? 'text-rose-600' : 'text-emerald-600'}">
+                            ${diffLines.length ? `${diffLines.length} មុខខុសគ្នា (${fmtUSD(totalDiffUSD)})` : 'ត្រឹមត្រូវ 100%'}
+                        </span>
+                    </div>
+                    <div class="pt-1 flex justify-end">
+                        <button onclick="openDetailModal('${s.id}')" type="button" class="sm-badge px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 text-xs font-semibold">មើលលម្អិត</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function openDetailModal(sessionId) {
+            const s = sessions.find(x => x.id === sessionId);
+            if (!s) return;
+
+            document.getElementById('modalTitle').textContent = `លម្អិតវគ្គរាប់ស្តុក ${s.id}`;
+            document.getElementById('modalSub').textContent = `កាលបរិច្ឆេទ: ${fmtDate(s.at)} ${fmtTime(s.at)} · រាប់ដោយ ${personName(s.by)}`;
+
+            const lines = s.lines || [];
+            const diffLines = lines.filter(l => (l.diff !== 0 && l.diff != null) || (l.counted !== l.system));
+            const totalDiffUSD = diffLines.reduce((sum, l) => {
+                const p = getProduct(l.sku);
+                const diff = (l.diff != null) ? l.diff : (l.counted - l.system);
+                return sum + Math.abs(diff) * (p ? p.price : 0);
+            }, 0);
+
+            document.getElementById('modalTotalItems').textContent = `${lines.length} មុខ`;
+            document.getElementById('modalDiffItems').textContent = `${diffLines.length} មុខ`;
+            document.getElementById('modalDiffUSD').textContent = fmtUSD(totalDiffUSD);
+
+            document.getElementById('modalLines').innerHTML = lines.map(l => {
+                const p = getProduct(l.sku);
+                const diff = (l.diff != null) ? l.diff : (l.counted - l.system);
+                const diffVal = Math.abs(diff) * (p ? p.price : 0);
+                const unit = p ? p.unit : 'ឯកតា';
+
+                return `
+                <tr class="hover:bg-slate-50/50">
+                    <td class="py-2.5 px-3">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 inline-flex items-center justify-center p-0.5 shadow-sm">
+                                ${p ? productImgHtml(p) : '<i class="fas fa-box text-slate-400 text-xs"></i>'}
+                            </span>
+                            <div class="min-w-0">
+                                <p class="font-medium text-slate-800 text-xs truncate">${p ? p.name : l.sku}</p>
+                                <p class="text-[10px] text-slate-400 font-mono">${p ? (p.barcode || p.sku) : l.sku}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-2.5 px-3 text-right sm-figure text-slate-600 font-medium">${l.system} ${unit}</td>
+                    <td class="py-2.5 px-3 text-right sm-figure font-semibold text-slate-800">${l.counted} ${unit}</td>
+                    <td class="py-2.5 px-3 text-right sm-figure font-bold ${diff === 0 ? 'text-slate-400' : (diff < 0 ? 'text-rose-600' : 'text-emerald-600')}">
+                        ${diff > 0 ? '+' : ''}${diff} ${unit}
+                    </td>
+                    <td class="py-2.5 px-3 text-right sm-figure font-semibold ${diffVal ? 'text-rose-600' : 'text-slate-400'}">
+                        ${diffVal ? fmtUSD(diffVal) : '—'}
+                    </td>
+                </tr>`;
+            }).join('');
+
+            const modal = document.getElementById('detailModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('detailModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        document.getElementById('detailModal').onclick = closeModal;
+
+        function renderAll() {
+            renderScheduleBanner();
+            renderKpis();
+            renderList();
+            updatePortalBadges();
+            refreshPortalNotifications();
+        }
+
+        window.onStoreChanged = renderAll;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAll();
+        });
+    </script>
+</body>
+</html>

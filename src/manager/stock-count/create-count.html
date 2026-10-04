@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - រាប់ស្តុកជាក់ស្តែង</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+</head>
+<body id="managerPortal" data-role-root="../.." data-active="stock-count" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="រាប់ស្តុកជាក់ស្តែង"
+             data-subtitle="ការរាប់ដោយមិនបង្ហាញចំនួនក្នុងប្រព័ន្ធ"
+             data-back="stock-count.html"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <div class="w-full space-y-5">
+                <!-- ដំណាក់កាល / Banner -->
+                <div id="stageBanner"></div>
+
+                <!-- របារតម្រង និងការស្វែងរក -->
+                <div class="bg-white rounded-2xl p-3 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-3">
+                    <div id="catChips" class="flex flex-wrap items-center gap-2"></div>
+                    <div class="relative w-full sm:w-64">
+                        <i class="fas fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input id="searchInput" type="text" oninput="searchTerm=this.value.trim().toLowerCase(); renderTable()" placeholder="ស្វែងរកឈ្មោះ ឬបាកូដ..." class="w-full h-10 pl-9 pr-3 rounded-xl bg-slate-50 border border-slate-200 sm-td focus:outline-none focus:border-indigo-500">
+                    </div>
+                </div>
+
+                <!-- តារាងរាប់ស្តុក -->
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 flex items-center justify-between gap-3 bg-slate-50/50">
+                        <div>
+                            <h3 id="tableTitle" class="sm-card-title text-slate-800">បញ្ជីមុខទំនិញត្រូវរាប់</h3>
+                            <p id="tableSub" class="sm-card-sub text-slate-500 mt-0.5">សូមរាប់ចំនួនជាក់ស្តែងនៅលើធ្នើ និងក្នុងស្តុក</p>
+                        </div>
+                        <span id="countedProgress" class="sm-badge px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 font-semibold text-xs sm-figure">0 / 0 បានរាប់</span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left" id="countTable">
+                            <thead class="bg-slate-50 text-slate-500 border-b border-slate-100">
+                                <tr>
+                                    <th class="sm-th py-3.5 px-4">ទំនិញ</th>
+                                    <th class="sm-th py-3.5 px-4">ប្រភេទ</th>
+                                    <th class="sm-th py-3.5 px-4 text-center w-28">ឯកតា</th>
+                                    <th id="thSystem" class="sm-th py-3.5 px-4 text-right w-36 hidden">ស្តុកប្រព័ន្ធ</th>
+                                    <th class="sm-th py-3.5 px-4 text-right w-44">ចំនួនរាប់ជាក់ស្តែង <span class="text-rose-500">*</span></th>
+                                    <th id="thDiff" class="sm-th py-3.5 px-4 text-right w-36 hidden">ភាពខុសគ្នា</th>
+                                </tr>
+                            </thead>
+                            <tbody id="countRows" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- របារសកម្មភាពចុងក្រោយ (Footer Action Bar) -->
+                <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-3">
+                    <a href="stock-count.html" class="sm-value h-12 px-6 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center justify-center transition">បោះបង់</a>
+                    <div id="actionBtnArea" class="flex items-center gap-3"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        // ដំណាក់កាល៖ 1 = count (រាប់លើកទី 1), 2 = recount (រាប់ឡើងវិញមុខខុស), 3 = verified (ផ្ទៀងផ្ទាត់រួចរង់ចាំ save)
+        let stage = 1;
+        let selectedCat = 'all';
+        let searchTerm = '';
+        let counts = {}; // { [sku]: { first: number|null, recount: number|null, final: number|null } }
+        let diffSkus = new Set();
+        let currentLevels = {};
+
+        function initData() {
+            currentLevels = onHandLevels();
+            sellableProducts().forEach(p => {
+                counts[p.sku] = { first: null, recount: null, final: null };
+            });
+        }
+
+        function renderBanner() {
+            const host = document.getElementById('stageBanner');
+            if (stage === 1) {
+                host.innerHTML = `
+                <div class="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-eye-slash text-lg"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-indigo-950">ការរាប់ដោយលាក់ចំនួនក្នុងប្រព័ន្ធ — ដំណាក់កាលទី 1</h4>
+                            <p class="text-xs text-indigo-700 mt-0.5">ចំនួនស្តុកក្នុងប្រព័ន្ធត្រូវបានលាក់។ សូមបញ្ចូលចំនួនដែលបានរាប់ឃើញជាក់ស្តែងនៅលើធ្នើ។</p>
+                        </div>
+                    </div>
+                    <span class="sm-badge px-3 py-1 rounded-full bg-white text-indigo-700 border border-indigo-200 font-semibold text-xs shadow-sm">ជំហាន 1 នៃ 2</span>
+                </div>`;
+            } else if (stage === 2) {
+                host.innerHTML = `
+                <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-rotate-right text-lg"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-amber-950">រាប់ឡើងវិញលើមុខទំនិញដែលមានភាពខុសគ្នា — ដំណាក់កាលទី 2</h4>
+                            <p class="text-xs text-amber-800 mt-0.5">រកឃើញភាពខុសគ្នាលើ <strong>${diffSkus.size} មុខទំនិញ</strong>។ ប្រព័ន្ធអនុញ្ញាតឱ្យរាប់ផ្ទៀងផ្ទាត់ឡើងវិញម្តងគត់សម្រាប់តែមុខទំនិញទាំងនេះ។</p>
+                        </div>
+                    </div>
+                    <span class="sm-badge px-3 py-1 rounded-full bg-white text-amber-800 border border-amber-200 font-semibold text-xs shadow-sm">រាប់ឡើងវិញ (ម្តងគត់)</span>
+                </div>`;
+            } else {
+                host.innerHTML = `
+                <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-check-double text-lg"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-emerald-950">ការរាប់ត្រូវបានផ្ទៀងផ្ទាត់រួចរាល់</h4>
+                            <p class="text-xs text-emerald-800 mt-0.5">ភាពខុសគ្នាទាំងអស់ត្រូវបានគណនា។ សូមចុច «បញ្ជាក់ និងរក្សាទុក» ដោយប្រើលេខសម្ងាត់អ្នកគ្រប់គ្រង។</p>
+                        </div>
+                    </div>
+                    <span class="sm-badge px-3 py-1 rounded-full bg-white text-emerald-800 border border-emerald-200 font-semibold text-xs shadow-sm">រួចរាល់សម្រាប់រក្សាទុក</span>
+                </div>`;
+            }
+        }
+
+        function renderCatChips() {
+            const host = document.getElementById('catChips');
+            host.innerHTML = CATEGORIES.map(c => `
+                <button type="button" onclick="selectedCat='${c.id}'; renderCatChips(); renderTable()" class="sm-badge px-3 py-1.5 rounded-xl transition ${selectedCat === c.id
+                    ? 'bg-indigo-600 text-white font-semibold shadow-sm'
+                    : 'text-slate-600 hover:bg-slate-100 font-medium'}">
+                    <i class="fas ${c.icon} text-xs mr-1.5 ${selectedCat === c.id ? 'text-white' : 'text-slate-400'}"></i>${c.label}
+                </button>
+            `).join('');
+        }
+
+        function onCountInput(sku, val) {
+            const n = val === '' ? null : Math.max(0, parseInt(val, 10));
+            if (stage === 1) {
+                counts[sku].first = n;
+                counts[sku].final = n;
+            } else if (stage === 2) {
+                counts[sku].recount = n;
+                counts[sku].final = n !== null ? n : counts[sku].first;
+            }
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const prods = sellableProducts();
+            let counted = 0;
+            prods.forEach(p => {
+                if (counts[p.sku] && counts[p.sku].final !== null) counted++;
+            });
+            document.getElementById('countedProgress').textContent = `${counted} / ${prods.length} បានរាប់`;
+        }
+
+        function renderTable() {
+            let prods = sellableProducts();
+            if (selectedCat !== 'all') {
+                prods = prods.filter(p => p.category === selectedCat);
+            }
+            if (searchTerm) {
+                prods = prods.filter(p => p.name.toLowerCase().includes(searchTerm) || p.sku.includes(searchTerm) || (p.barcode && p.barcode.includes(searchTerm)));
+            }
+
+            const thSys = document.getElementById('thSystem');
+            const thDiff = document.getElementById('thDiff');
+            if (stage === 1) {
+                thSys.classList.add('hidden');
+                thDiff.classList.add('hidden');
+            } else {
+                thSys.classList.remove('hidden');
+                thDiff.classList.remove('hidden');
+            }
+
+            const catLabel = catId => (CATEGORIES.find(c => c.id === catId) || {}).label || catId;
+
+            document.getElementById('countRows').innerHTML = prods.map(p => {
+                const sys = currentLevels[p.sku] || 0;
+                const c = counts[p.sku] || { first: null, recount: null, final: null };
+                const isDiff = diffSkus.has(p.sku);
+                const finalVal = c.final !== null ? c.final : (c.first !== null ? c.first : '');
+                const diff = (c.final !== null) ? (c.final - sys) : null;
+
+                // ក្នុងដំណាក់កាល recount បើមិនមែនជាមុខខុស មិនអនុញ្ញាតឱ្យកែទេ
+                const disabled = (stage === 2 && !isDiff) || (stage === 3);
+
+                return `
+                <tr class="hover:bg-slate-50 transition ${isDiff ? 'bg-amber-50/30' : ''}">
+                    <td class="py-3 px-4">
+                        <div class="flex items-center gap-3">
+                            <span class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 inline-flex items-center justify-center p-0.5 shadow-sm">
+                                ${productImgHtml(p)}
+                            </span>
+                            <div>
+                                <p class="font-medium text-slate-800 leading-snug">${p.name}</p>
+                                <p class="text-xs text-slate-400 font-mono mt-0.5">បាកូដ: ${p.barcode || p.sku}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-3 px-4 sm-td">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-lg bg-slate-100 text-slate-600 text-xs">${catLabel(p.category)}</span>
+                    </td>
+                    <td class="py-3 px-4 text-center sm-td text-slate-500">${p.unit || 'ឯកតា'}</td>
+                    ${stage > 1 ? `<td class="py-3 px-4 text-right sm-td sm-figure font-medium text-slate-600">${sys}</td>` : ''}
+                    <td class="py-3 px-4 text-right">
+                        <div class="flex items-center justify-end gap-1.5">
+                            <input type="number" min="0" step="1" value="${finalVal}" ${disabled ? 'disabled' : ''} oninput="onCountInput('${p.sku}', this.value)" placeholder="0" class="w-28 h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-right sm-value font-semibold text-slate-800 focus:outline-none focus:border-indigo-500 sm-figure ${disabled ? 'opacity-60 bg-slate-100 cursor-not-allowed' : ''} ${isDiff ? 'border-amber-400 ring-2 ring-amber-100' : ''}">
+                        </div>
+                    </td>
+                    ${stage > 1 ? `
+                    <td class="py-3 px-4 text-right sm-td sm-figure font-bold ${diff === 0 ? 'text-slate-400' : (diff < 0 ? 'text-rose-600' : 'text-emerald-600')}">
+                        ${diff !== null ? (diff > 0 ? '+' : '') + diff : '—'}
+                    </td>` : ''}
+                </tr>`;
+            }).join('');
+
+            updateProgress();
+            renderActionBtns();
+        }
+
+        function renderActionBtns() {
+            const host = document.getElementById('actionBtnArea');
+            if (stage === 1) {
+                host.innerHTML = `
+                    <button onclick="quickFillAllWithZero()" type="button" class="sm-badge h-12 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 font-semibold transition">
+                        ដាក់ 0 លើមុខទទេ
+                    </button>
+                    <button onclick="verifyFirstCount()" type="button" class="sm-value h-12 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold inline-flex items-center gap-2 shadow-sm transition">
+                        <span>ផ្ទៀងផ្ទាត់ការរាប់</span>
+                        <i class="fas fa-arrow-right text-xs"></i>
+                    </button>
+                `;
+            } else if (stage === 2) {
+                host.innerHTML = `
+                    <button onclick="finishRecount()" type="button" class="sm-value h-12 px-6 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold inline-flex items-center gap-2 shadow-sm transition">
+                        <span>បញ្ចប់ការរាប់ឡើងវិញ</span>
+                        <i class="fas fa-check text-xs"></i>
+                    </button>
+                `;
+            } else {
+                host.innerHTML = `
+                    <button onclick="stage=2; renderBanner(); renderTable()" type="button" class="sm-badge h-12 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 font-semibold transition">
+                        កែប្រែការរាប់ឡើងវិញ
+                    </button>
+                    <button onclick="saveCountSession()" type="button" class="sm-value h-12 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold inline-flex items-center gap-2 shadow-sm transition">
+                        <i class="fas fa-lock text-xs"></i>
+                        <span>បញ្ជាក់ និងរក្សាទុក</span>
+                    </button>
+                `;
+            }
+        }
+
+        function quickFillAllWithZero() {
+            sellableProducts().forEach(p => {
+                if (counts[p.sku].first === null) {
+                    counts[p.sku].first = 0;
+                    counts[p.sku].final = 0;
+                }
+            });
+            renderTable();
+        }
+
+        function verifyFirstCount() {
+            const prods = sellableProducts();
+            const uncounted = prods.filter(p => counts[p.sku].first === null);
+            if (uncounted.length > 0) {
+                showToast(`សូមបញ្ចូលចំនួនឱ្យបានគ្រប់មុខទំនិញ (${uncounted.length} មុខមិនទាន់បានបញ្ចូល)`, 'warning');
+                return;
+            }
+
+            diffSkus.clear();
+            prods.forEach(p => {
+                const sys = currentLevels[p.sku] || 0;
+                const c = counts[p.sku].first || 0;
+                if (c !== sys) {
+                    diffSkus.add(p.sku);
+                }
+            });
+
+            if (diffSkus.size > 0) {
+                stage = 2;
+                renderBanner();
+                renderTable();
+                showToast(`រកឃើញភាពខុសគ្នាលើ ${diffSkus.size} មុខទំនិញ · សូមរាប់ផ្ទៀងផ្ទាត់ឡើងវិញ`, 'warning');
+            } else {
+                stage = 3;
+                renderBanner();
+                renderTable();
+                showToast('ការរាប់ត្រូវគ្នា 100% ឥតខ្ចោះ!', 'success');
+            }
+        }
+
+        function finishRecount() {
+            stage = 3;
+            renderBanner();
+            renderTable();
+            showToast('ការរាប់ឡើងវិញត្រូវបានកត់ត្រារួចរាល់', 'info');
+        }
+
+        async function saveCountSession() {
+            const prods = sellableProducts();
+            const diffItems = [];
+            const sessionLines = [];
+
+            prods.forEach(p => {
+                const sys = currentLevels[p.sku] || 0;
+                const c = counts[p.sku];
+                const finalCount = c.final !== null ? c.final : (c.first !== null ? c.first : 0);
+                const diff = finalCount - sys;
+
+                sessionLines.push({
+                    sku: p.sku,
+                    system: sys,
+                    first: c.first !== null ? c.first : 0,
+                    recount: c.recount,
+                    counted: finalCount,
+                    diff
+                });
+
+                if (diff !== 0) {
+                    diffItems.push({
+                        sku: p.sku,
+                        name: p.name,
+                        unit: p.unit || 'ឯកតា',
+                        price: p.price,
+                        diff,
+                        system: sys,
+                        counted: finalCount
+                    });
+                }
+            });
+
+            const diffCount = diffItems.length;
+            const totalDiffUSD = diffItems.reduce((n, l) => n + Math.abs(l.diff) * l.price, 0);
+
+            const ok = await showPinConfirm({
+                title: 'បញ្ជាក់ការរក្សាទុកវគ្គរាប់ស្តុក',
+                message: `សរុប ${prods.length} មុខទំនិញ<br>${diffCount ? `ភាពខុសគ្នា: <strong class="text-rose-600">${diffCount} មុខ</strong> (${fmtUSD(totalDiffUSD)})` : 'ភាពខុសគ្នា: <strong class="text-emerald-600">គ្មាន (ត្រូវ 100%)</strong>'}<br>ទិន្នន័យស្តុកនឹងត្រូវកែតម្រូវស្វ័យប្រវត្តិតាមចំនួនជាក់ស្តែង`,
+                userId: ME_MANAGER,
+                confirmText: 'រក្សាទុក',
+                danger: diffCount > 0
+            });
+
+            if (!ok) return;
+
+            const nowIso = isoLocal(new Date());
+            const sessionId = newId('SC');
+
+            // 1. សរសេរចលនា count move សំរាប់តែមុខណាដែលមាន diff != 0
+            const moves = diffItems.map(item => stockMove({
+                type: 'count',
+                sku: item.sku,
+                qty: item.diff, // signed: counted - system
+                at: nowIso,
+                by: ME_MANAGER,
+                ref: sessionId,
+                reason: 'រាប់ស្តុកជាក់ស្តែង',
+                note: `រាប់លើកទី 1: ${counts[item.sku].first} · ចុងក្រោយ: ${item.counted}`
+            }));
+
+            if (moves.length) {
+                saveStockMoves(moves);
+            }
+
+            // 2. រក្សាទុកវគ្គរាប់ពេញលេញ
+            saveStockCount({
+                id: sessionId,
+                at: nowIso,
+                by: ME_MANAGER,
+                lines: sessionLines
+            });
+
+            showToast(`បានកត់ត្រាវគ្គរាប់ស្តុក ${sessionId} ដោយជោគជ័យ`, 'success');
+
+            setTimeout(() => {
+                location.href = 'stock-count.html';
+            }, 600);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initData();
+            renderBanner();
+            renderCatChips();
+            renderTable();
+        });
+    </script>
+</body>
+</html>

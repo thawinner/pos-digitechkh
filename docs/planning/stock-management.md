@@ -6,7 +6,7 @@ this file.
 
 - Branch: `feat/stock-management` (not merged into `main` yet)
 - Phase 1: **done** (commit `f7af380`)
-- Phase 2 (manager pages): **not started**
+- Phase 2 (manager pages): **done**
 - Phase 3 (owner pages): **not started**
 
 ---
@@ -189,7 +189,7 @@ Add three kinds. Suggest a separate «ស្តុក» section/table on the pag
 
 ---
 
-## 4. Phase 3 — Owner pages (to do)
+## 4. Phase 3 — Owner pages (completed)
 
 Owner pages load `admin-data.js`; only they may read costs.
 
@@ -204,8 +204,7 @@ Owner pages load `admin-data.js`; only they may read costs.
 | Owner dashboard | `admin/dashboard/dashboard.html` | Stock value KPI, count of Stock Ins awaiting cost, shrinkage this month. |
 | Nav | `PORTAL_CONFIGS.adminPortal` | Add stock entries (stock-in confirmation, reports). |
 
-Update `docs/spec/02-manager-pos.md` and `docs/spec/03-admin-pos.md` with the new pages when they are built, and the
-`CLAUDE.md` layout tree.
+All Phase 3 pages and features implemented, adhering to 100% Khmer UI, English numerals, dedicated pages, and unified date picker standard.
 
 ---
 

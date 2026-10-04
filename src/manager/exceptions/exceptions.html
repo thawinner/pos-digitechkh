@@ -65,6 +65,36 @@
                         <div id="drillList" class="divide-y divide-slate-100 max-h-[520px] overflow-y-auto"></div>
                     </section>
                 </div>
+
+                <!-- ករណីមិនប្រក្រតីនៃស្តុកទំនិញ (Phase 2 §3.4) -->
+                <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <h3 class="sm-card-title text-slate-700">ករណីមិនប្រក្រតីនៃស្តុកទំនិញ</h3>
+                            <p class="sm-card-sub text-slate-500">លក់លើសស្តុកក្នុងប្រព័ន្ធ · ការកែតម្រូវលើសដែនកំណត់ (10 ឯកតា ឬ 50 ដុល្លារ) · ភាពខុសគ្នានៃការរាប់ស្តុក · ហួសកាលវិភាគ</p>
+                        </div>
+                        <div id="stockSchedBadge" class="flex items-center gap-2"></div>
+                    </div>
+                    <div id="stockKpiRow" class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 border-b border-slate-100 bg-slate-50/50"></div>
+                    <div class="p-4 border-b border-slate-100 flex flex-wrap items-center gap-2" id="stockTabs"></div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left" id="stockExceptionsTable">
+                            <thead class="bg-slate-50 text-slate-500 border-b border-slate-100">
+                                <tr>
+                                    <th class="sm-th py-3 px-4">ពេលវេលា</th>
+                                    <th class="sm-th py-3 px-4">ប្រភេទករណី</th>
+                                    <th class="sm-th py-3 px-4">ទំនិញ</th>
+                                    <th class="sm-th py-3 px-4 text-right">ចំនួន</th>
+                                    <th class="sm-th py-3 px-4 text-right">តម្លៃលក់រាយ</th>
+                                    <th class="sm-th py-3 px-4">អ្នកទទួលខុសត្រូវ</th>
+                                    <th class="sm-th py-3 px-4">មូលហេតុ · សេចក្តីលម្អិត</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stockExceptionsRows" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                        </table>
+                    </div>
+                    <div id="stockExceptionsEmpty" class="hidden"></div>
+                </section>
             </div>
         </main>
     </div>
@@ -172,10 +202,140 @@
                 </div>`).join('') : emptyState('fa-circle-check', 'គ្មានករណី', '');
         }
 
+        let stockTab = 'all';
+
+        function renderStockExceptions() {
+            const st = stockExceptionStats(range());
+
+            // 1. Sched badge
+            const b = document.getElementById('stockSchedBadge');
+            if (st.sched.isOverdue) {
+                b.innerHTML = `<span class="sm-badge px-3 py-1.5 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 font-semibold"><i class="fas fa-triangle-exclamation mr-1.5"></i>រាប់ស្តុកហួសកំណត់ ${st.sched.overdueDays} ថ្ងៃ</span>`;
+            } else if (st.sched.isDue) {
+                b.innerHTML = `<span class="sm-badge px-3 py-1.5 rounded-xl bg-amber-50 text-amber-700 border border-amber-200 font-semibold"><i class="fas fa-clock mr-1.5"></i>ដល់កាលបរិច្ឆេទរាប់ស្តុក</span>`;
+            } else {
+                b.innerHTML = `<span class="sm-badge px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 font-semibold"><i class="fas fa-calendar-check mr-1.5"></i>កាលវិភាគធម្មតា (បន្ទាប់: ${fmtDate(st.sched.nextDueDate)})</span>`;
+            }
+
+            // 2. Stock KPIs
+            const totalMismatches = st.mismatchList.length;
+            const mismatchVal = st.mismatchList.reduce((n, e) => n + (e.amount || 0), 0);
+            const totalAdj = st.largeAdjustments.length;
+            const adjVal = st.largeAdjustments.reduce((n, m) => n + m.valueUSD, 0);
+            const totalDiff = st.countDifferences.length;
+            const diffVal = st.countDifferences.reduce((n, m) => n + m.valueUSD, 0);
+
+            document.getElementById('stockKpiRow').innerHTML = `
+                <div class="bg-white rounded-xl p-3.5 border border-slate-200/70">
+                    <p class="sm-td-sub text-slate-500">លក់លើសស្តុក (Mismatch)</p>
+                    <p class="sm-value text-rose-600 font-bold mt-0.5 sm-figure">${totalMismatches} ករណី <span class="text-xs text-slate-400 font-normal">(${fmtUSD(mismatchVal)})</span></p>
+                </div>
+                <div class="bg-white rounded-xl p-3.5 border border-slate-200/70">
+                    <p class="sm-td-sub text-slate-500">កែតម្រូវលើសដែនកំណត់</p>
+                    <p class="sm-value text-amber-600 font-bold mt-0.5 sm-figure">${totalAdj} ករណី <span class="text-xs text-slate-400 font-normal">(${fmtUSD(adjVal)})</span></p>
+                </div>
+                <div class="bg-white rounded-xl p-3.5 border border-slate-200/70">
+                    <p class="sm-td-sub text-slate-500">ភាពខុសគ្នានៃការរាប់ស្តុក</p>
+                    <p class="sm-value text-indigo-600 font-bold mt-0.5 sm-figure">${totalDiff} ករណី <span class="text-xs text-slate-400 font-normal">(${fmtUSD(diffVal)})</span></p>
+                </div>
+            `;
+
+            // 3. Tabs
+            const tabs = [
+                { id: 'all', label: 'ទាំងអស់' },
+                { id: 'mismatch', label: `លក់លើសស្តុក (${totalMismatches})` },
+                { id: 'adjust', label: `កែតម្រូវលើសដែន (${totalAdj})` },
+                { id: 'count', label: `ភាពខុសគ្នារាប់ស្តុក (${totalDiff})` }
+            ];
+            document.getElementById('stockTabs').innerHTML = tabs.map(t => `
+                <button onclick="stockTab='${t.id}'; renderStockExceptions()" type="button" class="sm-badge px-3 py-1.5 rounded-xl transition ${stockTab === t.id ? 'bg-indigo-600 text-white font-semibold shadow-sm' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium'}">${t.label}</button>
+            `).join('');
+
+            // 4. Rows
+            let list = [];
+            if (stockTab === 'all' || stockTab === 'mismatch') {
+                st.mismatchList.forEach(e => {
+                    const p = getProduct(e.sku);
+                    list.push({
+                        at: e.at,
+                        kind: 'mismatch',
+                        kindLabel: 'លក់លើសស្តុក',
+                        tone: 'rose',
+                        product: p ? p.name : (e.sku || 'ទំនិញ'),
+                        sku: e.sku,
+                        qty: 1,
+                        amount: e.amount || (p ? p.price : 0),
+                        actor: e.cashierId,
+                        note: `${e.register ? e.register + ' · ' : ''}${escapeText(e.note || e.reason || 'លក់ពេលស្តុកក្នុងប្រព័ន្ធមិនគ្រប់')}`
+                    });
+                });
+            }
+            if (stockTab === 'all' || stockTab === 'adjust') {
+                st.largeAdjustments.forEach(m => {
+                    const rMeta = STOCK_ADJUST_REASONS[m.reason] || {};
+                    list.push({
+                        at: m.at,
+                        kind: 'adjust',
+                        kindLabel: 'កែតម្រូវលើសដែន',
+                        tone: 'amber',
+                        product: m.productName,
+                        sku: m.sku,
+                        qty: m.qty,
+                        amount: m.valueUSD,
+                        actor: m.by,
+                        note: `${rMeta.label || m.reason || 'កែតម្រូវ'}${m.note ? ' · ' + escapeText(m.note) : ''}`
+                    });
+                });
+            }
+            if (stockTab === 'all' || stockTab === 'count') {
+                st.countDifferences.forEach(m => {
+                    list.push({
+                        at: m.at,
+                        kind: 'count',
+                        kindLabel: 'ភាពខុសគ្នារាប់ស្តុក',
+                        tone: 'indigo',
+                        product: m.productName,
+                        sku: m.sku,
+                        qty: m.qty,
+                        amount: m.valueUSD,
+                        actor: m.by,
+                        note: `រាប់ខុស ${m.qty > 0 ? '+' : ''}${m.qty} ឯកតា${m.ref ? ' (វគ្គ ' + m.ref + ')' : ''}`
+                    });
+                });
+            }
+
+            list.sort((a, b) => b.at.localeCompare(a.at));
+
+            const table = document.getElementById('stockExceptionsTable');
+            const empty = document.getElementById('stockExceptionsEmpty');
+            const tbody = document.getElementById('stockExceptionsRows');
+
+            if (!list.length) {
+                table.classList.add('hidden');
+                empty.classList.remove('hidden');
+                empty.innerHTML = emptyState('fa-boxes-stacked', 'គ្មានករណីមិនប្រក្រតីនៃស្តុក', 'រាល់ចលនាស្តុកស្ថិតក្នុងកម្រិតធម្មតា គ្មានការលក់លើសស្តុក ឬកែតម្រូវលើសកំណត់ក្នុងជួរនេះទេ');
+            } else {
+                table.classList.remove('hidden');
+                empty.classList.add('hidden');
+                tbody.innerHTML = list.map(item => `
+                    <tr class="hover:bg-slate-50">
+                        <td class="py-3 px-4 sm-td sm-figure"><span class="block font-medium">${fmtDate(item.at)}</span><span class="text-xs text-slate-400">${fmtTime(item.at)}</span></td>
+                        <td class="py-3 px-4"><span class="sm-badge px-2.5 py-0.5 rounded-full bg-${item.tone}-50 text-${item.tone}-700 border border-${item.tone}-200 font-medium">${item.kindLabel}</span></td>
+                        <td class="py-3 px-4 sm-td"><p class="font-medium text-slate-800">${item.product}</p><p class="text-xs text-slate-400 font-mono">${item.sku || '—'}</p></td>
+                        <td class="py-3 px-4 text-right sm-td sm-figure font-semibold ${item.qty < 0 ? 'text-rose-600' : 'text-emerald-600'}">${item.qty > 0 ? '+' : ''}${item.qty}</td>
+                        <td class="py-3 px-4 text-right sm-td sm-figure font-semibold text-slate-800">${fmtUSD(item.amount)}</td>
+                        <td class="py-3 px-4 sm-td">${personChip(item.actor)}</td>
+                        <td class="py-3 px-4 sm-td text-slate-600">${item.note}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+
         function renderAll() {
             renderCashiers();
             renderApprovers();
             renderDrill();
+            renderStockExceptions();
         }
 
         window.onDateRangeApplied = renderAll;

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - ប្រវត្តិស្តុក</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+</head>
+<body id="managerPortal" data-role-root="../.." data-active="stock-history" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="ប្រវត្តិស្តុក"
+             data-subtitle="កំណត់ត្រាចលនាស្តុកគ្រប់ប្រភេទក្នុងរយៈពេល 14 ថ្ងៃ"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <div class="w-full space-y-5">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <p class="sm-card-sub text-slate-500">រាល់ការលក់ លុបចោល ប្រគល់វិញ ទទួលស្តុក កែតម្រូវ និងការរាប់ស្តុក ត្រូវបានកត់ត្រាត្រឹមត្រូវតាមពេលវេលាជាក់ស្តែង</p>
+                </div>
+
+                <div id="kpiRow" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
+
+                <!-- របារតម្រង៖ ប្រភេទ កាលបរិច្ឆេទ ទំនិញ និងបុគ្គលិក -->
+                <div class="bg-white rounded-2xl p-3 border border-slate-200/80 shadow-sm space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div id="typeTabs" class="flex flex-wrap items-center gap-1.5"></div>
+                        <div id="dateRange" class="flex items-center"></div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-100">
+                        <div class="relative flex-1 sm:w-64 min-w-[200px]">
+                            <button id="prodFilterBtn" type="button" onclick="toggleFilterMenu('prodDropdown')" class="w-full h-10 px-3.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 sm-td text-left flex items-center justify-between gap-2 transition">
+                                <span id="prodFilterLabel" class="truncate font-medium text-slate-700">មុខទំនិញទាំងអស់</span>
+                                <i class="fas fa-chevron-down text-[10px] text-slate-400"></i>
+                            </button>
+                            <div id="prodDropdown" class="hidden absolute left-0 top-full mt-1.5 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 z-50 max-h-64 overflow-y-auto">
+                                <div class="p-1 border-b border-slate-100 mb-1 sticky top-0 bg-white">
+                                    <input type="text" placeholder="ស្វែងរកទំនិញ..." oninput="filterProdDropdownList(this.value)" class="w-full h-8 px-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:border-indigo-500">
+                                </div>
+                                <div id="prodDropdownList" class="space-y-0.5"></div>
+                            </div>
+                        </div>
+
+                        <div class="relative flex-1 sm:w-56 min-w-[180px]">
+                            <button id="staffFilterBtn" type="button" onclick="toggleFilterMenu('staffDropdown')" class="w-full h-10 px-3.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 sm-td text-left flex items-center justify-between gap-2 transition">
+                                <span id="staffFilterLabel" class="truncate font-medium text-slate-700">បុគ្គលិកទាំងអស់</span>
+                                <i class="fas fa-chevron-down text-[10px] text-slate-400"></i>
+                            </button>
+                            <div id="staffDropdown" class="hidden absolute left-0 top-full mt-1.5 w-64 bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 z-50 max-h-64 overflow-y-auto">
+                                <div id="staffDropdownList" class="space-y-0.5"></div>
+                            </div>
+                        </div>
+
+                        <button onclick="clearFilters()" type="button" class="sm-badge px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition inline-flex items-center gap-1.5 text-xs">
+                            <i class="fas fa-filter-circle-xmark"></i> ជម្រះតម្រង
+                        </button>
+                    </div>
+                </div>
+
+                <!-- តារាងប្រវត្តិចលនា -->
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="hidden md:!block">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 text-slate-500 border-b border-slate-100">
+                                <tr>
+                                    <th class="sm-th py-3.5 px-4">ពេលវេលា</th>
+                                    <th class="sm-th py-3.5 px-4">ប្រភេទចលនា</th>
+                                    <th class="sm-th py-3.5 px-4">ទំនិញ</th>
+                                    <th class="sm-th py-3.5 px-4 text-right">ចំនួនចលនា</th>
+                                    <th class="sm-th py-3.5 px-4 text-right">ស្តុកនៅសល់</th>
+                                    <th class="sm-th py-3.5 px-4">អ្នកធ្វើ</th>
+                                    <th class="sm-th py-3.5 px-4">មូលហេតុ · លេខយោង</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rows" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                        </table>
+                    </div>
+                    <div id="cards" class="md:hidden divide-y divide-slate-100"></div>
+                    <div id="empty" class="hidden"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        const q = new URLSearchParams(location.search);
+        let selectedType = q.get('type') || 'all';
+        let selectedSku = q.get('sku') || 'all';
+        let selectedStaff = q.get('staff') || 'all';
+
+        function toggleFilterMenu(id) {
+            const isHidden = document.getElementById(id).classList.contains('hidden');
+            document.querySelectorAll('#prodDropdown, #staffDropdown').forEach(el => el.classList.add('hidden'));
+            if (isHidden) {
+                document.getElementById(id).classList.remove('hidden');
+            }
+        }
+
+        document.addEventListener('click', e => {
+            if (!e.target.closest('#prodFilterBtn') && !e.target.closest('#prodDropdown') &&
+                !e.target.closest('#staffFilterBtn') && !e.target.closest('#staffDropdown')) {
+                document.querySelectorAll('#prodDropdown, #staffDropdown').forEach(el => el.classList.add('hidden'));
+            }
+        });
+
+        function renderTypeTabs() {
+            const types = ['all', 'sale', 'void', 'return', 'stock_in', 'adjust', 'count'];
+            document.getElementById('typeTabs').innerHTML = types.map(t => {
+                const isSel = selectedType === t;
+                const meta = t === 'all' ? { label: 'ទាំងអស់' } : STOCK_MOVE_TYPE[t];
+                return `
+                <button type="button" onclick="selectedType='${t}'; renderTypeTabs(); renderList()" class="sm-badge px-3 py-1.5 rounded-xl transition ${isSel
+                    ? 'bg-indigo-600 text-white font-semibold shadow-sm'
+                    : 'text-slate-600 hover:bg-slate-100 font-medium'}">
+                    ${t !== 'all' ? `<i class="fas ${meta.icon} text-[10px] mr-1"></i>` : ''}${meta.label}
+                </button>`;
+            }).join('');
+        }
+
+        function renderProductFilter() {
+            const listHost = document.getElementById('prodDropdownList');
+            const prods = sellableProducts();
+
+            const allBtn = `
+                <button type="button" onclick="selectProductFilter('all')" class="w-full px-3 py-2 rounded-xl text-left sm-td hover:bg-slate-50 transition ${selectedSku === 'all' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-700'}">
+                    មុខទំនិញទាំងអស់
+                </button>`;
+
+            const items = prods.map(p => `
+                <button type="button" onclick="selectProductFilter('${p.sku}')" class="w-full flex items-center justify-between p-2 rounded-xl text-left sm-td hover:bg-slate-50 transition ${selectedSku === p.sku ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-700'}">
+                    <div class="flex items-center gap-2 min-w-0 pr-2">
+                        <span class="w-7 h-7 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 inline-flex items-center justify-center p-0.5 shadow-sm">
+                            ${productImgHtml(p)}
+                        </span>
+                        <span class="truncate">${p.name}</span>
+                    </div>
+                    <span class="text-[10px] text-slate-400 font-mono flex-shrink-0">${p.barcode || p.sku}</span>
+                </button>
+            `).join('');
+
+            listHost.innerHTML = allBtn + items;
+
+            const p = getProduct(selectedSku);
+            document.getElementById('prodFilterLabel').textContent = p ? p.name : 'មុខទំនិញទាំងអស់';
+        }
+
+        function filterProdDropdownList(val) {
+            const query = val.trim().toLowerCase();
+            const list = document.querySelectorAll('#prodDropdownList button');
+            list.forEach(btn => {
+                const txt = btn.innerText.toLowerCase();
+                btn.style.display = (!query || txt.includes(query)) ? 'flex' : 'none';
+            });
+        }
+
+        function selectProductFilter(sku) {
+            selectedSku = sku;
+            const p = getProduct(sku);
+            document.getElementById('prodFilterLabel').textContent = p ? p.name : 'មុខទំនិញទាំងអស់';
+            document.getElementById('prodDropdown').classList.add('hidden');
+            renderProductFilter();
+            renderList();
+        }
+
+        function renderStaffFilter() {
+            const listHost = document.getElementById('staffDropdownList');
+            const staffList = ALL_STAFF;
+
+            const allBtn = `
+                <button type="button" onclick="selectStaffFilter('all')" class="w-full px-3 py-2 rounded-xl text-left sm-td hover:bg-slate-50 transition ${selectedStaff === 'all' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-700'}">
+                    បុគ្គលិកទាំងអស់
+                </button>`;
+
+            const items = staffList.map(s => `
+                <button type="button" onclick="selectStaffFilter('${s.id}')" class="w-full flex items-center gap-2.5 p-2 rounded-xl text-left sm-td hover:bg-slate-50 transition ${selectedStaff === s.id ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-700'}">
+                    ${avatarHtml(s.id, 'w-6 h-6')}
+                    <span class="truncate">${s.name} (${s.id})</span>
+                </button>
+            `).join('');
+
+            listHost.innerHTML = allBtn + items;
+
+            const s = personById(selectedStaff);
+            document.getElementById('staffFilterLabel').textContent = s ? s.name : 'បុគ្គលិកទាំងអស់';
+        }
+
+        function selectStaffFilter(id) {
+            selectedStaff = id;
+            const s = personById(id);
+            document.getElementById('staffFilterLabel').textContent = s ? s.name : 'បុគ្គលិកទាំងអស់';
+            document.getElementById('staffDropdown').classList.add('hidden');
+            renderStaffFilter();
+            renderList();
+        }
+
+        function clearFilters() {
+            selectedType = 'all';
+            selectedSku = 'all';
+            selectedStaff = 'all';
+            selectPreset('7 ថ្ងៃចុងក្រោយ');
+            renderTypeTabs();
+            renderProductFilter();
+            renderStaffFilter();
+            renderList();
+        }
+
+        function renderKpis(filteredMoves) {
+            const total = filteredMoves.length;
+            const inUnits = filteredMoves.filter(m => m.type === 'stock_in').reduce((n, m) => n + m.qty, 0);
+            const saleUnits = filteredMoves.filter(m => m.type === 'sale').reduce((n, m) => n + Math.abs(m.qty), 0);
+            const adjUnits = filteredMoves.filter(m => m.type === 'adjust' || m.type === 'count').reduce((n, m) => n + Math.abs(m.qty), 0);
+
+            document.getElementById('kpiRow').innerHTML =
+                kpiCard('ចលនាសរុប', `${total}`, 'ក្នុងចន្លោះពេលជ្រើសរើស') +
+                kpiCard('ទទួលស្តុកចូល', `${inUnits}`, 'ឯកតាទទួលពីអ្នកផ្គត់ផ្គង់', 'text-emerald-600') +
+                kpiCard('លក់ចេញសរុប', `${saleUnits}`, 'ឯកតាលក់តាមវិក្កយបត្រ', 'text-slate-800') +
+                kpiCard('កែតម្រូវ និងរាប់ស្តុក', `${adjUnits}`, 'ឯកតាផ្លាស់ប្តូរពិសេស', adjUnits ? 'text-amber-600' : 'text-slate-800');
+        }
+
+        function renderList() {
+            const range = getSelectedRange();
+            let all = mgrStockMoves(range);
+
+            if (selectedType !== 'all') {
+                all = all.filter(m => m.type === selectedType);
+            }
+            if (selectedSku !== 'all') {
+                all = all.filter(m => m.sku === selectedSku);
+            }
+            if (selectedStaff !== 'all') {
+                all = all.filter(m => m.by === selectedStaff);
+            }
+
+            renderKpis(all);
+
+            const empty = document.getElementById('empty');
+            if (!all.length) {
+                document.getElementById('rows').innerHTML = '';
+                document.getElementById('cards').innerHTML = '';
+                empty.classList.remove('hidden');
+                empty.innerHTML = emptyState('fa-clock-rotate-left', 'គ្មានប្រវត្តិក្នុងចន្លោះនេះទេ', 'សូមជ្រើសរើសជួរកាលបរិច្ឆេទវែងជាងនេះ ឬជម្រះតម្រង',
+                    `<button onclick="clearFilters()" type="button" class="sm-badge mt-4 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold">ជម្រះតម្រង</button>`);
+                return;
+            }
+
+            empty.classList.add('hidden');
+
+            const typeChip = m => {
+                const meta = STOCK_MOVE_TYPE[m.type] || { label: m.type, icon: 'fa-box', tone: 'slate' };
+                return `<span class="sm-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border bg-${meta.tone}-50 text-${meta.tone}-700 border-${meta.tone}-200 text-xs font-medium"><i class="fas ${meta.icon} text-[10px]"></i>${meta.label}</span>`;
+            };
+
+            const reasonText = m => {
+                const parts = [];
+                if (m.type === 'adjust' && STOCK_ADJUST_REASONS[m.reason]) {
+                    parts.push(STOCK_ADJUST_REASONS[m.reason].label);
+                } else if (m.reason) {
+                    parts.push(escapeText(m.reason));
+                }
+                if (m.supplier) parts.push(escapeText(m.supplier));
+                if (m.ref) parts.push(`<span class="font-mono text-slate-500">${escapeText(m.ref)}</span>`);
+                if (m.note) parts.push(`<span class="text-slate-400">«${escapeText(m.note)}»</span>`);
+                return parts.join(' · ') || '<span class="text-slate-400">—</span>';
+            };
+
+            document.getElementById('rows').innerHTML = all.slice(0, 200).map(m => {
+                const p = getProduct(m.sku);
+                const unit = p ? p.unit : 'ឯកតា';
+                const sign = m.qty > 0 ? '+' : '';
+                const qtyTone = m.qty > 0 ? 'text-emerald-600' : 'text-slate-800';
+
+                return `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="py-3 px-4 sm-td sm-figure">
+                        <span class="block font-medium text-slate-800">${fmtDate(m.at)}</span>
+                        <span class="text-xs text-slate-400">${fmtTime(m.at)}</span>
+                    </td>
+                    <td class="py-3 px-4">${typeChip(m)}</td>
+                    <td class="py-3 px-4 sm-td">
+                        <div class="flex items-center gap-3">
+                            <span class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 inline-flex items-center justify-center p-0.5 shadow-sm">
+                                ${p ? productImgHtml(p) : '<i class="fas fa-box text-slate-400 text-sm"></i>'}
+                            </span>
+                            <div class="min-w-0">
+                                <p class="font-medium text-slate-800 leading-snug truncate">${p ? p.name : m.sku}</p>
+                                <p class="text-xs text-slate-400 font-mono mt-0.5">បាកូដ: ${p ? (p.barcode || p.sku) : m.sku}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-3 px-4 text-right sm-td sm-figure font-bold ${qtyTone}">
+                        ${sign}${m.qty} ${unit}
+                    </td>
+                    <td class="py-3 px-4 text-right sm-td sm-figure font-bold text-slate-800">
+                        ${m.balanceAfter != null ? `${m.balanceAfter} ${unit}` : '—'}
+                    </td>
+                    <td class="py-3 px-4 sm-td">${personChip(m.by)}</td>
+                    <td class="py-3 px-4 sm-td text-xs leading-relaxed max-w-xs">${reasonText(m)}</td>
+                </tr>`;
+            }).join('');
+
+            document.getElementById('cards').innerHTML = all.slice(0, 100).map(m => {
+                const p = getProduct(m.sku);
+                const unit = p ? p.unit : 'ឯកតា';
+                const sign = m.qty > 0 ? '+' : '';
+                const qtyTone = m.qty > 0 ? 'text-emerald-600' : 'text-slate-800';
+
+                return `
+                <div class="p-4 space-y-2.5">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <span class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 inline-flex items-center justify-center p-0.5 shadow-sm">
+                                ${p ? productImgHtml(p) : '<i class="fas fa-box text-slate-400 text-sm"></i>'}
+                            </span>
+                            <div class="min-w-0">
+                                ${typeChip(m)}
+                                <p class="font-medium text-slate-800 mt-1 truncate">${p ? p.name : m.sku}</p>
+                            </div>
+                        </div>
+                        <div class="text-right flex-shrink-0">
+                            <p class="sm-value sm-figure font-bold ${qtyTone}">${sign}${m.qty} ${unit}</p>
+                            <p class="text-xs text-slate-400 sm-figure">សល់: ${m.balanceAfter != null ? m.balanceAfter : '—'}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-100">
+                        <span class="text-slate-400">${fmtDate(m.at)} ${fmtTime(m.at)}</span>
+                        ${personChip(m.by)}
+                    </div>
+                    ${m.reason || m.ref ? `<p class="text-xs text-slate-500">${reasonText(m)}</p>` : ''}
+                </div>`;
+            }).join('');
+        }
+
+        window.onDateRangeApplied = renderList;
+        window.onStoreChanged = () => {
+            renderProductFilter();
+            renderStaffFilter();
+            renderList();
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDateRangePicker('dateRange');
+            selectPreset('7 ថ្ងៃចុងក្រោយ');
+            renderTypeTabs();
+            renderProductFilter();
+            renderStaffFilter();
+            renderList();
+            updatePortalBadges();
+            refreshPortalNotifications();
+        });
+    </script>
+</body>
+</html>

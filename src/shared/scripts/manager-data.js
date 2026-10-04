@@ -1,4 +1,4 @@
-/* អ្នកគ្រប់គ្រងវេន — ទិន្នន័យប្រវត្តិ និងការគណនា (ឯកសាររចនាលេខ 02 ផ្នែក 7)
+/* អ្នកគ្រប់គ្រង — ទិន្នន័យប្រវត្តិ និងការគណនា (ឯកសាររចនាលេខ 02 ផ្នែក 7)
 
    ផ្ទុកតែលើទំព័រ manager/* ប៉ុណ្ណោះ (បន្ទាប់ពី data.js) ដូច្នេះទំព័រអ្នកគិតលុយមិនដែលទទួលបាន
    ទិន្នន័យវេនផ្សេងឡើយ — ការចាក់សោរត្រឹមវេនពិតប្រាកដ មិនមែនត្រឹមលាក់លើអេក្រង់។
@@ -514,6 +514,332 @@ function approverStats(range) {
     return Object.values(rows);
 }
 
+/* ===== ស្តុកទំនិញ និងប្រវត្តិ 14 ថ្ងៃ (Phase 2) ===== */
+
+const FMCG_SUPPLIERS = [
+    'ក្រុមហ៊ុន ស្រាបៀរកម្ពុជា (Khmer Beverages)',
+    'ក្រុមហ៊ុន វីតាល់ & មីជាតិ (One More Ltd)',
+    'ក្រុមហ៊ុន ខូកា-កូឡា កម្ពុជា (Cambodia Beverage Co.)',
+    'ក្រុមហ៊ុន យូនីលីវើ ខេមបូឌា (Unilever)',
+    'ក្រុមហ៊ុន នេសត្លេ កម្ពុជា (Nestlé)',
+    'ក្រុមហ៊ុន ចែកចាយ ភ្នំពេញ ឌីស្ទ្រីប៊្យូសិន'
+];
+
+let MGR_STOCK_CACHE = null;
+
+function generateStockHistory() {
+    if (MGR_STOCK_CACHE) return MGR_STOCK_CACHE;
+    const history = generateHistory();
+    const openingAt = stockOpeningAt();
+    const pastSales = history.sales.filter(s => s.time < openingAt);
+    const pastApprovals = history.approvals.filter(a => (a.decidedAt || a.raisedAt) < openingAt && a.status === 'approved');
+
+    // ប្រមូលចលនាពីប្រវត្តិលក់ និងការអនុម័តមុនពេលស្តុកបើក
+    const movesBySku = {};
+    PRODUCTS.forEach(p => { movesBySku[p.sku] = []; });
+
+    pastSales.forEach(s => {
+        (s.items || []).forEach(l => {
+            if (!movesBySku[l.sku]) return;
+            movesBySku[l.sku].push({
+                id: `SMG-SALE-${s.id}-${l.sku}`,
+                type: 'sale',
+                sku: l.sku,
+                qty: -l.qty,
+                at: s.time,
+                by: s.cashierId,
+                ref: s.id,
+                reason: '',
+                note: ''
+            });
+        });
+    });
+
+    pastApprovals.forEach(a => {
+        if (a.type === 'void') {
+            const s = pastSales.find(x => x.id === a.saleId);
+            if (s) {
+                (s.items || []).forEach(l => {
+                    if (!movesBySku[l.sku]) return;
+                    movesBySku[l.sku].push({
+                        id: `SMG-VOID-${a.id}-${l.sku}`,
+                        type: 'void',
+                        sku: l.sku,
+                        qty: l.qty,
+                        at: a.decidedAt || a.raisedAt,
+                        by: a.decidedBy,
+                        ref: s.id,
+                        reason: a.reason || 'លុបចោលវិក្កយបត្រ',
+                        note: ''
+                    });
+                });
+            }
+        } else if (a.type === 'return') {
+            (a.lines || []).forEach(l => {
+                if (!movesBySku[l.sku]) return;
+                movesBySku[l.sku].push({
+                    id: `SMG-RET-${a.id}-${l.sku}`,
+                    type: 'return',
+                    sku: l.sku,
+                    qty: l.qty,
+                    at: a.decidedAt || a.raisedAt,
+                    by: a.decidedBy,
+                    ref: a.saleId,
+                    reason: a.reason || 'ប្រគល់ទំនិញវិញ',
+                    note: ''
+                });
+            });
+        }
+    });
+
+    // បង្កើតការទទួលស្តុក (Stock In) និងការកែតម្រូវ ដើម្បីឱ្យសមតុល្យថយក្រោយមិនធ្លាក់ក្រោម minStock/2
+    const allHistoricMoves = [];
+    const generatedCounts = [];
+    const seedDate = new Date(openingAt);
+
+    // វគ្គរាប់ស្តុកគំរូមួយ 7 ថ្ងៃមុន
+    const countSessionDate = addDays(seedDate, -7);
+    const countSessionTime = isoLocal(new Date(countSessionDate.setHours(15, 0, 0, 0)));
+    const countSessionLines = [];
+
+    PRODUCTS.forEach((p, idx) => {
+        const rng = rngFor(`stock|${p.sku}|v3`);
+        const pMoves = movesBySku[p.sku] || [];
+
+        // តម្រៀបពីថ្មីទៅចាស់ (ថយក្រោយពី opening)
+        pMoves.sort((a, b) => b.at.localeCompare(a.at));
+
+        let runningBackward = p.opening || 20;
+        const reorderQty = p.reorderQty || 24;
+        const minStock = p.minStock || 5;
+        const safeFloor = Math.max(2, Math.floor(minStock / 2));
+
+        const injectedMoves = [];
+
+        // ដើរថយក្រោយតាមថ្ងៃ (14 ថ្ងៃ)
+        for (let d = 1; d <= HISTORY_DAYS; d++) {
+            const dayDate = addDays(new Date(openingAt), -d);
+            const dayStr = isoDate(dayDate);
+
+            // ពិនិត្យចលនាក្នុងថ្ងៃនេះ
+            const dayMoves = pMoves.filter(m => m.at.startsWith(dayStr));
+            dayMoves.forEach(m => {
+                runningBackward = runningBackward - m.qty;
+            });
+
+            // បើកាលបរិច្ឆេទដល់ថ្ងៃរាប់ស្តុក (7 ថ្ងៃមុន)
+            if (d === 7 && idx === 0) {
+                const diff = -1;
+                injectedMoves.push({
+                    id: `SMG-COUNT-${dayStr}-${p.sku}`,
+                    type: 'count',
+                    sku: p.sku,
+                    qty: diff,
+                    at: countSessionTime,
+                    by: 'MGR-01',
+                    ref: 'SC-SEED-01',
+                    reason: 'រាប់ស្តុកជាក់ស្តែង',
+                    note: 'រកឃើញខ្វះ 1 ឯកតា'
+                });
+                runningBackward = runningBackward - diff;
+            }
+
+            // បន្ថែមការកែតម្រូវខូចខាតម្តងម្កាល (ថ្ងៃទី 4 ឬ 10)
+            if ((d === 4 || d === 10) && rng() < 0.35) {
+                const adjReason = pick(rng, ['damaged', 'expired']);
+                const adjAt = isoLocal(new Date(dayDate.setHours(16, 30, 0, 0)));
+                injectedMoves.push({
+                    id: `SMG-ADJ-${dayStr}-${p.sku}`,
+                    type: 'adjust',
+                    sku: p.sku,
+                    qty: -1,
+                    at: adjAt,
+                    by: 'MGR-01',
+                    ref: '',
+                    reason: adjReason,
+                    note: adjReason === 'damaged' ? 'ទំនិញខូចខាតពេលដឹក' : 'ទំនិញជិតផុតកំណត់'
+                });
+                runningBackward = runningBackward - (-1);
+            }
+
+            // បើ runningBackward ឡើងខ្ពស់ ឬរៀងរាល់ 4-5 ថ្ងៃ -> ដាក់ការទទួលស្តុក (stock_in)
+            if (d % 5 === 0 || runningBackward > (p.opening + reorderQty * 0.8)) {
+                let delivQty = reorderQty;
+                if (runningBackward - delivQty < safeFloor) {
+                    delivQty = Math.max(6, runningBackward - safeFloor);
+                }
+                const sup = pick(rng, FMCG_SUPPLIERS);
+                const invNum = `INV-${dayStr.replace(/-/g, '')}-${Math.floor(rng() * 800 + 100)}`;
+                const delivAt = isoLocal(new Date(dayDate.setHours(8, 30, 0, 0)));
+                injectedMoves.push({
+                    id: `SMG-IN-${dayStr}-${p.sku}`,
+                    type: 'stock_in',
+                    sku: p.sku,
+                    qty: delivQty,
+                    at: delivAt,
+                    by: 'MGR-01',
+                    supplier: sup,
+                    invoice: invNum,
+                    date: dayStr,
+                    costConfirmed: false,
+                    ref: invNum,
+                    reason: 'ទទួលទំនិញចូលស្តុក',
+                    note: ''
+                });
+                runningBackward = runningBackward - delivQty;
+            }
+        }
+
+        // ចងក្រងចលនាប្រវត្តិទាំងអស់នៃ SKU នេះ ពីចាស់ទៅថ្មី
+        const combinedHistoric = pMoves.concat(injectedMoves);
+        combinedHistoric.sort((a, b) => a.at.localeCompare(b.at));
+
+        // ដើរទៅមុខពី 14 ថ្ងៃមុន រហូតដល់ openingAt ដើម្បីគណនា balanceAfter
+        let runningForward = runningBackward;
+        combinedHistoric.forEach(m => {
+            runningForward += m.qty;
+            m.balanceAfter = runningForward;
+        });
+
+        allHistoricMoves.push(...combinedHistoric);
+
+        // កត់ត្រាចូលបន្ទាត់រាប់ស្តុក 7 ថ្ងៃមុន
+        const countDiff = (idx === 0) ? -1 : 0;
+        const countedUnits = Math.max(0, runningForward + countDiff);
+        countSessionLines.push({
+            sku: p.sku,
+            system: runningForward,
+            first: countedUnits,
+            counted: countedUnits,
+            diff: countDiff
+        });
+    });
+
+    generatedCounts.push({
+        id: 'SC-SEED-01',
+        at: countSessionTime,
+        by: 'MGR-01',
+        status: 'completed',
+        lines: countSessionLines,
+        generated: true
+    });
+
+    MGR_STOCK_CACHE = {
+        historicMoves: allHistoricMoves,
+        stockCounts: generatedCounts
+    };
+    return MGR_STOCK_CACHE;
+}
+
+function mgrAllStockCounts() {
+    const gen = generateStockHistory().stockCounts || [];
+    return storedStockCounts().concat(gen).sort((a, b) => b.at.localeCompare(a.at));
+}
+
+function mgrStockMoves(range) {
+    const openingAt = stockOpeningAt();
+    const historic = generateStockHistory().historicMoves;
+    const live = liveStockMoves();
+
+    // គណនា balanceAfter សម្រាប់ live moves ទៅមុខពី p.opening
+    const liveBySku = {};
+    PRODUCTS.forEach(p => { liveBySku[p.sku] = []; });
+    live.forEach(m => {
+        if (liveBySku[m.sku]) liveBySku[m.sku].push(m);
+    });
+
+    const liveWithBalance = [];
+    PRODUCTS.forEach(p => {
+        const moves = liveBySku[p.sku] || [];
+        moves.sort((a, b) => a.at.localeCompare(b.at));
+        let running = p.opening || 0;
+        moves.forEach(m => {
+            running += m.qty;
+            m.balanceAfter = running;
+            liveWithBalance.push(m);
+        });
+    });
+
+    const all = historic.concat(liveWithBalance).sort((a, b) => b.at.localeCompare(a.at));
+    return range ? all.filter(m => inRange(m.at, range)) : all;
+}
+
+function stockCountScheduleStatus() {
+    const st = posSettings();
+    const sched = st.countSchedule || 'weekly';
+    const intervalDays = sched === 'monthly' ? 30 : 7;
+    const allCounts = mgrAllStockCounts();
+    const lastAt = allCounts.length > 0 ? allCounts[0].at : stockOpeningAt();
+    const lastDate = new Date(lastAt);
+    const nextDueDate = addDays(lastDate, intervalDays);
+    const now = new Date();
+    const diffMs = now.getTime() - nextDueDate.getTime();
+    const diffDays = Math.floor(diffMs / (24 * 3600 * 1000));
+    const isDue = now >= nextDueDate;
+    const isOverdue = diffDays >= 2;
+    return {
+        schedule: sched,
+        intervalDays,
+        lastAt,
+        nextDueDate: isoDate(nextDueDate),
+        isDue,
+        isOverdue,
+        overdueDays: Math.max(0, diffDays)
+    };
+}
+
+function stockExceptionStats(range) {
+    const moves = mgrStockMoves(range);
+    const events = mgrAllEvents().filter(e => inRange(e.at, range));
+    const st = posSettings();
+    const limitQty = st.adjustLimitQty || 10;
+    const limitUSD = st.adjustLimitUSD || 50;
+
+    const mismatches = events.filter(e => e.type === 'stock_mismatch');
+    const mismatchByCashier = {};
+    mismatches.forEach(e => {
+        const c = e.cashierId || 'unknown';
+        mismatchByCashier[c] = mismatchByCashier[c] || { cashierId: c, count: 0, totalAmount: 0, items: [] };
+        mismatchByCashier[c].count += 1;
+        mismatchByCashier[c].totalAmount += (e.amount || 0);
+        mismatchByCashier[c].items.push(e);
+    });
+
+    const largeAdjustments = moves.filter(m => {
+        if (m.type !== 'adjust') return false;
+        const p = getProduct(m.sku);
+        const price = p ? p.price : 0;
+        const absQty = Math.abs(m.qty);
+        return absQty > limitQty || (absQty * price) > limitUSD;
+    }).map(m => {
+        const p = getProduct(m.sku);
+        const price = p ? p.price : 0;
+        return Object.assign({}, m, {
+            valueUSD: Math.abs(m.qty) * price,
+            productName: p ? p.name : m.sku
+        });
+    });
+
+    const countDifferences = moves.filter(m => m.type === 'count' && m.qty !== 0).map(m => {
+        const p = getProduct(m.sku);
+        const price = p ? p.price : 0;
+        return Object.assign({}, m, {
+            valueUSD: Math.abs(m.qty) * price,
+            productName: p ? p.name : m.sku
+        });
+    });
+
+    const sched = stockCountScheduleStatus();
+
+    return {
+        mismatches: Object.values(mismatchByCashier),
+        mismatchList: mismatches,
+        largeAdjustments,
+        countDifferences,
+        sched
+    };
+}
+
 /* ===== ការលក់តាមជួរ ===== */
 
 /* ថ្ងៃប្រតិបត្តិការនៃការលក់ = ថ្ងៃដែលវេនចាប់ផ្តើម (ការលក់ក្រោយពាក់កណ្តាលអធ្រាត្រក្នុងវេនយប់ ជារបស់ថ្ងៃមុន) */
@@ -525,7 +851,10 @@ function saleBizDate(sale) {
     }
     return SHIFT_DATE_CACHE[sale.shiftId] || sale.time.slice(0, 10);
 }
-window.addEventListener('bms-store-changed', () => { SHIFT_DATE_CACHE = null; });
+window.addEventListener('bms-store-changed', () => {
+    SHIFT_DATE_CACHE = null;
+    MGR_STOCK_CACHE = null;
+});
 
 function salesInRange(range, filter) {
     const f = filter || {};
@@ -572,6 +901,11 @@ function mgrPendingDropCount() {
     return mgrAllMovements().filter(m => m.type === 'drop' && m.status === 'pending').length;
 }
 
+function mgrLowStockCount() {
+    const levels = onHandLevels();
+    return sellableProducts().filter(p => stockStatusOf(p, levels[p.sku] || 0) !== 'ok').length;
+}
+
 /* ផ្លាកលេខរបស់អ្នកគិតលុយមិនប្រើនៅទីនេះ */
 function totalPending() {
     return 0;
@@ -607,6 +941,31 @@ function portalNotifications() {
         note: `${personName(s.cashierId)} · ${s.templateName} ត្រូវបិទម៉ោង ${s.end}`,
         href: `${root}/manager/shifts/view-shift.html?id=${s.id}`
     }));
+
+    const lowCount = mgrLowStockCount();
+    if (lowCount > 0) {
+        list.push({
+            icon: 'mdi:package-variant-remove',
+            tone: 'warning',
+            title: `ទំនិញ ${lowCount} មុខជិតអស់ ឬអស់ស្តុក`,
+            note: 'ពិនិត្យបញ្ជីត្រូវបញ្ជាទិញឡើងវិញ',
+            time: 'ពេលនេះ',
+            href: `${root}/manager/stock/stock.html`
+        });
+    }
+
+    const sched = stockCountScheduleStatus();
+    if (sched.isDue) {
+        list.push({
+            icon: 'mdi:clipboard-alert-outline',
+            tone: sched.isOverdue ? 'danger' : 'warning',
+            title: sched.isOverdue ? `ការរាប់ស្តុកហួសកំណត់ ${sched.overdueDays} ថ្ងៃ` : 'ដល់កាលបរិច្ឆេទរាប់ស្តុក',
+            note: `កាលវិភាគ${sched.schedule === 'monthly' ? 'ប្រចាំខែ' : 'ប្រចាំសប្តាហ៍'}`,
+            time: fmtDate(sched.nextDueDate),
+            href: `${root}/manager/stock-count/stock-count.html`
+        });
+    }
+
     return list;
 }
 

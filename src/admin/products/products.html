@@ -49,8 +49,11 @@
                             <th class="sm-th py-2.5 px-5 text-left text-slate-500">ទំនិញ</th>
                             <th class="sm-th py-2.5 px-3 text-right text-slate-500">តម្លៃលក់</th>
                             <th class="sm-th py-2.5 px-3 text-right text-slate-500">ថ្លៃដើម</th>
-                            <th class="sm-th py-2.5 px-3 text-right text-slate-500">ចំណេញក្នុងមួយឯកតា</th>
-                            <th class="sm-th py-2.5 px-3 text-left text-slate-500 w-[16%]">អត្រាចំណេញ</th>
+                            <th class="sm-th py-2.5 px-3 text-right text-slate-500">ចំណេញ/ឯកតា</th>
+                            <th class="sm-th py-2.5 px-3 text-left text-slate-500 w-[14%]">អត្រាចំណេញ</th>
+                            <th class="sm-th py-2.5 px-3 text-right text-slate-500">ក្នុងស្តុក</th>
+                            <th class="sm-th py-2.5 px-3 text-right text-slate-500">អប្បបរមា</th>
+                            <th class="sm-th py-2.5 px-3 text-right text-slate-500">ស្នើទិញ</th>
                             <th class="sm-th py-2.5 px-3 text-right text-slate-500">លក់ 14 ថ្ងៃ</th>
                             <th class="sm-th py-2.5 px-5 w-16"></th>
                         </tr></thead>
@@ -71,7 +74,7 @@
     <script src="../../shared/scripts/portal.js"></script>
     <script>
 
-        /* ទំនិញ តម្លៃ និងថ្លៃដើម (ឯកសាររចនាលេខ 03 ផ្នែក 6) — អ្នកគ្រប់គ្រងវេន និងអ្នកគិតលុយមិនឃើញថ្លៃដើមទេ */
+        /* ទំនិញ តម្លៃ និងថ្លៃដើម (ឯកសាររចនាលេខ 03 ផ្នែក 6) — អ្នកគ្រប់គ្រង និងអ្នកគិតលុយមិនឃើញថ្លៃដើមទេ */
 
         let cat = 'all';
         const LOW = 20;
@@ -119,6 +122,7 @@
             return `<div id="${mid}" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 text-left min-w-[220px]">
                 ${menuItem('fa-tag', 'ប្តូរតម្លៃលក់', 'editPrice', p.sku)}
                 ${menuItem('fa-truck-ramp-box', 'កែថ្លៃដើម', 'editCost', p.sku)}
+                ${menuItem('fa-boxes-stacked', 'កែដែនស្តុក', 'editStockLevels', p.sku)}
                 <div class="h-px bg-slate-100 my-1"></div>
                 ${p.active === false ? menuItem('fa-circle-play', 'បើកលក់វិញ', 'toggleActive', p.sku) : menuItem('fa-circle-pause', 'ផ្អាកលក់', 'toggleActive', p.sku, true)}
             </div>`;
@@ -162,25 +166,37 @@
             const thumb = (p, c) => `<span class="${c} rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 ${p.active === false ? 'grayscale opacity-60' : ''}">${productImgHtml(p)}</span>`;
             document.getElementById('rows').innerHTML = list.map(p => {
                 const s = SOLD[p.sku] || { qty: 0 };
+                const oh = typeof onHand === 'function' ? onHand(p.sku) : (p.opening || 0);
+                const st = typeof stockStatus === 'function' ? stockStatus(p.sku) : 'ok';
+                const stInfo = STOCK_STATUS[st] || STOCK_STATUS.ok;
                 return `<tr class="${p.active === false ? 'bg-slate-50/50' : ''}">
                     <td class="py-2.5 px-5"><div class="flex items-center gap-3 min-w-0">${thumb(p, 'w-11 h-11')}<div class="min-w-0"><p class="sm-td-strong text-slate-800 truncate">${p.name}${paused(p)}</p><p class="sm-td-sub text-slate-400"><span class="sm-figure">${p.sku}</span> · ${categoryLabel(p.category)}</p></div></div></td>
                     <td class="py-2.5 px-3 text-right">${priceCell(p)}</td>
                     <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-600">${fmtUSD(costOf(p.sku))}</td>
                     <td class="py-2.5 px-3 text-right sm-td-strong sm-figure ${marginTone(marginOf(p))}">${fmtUSD(profitPer(p))}</td>
                     <td class="py-2.5 px-3">${marginCell(p)}</td>
+                    <td class="py-2.5 px-3 text-right"><span class="sm-td-strong sm-figure text-slate-800">${oh}</span> <span class="text-slate-400 text-xs">${p.unit}</span><span class="block sm-td-sub text-[11px] font-semibold ${st === 'out' ? 'text-rose-600' : st === 'low' ? 'text-amber-600' : 'text-emerald-700'}">${stInfo.label}</span></td>
+                    <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-600">${p.minStock || 5}</td>
+                    <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-600">${p.reorderQty || 12}</td>
                     <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-600">${s.qty} <span class="text-slate-400">${p.unit}</span></td>
                     <td class="py-2.5 px-5 text-right">${dotsBtn('m-' + p.sku)}${menu(p, 'm-' + p.sku)}</td>
                 </tr>`;
             }).join('');
-            document.getElementById('cards').innerHTML = list.map(p => `<div class="p-4 flex items-start gap-3">
-                ${thumb(p, 'w-12 h-12')}
-                <div class="min-w-0 flex-1">
-                    <p class="sm-value text-slate-800 truncate">${p.name}${paused(p)}</p>
-                    <p class="sm-td-sub text-slate-500 sm-figure">${fmtUSD(p.price)} · ថ្លៃដើម ${fmtUSD(costOf(p.sku))}</p>
-                    <p class="sm-td-sub font-semibold ${marginTone(marginOf(p))}">ចំណេញ ${marginOf(p).toFixed(0)}% · ${fmtUSD(profitPer(p))}/${p.unit}</p>
-                </div>
-                ${dotsBtn('c-' + p.sku)}${menu(p, 'c-' + p.sku)}
-            </div>`).join('');
+            document.getElementById('cards').innerHTML = list.map(p => {
+                const oh = typeof onHand === 'function' ? onHand(p.sku) : (p.opening || 0);
+                const st = typeof stockStatus === 'function' ? stockStatus(p.sku) : 'ok';
+                const stInfo = STOCK_STATUS[st] || STOCK_STATUS.ok;
+                return `<div class="p-4 flex items-start gap-3">
+                    ${thumb(p, 'w-12 h-12')}
+                    <div class="min-w-0 flex-1">
+                        <p class="sm-value text-slate-800 truncate">${p.name}${paused(p)}</p>
+                        <p class="sm-td-sub text-slate-500 sm-figure">${fmtUSD(p.price)} · ថ្លៃដើម ${fmtUSD(costOf(p.sku))}</p>
+                        <p class="sm-td-sub font-semibold ${marginTone(marginOf(p))}">ចំណេញ ${marginOf(p).toFixed(0)}% · ${fmtUSD(profitPer(p))}/${p.unit}</p>
+                        <p class="sm-td-sub text-slate-500 sm-figure mt-0.5">ស្តុក ${oh} ${p.unit} (${stInfo.label}) · អប្បបរមា ${p.minStock || 5} · ស្នើទិញ ${p.reorderQty || 12}</p>
+                    </div>
+                    ${dotsBtn('c-' + p.sku)}${menu(p, 'c-' + p.sku)}
+                </div>`;
+            }).join('');
         }
 
         function renderAll() {
@@ -253,6 +269,35 @@
             setCost(sku, n, `កែថ្លៃដើម ${p.name}៖ ${fmtUSD(cur)} → ${fmtUSD(n)}`);
             renderAll();
             showToast('បានរក្សាទុកថ្លៃដើម · របាយការណ៍ប្រាក់ចំណេញគណនាឡើងវិញ');
+        }
+
+        async function editStockLevels(sku) {
+            const p = getProduct(sku);
+            const curMin = p.minStock || 5;
+            const curReorder = p.reorderQty || 12;
+            const v = await showFormDialog({
+                title: 'កំណត់កម្រិតស្តុក', icon: 'fa-boxes-stacked',
+                message: `${p.name} · ស្តុកបច្ចុប្បន្ន ${typeof onHand === 'function' ? onHand(sku) : 0} ${p.unit}`,
+                fields: [
+                    { key: 'minStock', label: 'កម្រិតស្តុកអប្បបរមា (ឯកតា)', value: String(curMin), type: 'number', suffix: p.unit },
+                    { key: 'reorderQty', label: 'ចំនួនស្នើបញ្ជាទិញឡើងវិញ (ឯកតា)', value: String(curReorder), type: 'number', suffix: p.unit }
+                ],
+                validate: x => {
+                    const min = Number(x.minStock);
+                    const reorder = Number(x.reorderQty);
+                    if (!(min >= 0)) return 'សូមបញ្ចូលកម្រិតស្តុកអប្បបរមាត្រឹមត្រូវ';
+                    if (!(reorder > 0)) return 'សូមបញ្ចូលចំនួនស្នើបញ្ជាទិញត្រឹមត្រូវ';
+                    return '';
+                }
+            });
+            if (!v) return;
+            const minStock = Math.round(Number(v.minStock));
+            const reorderQty = Math.round(Number(v.reorderQty));
+            updateCatalog(sku, { minStock, reorderQty }, `កែដែនស្តុក ${p.name}៖ អប្បបរមា ${curMin} → ${minStock}, ស្នើទិញ ${curReorder} → ${reorderQty}`);
+            p.minStock = minStock;
+            p.reorderQty = reorderQty;
+            renderAll();
+            showToast(`បានកែដែនស្តុកសម្រាប់ ${p.name}`);
         }
 
         async function toggleActive(sku) {

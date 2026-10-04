@@ -144,6 +144,18 @@
                 if (gaps.length) items.push({ icon: 'fa-user-slash', tone: 'rose', title: `${gaps.map(t => t.name).join(' · ')} គ្មានអ្នកគិតលុយ`,
                     note: 'ត្រូវរកអ្នកជំនួសក្នុងកាលវិភាគ', href: '../roster/roster.html', cta: 'ចាត់តាំង' });
             }
+            const lowStock = mgrLowStockCount();
+            if (lowStock) {
+                items.push({ icon: 'fa-boxes-packing', tone: 'amber', title: `ទំនិញ ${lowStock} មុខជិតអស់ ឬអស់ស្តុក`,
+                    note: 'ពិនិត្យបញ្ជីត្រូវបញ្ជាទិញឡើងវិញ', href: '../stock/stock.html?tab=reorder', cta: 'បញ្ជាទិញ' });
+            }
+            const sched = stockCountScheduleStatus();
+            if (sched.isDue) {
+                items.push({ icon: 'fa-clipboard-check', tone: sched.isOverdue ? 'rose' : 'indigo',
+                    title: sched.isOverdue ? `រាប់ស្តុកហួសកំណត់ ${sched.overdueDays} ថ្ងៃ` : 'ដល់កាលបរិច្ឆេទរាប់ស្តុក',
+                    note: `កាលវិភាគ${sched.schedule === 'monthly' ? 'ប្រចាំខែ' : 'ប្រចាំសប្តាហ៍'}`,
+                    href: '../stock-count/stock-count.html', cta: 'រាប់ស្តុក' });
+            }
             document.getElementById('todo').innerHTML = `
                 <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4">
                     <div class="flex items-center justify-between gap-3 mb-3">

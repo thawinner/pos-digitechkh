@@ -157,7 +157,7 @@
                     </button>
                     <a id="switchToManager" href="../../manager/dashboard/dashboard.html" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition text-left border-t border-slate-100 mt-1">
                         <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center flex-shrink-0"><i class="fas fa-user-shield text-[11px]"></i></span>
-                        ប្តូរទៅតួនាទីអ្នកគ្រប់គ្រងវេន
+                        ប្តូរទៅតួនាទីអ្នកគ្រប់គ្រង
                     </a>
                     <button onclick="closeAllFloatingDropdowns(); handleLogout()" type="button" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-rose-700 hover:bg-rose-50 transition text-left border-t border-slate-100 mt-1">
                         <span class="w-7 h-7 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center flex-shrink-0"><i class="fas fa-right-from-bracket text-[11px]"></i></span>
@@ -387,7 +387,7 @@
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-5">
                 <a id="foreignManagerLink" href="../../manager/dashboard/dashboard.html" class="pos-tap sm-value px-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold transition inline-flex items-center justify-center gap-2">
-                    <i class="fas fa-user-shield"></i> អ្នកគ្រប់គ្រងវេន
+                    <i class="fas fa-user-shield"></i> អ្នកគ្រប់គ្រង
                 </a>
                 <button onclick="posLogout(); location.href='../../index.html'" type="button" class="sm-value px-4 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold transition inline-flex items-center justify-center gap-2">
                     <i class="fas fa-right-from-bracket"></i> ចាកចេញ
@@ -750,7 +750,7 @@
                 return false;
             }
             if (leftAfterCart(sku) <= 0) {
-                showToast(`ប្រព័ន្ធបង្ហាញថា ${p.name} អស់ស្តុក · នៅតែលក់បាន ហើយអ្នកគ្រប់គ្រងវេននឹងទទួលដំណឹង`, 'warning');
+                showToast(`ប្រព័ន្ធបង្ហាញថា ${p.name} អស់ស្តុក · នៅតែលក់បាន ហើយអ្នកគ្រប់គ្រងនឹងទទួលដំណឹង`, 'warning');
             }
             const line = cart.find(l => l.sku === sku);
             if (line) line.qty += 1; else cart.push({ sku, qty: 1 });
@@ -912,7 +912,7 @@
             if (!h) return;
             const reason = await showReasonPicker({
                 title: `បោះបង់ការលក់ព្យួរ ${h.label}`,
-                message: 'ការបោះបង់ត្រូវបានកត់ត្រា និងបង្ហាញក្នុងរបាយការណ៍របស់អ្នកគ្រប់គ្រងវេន',
+                message: 'ការបោះបង់ត្រូវបានកត់ត្រា និងបង្ហាញក្នុងរបាយការណ៍របស់អ្នកគ្រប់គ្រង',
                 reasons: posSettings().reasons.holdDiscard,
                 confirmText: 'បោះបង់ការលក់',
                 danger: true,
@@ -1109,7 +1109,7 @@
         async function pickDiscountReason() {
             const reason = await showReasonPicker({
                 title: 'មូលហេតុនៃការបញ្ចុះតម្លៃ',
-                message: 'មូលហេតុត្រូវបានបោះពុម្ពក្នុងរបាយការណ៍ករណីមិនប្រក្រតីរបស់អ្នកគ្រប់គ្រងវេន',
+                message: 'មូលហេតុត្រូវបានបោះពុម្ពក្នុងរបាយការណ៍ករណីមិនប្រក្រតីរបស់អ្នកគ្រប់គ្រង',
                 reasons: posSettings().reasons.discount,
                 dark: true
             });
@@ -1120,7 +1120,7 @@
             return true;
         }
 
-        /* ការបញ្ចុះលើសដែនកំណត់ = អ្នកគ្រប់គ្រងវេនអនុម័តនៅបញ្ជរ ជំនួសការកាត់ដោយស្ងាត់ (C6) */
+        /* ការបញ្ចុះលើសដែនកំណត់ = អ្នកគ្រប់គ្រងអនុម័តនៅបញ្ជរ ជំនួសការកាត់ដោយស្ងាត់ (C6) */
         async function setDiscount(value) {
             const want = Math.min(Math.max(parseFloat(value) || 0, 0), 100);
             const prev = { discountPercent, discountReason, discountApproverId };
@@ -1696,7 +1696,7 @@
             logPosEvent('drop', { amount: usd + toUSD(khr), approverId: rec.confirmedBy || '', note: `${fmtUSD(usd)} · ${fmtKHR(khr)}` });
             renderDrawerBanner();
             refreshPortalNotifications();
-            showToast(managerHere ? 'បានផ្ទេរ និងអ្នកគ្រប់គ្រងបានទទួលប្រាក់រួចរាល់' : 'បានកត់ត្រាការផ្ទេរ · រង់ចាំអ្នកគ្រប់គ្រងវេនទទួល', 'success');
+            showToast(managerHere ? 'បានផ្ទេរ និងអ្នកគ្រប់គ្រងបានទទួលប្រាក់រួចរាល់' : 'បានកត់ត្រាការផ្ទេរ · រង់ចាំអ្នកគ្រប់គ្រងទទួល', 'success');
         }
 
         /* ===== វេន និងសោរបញ្ជរ ===== */
