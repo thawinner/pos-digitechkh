@@ -273,6 +273,12 @@ const POS_SETTINGS_DEFAULTS = {
         holdDiscard: ['អតិថិជនមិនត្រឡប់មកវិញ', 'អតិថិជនលែងចង់ទិញ', 'បង្កើតខុស']
     },
     quickKeys: ['8860001', '8860004', '8850001', '8850002', '8860002', '8880002'],
+    /* ស្តុក៖ លក់បានទោះប្រព័ន្ធបង្ហាញថាអស់ (កត់ត្រាជាករណីមិនប្រក្រតី) · ការកែតម្រូវលើសដែនកំណត់
+       ណាមួយ (ចំនួនឯកតា ឬតម្លៃលក់រាយ) ត្រូវបានកត់ត្រា · ការរាប់ស្តុកប្រចាំសប្តាហ៍ ឬប្រចាំខែ */
+    allowNegativeStock: true,
+    adjustLimitQty: 10,
+    adjustLimitUSD: 50,
+    countSchedule: 'weekly',
     /* វេនលំនាំដើមរបស់បុគ្គលិកម្នាក់ៗ — template '' = មិនមានវេនប្រចាំ (ឧ. អ្នកគ្រប់គ្រង)
        dayOff៖ 0 = អាទិត្យ … 6 = សៅរ៍ · ម្នាក់មួយវេន 8 ម៉ោង × 6 ថ្ងៃ = 48 ម៉ោង/សប្តាហ៍ (ត្រឹមកំណត់ច្បាប់)
        វេនយប់ (22:00–05:00 ជាម៉ោងយប់) ត្រូវបង់ប្រាក់ឈ្នួល 200% តាមច្បាប់ការងារ — ស្រាវជ្រាវ §11 */
@@ -299,6 +305,10 @@ const SETTING_LABELS = {
     shiftTemplates: 'គំរូវេន',
     reasons: 'បញ្ជីមូលហេតុ',
     quickKeys: 'ទំនិញញឹកញាប់',
+    allowNegativeStock: 'លក់បានពេលប្រព័ន្ធបង្ហាញថាអស់ស្តុក',
+    adjustLimitQty: 'ដែនកំណត់កែតម្រូវស្តុកជាឯកតា',
+    adjustLimitUSD: 'ដែនកំណត់កែតម្រូវស្តុកជាតម្លៃលក់រាយ',
+    countSchedule: 'កាលវិភាគរាប់ស្តុក',
     staffDefaults: 'វេនលំនាំដើមរបស់បុគ្គលិក'
 };
 
@@ -414,56 +424,73 @@ const CATEGORIES = [
 ];
 
 const PRODUCTS = [
-    { sku: '8850001', barcode: '8850001', name: 'ទឹកសុទ្ធ វិតាល 500 មីលីលីត្រ', category: 'drink', price: 0.50, unit: 'ដប', stock: 240, icon: 'fa-bottle-water', tone: 'sky' },
-    { sku: '8850002', barcode: '8850002', name: 'កាហ្វេកំប៉ុង នេស្ការ្វេ', category: 'drink', price: 1.25, unit: 'កំប៉ុង', stock: 96, icon: 'fa-mug-hot', tone: 'amber' },
-    { sku: '8850003', barcode: '8850003', name: 'ទឹកក្រូច មីរិនដា 1.5 លីត្រ', category: 'drink', price: 1.75, unit: 'ដប', stock: 64, icon: 'fa-wine-bottle', tone: 'orange' },
-    { sku: '8850004', barcode: '8850004', name: 'ទឹកដោះគោ ដាច់ឡាក់', category: 'drink', price: 2.10, unit: 'ប្រអប់', stock: 48, icon: 'fa-glass-water', tone: 'blue' },
-    { sku: '8850005', barcode: '8850005', name: 'ភេសជ្ជៈកូកា-កូឡា កំប៉ុង 330 មីលីលីត្រ', category: 'drink', price: 0.65, unit: 'កំប៉ុង', stock: 180, icon: 'fa-bottle-water', tone: 'rose' },
-    { sku: '8850006', barcode: '8850006', name: 'ភេសជ្ជៈប៉ូវកម្លាំង ការ៉ាបាវ', category: 'drink', price: 0.60, unit: 'កំប៉ុង', stock: 150, icon: 'fa-bolt', tone: 'yellow' },
-    { sku: '8850007', barcode: '8850007', name: 'តែបៃតង អូអ៊ីស៊ី 500 មីលីលីត្រ', category: 'drink', price: 0.90, unit: 'ដប', stock: 90, icon: 'fa-leaf', tone: 'emerald' },
-    { sku: '8850008', barcode: '8850008', name: 'ទឹកដូង 350 មីលីលីត្រ', category: 'drink', price: 1.00, unit: 'ដប', stock: 60, icon: 'fa-glass-water', tone: 'lime' },
+    { sku: '8850001', barcode: '8850001', name: 'ទឹកសុទ្ធ វិតាល 500 មីលីលីត្រ', category: 'drink', price: 0.50, unit: 'ដប', opening: 240, icon: 'fa-bottle-water', tone: 'sky' },
+    { sku: '8850002', barcode: '8850002', name: 'កាហ្វេកំប៉ុង នេស្ការ្វេ', category: 'drink', price: 1.25, unit: 'កំប៉ុង', opening: 96, icon: 'fa-mug-hot', tone: 'amber' },
+    { sku: '8850003', barcode: '8850003', name: 'ទឹកក្រូច មីរិនដា 1.5 លីត្រ', category: 'drink', price: 1.75, unit: 'ដប', opening: 64, icon: 'fa-wine-bottle', tone: 'orange' },
+    { sku: '8850004', barcode: '8850004', name: 'ទឹកដោះគោ ដាច់ឡាក់', category: 'drink', price: 2.10, unit: 'ប្រអប់', opening: 9, icon: 'fa-glass-water', tone: 'blue' },
+    { sku: '8850005', barcode: '8850005', name: 'ភេសជ្ជៈកូកា-កូឡា កំប៉ុង 330 មីលីលីត្រ', category: 'drink', price: 0.65, unit: 'កំប៉ុង', opening: 180, icon: 'fa-bottle-water', tone: 'rose' },
+    { sku: '8850006', barcode: '8850006', name: 'ភេសជ្ជៈប៉ូវកម្លាំង ការ៉ាបាវ', category: 'drink', price: 0.60, unit: 'កំប៉ុង', opening: 150, icon: 'fa-bolt', tone: 'yellow' },
+    { sku: '8850007', barcode: '8850007', name: 'តែបៃតង អូអ៊ីស៊ី 500 មីលីលីត្រ', category: 'drink', price: 0.90, unit: 'ដប', opening: 90, icon: 'fa-leaf', tone: 'emerald' },
+    { sku: '8850008', barcode: '8850008', name: 'ទឹកដូង 350 មីលីលីត្រ', category: 'drink', price: 1.00, unit: 'ដប', opening: 60, icon: 'fa-glass-water', tone: 'lime' },
 
-    { sku: '8860001', barcode: '8860001', name: 'នំប៉័ង សាំងវិច', category: 'snack', price: 1.50, unit: 'ដុំ', stock: 35, icon: 'fa-bread-slice', tone: 'amber' },
-    { sku: '8860002', barcode: '8860002', name: 'ដំឡូងបំពង លេយ៍', category: 'snack', price: 1.20, unit: 'កញ្ចប់', stock: 120, icon: 'fa-cookie-bite', tone: 'yellow' },
-    { sku: '8860003', barcode: '8860003', name: 'សូកូឡា ស្នីកគ័រ', category: 'snack', price: 0.95, unit: 'ដុំ', stock: 150, icon: 'fa-candy-cane', tone: 'rose' },
-    { sku: '8860004', barcode: '8860004', name: 'នំខេក ចម្រុះរសជាតិ', category: 'snack', price: 2.50, unit: 'ប្រអប់', stock: 28, icon: 'fa-cake-candles', tone: 'pink' },
-    { sku: '8860005', barcode: '8860005', name: 'មីកញ្ចប់ មាម៉ា', category: 'snack', price: 0.40, unit: 'កញ្ចប់', stock: 300, icon: 'fa-bowl-food', tone: 'orange' },
-    { sku: '8860006', barcode: '8860006', name: 'នំខូឃី អូរីអូ', category: 'snack', price: 1.10, unit: 'កញ្ចប់', stock: 80, icon: 'fa-cookie', tone: 'slate' },
-    { sku: '8860007', barcode: '8860007', name: 'ស្ករគ្រាប់ មេនតូស', category: 'snack', price: 0.50, unit: 'បំពង់', stock: 140, icon: 'fa-candy-cane', tone: 'sky' },
-    { sku: '8860008', barcode: '8860008', name: 'គ្រាប់ស្វាយចន្ទីលីង 100 ក្រាម', category: 'snack', price: 2.80, unit: 'កញ្ចប់', stock: 36, icon: 'fa-seedling', tone: 'amber' },
+    { sku: '8860001', barcode: '8860001', name: 'នំប៉័ង សាំងវិច', category: 'snack', price: 1.50, unit: 'ដុំ', opening: 12, icon: 'fa-bread-slice', tone: 'amber' },
+    { sku: '8860002', barcode: '8860002', name: 'ដំឡូងបំពង លេយ៍', category: 'snack', price: 1.20, unit: 'កញ្ចប់', opening: 120, icon: 'fa-cookie-bite', tone: 'yellow' },
+    { sku: '8860003', barcode: '8860003', name: 'សូកូឡា ស្នីកគ័រ', category: 'snack', price: 0.95, unit: 'ដុំ', opening: 150, icon: 'fa-candy-cane', tone: 'rose' },
+    { sku: '8860004', barcode: '8860004', name: 'នំខេក ចម្រុះរសជាតិ', category: 'snack', price: 2.50, unit: 'ប្រអប់', opening: 28, icon: 'fa-cake-candles', tone: 'pink' },
+    { sku: '8860005', barcode: '8860005', name: 'មីកញ្ចប់ មាម៉ា', category: 'snack', price: 0.40, unit: 'កញ្ចប់', opening: 300, icon: 'fa-bowl-food', tone: 'orange' },
+    { sku: '8860006', barcode: '8860006', name: 'នំខូឃី អូរីអូ', category: 'snack', price: 1.10, unit: 'កញ្ចប់', opening: 80, icon: 'fa-cookie', tone: 'slate' },
+    { sku: '8860007', barcode: '8860007', name: 'ស្ករគ្រាប់ មេនតូស', category: 'snack', price: 0.50, unit: 'បំពង់', opening: 140, icon: 'fa-candy-cane', tone: 'sky' },
+    { sku: '8860008', barcode: '8860008', name: 'គ្រាប់ស្វាយចន្ទីលីង 100 ក្រាម', category: 'snack', price: 2.80, unit: 'កញ្ចប់', opening: 36, icon: 'fa-seedling', tone: 'amber' },
 
-    { sku: '8870001', barcode: '8870001', name: 'សាប៊ូបោកខោអាវ 1 គីឡូក្រាម', category: 'household', price: 3.40, unit: 'កញ្ចប់', stock: 52, icon: 'fa-soap', tone: 'emerald' },
-    { sku: '8870002', barcode: '8870002', name: 'ក្រដាសអនាម័យ 10 ដុំ', category: 'household', price: 4.20, unit: 'កញ្ចប់', stock: 40, icon: 'fa-toilet-paper', tone: 'slate' },
-    { sku: '8870003', barcode: '8870003', name: 'ថ្នាំដុសធ្មេញ ខូលហ្គេត', category: 'household', price: 1.80, unit: 'ដប', stock: 88, icon: 'fa-tooth', tone: 'cyan' },
-    { sku: '8870004', barcode: '8870004', name: 'សាប៊ូងូតទឹក ឡាក់ស៍', category: 'household', price: 2.75, unit: 'ដប', stock: 60, icon: 'fa-pump-soap', tone: 'purple' },
-    { sku: '8870005', barcode: '8870005', name: 'ទឹកលាងចាន ស៊ុនឡាយ 750 មីលីលីត្រ', category: 'household', price: 1.95, unit: 'ដប', stock: 56, icon: 'fa-hand-sparkles', tone: 'lime' },
-    { sku: '8870006', barcode: '8870006', name: 'ច្រាសដុសធ្មេញ ទន់', category: 'household', price: 1.10, unit: 'ដើម', stock: 70, icon: 'fa-tooth', tone: 'sky' },
-    { sku: '8870007', barcode: '8870007', name: 'ក្រដាសជូតមុខ ហោប៉ៅ កញ្ចប់ 10', category: 'household', price: 1.30, unit: 'កញ្ចប់', stock: 90, icon: 'fa-box-tissue', tone: 'pink' },
+    { sku: '8870001', barcode: '8870001', name: 'សាប៊ូបោកខោអាវ 1 គីឡូក្រាម', category: 'household', price: 3.40, unit: 'កញ្ចប់', opening: 52, icon: 'fa-soap', tone: 'emerald' },
+    { sku: '8870002', barcode: '8870002', name: 'ក្រដាសអនាម័យ 10 ដុំ', category: 'household', price: 4.20, unit: 'កញ្ចប់', opening: 40, icon: 'fa-toilet-paper', tone: 'slate' },
+    { sku: '8870003', barcode: '8870003', name: 'ថ្នាំដុសធ្មេញ ខូលហ្គេត', category: 'household', price: 1.80, unit: 'ដប', opening: 88, icon: 'fa-tooth', tone: 'cyan' },
+    { sku: '8870004', barcode: '8870004', name: 'សាប៊ូងូតទឹក ឡាក់ស៍', category: 'household', price: 2.75, unit: 'ដប', opening: 60, icon: 'fa-pump-soap', tone: 'purple' },
+    { sku: '8870005', barcode: '8870005', name: 'ទឹកលាងចាន ស៊ុនឡាយ 750 មីលីលីត្រ', category: 'household', price: 1.95, unit: 'ដប', opening: 56, icon: 'fa-hand-sparkles', tone: 'lime' },
+    { sku: '8870006', barcode: '8870006', name: 'ច្រាសដុសធ្មេញ ទន់', category: 'household', price: 1.10, unit: 'ដើម', opening: 70, icon: 'fa-tooth', tone: 'sky' },
+    { sku: '8870007', barcode: '8870007', name: 'ក្រដាសជូតមុខ ហោប៉ៅ កញ្ចប់ 10', category: 'household', price: 1.30, unit: 'កញ្ចប់', opening: 90, icon: 'fa-box-tissue', tone: 'pink' },
 
-    { sku: '8880001', barcode: '8880001', name: 'សៀវភៅសរសេរ 100 ទំព័រ', category: 'stationery', price: 0.75, unit: 'ក្បាល', stock: 200, icon: 'fa-book', tone: 'blue' },
-    { sku: '8880002', barcode: '8880002', name: 'ប៊ិច ខៀវ ដំណក់', category: 'stationery', price: 0.35, unit: 'ដើម', stock: 320, icon: 'fa-pen', tone: 'indigo' },
-    { sku: '8880003', barcode: '8880003', name: 'ខ្មៅដៃខ្មៅ កញ្ចប់ 12 ដើម', category: 'stationery', price: 1.60, unit: 'កញ្ចប់', stock: 75, icon: 'fa-pencil', tone: 'amber' },
-    { sku: '8880004', barcode: '8880004', name: 'ជ័រលុប', category: 'stationery', price: 0.25, unit: 'ដុំ', stock: 260, icon: 'fa-eraser', tone: 'pink' },
-    { sku: '8880005', barcode: '8880005', name: 'បន្ទាត់ 30 សង់ទីម៉ែត្រ', category: 'stationery', price: 0.40, unit: 'ដើម', stock: 150, icon: 'fa-ruler', tone: 'cyan' },
-    { sku: '8880006', barcode: '8880006', name: 'កាវបិទក្រដាស', category: 'stationery', price: 0.80, unit: 'ដើម', stock: 90, icon: 'fa-paste', tone: 'violet' },
+    { sku: '8880001', barcode: '8880001', name: 'សៀវភៅសរសេរ 100 ទំព័រ', category: 'stationery', price: 0.75, unit: 'ក្បាល', opening: 200, icon: 'fa-book', tone: 'blue' },
+    { sku: '8880002', barcode: '8880002', name: 'ប៊ិច ខៀវ ដំណក់', category: 'stationery', price: 0.35, unit: 'ដើម', opening: 320, icon: 'fa-pen', tone: 'indigo' },
+    { sku: '8880003', barcode: '8880003', name: 'ខ្មៅដៃខ្មៅ កញ្ចប់ 12 ដើម', category: 'stationery', price: 1.60, unit: 'កញ្ចប់', opening: 75, icon: 'fa-pencil', tone: 'amber' },
+    { sku: '8880004', barcode: '8880004', name: 'ជ័រលុប', category: 'stationery', price: 0.25, unit: 'ដុំ', opening: 260, icon: 'fa-eraser', tone: 'pink' },
+    { sku: '8880005', barcode: '8880005', name: 'បន្ទាត់ 30 សង់ទីម៉ែត្រ', category: 'stationery', price: 0.40, unit: 'ដើម', opening: 150, icon: 'fa-ruler', tone: 'cyan' },
+    { sku: '8880006', barcode: '8880006', name: 'កាវបិទក្រដាស', category: 'stationery', price: 0.80, unit: 'ដើម', opening: 90, icon: 'fa-paste', tone: 'violet' },
 
-    { sku: '8890001', barcode: '8890001', name: 'ថ្មពិល ទំហំតូច កញ្ចប់ 4', category: 'electronic', price: 2.40, unit: 'កញ្ចប់', stock: 66, icon: 'fa-battery-full', tone: 'lime' },
-    { sku: '8890002', barcode: '8890002', name: 'ខ្សែសាកទូរស័ព្ទ 1 ម៉ែត្រ', category: 'electronic', price: 3.90, unit: 'ខ្សែ', stock: 44, icon: 'fa-plug', tone: 'violet' },
-    { sku: '8890003', barcode: '8890003', name: 'អំពូលបំភ្លឺ 9 វ៉ាត់', category: 'electronic', price: 2.20, unit: 'គ្រាប់', stock: 58, icon: 'fa-lightbulb', tone: 'yellow' },
-    { sku: '8890004', barcode: '8890004', name: 'កាសស្តាប់ចម្រៀង', category: 'electronic', price: 4.50, unit: 'គ្រឿង', stock: 24, icon: 'fa-headphones', tone: 'slate' },
-    { sku: '8890005', barcode: '8890005', name: 'ក្បាលសាកទូរស័ព្ទ 20 វ៉ាត់', category: 'electronic', price: 6.50, unit: 'គ្រឿង', stock: 20, icon: 'fa-plug-circle-bolt', tone: 'indigo' },
-    { sku: '8890006', barcode: '8890006', name: 'ពិលដៃ សាកបាន', category: 'electronic', price: 3.20, unit: 'ដើម', stock: 30, icon: 'fa-lightbulb', tone: 'amber' }
+    { sku: '8890001', barcode: '8890001', name: 'ថ្មពិល ទំហំតូច កញ្ចប់ 4', category: 'electronic', price: 2.40, unit: 'កញ្ចប់', opening: 66, icon: 'fa-battery-full', tone: 'lime' },
+    { sku: '8890002', barcode: '8890002', name: 'ខ្សែសាកទូរស័ព្ទ 1 ម៉ែត្រ', category: 'electronic', price: 3.90, unit: 'ខ្សែ', opening: 44, icon: 'fa-plug', tone: 'violet' },
+    { sku: '8890003', barcode: '8890003', name: 'អំពូលបំភ្លឺ 9 វ៉ាត់', category: 'electronic', price: 2.20, unit: 'គ្រាប់', opening: 58, icon: 'fa-lightbulb', tone: 'yellow' },
+    { sku: '8890004', barcode: '8890004', name: 'កាសស្តាប់ចម្រៀង', category: 'electronic', price: 4.50, unit: 'គ្រឿង', opening: 0, icon: 'fa-headphones', tone: 'slate' },
+    { sku: '8890005', barcode: '8890005', name: 'ក្បាលសាកទូរស័ព្ទ 20 វ៉ាត់', category: 'electronic', price: 6.50, unit: 'គ្រឿង', opening: 20, icon: 'fa-plug-circle-bolt', tone: 'indigo' },
+    { sku: '8890006', barcode: '8890006', name: 'ពិលដៃ សាកបាន', category: 'electronic', price: 3.20, unit: 'ដើម', opening: 30, icon: 'fa-lightbulb', tone: 'amber' }
 ];
 
-/* ការកែកាតាឡុកដោយម្ចាស់ហាង (pos_catalog)៖ តម្លៃថ្មី និងការផ្អាកលក់
+/* ទម្ងន់លក់ដាច់របស់ទំនិញនីមួយៗ (ទិន្នន័យគំរូ និងកម្រិតស្តុកលំនាំដើម) */
+const PRODUCT_WEIGHT = {
+    '8850001': 10, '8850002': 7, '8850003': 3, '8850004': 3,
+    '8860001': 4, '8860002': 5, '8860003': 4, '8860004': 1.5,
+    '8870001': 1.2, '8870002': 1.5, '8870003': 1.2, '8870004': 0.8,
+    '8880001': 2.5, '8880002': 3, '8880003': 0.8,
+    '8890001': 1, '8890002': 0.5, '8890003': 0.6,
+    '8850005': 6, '8850006': 5, '8850007': 3, '8850008': 1.5, '8860005': 5, '8860006': 2.5,
+    '8860007': 2, '8860008': 0.8, '8870005': 1, '8870006': 0.8, '8870007': 1.5, '8880004': 1.5,
+    '8880005': 1, '8880006': 0.7, '8890004': 0.3, '8890005': 0.3, '8890006': 0.3
+};
+
+/* ការកែកាតាឡុកដោយម្ចាស់ហាង (pos_catalog)៖ តម្លៃថ្មី ការផ្អាកលក់ កម្រិតស្តុកអប្បបរមា និងចំនួនបញ្ជាទិញ
    basePrice = តម្លៃដើមពេលបង្កើតទិន្នន័យគំរូ · ការលក់នីមួយៗរក្សាតម្លៃពេលលក់ (line.price)
-   ដូច្នេះការប្តូរតម្លៃមិនប៉ះពាល់វិក្កយបត្រ ឬរបាយការណ៍ចាស់ឡើយ */
+   ដូច្នេះការប្តូរតម្លៃមិនប៉ះពាល់វិក្កយបត្រ ឬរបាយការណ៍ចាស់ឡើយ។
+   opening = ស្តុកបើកពេលចាប់ផ្តើមកត់ត្រាស្តុក (មិនមែនស្តុកបច្ចុប្បន្នទេ — មើល onHandLevels)។
+   លំនាំដើម៖ អប្បបរមា ≈ ការលក់ពាក់កណ្តាលថ្ងៃ · បញ្ជាទិញ ≈ ការលក់ 3 ទៅ 4 ថ្ងៃ (តាមទម្ងន់លក់ដាច់) */
 const CATALOG_KEY = 'pos_catalog';
 (function applyCatalogEdits() {
     const edits = posRead(CATALOG_KEY, {});
     PRODUCTS.forEach(p => {
+        const w = PRODUCT_WEIGHT[p.sku] || 1;
         p.basePrice = p.price;
         p.active = true;
+        p.minStock = Math.max(5, Math.ceil(w * 4));
+        p.reorderQty = Math.max(12, Math.ceil(w * 24 / 6) * 6);
         Object.assign(p, edits[p.sku] || {});
     });
 })();
@@ -827,15 +854,16 @@ function pendingRequestFor(saleId) {
 function applyApprovalToSale(req, approverId, updateFn) {
     const update = updateFn || updateLiveSale;
     const at = isoLocal(new Date());
+    const sale = typeof findAnySale === 'function' ? findAnySale(req.saleId) : findLiveSale(req.saleId);
+    if (!sale) return;
+    recordApprovalStock(req, sale, approverId, at);
     if (req.type === 'void') {
         update(req.saleId, { status: 'voided', voidedBy: approverId, voidedAt: at, voidReason: req.reason });
     } else if (req.type === 'return') {
-        const sale = typeof findAnySale === 'function' ? findAnySale(req.saleId) : findLiveSale(req.saleId);
-        if (!sale) return;
         const returns = (sale.returns || []).concat([{
             id: req.id, lines: req.lines, amount: req.amount, method: req.method,
             amountKHR: req.method === 'khrCash' ? Math.round(toKHR(req.amount, sale.fxRate) / 100) * 100 : 0,
-            reason: req.reason, approvedBy: approverId, at
+            reason: req.reason, approvedBy: approverId, at, restock: req.restock !== false
         }]);
         update(req.saleId, { returns });
     }
@@ -900,7 +928,8 @@ const EVENT_LABEL = {
     shift_reviewed: 'ត្រួតពិនិត្យវេន',
     shift_reopened: 'បើកវេនឡើងវិញ',
     recount: 'រាប់ប្រាក់ឡើងវិញ',
-    drop: 'ផ្ទេរចូលទូដែក'
+    drop: 'ផ្ទេរចូលទូដែក',
+    stock_mismatch: 'លក់លើសស្តុកក្នុងប្រព័ន្ធ'
 };
 
 function logPosEvent(type, detail) {
@@ -917,6 +946,7 @@ function logPosEvent(type, detail) {
         cashierId: d.cashierId || (sh ? sh.cashierId : ''),
         approverId: d.approverId || '',
         saleId: d.saleId || '',
+        sku: d.sku || '',
         amount: d.amount || 0,
         reason: d.reason || '',
         note: d.note || ''
@@ -1078,16 +1108,143 @@ function topSellers(sales, limit) {
         .slice(0, limit || 5);
 }
 
-/* ===== ស្តុកនៅសល់ក្នុងវេន ===== */
+/* ===== ស្តុក =====
+   ចំនួនស្តុកមិនដែលកែដោយផ្ទាល់ទេ — គណនាតែពីចលនាដែលបានកត់ត្រា៖
+   ស្តុកបើក (p.opening នៅពេល pos_stock_opening) + ចលនាទាំងអស់ក្រោយពេលនោះ។
+   • ការលក់ គណនាពីវិក្កយបត្រផ្ទាល់ (មិនរក្សាទុកពីរដង)
+   • ការលុបចោល ការប្រគល់វិញ ការទទួលស្តុក ការកែតម្រូវ និងការរាប់ស្តុក រក្សាទុកក្នុង pos_stock_moves
+     នៅពេលវាកើតឡើង (រួមទាំងការលុបចោលវិក្កយបត្រចាស់ ដែលស្តុកត្រឡប់ចូលនៅថ្ងៃអនុម័ត)
+   • ចលនានីមួយៗមាន អ្នកធ្វើ ពេលវេលា ប្រភេទ ចំនួន (+ ចូល · − ចេញ) និងមូលហេតុ
+   បញ្ជរពីរទៀតក្នុងគំរូសាកល្បងជាការធ្វើត្រាប់ (manager-data.js) — ការលក់របស់វាក្រោយពេលស្តុកបើក
+   មិនកាត់ស្តុកទេ ព្រោះទំព័រអ្នកគិតលុយមិនអាចមើលឃើញវា ហើយស្ថានភាពស្តុកត្រូវតែដូចគ្នាគ្រប់ទំព័រ។
+   ទំព័រអ្នកគិតលុយប្រើតែ stockStatus() (អស់ · ជិតអស់) មិនបង្ហាញចំនួនឡើយ។ */
 
-function soldQty(sku) {
-    return shiftSales().filter(s => !isVoided(s)).reduce((sum, s) =>
-        sum + s.items.filter(i => i.sku === sku).reduce((n, i) => n + i.qty, 0) - returnedQty(s, sku), 0);
+const STOCK_KEYS = { opening: 'pos_stock_opening', moves: 'pos_stock_moves' };
+
+const STOCK_MOVE_TYPE = {
+    sale: { label: 'លក់', icon: 'fa-cart-shopping', tone: 'slate' },
+    void: { label: 'លុបចោលវិក្កយបត្រ', icon: 'fa-ban', tone: 'rose' },
+    return: { label: 'ប្រគល់ទំនិញវិញ', icon: 'fa-rotate-left', tone: 'amber' },
+    stock_in: { label: 'ទទួលស្តុក', icon: 'fa-truck-ramp-box', tone: 'emerald' },
+    adjust: { label: 'កែតម្រូវស្តុក', icon: 'fa-sliders', tone: 'indigo' },
+    count: { label: 'រាប់ស្តុក', icon: 'fa-clipboard-check', tone: 'sky' }
+};
+
+/* មូលហេតុកែតម្រូវ — sign = ទិសដៅនៃចលនា · shrink = រាប់ជាការបាត់បង់ */
+const STOCK_ADJUST_REASONS = {
+    damaged: { label: 'ខូចខាត', sign: -1, shrink: true },
+    expired: { label: 'ផុតកំណត់', sign: -1, shrink: true },
+    lost: { label: 'បាត់', sign: -1, shrink: true },
+    found: { label: 'រកឃើញវិញ', sign: 1, shrink: false },
+    internal: { label: 'ប្រើក្នុងហាង', sign: -1, shrink: false }
+};
+
+const STOCK_STATUS = {
+    out: { label: 'អស់', cls: 'bg-rose-50 text-rose-700 border-rose-200' },
+    low: { label: 'ជិតអស់', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
+    ok: { label: 'គ្រប់គ្រាន់', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' }
+};
+
+/* ពេលចាប់ផ្តើមកត់ត្រាស្តុក — បង្កើតម្តងគត់ ការលក់មុនពេលនេះរួមក្នុងស្តុកបើករួចហើយ */
+function stockOpeningAt() {
+    let o = posRead(STOCK_KEYS.opening, null);
+    if (!o) {
+        o = { at: isoLocal(new Date()) };
+        posWrite(STOCK_KEYS.opening, o);
+    }
+    return o.at;
 }
 
-function availableStock(sku) {
+function storedStockMoves() {
+    return posRead(STOCK_KEYS.moves, []);
+}
+
+function saveStockMoves(list) {
+    if (!list.length) return;
+    posWrite(STOCK_KEYS.moves, storedStockMoves().concat(list));
+}
+
+function stockMove(fields) {
+    return Object.assign({ id: newId('SM'), at: isoLocal(new Date()), by: currentActorId(), reason: '', ref: '', note: '' }, fields);
+}
+
+/* ចលនាលក់ពីវិក្កយបត្រ (ចំនួនអវិជ្ជមាន) */
+function saleStockMoves(sale) {
+    return sale.items.map(l => ({
+        id: `SMS-${sale.id}-${l.sku}`, type: 'sale', sku: l.sku, qty: -l.qty, at: sale.time, by: sale.cashierId,
+        reason: '', ref: sale.id, saleId: sale.id, shiftId: sale.shiftId, register: sale.register, note: ''
+    }));
+}
+
+/* ចលនាស្តុកទាំងអស់ចាប់ពីស្តុកបើក — ថ្មីមុនគេ */
+function liveStockMoves() {
+    const from = stockOpeningAt();
+    return liveSales().filter(s => s.time >= from).flatMap(saleStockMoves)
+        .concat(storedStockMoves())
+        .sort((a, b) => b.at.localeCompare(a.at));
+}
+
+/* ចំនួននៅក្នុងហាងបច្ចុប្បន្ន { sku: qty } — អាចអវិជ្ជមាន ពេលលក់លើសស្តុកក្នុងប្រព័ន្ធ */
+function onHandLevels() {
+    const lv = {};
+    PRODUCTS.forEach(p => { lv[p.sku] = p.opening || 0; });
+    liveStockMoves().forEach(m => { lv[m.sku] = (lv[m.sku] || 0) + m.qty; });
+    return lv;
+}
+
+function onHand(sku) {
+    return onHandLevels()[sku] || 0;
+}
+
+/* out = គ្មានក្នុងប្រព័ន្ធ · low = ត្រឹម ឬក្រោមកម្រិតអប្បបរមា */
+function stockStatusOf(p, qty) {
+    if (qty <= 0) return 'out';
+    return qty <= (p.minStock || 0) ? 'low' : 'ok';
+}
+
+function stockStatus(sku, levels) {
     const p = getProduct(sku);
-    return p ? Math.max(p.stock - soldQty(sku), 0) : 0;
+    if (!p) return 'ok';
+    return stockStatusOf(p, (levels || onHandLevels())[sku] || 0);
+}
+
+function allowNegativeStock() {
+    return posSettings().allowNegativeStock !== false;
+}
+
+/* ការលុបចោល → ស្តុកត្រឡប់ចូលទាំងអស់ (ដកចំនួនដែលបានប្រគល់វិញរួច)
+   ការប្រគល់វិញ → ចូលស្តុកវិញ · បើអ្នកគ្រប់គ្រងសម្រេចថា «ខូច» កត់ត្រាការកែតម្រូវខូចខាតភ្លាម */
+function recordApprovalStock(req, sale, approverId, at) {
+    const base = { at, by: approverId, saleId: sale.id, shiftId: sale.shiftId, register: sale.register, ref: req.id };
+    if (req.type === 'void') {
+        saveStockMoves(sale.items
+            .map(l => ({ sku: l.sku, qty: l.qty - returnedQty(sale, l.sku) }))
+            .filter(l => l.qty > 0)
+            .map(l => stockMove(Object.assign({}, base, { type: 'void', sku: l.sku, qty: l.qty, reason: req.reason }))));
+    } else if (req.type === 'return') {
+        const moves = [];
+        req.lines.forEach(l => {
+            moves.push(stockMove(Object.assign({}, base, { type: 'return', sku: l.sku, qty: l.qty, reason: req.reason })));
+            if (req.restock === false) {
+                moves.push(stockMove(Object.assign({}, base, { type: 'adjust', sku: l.sku, qty: -l.qty, reason: 'damaged', note: 'ទំនិញប្រគល់វិញខូច' })));
+            }
+        });
+        saveStockMoves(moves);
+    }
+}
+
+/* សួរអ្នកគ្រប់គ្រងពេលអនុម័តការប្រគល់វិញ → true (ចូលស្តុកវិញ) · false (ខូច) · null (បោះបង់) */
+function askReturnOutcome(lines, dark) {
+    const names = lines.map(l => `${(getProduct(l.sku) || {}).name || l.sku} × ${l.qty}`).join(' · ');
+    return showOptionDialog({
+        title: 'ទំនិញដែលប្រគល់វិញទៅណា?',
+        message: escapeText(names),
+        dark,
+        options: [
+            { value: 'restock', icon: 'fa-box-open', label: 'ចូលស្តុកវិញ', desc: 'ទំនិញនៅល្អ អាចលក់បន្តបាន' },
+            { value: 'damaged', icon: 'fa-heart-crack', label: 'ខូច មិនអាចលក់បាន', desc: 'កត់ត្រាជាការខូចខាត ក្នុងរបាយការណ៍ការបាត់បង់' }
+        ]
+    }).then(v => v === 'restock' ? true : v === 'damaged' ? false : null);
 }
 
 /* ===== វិក្កយបត្រក្រដាសកម្តៅ 80mm =====
@@ -1381,16 +1538,21 @@ function portalNotifications() {
             note: 'សូមផ្ទេរប្រាក់ខ្លះចូលទូដែក ហើយឱ្យអ្នកគ្រប់គ្រងវេនទទួល' });
     }
 
-    PRODUCTS
-        .map(p => ({ p, left: availableStock(p.sku) }))
-        .filter(x => x.left <= 5)
-        .sort((a, b) => a.left - b.left)
+    // អ្នកគិតលុយឃើញតែស្ថានភាព (អស់ · ជិតអស់) មិនឃើញចំនួនស្តុកឡើយ
+    const levels = onHandLevels();
+    const rank = { out: 0, low: 1 };
+    sellableProducts()
+        .map(p => ({ p, status: stockStatus(p.sku, levels) }))
+        .filter(x => x.status !== 'ok')
+        .sort((a, b) => rank[a.status] - rank[b.status])
         .slice(0, 3)
         .forEach(x => list.push({
-            icon: x.left === 0 ? 'mdi:package-variant-remove' : 'mdi:alert-outline',
-            tone: x.left === 0 ? 'danger' : 'warning',
-            title: x.left === 0 ? `${x.p.name} អស់ស្តុក` : `${x.p.name} នៅសល់ ${x.left} ${x.p.unit}`,
-            note: x.left === 0 ? 'មិនអាចលក់បន្ថែមបានទេ' : 'សូមជូនដំណឹងដល់ផ្នែកឃ្លាំង'
+            icon: x.status === 'out' ? 'mdi:package-variant-remove' : 'mdi:alert-outline',
+            tone: x.status === 'out' ? 'danger' : 'warning',
+            title: x.status === 'out' ? `${x.p.name} អស់ស្តុក` : `${x.p.name} ជិតអស់ស្តុក`,
+            note: x.status === 'out'
+                ? (allowNegativeStock() ? 'នៅតែលក់បាន ប៉ុន្តែប្រព័ន្ធនឹងជូនដំណឹងអ្នកគ្រប់គ្រងវេន' : 'មិនអាចលក់បានទេ')
+                : 'សូមជូនដំណឹងដល់អ្នកគ្រប់គ្រងវេន'
         }));
 
     list.push({
@@ -1478,16 +1640,6 @@ function pickWeighted(rng, list, weightOf) {
 
 const HOUR_WEIGHT = [0.35, 0.2, 0.12, 0.08, 0.1, 0.35, 0.8, 1.3, 1.2, 0.9, 0.85, 1.2, 1.4, 1.0, 0.8, 0.85, 1.0, 1.4, 1.6, 1.5, 1.2, 0.9, 0.7, 0.5];
 const SALES_PER_HOUR = 5.5;
-const PRODUCT_WEIGHT = {
-    '8850001': 10, '8850002': 7, '8850003': 3, '8850004': 3,
-    '8860001': 4, '8860002': 5, '8860003': 4, '8860004': 1.5,
-    '8870001': 1.2, '8870002': 1.5, '8870003': 1.2, '8870004': 0.8,
-    '8880001': 2.5, '8880002': 3, '8880003': 0.8,
-    '8890001': 1, '8890002': 0.5, '8890003': 0.6,
-    '8850005': 6, '8850006': 5, '8850007': 3, '8850008': 1.5, '8860005': 5, '8860006': 2.5,
-    '8860007': 2, '8860008': 0.8, '8870005': 1, '8870006': 0.8, '8870007': 1.5, '8880004': 1.5,
-    '8880005': 1, '8880006': 0.7, '8890004': 0.3, '8890005': 0.3, '8890006': 0.3
-};
 
 /* ម៉ោងលក់ចន្លោះ fromMs–toMs តាមទម្រង់ម៉ោងមមាញឹក (dayFactor៖ ចុងសប្តាហ៍ ឬថ្ងៃស្ងាត់) */
 function genSaleTimes(rng, fromMs, toMs, dayFactor) {
@@ -1767,3 +1919,4 @@ const MY_REGISTER = resolveRegister(ME_CASHIER);
 
 
 ensurePosSeed();
+stockOpeningAt();

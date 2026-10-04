@@ -77,11 +77,16 @@ src/
   `ADMINS` are active only. Use `loadStaff()` for a fresh list after an edit on the same page. Catalogue edits
   (`pos_catalog`: price, active) apply at load; `sellableProducts()` hides paused products.
 - localStorage keys (all `pos_*`): `session`, `settings`, `roster`, `shifts`, `shift_sales`, `held_sales`, `approvals`,
-  `cash_movements`, `events`, `terminal_lock`, `pins`, `overlay`, `staff`, `catalog`, `costs`, `admin_log`, seeds. sessionStorage: `pos_cart`, `pos_pending_khqr`.
+  `cash_movements`, `events`, `terminal_lock`, `pins`, `stock_opening`, `stock_moves`, `overlay`, `staff`, `catalog`, `costs`, `admin_log`, seeds. sessionStorage: `pos_cart`, `pos_pending_khqr`.
   A `storage` event re-renders other tabs (`window.onStoreChanged`).
 - **Shift model** (see `docs/spec/02-manager-pos.md` §11): shift template (time window) → staff default shift →
   roster per date (covers marked `cover`; default templates morning / afternoon / night, the night one overnight) → drawer shift (one cashier, one register, one drawer: open → closed →
   reviewed). A login resolves its register from the roster (`MY_REGISTER`).
+- **Stock** (`data.js`): quantity is never stored or edited, only derived — `onHandLevels()` = `p.opening` at
+  `pos_stock_opening` + live sales since then (from the receipts) + `pos_stock_moves` (void, return, stock_in, adjust,
+  count; each with `by`, `at`, `qty` ±, `reason`). Approvals write their moves in `applyApprovalToSale`; a return
+  carries `restock` (false = damaged adjustment). Cashier pages use only `stockStatus()` (out / low by `p.minStock`),
+  never quantities. Simulated registers' sales after the opening do not move stock.
 - Money: `saleTotals` (VAT-inclusive prices), `splitChange` ($ + ៛ rounded to 100), every sale stores `fxRate`,
   `cashierId`, `register`, `shiftId`, `change`, and each line its `price` (read with `linePrice`). Cost prices exist
   only in `admin-data.js`; cashier and manager pages never see them.

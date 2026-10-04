@@ -131,7 +131,7 @@ The POS terminal (`pos-terminal.html`) does **NOT** use the standard portal side
 - Background: `#1e293b`, border `1px solid #334155`, border-radius `12px`
 - **Minimum touch target: 100% of card area, minimum height `120px`**
 - On tap: immediate add-to-cart (no confirmation modal) with visual "flash" feedback (brief scale + teal border glow)
-- On long-press (500ms): show product detail tooltip (name, SKU, stock) — NOT on quick tap
+- On long-press (500ms): show product detail tooltip (name, SKU, stock status) — NOT on quick tap
 
 **Card content:**
 1. **Product Image / Icon Area** (top 60% of card):
@@ -139,12 +139,16 @@ The POS terminal (`pos-terminal.html`) does **NOT** use the standard portal side
    - If no image: show large category icon in teal, centered on `#0f172a` background
 2. **Product Name** (bottom section): `12px`, `600` weight, white, max 2 lines with ellipsis
 3. **Selling Price** (below name): `14px`, teal color `#22d3ee`, bold — e.g. `$2.50`
-4. **Stock Count Badge** (top-right corner of card):
-   - Stock > 10: `small green pill with count`
-   - Stock 1–10: `amber pill` with count (low stock warning)
-   - Stock = 0: `red "OUT"` pill + card is dimmed (50% opacity) + not tappable
+4. **Stock Status Badge** (top-right corner of card) — the cashier never sees stock quantities:
+   - Above the product's minimum level: no badge
+   - At or below the minimum level: amber `ជិតអស់` (Low) pill
+   - 0 or below in the system: red `អស់` (Out) pill
 
-**Out of Stock behavior:** Tapping an out-of-stock card triggers a brief vibration (if supported) and shows a toast: `ទំនិញអស់ស្តុក — មិនអាចបន្ថែមបាន`
+**Out of Stock behavior** depends on the owner setting «លក់បានពេលប្រព័ន្ធបង្ហាញថាអស់ស្តុក» (allow selling below zero, on by default):
+- **On:** the card stays tappable; tapping shows a warning toast, the sale goes through, and each line sold beyond system stock logs a `stock_mismatch` event for the manager's Exceptions page.
+- **Off:** the card is dimmed (50% opacity) and not tappable; tapping triggers a brief vibration (if supported) and an error toast.
+
+Stock is never edited directly: on hand = opening balance + recorded movements (sales, approved voids and returns, Stock In, adjustments, counts). An approved void returns the stock; an approved return asks the manager «ចូលស្តុកវិញ» (back to stock) or «ខូច» (damaged, recorded as a damaged adjustment).
 
 ---
 

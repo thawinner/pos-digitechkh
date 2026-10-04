@@ -410,6 +410,12 @@
                     confirmText: 'អនុម័ត'
                 });
                 if (!ok) return;
+                // អ្នកគ្រប់គ្រងដែលនៅទីនេះសម្រេចថាទំនិញប្រគល់វិញចូលស្តុកវិញ ឬខូច
+                if (req.type === 'return') {
+                    const restock = await askReturnOutcome(req.lines);
+                    if (restock == null) return;
+                    base.restock = restock;
+                }
                 const rec = Object.assign(base, { status: 'approved', decidedBy: ok.approverId, decidedAt: isoLocal(new Date()) });
                 saveApproval(rec);
                 applyApprovalToSale(rec, ok.approverId);

@@ -390,11 +390,12 @@ function ensureManagerSeed() {
 
 /* ===== ការសម្រេចលើសំណើ ===== */
 
-function decideApproval(reqId, approve, approverId, note) {
+/* extra៖ ព័ត៌មានបន្ថែមពីការសម្រេច (ឧ. restock = ទំនិញប្រគល់វិញចូលស្តុកវិញ ឬខូច) */
+function decideApproval(reqId, approve, approverId, note, extra) {
     const req = liveApprovals().find(a => a.id === reqId);
     if (!req || req.status !== 'pending') return null;
     const at = isoLocal(new Date());
-    const rec = Object.assign({}, req, { status: approve ? 'approved' : 'rejected', decidedBy: approverId, decidedAt: at, decisionNote: note || '' });
+    const rec = Object.assign({}, req, extra || {}, { status: approve ? 'approved' : 'rejected', decidedBy: approverId, decidedAt: at, decisionNote: note || '' });
     saveApproval(rec);
     if (approve) applyApprovalToSale(rec, approverId, updateAnySale);
     logPosEvent(approve ? 'request_approved' : 'request_rejected', {
@@ -668,6 +669,12 @@ async function mgrDecide(reqId, approve) {
         });
         if (!note) return null;
     }
+    let extra = null;
+    if (approve && req.type === 'return') {
+        const restock = await askReturnOutcome(req.lines);
+        if (restock == null) return null;
+        extra = { restock };
+    }
     const ok = await showPinConfirm({
         title: approve ? `អនុម័ត${APPROVAL_TYPE[req.type].label}` : `បដិសេធ${APPROVAL_TYPE[req.type].label}`,
         message: `${req.saleId} · ${fmtUSD(req.amount)} · ${personName(req.cashierId)}<br>ការសម្រេចនេះមិនអាចត្រឡប់វិញបានទេ`,
@@ -676,7 +683,7 @@ async function mgrDecide(reqId, approve) {
         danger: !approve
     });
     if (!ok) return null;
-    const rec = decideApproval(reqId, approve, ME_MANAGER, note);
+    const rec = decideApproval(reqId, approve, ME_MANAGER, note, extra);
     showToast(`${approve ? 'បានអនុម័ត' : 'បានបដិសេធ'}${APPROVAL_TYPE[req.type].label} ${req.saleId}`, approve ? 'success' : 'info');
     return rec;
 }

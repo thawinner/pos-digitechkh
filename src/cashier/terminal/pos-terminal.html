@@ -598,9 +598,20 @@
             searchTimer = setTimeout(renderProducts, 200);
         }
 
-        function remainingStock(sku) {
+        /* ស្តុកក្នុងប្រព័ន្ធក្រោយដកចំនួនក្នុងកន្ត្រក — ប្រើសម្រាប់ស្លាក «ជិតអស់ · អស់» ប៉ុណ្ណោះ
+           អ្នកគិតលុយមិនឃើញចំនួនស្តុកឡើយ */
+        function leftAfterCart(sku, levels) {
             const inCart = cart.find(l => l.sku === sku);
-            return availableStock(sku) - (inCart ? inCart.qty : 0);
+            return ((levels || onHandLevels())[sku] || 0) - (inCart ? inCart.qty : 0);
+        }
+
+        function cardStatus(p, levels) {
+            return stockStatusOf(p, leftAfterCart(p.sku, levels));
+        }
+
+        /* បិទការលក់តែពេលម្ចាស់ហាងមិនអនុញ្ញាតឱ្យលក់លើសស្តុកក្នុងប្រព័ន្ធ */
+        function stockBlocked(sku, extra, levels) {
+            return !allowNegativeStock() && leftAfterCart(sku, levels) < (extra || 1);
         }
 
         /* ទំនិញញឹកញាប់ (អ្នកគ្រប់គ្រងកំណត់) — បង្ហាញតែពេលមិនកំពុងស្វែងរក ឬត្រងប្រភេទ */
@@ -608,11 +619,12 @@
             const host = document.getElementById('quickKeys');
             const keys = (posSettings().quickKeys || []).map(getProduct).filter(p => p && p.active !== false);
             if (q || activeCategory !== 'all' || !keys.length) { host.innerHTML = ''; return; }
+            const levels = onHandLevels();
             host.innerHTML = `
                 <p class="sm-td-sub text-slate-400 mb-1.5 flex items-center gap-1.5"><i class="fas fa-bolt text-amber-300 text-[11px]"></i> ទំនិញញឹកញាប់</p>
                 <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2">
                     ${keys.map(p => {
-                        const out = remainingStock(p.sku) <= 0;
+                        const out = stockBlocked(p.sku, 1, levels);
                         return `<button onclick="addToCart('${p.sku}')" type="button" ${out ? 'disabled' : ''}
                             class="flex items-center gap-2 p-1.5 pr-2.5 rounded-xl border text-left transition ${out
                                 ? 'border-white/5 opacity-40 cursor-not-allowed' : 'border-amber-400/25 bg-amber-400/5 hover:border-amber-300'}">
@@ -655,15 +667,15 @@
             }
             empty.classList.add('hidden');
 
+            const levels = onHandLevels();
             grid.innerHTML = rows.map(p => {
-                const left = remainingStock(p.sku);
-                const out = left <= 0;
-                const low = !out && left <= 10;
+                const status = cardStatus(p, levels);
+                const out = stockBlocked(p.sku, 1, levels);
                 const inCart = (cart.find(l => l.sku === p.sku) || {}).qty || 0;
-                const stockChip = out
+                const stockChip = status === 'out'
                     ? '<span class="sm-badge px-2 py-0.5 rounded-lg bg-rose-500 text-white font-bold">អស់</span>'
-                    : low
-                        ? `<span class="sm-badge px-2 py-0.5 rounded-lg bg-amber-500 text-white font-bold">នៅ ${left}</span>`
+                    : status === 'low'
+                        ? '<span class="sm-badge px-2 py-0.5 rounded-lg bg-amber-500 text-white font-bold">ជិតអស់</span>'
                         : '';
                 const cartChip = inCart
                     ? `<span class="absolute top-1.5 left-1.5 min-w-[22px] h-[22px] px-1 rounded-lg bg-cyan-500 text-white sm-badge font-bold inline-flex items-center justify-center">${inCart}</span>`
@@ -732,10 +744,13 @@
         function addToCart(sku) {
             if (!requireOpenShift()) return false;
             const p = getProduct(sku);
-            if (remainingStock(sku) <= 0) {
+            if (stockBlocked(sku)) {
                 if (navigator.vibrate) navigator.vibrate(120);
                 showToast(`${p.name} អស់ស្តុកហើយ មិនអាចបន្ថែមបានទេ`, 'error');
                 return false;
+            }
+            if (leftAfterCart(sku) <= 0) {
+                showToast(`ប្រព័ន្ធបង្ហាញថា ${p.name} អស់ស្តុក · នៅតែលក់បាន ហើយអ្នកគ្រប់គ្រងវេននឹងទទួលដំណឹង`, 'warning');
             }
             const line = cart.find(l => l.sku === sku);
             if (line) line.qty += 1; else cart.push({ sku, qty: 1 });
@@ -752,7 +767,7 @@
         function changeQty(sku, delta) {
             const line = cart.find(l => l.sku === sku);
             if (!line) return;
-            if (delta > 0 && remainingStock(sku) <= 0) {
+            if (delta > 0 && stockBlocked(sku)) {
                 showToast(`${getProduct(sku).name} អស់ស្តុកហើយ`, 'error');
                 return;
             }
@@ -772,9 +787,12 @@
             const line = cart.find(l => l.sku === sku);
             if (!line) return;
             const p = getProduct(sku);
-            const max = line.qty + remainingStock(sku);
-            const n = await showNumberPad({ title: p.name, subtitle: `${fmtUSD(p.price)} · ${p.unit} · ស្តុកអាចលក់ ${max}`, value: line.qty, min: 0, max, unit: p.unit, dark: true });
+            const n = await showNumberPad({ title: p.name, subtitle: `${fmtUSD(p.price)} · ${p.unit}`, value: line.qty, min: 0, max: 999, unit: p.unit, dark: true });
             if (n == null || n === line.qty) return;
+            if (n > line.qty && stockBlocked(sku, n - line.qty)) {
+                showToast(`ស្តុក ${p.name} ក្នុងប្រព័ន្ធមិនគ្រប់ចំនួននេះទេ`, 'error');
+                return;
+            }
             if (n === 0) {
                 cart = cart.filter(l => l.sku !== sku);
                 logPosEvent('line_removed', { amount: p.price * line.qty, note: p.name });
@@ -1500,7 +1518,12 @@
         }
 
         function completeSale(sale) {
+            // លក់លើសស្តុកក្នុងប្រព័ន្ធ → កត់ត្រាសម្រាប់ទំព័រករណីមិនប្រក្រតីរបស់អ្នកគ្រប់គ្រង
+            const levels = onHandLevels();
+            const short = sale.items.filter(l => (levels[l.sku] || 0) < l.qty);
             saveSale(sale);
+            short.forEach(l => logPosEvent('stock_mismatch', { saleId: sale.id, amount: linePrice(l) * l.qty,
+                note: `${getProduct(l.sku).name} × ${l.qty}`, sku: l.sku }));
             const t = saleTotals(sale.items, sale.discountPercent);
             if (t.discount > 0.005) {
                 logPosEvent('discount', { saleId: sale.id, amount: t.discount, reason: sale.discountReason,
