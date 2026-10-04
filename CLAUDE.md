@@ -131,3 +131,4 @@ old eBMS layout; the rules apply as-is. Condensed:
 
 `docs/` holds the POS spec and the cross-cutting rules that apply to it — see [docs/README.md](docs/README.md).
 The spec is the source of truth for what a page should contain; the manager role is specified in `docs/spec/02-manager-pos.md`, the owner role in `docs/spec/03-admin-pos.md`, and the cashier backlog is in `docs/planning/cashier-improvements.md`.
+Stock management (in progress on branch `feat/stock-management`) is planned and tracked in `docs/planning/stock-management.md` — read it before continuing that work.
