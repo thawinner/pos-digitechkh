@@ -19,24 +19,26 @@
     <link rel="stylesheet" href="shared/styles/portal.css">
     <style>
         .login-bg { background: #0b1220; }
-        .clock-big { font-size: 56px; line-height: 1; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
-        .pin-key { height: 64px; font-size: 26px !important; font-weight: 600 !important; font-variant-numeric: tabular-nums; }
+        .clock-big { font-size: 44px; line-height: 1; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+        .pin-key { height: 56px; font-size: 22px !important; font-weight: 600 !important; font-variant-numeric: tabular-nums; }
         .kbd { display: inline-flex; align-items: center; min-width: 22px; height: 22px; padding: 0 6px; border: 1px solid #cbd5e1; border-bottom-width: 2px; border-radius: 5px; background: #fff; color: #475569; font-size: 12px !important; font-weight: 600; justify-content: center; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
         .shake { animation: shake .35s ease; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
         .fade-up { animation: fadeUp .22s ease; }
+        @keyframes dotPop { 0% { transform: scale(.4); } 70% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        .dot-pop { animation: dotPop .16s ease-out; }
         .tile-live { box-shadow: inset 3px 0 0 #10b981; }
         .tile:focus-visible, .pin-key:focus-visible { outline: 3px solid #22d3ee; outline-offset: 2px; }
     </style>
 </head>
 <body id="loginPortal" data-role-root="." class="login-bg min-h-screen font-sans text-slate-100 text-[16px]">
 
-    <main class="min-h-screen w-full flex items-center justify-center px-4 py-8 lg:py-10">
-        <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-5 lg:min-h-[660px]">
+    <main class="min-h-screen w-full flex items-center justify-center px-4 py-6">
+        <div class="w-full max-w-[1120px] grid grid-cols-1 lg:grid-cols-12 gap-4">
 
             <!-- ===== ផ្ទាំងឆ្វេង៖ ម៉ាក នាឡិកា និងស្ថានភាពបញ្ជរ ===== -->
-            <section class="lg:col-span-4 max-lg:order-2 rounded-2xl bg-[#111a2b] border border-white/10 p-6 sm:p-7 flex flex-col gap-6">
+            <section class="lg:col-span-4 max-lg:order-2 rounded-xl bg-[#111a2b] border border-white/10 p-6 flex flex-col gap-5">
                 <div class="flex items-center gap-3">
                     <img src="shared/assets/logo-mark-transparent.png" alt="DIGITECHKH" class="w-11 h-11 object-contain">
                     <div>
@@ -47,7 +49,7 @@
 
                 <div>
                     <p id="clockBig" class="clock-big text-white"></p>
-                    <p id="dateBig" class="sm-card-sub text-slate-300 mt-2"></p>
+                    <p id="dateBig" class="sm-td-sub text-slate-300 mt-2"></p>
                     <p class="sm-td-sub text-slate-400 mt-1"><i class="fas fa-location-dot mr-1.5 text-cyan-300"></i><span id="branchLabel"></span></p>
                 </div>
 
@@ -58,12 +60,12 @@
 
                 <div>
                     <p class="sm-eyebrow text-slate-400 mb-2">កាលវិភាគថ្ងៃនេះ</p>
-                    <div id="rosterBoard" class="space-y-3"></div>
+                    <div id="rosterBoard" class="space-y-2.5"></div>
                 </div>
 
                 <div class="mt-auto">
-                    <button onclick="toggleDemo()" type="button" class="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl border border-dashed border-white/15 text-slate-300 hover:bg-white/5 hover:text-white transition">
-                        <span class="sm-td inline-flex items-center gap-2"><i class="fas fa-flask"></i> ព័ត៌មានសម្រាប់គំរូសាកល្បង</span>
+                    <button onclick="toggleDemo()" type="button" class="w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-lg border border-dashed border-white/15 text-slate-300 hover:bg-white/5 hover:text-white transition">
+                        <span class="sm-td-sub inline-flex items-center gap-2"><i class="fas fa-flask"></i> ព័ត៌មានសម្រាប់គំរូសាកល្បង</span>
                         <i id="demoChevron" class="fas fa-chevron-down text-xs transition-transform"></i>
                     </button>
                     <div id="demoBox" class="hidden mt-2 rounded-xl bg-black/30 border border-white/10 p-4">
@@ -77,52 +79,50 @@
             </section>
 
             <!-- ===== ផ្ទាំងស្តាំ៖ ជំហានទី 1 ជ្រើសរើសអ្នកប្រើ · ជំហានទី 2 វាយលេខសម្ងាត់ ===== -->
-            <section class="lg:col-span-8 rounded-2xl bg-white text-slate-800 overflow-hidden flex flex-col">
+            <section class="lg:col-span-8 rounded-xl bg-white text-slate-800 overflow-hidden flex flex-col">
                 <!-- របារជំហានរួម (bmsStepper ក្នុង portal.js) — ដូចទំព័របើក និងបិទវេន -->
-                <div class="px-6 sm:px-12 pt-5 pb-4 border-b border-slate-100">
+                <div class="px-6 sm:px-12 pt-4 pb-3 border-b border-slate-100">
                     <div id="loginStepper" class="max-w-2xl mx-auto"></div>
                 </div>
-                <div id="stepPick" class="flex-1 flex flex-col p-6 sm:p-8 fade-up">
+                <div id="stepPick" class="flex-1 flex flex-col px-6 sm:px-8 py-6 fade-up">
                     <div class="flex flex-wrap items-end justify-between gap-3">
                         <div>
-                            <h1 class="text-[26px] leading-tight font-bold text-slate-900">តើលោកអ្នកជានរណា?</h1>
-                            <p class="sm-card-sub text-slate-500 mt-1">ចុចលើឈ្មោះ ហើយវាយលេខសម្ងាត់ផ្ទាល់ខ្លួន។ រាល់ការលក់ និងការអនុម័តត្រូវបានកត់ត្រាតាមឈ្មោះអ្នកចូលប្រើ។</p>
+                            <h1 class="text-[22px] leading-tight font-semibold text-slate-900">តើលោកអ្នកជានរណា?</h1>
+                            <p class="sm-td-sub text-slate-500 mt-1">ចុចលើឈ្មោះ ហើយវាយលេខសម្ងាត់ផ្ទាល់ខ្លួន</p>
                         </div>
                         <div id="lastUser"></div>
                     </div>
 
-                    <div class="mt-7">
-                        <div class="flex items-baseline gap-2 mb-2.5">
+                    <div class="mt-5">
+                        <div class="flex items-baseline gap-2 mb-2">
                             <i class="fas fa-cash-register text-[13px] text-slate-400 self-center"></i>
-                            <p class="sm-value text-slate-800">អ្នកគិតលុយ</p>
+                            <p class="sm-td font-semibold text-slate-700">អ្នកគិតលុយ</p>
                             <span id="cashierTilesCount" class="sm-td-sub text-slate-400"></span>
                             <span class="sm-td-sub text-slate-400 ml-auto max-sm:hidden">បញ្ជរតាមកាលវិភាគវេន</span>
                         </div>
                         <div id="cashierTiles" class="rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden"></div>
                     </div>
-                    <div class="mt-6">
-                        <div class="flex items-baseline gap-2 mb-2.5">
+                    <div class="mt-5">
+                        <div class="flex items-baseline gap-2 mb-2">
                             <i class="fas fa-user-shield text-[13px] text-slate-400 self-center"></i>
-                            <p class="sm-value text-slate-800">អ្នកគ្រប់គ្រងវេន</p>
+                            <p class="sm-td font-semibold text-slate-700">អ្នកគ្រប់គ្រងវេន</p>
                             <span id="managerTilesCount" class="sm-td-sub text-slate-400"></span>
                             <span class="sm-td-sub text-slate-400 ml-auto max-sm:hidden">ផ្ទាំងគ្រប់គ្រង · អាចប្តូរទៅលក់បាន</span>
                         </div>
                         <div id="managerTiles" class="rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden"></div>
                     </div>
-                    <div class="mt-6">
-                        <div class="flex items-baseline gap-2 mb-2.5">
+                    <div class="mt-5">
+                        <div class="flex items-baseline gap-2 mb-2">
                             <i class="fas fa-crown text-[13px] text-slate-400 self-center"></i>
-                            <p class="sm-value text-slate-800">ម្ចាស់ហាង</p>
+                            <p class="sm-td font-semibold text-slate-700">ម្ចាស់ហាង</p>
                             <span id="adminTilesCount" class="sm-td-sub text-slate-400"></span>
                             <span class="sm-td-sub text-slate-400 ml-auto max-sm:hidden">ប្រាក់ចំណេញ បុគ្គលិក និងតម្លៃទំនិញ</span>
                         </div>
                         <div id="adminTiles" class="rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden"></div>
                     </div>
-
-                    <div id="facts" class="mt-auto pt-8"><div class="pt-4 border-t border-slate-100 flex flex-wrap gap-x-6 gap-y-2"></div></div>
                 </div>
 
-                <div id="stepPin" class="hidden flex-1 flex flex-col p-6 sm:p-8"></div>
+                <div id="stepPin" class="hidden flex-1 flex flex-col px-6 sm:px-8 py-6"></div>
             </section>
         </div>
     </main>
@@ -182,28 +182,14 @@
                 : plan
                     ? `<i class="${plan.now ? 'fas fa-calendar-check text-cyan-600' : 'far fa-clock text-slate-400'} text-[12px] mr-2"></i><span class="${plan.now ? 'text-slate-700' : 'text-slate-500'}">${plan.template.name}<span class="max-md:hidden"> ${plan.template.start}–${plan.template.end}</span></span>`
                     : (role === 'cashier' ? '<span class="text-slate-400">ឈប់សម្រាកថ្ងៃនេះ</span>' : '');
-            const sub = role === 'cashier' ? `អ្នកគិតលុយ` : ROLE_NAME[role];
             return `<button onclick="pickUser('${p.id}')" type="button"
-                class="tile ${sh ? 'tile-live' : ''} group w-full text-left px-4 py-3 bg-white hover:bg-slate-50 transition-colors flex items-center gap-4">
-                ${avatarHtml(p.id, 'w-11 h-11 ring-1 ring-slate-200')}
-                <span class="min-w-0 flex-1">
-                    <span class="sm-card-title text-slate-800 block truncate">${p.name}</span>
-                    <span class="sm-td-sub text-slate-400 block truncate md:hidden">${sh || plan ? status : sub}</span>
-                    <span class="sm-td-sub text-slate-400 block truncate max-md:hidden">${sub}</span>
-                </span>
-                <span class="sm-td-sub w-56 truncate max-md:hidden">${status}</span>
-                <span class="w-[72px] text-right flex-shrink-0">${reg ? `<span class="px-1.5 rounded bg-slate-100 text-slate-600 text-[12px] font-semibold leading-5">${reg}</span>` : ''}</span>
-                <i class="fas fa-chevron-right text-[12px] text-slate-300 group-hover:text-slate-500 transition-colors"></i>
+                class="tile ${sh ? 'tile-live' : ''} group w-full text-left px-4 py-2.5 bg-white hover:bg-slate-50 transition-colors flex items-center gap-3">
+                ${avatarHtml(p.id, 'w-9 h-9 ring-1 ring-slate-200')}
+                <span class="sm-td font-semibold text-slate-800 truncate flex-1 min-w-0">${p.name}</span>
+                <span class="sm-td-sub truncate w-44 max-sm:w-auto max-sm:max-w-[40%]">${status}</span>
+                <span class="w-[68px] text-right flex-shrink-0">${reg ? `<span class="px-1.5 rounded bg-slate-100 text-slate-600 text-[12px] font-semibold leading-5">${reg}</span>` : ''}</span>
+                <i class="fas fa-chevron-right text-[11px] text-slate-300 group-hover:text-slate-500 transition-colors"></i>
             </button>`;
-        }
-
-        function renderFacts() {
-            const fact = (icon, title, text) => `<p class="sm-td-sub text-slate-500 inline-flex items-center gap-2">
-                <i class="fas ${icon} text-slate-400 text-[12px]"></i><span class="text-slate-700 font-semibold">${title}</span>${text}</p>`;
-            document.querySelector('#facts > div').innerHTML =
-                fact('fa-shield-halved', 'សុវត្ថិភាព', 'វាយខុស 3 ដង ចាក់សោរ 60 វិនាទី') +
-                fact('fa-user-lock', 'មួយថត មួយអ្នក', 'ម្នាក់ទទួលខុសត្រូវថតប្រាក់មួយ') +
-                fact('fa-mug-hot', 'ពេលសម្រាក', 'ចាក់សោរបញ្ជរ មិនចាំបាច់បិទវេន');
         }
 
         /* ===== ជំហានទី 2៖ លេខសម្ងាត់ ===== */
@@ -242,51 +228,54 @@
             const accent = { admin: 'emerald', manager: 'indigo' }[role] || 'cyan';
             const tpl = sh ? null : asg && asg.template;
             const facts = [
-                [ 'fa-arrow-right-to-bracket', 'ចូលទៅ', dest ],
-                sh ? [ 'fa-circle-play', 'វេនបើកតាំងពី', `ម៉ោង ${fmtTime(sh.openedAt)}`, 'text-emerald-700' ] : null,
-                tpl ? [ 'fa-clock', 'ម៉ោងវេន', `${tpl.start} – ${tpl.end}` ] : null,
-                role === 'cashier' ? [ 'fa-percent', 'បញ្ចុះតម្លៃបានរហូតដល់', `${discountLimitFor(p.id)}%` ] : null
+                sh ? [ 'fa-circle-play', 'វេនបើកតាំងពី', fmtTime(sh.openedAt), 'text-emerald-700' ] : null,
+                tpl ? [ 'fa-clock', 'ម៉ោងវេន', `${tpl.start}–${tpl.end}` ] : null,
+                role === 'cashier' ? [ 'fa-percent', 'បញ្ចុះតម្លៃ', `≤ ${discountLimitFor(p.id)}%` ] : null
             ].filter(Boolean);
+            const extra = facts;
             document.getElementById('stepPin').innerHTML = `
-                <div class="flex-1 grid grid-cols-1 md:grid-cols-2 items-center fade-up">
-                    <div class="md:pr-10 md:border-r border-slate-100 md:self-stretch flex flex-col justify-center">
-                        <button onclick="backToPick()" type="button"
-                            class="self-start sm-td-sub font-semibold text-slate-500 hover:text-slate-800 inline-flex items-center gap-2 transition-colors">
-                            <i class="fas fa-arrow-left text-[12px]"></i> ប្តូរអ្នកប្រើ</button>
-                        <div class="flex items-center gap-4 mt-6">
-                            ${avatarHtml(p.id, 'w-20 h-20 ring-1 ring-slate-200')}
-                            <div class="min-w-0">
-                                <p class="text-[24px] font-bold text-slate-900 leading-tight truncate">${p.name}</p>
-                                <p class="sm-td-sub text-slate-500 mt-1 inline-flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-${accent}-500"></span>${ROLE_NAME[role]}</p>
+                <div class="flex-1 flex items-center justify-center fade-up">
+                    <div class="w-full max-w-[340px]">
+                        <!-- អ្នកកំពុងចូល៖ ឈ្មោះ តួនាទី គោលដៅ និងព័ត៌មានបន្ថែម ក្នុងកាតតែមួយ -->
+                        <div class="rounded-lg border border-slate-200">
+                            <div class="flex items-center gap-3 px-3 py-2.5">
+                                ${avatarHtml(p.id, 'w-10 h-10 ring-1 ring-slate-200')}
+                                <div class="min-w-0 flex-1">
+                                    <p class="sm-td font-semibold text-slate-900 leading-tight truncate">${p.name}</p>
+                                    <p class="sm-td-sub text-slate-500 truncate">${ROLE_NAME[role]} · <span class="text-slate-700">${dest}</span></p>
+                                </div>
+                                <button onclick="backToPick()" type="button" aria-label="ប្តូរអ្នកប្រើ"
+                                    class="sm-td-sub font-semibold text-slate-600 hover:text-slate-900 h-8 px-2.5 rounded-md border border-slate-200 hover:border-slate-400 bg-white inline-flex items-center gap-1.5 transition-colors flex-shrink-0">
+                                    <i class="fas fa-arrow-right-arrow-left text-[11px]"></i>ប្តូរ</button>
                             </div>
+                            ${extra.length ? `<div class="px-3 py-2 border-t border-slate-100 flex flex-wrap gap-x-4 gap-y-1">
+                                ${extra.map(([icon, label, value, tone]) => `<span class="sm-td-sub text-slate-500 inline-flex items-center gap-1.5">
+                                    <i class="fas ${icon} text-[11px] text-slate-400"></i>${label} <span class="font-semibold ${tone || 'text-slate-700'}">${value}</span></span>`).join('')}
+                            </div>` : ''}
                         </div>
-                        <dl class="mt-6 border-t border-slate-100 divide-y divide-slate-100">
-                            ${facts.map(([icon, label, value, tone]) => `<div class="flex items-center gap-3 py-3">
-                                <i class="fas ${icon} w-4 text-center text-slate-400 text-[13px]"></i>
-                                <dt class="sm-td-sub text-slate-500 flex-1">${label}</dt>
-                                <dd class="sm-td font-semibold ${tone || 'text-slate-800'} text-right">${value}</dd>
-                            </div>`).join('')}
-                        </dl>
-                        <p class="sm-td-sub text-slate-400 mt-4"><i class="fas fa-circle-info mr-1.5"></i>ការលក់ និងការអនុម័តនឹងកត់ត្រាក្រោមឈ្មោះនេះ</p>
-                    </div>
 
-                    <div class="w-full max-w-[380px] mx-auto max-md:mt-8 md:py-4 md:pl-10">
-                        <p class="sm-card-title text-slate-800 text-center">វាយលេខសម្ងាត់</p>
-                        <div id="pinDots" class="flex items-center justify-center gap-4 h-10 mt-3" aria-live="polite"></div>
-                        <p id="pinMsg" class="sm-td-sub text-center min-h-[24px] text-slate-400"></p>
-                        <div class="grid grid-cols-3 gap-2.5 mt-4">
+                        <!-- ប្រអប់លេខសម្ងាត់ -->
+                        <div class="mt-5 flex items-baseline justify-between">
+                            <label class="sm-td-sub font-semibold text-slate-700">លេខសម្ងាត់</label>
+                            <span class="sm-td-sub text-slate-400">4 ទៅ 6 ខ្ទង់</span>
+                        </div>
+                        <div id="pinBox" class="mt-1.5 h-14 rounded-lg border bg-white flex items-center justify-center transition-colors">
+                            <div id="pinDots" class="flex items-center justify-center gap-3.5" aria-live="polite"></div>
+                        </div>
+                        <p id="pinMsg" class="sm-td-sub mt-1.5 min-h-[22px]"></p>
+                        <div class="grid grid-cols-3 gap-2 mt-3">
                             ${keys.map(k => `<button onclick="press('${k}')" type="button" data-pin-key aria-label="${k === 'C' ? 'សម្អាតទាំងអស់' : k === '⌫' ? 'លុបមួយខ្ទង់' : k}"
                                 class="pin-key rounded-lg border select-none transition-[background-color,border-color,transform] duration-75 active:scale-[.97] disabled:opacity-40 ${k === 'C' || k === '⌫'
-                                    ? 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100' : 'bg-white border-slate-200 text-slate-800 shadow-[0_1px_0_#e2e8f0] hover:border-slate-400 active:bg-slate-100'}">
-                                ${k === 'C' ? '<span class="sm-td font-semibold pointer-events-none">សម្អាត</span>' : k === '⌫' ? '<i class="fas fa-delete-left text-xl pointer-events-none"></i>' : k}</button>`).join('')}
+                                    ? 'bg-white border-slate-200 text-slate-500 hover:border-slate-400 hover:text-slate-800 active:bg-slate-100' : 'bg-white border-slate-200 text-slate-800 hover:border-slate-400 active:bg-slate-100'}">
+                                ${k === 'C' ? '<span class="sm-td-sub font-semibold pointer-events-none">សម្អាត</span>' : k === '⌫' ? '<i class="fas fa-delete-left text-lg pointer-events-none"></i>' : k}</button>`).join('')}
                         </div>
                         <button id="pinSubmit" onclick="submitPin()" type="button" disabled
-                            class="mt-3 w-full h-14 rounded-lg sm-card-title font-bold transition-colors inline-flex items-center justify-center gap-2">
-                            ចូលប្រើ <i class="fas fa-arrow-right"></i>
+                            class="mt-3 w-full h-12 rounded-lg sm-value font-semibold transition-colors inline-flex items-center justify-center gap-2">
+                            ចូលប្រើ <i class="fas fa-arrow-right text-[13px]"></i>
                         </button>
-                        <p class="sm-td-sub text-slate-400 text-center mt-4 max-sm:hidden flex items-center justify-center gap-1.5 flex-wrap">
-                            <span class="kbd">0–9</span> វាយលេខ <span class="mx-1 text-slate-300">·</span>
-                            <span class="kbd"><i class="fas fa-turn-down rotate-90 text-[10px]"></i></span> ចូលប្រើ <span class="mx-1 text-slate-300">·</span>
+                        <p class="sm-td-sub text-slate-400 text-center mt-3 max-sm:hidden whitespace-nowrap flex items-center justify-center gap-1.5">
+                            <span class="kbd"><i class="fas fa-turn-down rotate-90 text-[10px]"></i></span> ចូលប្រើ
+                            <span class="mx-1.5 text-slate-300">·</span>
                             <span class="kbd">Esc</span> ត្រឡប់ក្រោយ</p>
                     </div>
                 </div>`;
@@ -301,22 +290,27 @@
             const locked = lockedFor > 0;
             /* បង្ហាញ 4 ចំណុច ហើយបន្ថែមពេលវាយលើស (រហូតដល់ 6) — មិនបង្ហាញចំណុចស្រអាប់ដែលធ្វើឱ្យយល់ច្រឡំ */
             const n = Math.max(4, pin.length);
-            dots.innerHTML = Array.from({ length: n }, (_, i) => `<span class="w-4 h-4 rounded-full transition-colors duration-100 ${i < pin.length
-                ? (pinMsg ? 'bg-rose-500' : 'bg-slate-900') : 'bg-slate-200'}"></span>`).join('');
+            const err = locked || !!pinMsg;
+            const ready = pin.length >= 4 && !locked;
+            dots.innerHTML = Array.from({ length: n }, (_, i) => `<span class="w-3.5 h-3.5 rounded-full ${i < pin.length
+                ? (pinMsg ? 'bg-rose-500' : 'bg-slate-900') + (i === pin.length - 1 && !pinMsg ? ' dot-pop' : '') : 'bg-slate-200'}"></span>`).join('');
+            document.getElementById('pinBox').className = `mt-1.5 h-14 rounded-lg border bg-white flex items-center justify-center transition-colors ${err
+                ? 'border-rose-400 bg-rose-50/40' : pin.length ? 'border-slate-900 ring-2 ring-slate-900/5' : 'border-slate-300'}`;
             if (shake) {
                 dots.classList.remove('shake');
                 void dots.offsetWidth;
                 dots.classList.add('shake');
             }
             const msg = document.getElementById('pinMsg');
-            msg.textContent = locked ? `វាយខុស 3 ដង · សូមរង់ចាំ ${lockedFor} វិនាទី` : pinMsg || (pin.length >= 4 ? 'រួចរាល់ · ចុចចូលប្រើ' : 'លេខ 4 ទៅ 6 ខ្ទង់');
-            msg.className = `sm-td-sub text-center mt-1 min-h-[24px] ${locked || pinMsg ? 'text-rose-600 font-semibold' : pin.length >= 4 ? 'text-cyan-700' : 'text-slate-400'}`;
+            msg.innerHTML = locked ? `<i class="fas fa-lock mr-1.5"></i>វាយខុស 3 ដង · សូមរង់ចាំ ${lockedFor} វិនាទី`
+                : pinMsg ? `<i class="fas fa-circle-exclamation mr-1.5"></i>${pinMsg}`
+                : ready ? '<i class="fas fa-check mr-1.5"></i>ចុច «ចូលប្រើ» ឬ Enter' : '';
+            msg.className = `sm-td-sub mt-1.5 min-h-[22px] ${err ? 'text-rose-600 font-semibold' : 'text-emerald-700'}`;
             document.querySelectorAll('[data-pin-key]').forEach(b => { b.disabled = locked; });
-            const ready = pin.length >= 4 && !locked;
             const btn = document.getElementById('pinSubmit');
             btn.disabled = !ready;
-            btn.className = `mt-3 w-full h-14 rounded-lg sm-card-title font-bold transition-colors inline-flex items-center justify-center gap-2 ${ready
-                ? 'bg-cyan-600 hover:bg-cyan-700 text-white' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`;
+            btn.className = `mt-3 w-full h-12 rounded-lg sm-value font-semibold transition-colors inline-flex items-center justify-center gap-2 ${ready
+                ? 'bg-slate-900 border border-slate-900 hover:bg-slate-800 text-white' : 'bg-white border border-slate-200 text-slate-400 cursor-not-allowed'}`;
             btn.setAttribute('aria-disabled', String(!ready));
             clearTimeout(lockTick);
             if (locked) lockTick = setTimeout(() => updatePin(), 1000);
@@ -368,10 +362,10 @@
         function renderRegisters() {
             document.getElementById('registerBoard').innerHTML = REGISTERS.map(r => {
                 const sh = liveShifts().find(s => s.register === r && s.status === 'open');
-                return `<div class="flex items-center gap-3 px-3.5 py-2.5 ${sh ? 'bg-white/[0.04]' : ''}">
-                    ${sh ? avatarHtml(sh.cashierId, 'w-8 h-8') : '<span class="w-8 h-8 rounded-full bg-white/5 text-slate-500 inline-flex items-center justify-center"><i class="fas fa-cash-register text-[12px]"></i></span>'}
+                return `<div class="flex items-center gap-3 px-3 py-2 ${sh ? 'bg-white/[0.04]' : ''}">
+                    ${sh ? avatarHtml(sh.cashierId, 'w-7 h-7') : '<span class="w-7 h-7 rounded-full bg-white/5 text-slate-500 inline-flex items-center justify-center"><i class="fas fa-cash-register text-[12px]"></i></span>'}
                     <div class="min-w-0 flex-1">
-                        <p class="sm-td font-semibold text-white">${r}</p>
+                        <p class="sm-td-sub font-semibold text-white">${r}</p>
                         <p class="sm-td-sub ${sh ? 'text-slate-300' : 'text-slate-500'} truncate">${sh ? `${personName(sh.cashierId)} · តាំងពី ${fmtTime(sh.openedAt)}` : 'មិនមានវេនបើក'}</p>
                     </div>
                     <span class="sm-td-sub font-semibold ${sh ? 'text-emerald-300' : 'text-slate-500'} inline-flex items-center gap-1.5">
@@ -454,7 +448,6 @@
             });
             renderRegisters();
             renderRoster();
-            renderFacts();
             renderStepper(1);
         });
     </script>
