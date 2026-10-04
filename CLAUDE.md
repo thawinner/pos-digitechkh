@@ -16,8 +16,7 @@ Demo PINs: ចន្ទ មករា 1111 · សុខ ដារ៉ា 2222 · �
 ហេង ចាន់ថា 9999 (owner).
 They are listed on the login page under «ព័ត៌មានសម្រាប់គំរូសាកល្បង», next to the reset-demo-data button.
 
-Deploy: `src/` is the site root (GitHub Pages workflow in `.github/workflows/deploy-pages.yml`, plus `netlify.toml` and
-`vercel.json`). Never move pages out of `src/`, and keep every path relative so the site works under a subpath.
+Deploy: Vercel only; `vercel.json` publishes `src/` as the site root. Never move pages out of `src/`, and keep every path relative so the site works under a subpath.
 
 Verification is visual: open the page in a browser, or drive headless Chrome over the DevTools protocol. Serve over
 HTTP; `file://` storage is unreliable.

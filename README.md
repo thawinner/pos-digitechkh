@@ -256,7 +256,7 @@ pos-digitechkh/
 ├── GEMINI.md                    authoritative UI standards (13 rules)
 ├── .ai/ui-rules.md              UI rules (subset of GEMINI.md)
 ├── docs/                        spec, planning, research, standards (see docs/README.md)
-├── netlify.toml · vercel.json · .github/workflows/deploy-pages.yml
+├── vercel.json                  Vercel deploy config (publishes src/)
 └── src/                         the whole website
     ├── index.html               login
     ├── 404.html
@@ -323,18 +323,13 @@ check for any page:
 
 ## Deploy
 
-`src/` is the whole site. **Don't move `index.html` to the repo root.** Publish `src/` as the site root:
+`src/` is the whole site. **Don't move `index.html` to the repo root.**
 
-| Host | Setup |
-|---|---|
-| GitHub Pages | `.github/workflows/deploy-pages.yml` publishes `src/` on every push to `main`. One-time: **Settings → Pages → Source: GitHub Actions**. Site: `https://thawinner.github.io/pos-digitechkh/` |
-| Netlify | `netlify.toml` sets `publish = "src"`; no build command |
-| Vercel | `vercel.json` sets `outputDirectory: "src"`; framework preset Other |
-| Cloudflare Pages | Empty build command, output directory `src` |
-| Any web server | Copy the contents of `src/` to the web root |
+The site is deployed on **Vercel**: `vercel.json` sets `outputDirectory: "src"` with no build command (framework
+preset Other). Every push to `main` redeploys.
 
 All paths are relative, so the site works at a domain root or under a subpath. `404.html` sends lost visitors back to
-the login page. Production needs HTTPS, which every host above provides.
+the login page.
 
 ## What a real deployment still needs
 

@@ -20,10 +20,8 @@
         <a id="home" href="index.html">ត្រឡប់ទៅទំព័រចូលប្រើ</a>
     </div>
     <script>
-        /* ទំព័រ 404 អាចបង្ហាញនៅផ្លូវណាក៏បាន ដូច្នេះរកឫសគេហទំព័រពីផ្លូវបច្ចុប្បន្ន (គាំទ្រ GitHub Pages /ឈ្មោះគម្រោង/) */
-        const parts = location.pathname.split('/').filter(Boolean);
-        const base = location.hostname.endsWith('github.io') && parts.length ? `/${parts[0]}/` : '/';
-        document.getElementById('home').href = base + 'index.html';
+        /* ទំព័រ 404 អាចបង្ហាញនៅផ្លូវណាក៏បាន ដូច្នេះប្រើផ្លូវពីឫសគេហទំព័រ */
+        document.getElementById('home').href = '/index.html';
     </script>
 </body>
 </html>
