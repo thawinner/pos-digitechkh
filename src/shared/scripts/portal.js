@@ -53,14 +53,14 @@ const PORTAL_CONFIGS = {
         userRole: 'អ្នកគ្រប់គ្រងវេន · សាខាកណ្តាល',
         policyNote: 'មើលឃើញគ្រប់វេនក្នុងសាខា · មិនមើលឃើញថ្លៃដើម · មិនអាចអនុម័តសំណើរបស់ខ្លួនឯង · រាល់ការអនុម័តត្រូវបានកត់ត្រា ហើយមិនអាចត្រឡប់វិញបាន។',
         nav: [
-            { id: 'dashboard', label: 'ផ្ទាំងគ្រប់គ្រង', icon: 'mdi:view-dashboard-outline', href: 'manager/dashboard/dashboard.html' },
+            { group: 'ថ្ងៃនេះ', id: 'dashboard', label: 'ផ្ទាំងគ្រប់គ្រង', icon: 'mdi:view-dashboard-outline', href: 'manager/dashboard/dashboard.html' },
             { id: 'approvals', label: 'សំណើរង់ចាំអនុម័ត', icon: 'mdi:shield-check-outline', href: 'manager/approvals/approvals.html', badgeFn: 'mgrPendingApprovalCount', badgeTone: 'amber' },
             { id: 'shifts', label: 'វេន និងបញ្ជរគិតលុយ', icon: 'mdi:cash-register', href: 'manager/shifts/shifts.html', badgeFn: 'mgrAwaitingReviewCount', badgeTone: 'amber' },
-            { id: 'roster', label: 'កាលវិភាគវេន', icon: 'mdi:calendar-account-outline', href: 'manager/roster/roster.html' },
             { id: 'cash', label: 'ចលនាសាច់ប្រាក់', icon: 'mdi:safe', href: 'manager/cash/cash.html', badgeFn: 'mgrPendingDropCount', badgeTone: 'amber' },
-            { id: 'exceptions', label: 'ករណីមិនប្រក្រតី', icon: 'mdi:alert-octagon-outline', href: 'manager/exceptions/exceptions.html' },
+            { group: 'បុគ្គលិក', id: 'roster', label: 'កាលវិភាគវេន', icon: 'mdi:calendar-account-outline', href: 'manager/roster/roster.html' },
+            { group: 'វិភាគ', id: 'exceptions', label: 'ករណីមិនប្រក្រតី', icon: 'mdi:alert-octagon-outline', href: 'manager/exceptions/exceptions.html' },
             { id: 'reports', label: 'របាយការណ៍លក់', icon: 'mdi:chart-box-outline', href: 'manager/reports/sales-report.html' },
-            { id: 'settings', label: 'ការកំណត់', icon: 'mdi:cog-outline', href: 'manager/settings/settings.html' }
+            { group: 'ប្រព័ន្ធ', id: 'settings', label: 'ការកំណត់', icon: 'mdi:cog-outline', href: 'manager/settings/settings.html' }
         ],
         switchRole: { label: 'ប្តូរទៅផ្ទាំងគិតលុយ', icon: 'mdi:point-of-sale', href: 'cashier/terminal/pos-terminal.html' }
     }
@@ -86,29 +86,6 @@ function getRoleRoot() {
      • ផ្លាកលេខលាក់ពេលគ្មានអ្វី
      • ធាតុសកម្មមានបន្ទាត់សម្គាល់ និង aria-current
      • សេចក្តីណែនាំគោលការណ៍បត់បាន ដើម្បីសន្សំទីធ្លា */
-
-const SIDEBAR_KEY = 'bms_sidebar_collapsed';
-
-function sidebarCollapsed() {
-    try {
-        return localStorage.getItem(SIDEBAR_KEY) === '1';
-    } catch (e) {
-        return false;
-    }
-}
-
-function togglePortalSidebar() {
-    const el = document.getElementById('portalSidebar');
-    if (!el) return;
-    const collapsed = el.classList.toggle('is-collapsed');
-    const chevron = document.getElementById('sbCollapseIcon');
-    if (chevron) chevron.setAttribute('icon', collapsed ? 'mdi:chevron-right' : 'mdi:chevron-left');
-    try {
-        localStorage.setItem(SIDEBAR_KEY, collapsed ? '1' : '0');
-    } catch (e) {
-        // ការផ្ទុកត្រូវបានបិទ — ស្ថានភាពនៅរស់ត្រឹមទំព័របច្ចុប្បន្ន
-    }
-}
 
 function togglePolicyNote() {
     const box = document.getElementById('sbPolicyBody');
@@ -138,99 +115,165 @@ function sessionPortalConfig(cfg, portalId) {
     return out;
 }
 
-function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
-    const collapsed = sidebarCollapsed();
+/* ស្ថានភាពផ្ទាល់ក្រោមឈ្មោះម៉ាក៖ អ្នកគិតលុយឃើញវេន និងពេលនៅសល់ · អ្នកគ្រប់គ្រងឃើញបញ្ជរបើក និងការលក់ថ្ងៃនេះ */
+function sidebarStatusHtml() {
+    const portal = document.body.id;
+    if (portal === 'posPortal' && typeof currentShift === 'function') {
+        const sh = currentShift();
+        if (!sh) {
+            return `<p class="sm-nav-note sb-accent-soft">មិនទាន់បើកវេន · ${typeof MY_REGISTER !== 'undefined' ? MY_REGISTER : ''}</p>`;
+        }
+        const now = Date.now();
+        const start = new Date(sh.openedAt).getTime();
+        const end = shiftEndDate(sh).getTime();
+        const pct = Math.min(Math.max((now - start) / (end - start) * 100, 0), 100);
+        const left = end - now;
+        return `<div class="flex items-center justify-between gap-2">
+                <span class="sm-nav-label text-white truncate">${sh.templateName} · ${sh.register}</span>
+                <span class="w-2 h-2 rounded-full ${left < 0 ? 'bg-rose-400' : 'bg-emerald-400'} flex-shrink-0"></span>
+            </div>
+            <p class="sm-nav-note sb-accent-soft mt-0.5 whitespace-nowrap">${left < 0 ? `ហួសម៉ោងបិទ ${fmtDuration(-left)}` : `បិទ ${sh.end} · នៅសល់ ${Math.floor(left / 3600000)}:${pad2(Math.floor(left / 60000) % 60)}`}</p>
+            <div class="h-1 rounded-full bg-white/10 mt-2 overflow-hidden"><div class="h-full ${left < 0 ? 'bg-rose-400' : 'bg-cyan-400'}" style="width:${pct}%"></div></div>`;
+    }
+    if (portal === 'managerPortal' && typeof mgrAllShifts === 'function') {
+        const open = mgrAllShifts().filter(x => x.status === 'open').map(x => x.register);
+        const net = typeof aggregateSales === 'function' ? aggregateSales(salesInRange(mgrToday())).netSales : 0;
+        return `<div class="flex items-center justify-between gap-2">
+                <span class="sm-nav-note sb-accent-soft">បញ្ជរកំពុងបើក</span>
+                <span class="flex items-center gap-1">${REGISTERS.map(r => `<span class="w-2 h-2 rounded-full ${open.includes(r) ? 'bg-emerald-400' : 'bg-white/20'}"></span>`).join('')}
+                    <span class="sm-nav-note text-white sm-figure ml-1">${open.length}/${REGISTERS.length}</span></span>
+            </div>
+            <div class="flex items-center justify-between gap-2 mt-1">
+                <span class="sm-nav-note sb-accent-soft">លក់សុទ្ធថ្ងៃនេះ</span>
+                <span class="sm-nav-label text-white sm-figure">${fmtUSD(net || 0)}</span>
+            </div>`;
+    }
+    return '';
+}
 
+function refreshSidebarStatus() {
+    const box = document.getElementById('sbStatus');
+    if (!box) return;
+    const html = sidebarStatusHtml();
+    box.innerHTML = html;
+    box.classList.toggle('hidden', !html);
+}
+
+/* ===== ម៉ឺនុយលេចចេញពីរបារចំហៀង (ប្តូរតួនាទី · គណនី) =====
+   ប្រើទីតាំង fixed ដូច្នេះមិនត្រូវកាត់ដោយរបាររំកិល */
+function openSidebarMenu(btn, menuId, placement) {
+    const menu = document.getElementById(menuId);
+    if (!menu) return;
+    const wasOpen = !menu.classList.contains('hidden');
+    closeSidebarMenus();
+    if (wasOpen) return;
+    const r = btn.getBoundingClientRect();
+    menu.style.position = 'fixed';
+    menu.classList.remove('hidden');
+    const h = menu.offsetHeight;
+    menu.style.left = `${r.left}px`;
+    menu.style.width = `${Math.max(r.width, 232)}px`;
+    menu.style.top = placement === 'up' ? `${r.top - h - 6}px` : `${r.bottom + 6}px`;
+    btn.setAttribute('aria-expanded', 'true');
+}
+
+function closeSidebarMenus() {
+    document.querySelectorAll('.sb-menu').forEach(m => m.classList.add('hidden'));
+    document.querySelectorAll('[data-sb-menu]').forEach(b => b.setAttribute('aria-expanded', 'false'));
+}
+
+document.addEventListener('click', e => {
+    if (!e.target.closest('.sb-menu') && !e.target.closest('[data-sb-menu]')) closeSidebarMenus();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebarMenus(); });
+
+function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
+    const portalId = document.body.id;
+    const isManagerPortal = portalId === 'managerPortal';
+
+    let lastGroup = null;
     const navHtml = cfg.nav.map(item => {
+        let groupHtml = '';
+        const group = item.group || (isManagerPortal ? '' : 'វេនរបស់ខ្ញុំ');
+        if (group && group !== lastGroup) {
+            groupHtml = `<p class="sb-group px-3 ${lastGroup ? 'pt-5' : 'pt-1'} pb-1.5">${group}</p>`;
+            lastGroup = group;
+        }
         const isActive = item.id === activeId;
-        // ធាតុមួយអាចមានផ្លាកពីរ៖ ជួរដេករង់ចាំ (ក្រហម) និងការព្រមាន (លឿង)
         let badgeHtml = '';
-        if (item.badge) {
-            badgeHtml += '<span id="navQueueBadge" class="sb-badge sm-badge bg-rose-500 text-white px-2 py-0.5 rounded-full flex-shrink-0 hidden">0</span>';
-        }
-        if (item.alertBadge) {
-            badgeHtml += '<span id="navAlertBadge" class="sb-badge sm-badge bg-amber-500 text-white px-2 py-0.5 rounded-full flex-shrink-0 hidden">0</span>';
-        }
-        if (item.badgeFn) {
-            const tone = item.badgeTone === 'amber' ? 'bg-amber-500' : 'bg-rose-500';
-            badgeHtml += `<span data-badge-fn="${item.badgeFn}" class="sb-badge sm-badge ${tone} text-white px-2 py-0.5 rounded-full flex-shrink-0 hidden">0</span>`;
-        }
-        if (badgeHtml) badgeHtml = `<span class="flex items-center gap-1 flex-shrink-0">${badgeHtml}</span>`;
-        return `
-            <a href="${roleRoot}/${item.href}" ${isActive ? 'aria-current="page"' : ''}
-               class="sb-nav-item relative flex items-center justify-between gap-2 p-3 rounded-xl transition-all whitespace-nowrap ${isActive
-                ? 'bg-white/15 text-white border border-white/10 shadow-sm'
-                : 'sb-text hover:bg-white/10 hover:text-white border border-transparent'}">
-                <span class="flex items-center min-w-0">
-                    <span class="sb-icon w-6 flex items-center justify-center flex-shrink-0">
-                        ${getIconHtml(item.icon)}
-                    </span>
-                    <span class="ml-3 sm-nav-label truncate sb-expand-only">${item.label}</span>
-                </span>
+        if (item.badge) badgeHtml += '<span id="navQueueBadge" class="sb-badge sb-count hidden">0</span>';
+        if (item.alertBadge) badgeHtml += '<span id="navAlertBadge" class="sb-badge sb-count sb-count-warn hidden">0</span>';
+        if (item.badgeFn) badgeHtml += `<span data-badge-fn="${item.badgeFn}" class="sb-badge sb-count ${item.badgeTone === 'amber' ? 'sb-count-warn' : ''} hidden">0</span>`;
+        return `${groupHtml}
+            <a href="${roleRoot}/${item.href}" ${isActive ? 'aria-current="page"' : ''} class="sb-nav-item sb-row relative">
+                <span class="sb-icon w-5 flex items-center justify-center flex-shrink-0">${getIconHtml(item.icon)}</span>
+                <span class="sb-label flex-1 truncate">${item.label}</span>
                 ${badgeHtml}
-                <span class="sb-tip">${item.label}</span>
             </a>`;
     }).join('');
 
+    const avatar = cfg.userId && typeof avatarHtml === 'function'
+        ? avatarHtml(cfg.userId, 'w-8 h-8')
+        : `<div class="w-8 h-8 rounded-full sb-avatar border flex items-center justify-center font-semibold text-xs flex-shrink-0">${cfg.userInitials}</div>`;
+    const roleLabel = isManagerPortal ? 'អ្នកគ្រប់គ្រងវេន' : 'ផ្ទាំងគិតលុយ';
+    const menuItem = (icon, label, attrs, tone) => `<button type="button" ${attrs}
+        class="sb-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-md text-left ${tone || ''}">
+        <iconify-icon icon="${icon}" class="text-[18px] flex-shrink-0 opacity-80"></iconify-icon><span class="flex-1">${label}</span></button>`;
+
     host.outerHTML = `
-        <aside id="portalSidebar" class="w-64 bg-[#1e3a5f] text-white flex flex-col flex-shrink-0 select-none z-20 border-r border-slate-700${collapsed ? ' is-collapsed' : ''}">
-            <div class="sb-brand h-[72px] px-6 flex items-center gap-3 border-b border-white/10 flex-shrink-0">
-                <div class="sb-expand-only w-8 h-8 flex items-center justify-center flex-shrink-0">
-                    <img src="${sharedRoot}/assets/logo-mark-transparent.png" alt="DIGITECHKH" class="w-full h-full object-contain">
+        <aside id="portalSidebar" class="w-64 text-white flex flex-col flex-shrink-0 select-none z-20 border-r border-white/[0.06]">
+            <div class="sb-brand h-[72px] px-6 flex items-center flex-shrink-0 border-b border-white/[0.06]">
+                <button type="button" data-sb-menu ${cfg.switchRole ? `onclick="openSidebarMenu(this, 'sbRoleMenu', 'down')"` : 'tabindex="-1"'} aria-haspopup="${cfg.switchRole ? 'menu' : 'false'}" aria-expanded="false"
+                    class="sb-switcher relative -mx-2 px-2 py-1.5 flex-1 min-w-0 flex items-center gap-3 rounded-lg ${cfg.switchRole ? 'hover:bg-white/[0.06]' : 'cursor-default'} text-left transition-colors">
+                    <span class="w-8 h-8 rounded-lg bg-white/[0.08] flex items-center justify-center flex-shrink-0">
+                        <img src="${sharedRoot}/assets/logo-mark-transparent.png" alt="DIGITECHKH" class="w-5 h-5 object-contain">
+                    </span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-[15px] font-semibold text-white leading-tight tracking-wide">DIGITECHKH</span>
+                        <span class="block sb-sub truncate">${roleLabel}</span>
+                    </span>
+                    ${cfg.switchRole ? '<iconify-icon icon="mdi:unfold-more-horizontal" class="text-lg sb-muted flex-shrink-0"></iconify-icon>' : ''}
+                </button>
+            </div>
+            ${cfg.switchRole ? `<div id="sbRoleMenu" role="menu" class="sb-menu hidden z-[70] p-1.5 rounded-lg bg-[#0b1020] border border-white/10 shadow-2xl text-white">
+                <p class="px-3 pt-1.5 pb-1 sb-group">ប្តូរតួនាទី</p>
+                <div class="sb-menu-item flex items-center gap-3 px-3 py-2 rounded-md bg-white/[0.06]">
+                    <iconify-icon icon="${cfg.roleIcon}" class="text-[18px] opacity-80"></iconify-icon><span class="flex-1">${roleLabel}</span>
+                    <iconify-icon icon="mdi:check" class="text-[18px] text-emerald-400"></iconify-icon>
                 </div>
-                <div class="min-w-0 flex-1 sb-expand-only">
-                    <h1 class="text-lg font-semibold tracking-wider whitespace-nowrap text-white">DIGITECHKH</h1>
-                    <span class="sb-accent sm-nav-note font-medium uppercase tracking-wider block truncate">${cfg.title}</span>
-                </div>
-                <button onclick="togglePortalSidebar()" type="button" aria-label="បង្រួម ឬពង្រីករបារចំហៀង"
-                    class="sb-collapse-btn relative hidden lg:!flex w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 sb-accent-soft hover:text-white items-center justify-center transition flex-shrink-0">
-                    <iconify-icon id="sbCollapseIcon" icon="${collapsed ? 'mdi:chevron-right' : 'mdi:chevron-left'}" class="text-lg"></iconify-icon>
-                    <span class="sb-tip">ពង្រីករបារចំហៀង</span>
+                ${menuItem(cfg.switchRole.icon, cfg.switchRole.label.replace('ប្តូរទៅ', ''), `onclick="location.href='${roleRoot}/${cfg.switchRole.href}'"`)}
+            </div>` : ''}
+
+            <div id="sbStatus" class="mx-3 mt-3 px-3 py-2.5 rounded-lg bg-white/[0.04]"></div>
+
+            <nav aria-label="ម៉ឺនុយរុករក" class="flex-1 overflow-y-auto px-3 py-3 space-y-0.5 scrollbar-hide">
+                ${navHtml}
+            </nav>
+
+            <div class="p-3 border-t border-white/[0.06] space-y-0.5">
+                <button type="button" data-sb-menu onclick="openSidebarMenu(this, 'sbUserMenu', 'up')" aria-haspopup="menu" aria-expanded="false"
+                    class="sb-user sb-row relative w-full !h-auto !py-2 text-left">
+                    ${avatar}
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-[14.5px] font-medium text-white truncate leading-tight">${cfg.userName}</span>
+                        <span class="block sb-sub truncate">${cfg.userRole}</span>
+                    </span>
+                    <iconify-icon icon="mdi:dots-horizontal" class="text-lg sb-muted flex-shrink-0"></iconify-icon>
                 </button>
             </div>
 
-            <nav aria-label="ម៉ឺនុយរុករក" class="flex-1 overflow-y-auto px-3 py-4 space-y-1.5 scrollbar-hide">
-                ${navHtml}
-
-                <div class="sb-expand-only pt-4 mt-4 border-t border-white/10">
-                    <button onclick="togglePolicyNote()" type="button"
-                        class="w-full flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg sb-accent hover:bg-white/5 transition">
-                        <span class="sm-nav-note inline-flex items-center gap-1.5">
-                            <iconify-icon icon="mdi:shield-check-outline" class="text-base"></iconify-icon>
-                            គោលការណ៍សិទ្ធិ
-                        </span>
-                        <iconify-icon id="sbPolicyIcon" icon="mdi:chevron-down" class="text-base"></iconify-icon>
-                    </button>
-                    <div id="sbPolicyBody" class="hidden mt-2 p-3 rounded-xl bg-white/5 border border-white/10 sm-nav-note sb-accent-soft">
-                        ${cfg.policyNote}
-                    </div>
+            <div id="sbUserMenu" role="menu" class="sb-menu hidden z-[70] p-1.5 rounded-lg bg-[#0b1020] border border-white/10 shadow-2xl text-white">
+                <div class="flex items-center gap-3 px-3 py-2.5">
+                    ${avatar}
+                    <span class="min-w-0"><span class="block text-[14.5px] font-medium truncate">${cfg.userName}</span><span class="block sb-sub truncate">${cfg.userRole}</span></span>
                 </div>
-            </nav>
-
-            <div class="border-t border-white/10 bg-black/20 p-3 space-y-2">
-                <div class="sb-user relative flex items-center gap-3 px-2 py-1.5 rounded-xl">
-                    ${cfg.userId && typeof avatarHtml === 'function'
-                        ? avatarHtml(cfg.userId, 'w-9 h-9 ring-2 ring-white/20')
-                        : `<div class="w-9 h-9 rounded-full sb-avatar border flex items-center justify-center font-semibold text-xs flex-shrink-0">${cfg.userInitials}</div>`}
-                    <div class="min-w-0 sb-expand-only">
-                        <p class="sm-value text-white truncate">${cfg.userName}</p>
-                        <p class="sm-nav-note sb-accent truncate">${cfg.userRole}</p>
-                    </div>
-                    <span class="sb-tip">${cfg.userName} · ${cfg.userRole}</span>
-                </div>
-
-                ${cfg.switchRole ? `<a href="${roleRoot}/${cfg.switchRole.href}" aria-label="${cfg.switchRole.label}"
-                    class="sb-nav-item relative w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/15 sb-text hover:text-white font-semibold transition border border-white/10">
-                    ${getIconHtml(cfg.switchRole.icon)}
-                    <span class="sm-nav-label sb-expand-only">${cfg.switchRole.label}</span>
-                    <span class="sb-tip">${cfg.switchRole.label}</span>
-                </a>` : ''}
-                <button onclick="handleLogout()" type="button" aria-label="ចាកចេញពីប្រព័ន្ធ"
-                    class="sb-nav-item relative w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-white/10 hover:bg-rose-600 sb-text hover:text-white font-semibold transition border border-white/10 shadow-sm cursor-pointer group">
-                    <iconify-icon icon="mdi:logout" class="text-lg text-rose-300 group-hover:text-white transition-colors"></iconify-icon>
-                    <span class="sm-nav-label sb-expand-only">ចាកចេញ</span>
-                    <span class="sb-tip">ចាកចេញ</span>
-                </button>
+                <div class="h-px bg-white/[0.08] my-1"></div>
+                ${cfg.switchRole ? menuItem(cfg.switchRole.icon, cfg.switchRole.label, `onclick="location.href='${roleRoot}/${cfg.switchRole.href}'"`) : ''}
+                ${menuItem('mdi:theme-light-dark', 'ទម្រង់ភ្លឺ ឬងងឹត', 'onclick="toggleDarkMode(); closeSidebarMenus()"')}
+                ${menuItem('mdi:shield-check-outline', 'គោលការណ៍សិទ្ធិ', "onclick=\"document.getElementById('sbPolicyBody').classList.toggle('hidden')\"")}
+                <p id="sbPolicyBody" class="hidden mx-3 mb-1.5 mt-0.5 sb-sub leading-relaxed">${cfg.policyNote}</p>
+                <div class="h-px bg-white/[0.08] my-1"></div>
+                ${menuItem('mdi:logout', 'ចាកចេញ', 'onclick="handleLogout()"', 'text-rose-300 hover:!bg-rose-500/15')}
             </div>
         </aside>`;
 }
@@ -451,6 +494,8 @@ function renderPortalSidebar() {
 
     if (cfg.sidebarV2) {
         renderPortalSidebarV2(host, sessionPortalConfig(cfg, portalId), roleRoot, activeId, sharedRoot);
+        refreshSidebarStatus();
+        setInterval(refreshSidebarStatus, 60000);
         return;
     }
 
@@ -915,6 +960,7 @@ function updatePortalBadges() {
    និងទំព័រ (ទំព័រកំណត់ window.onStoreChanged ដើម្បីគូរបញ្ជីឡើងវិញ) */
 window.addEventListener('bms-store-changed', e => {
     updatePortalBadges();
+    refreshSidebarStatus();
     refreshPortalNotifications();
     if (typeof window.onStoreChanged === 'function') window.onStoreChanged(e.detail || {});
 });

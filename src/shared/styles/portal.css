@@ -188,81 +188,6 @@
     transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* បង្រួមបានតែលើអេក្រង់ធំ ព្រោះក្រោម 1024px វាជាថតរអិលរួចទៅហើយ */
-@media (min-width: 1024px) {
-    #portalSidebar.is-collapsed {
-        width: 5.25rem !important;
-    }
-
-    #portalSidebar.is-collapsed .sb-expand-only {
-        display: none !important;
-    }
-
-    #portalSidebar.is-collapsed .sb-brand,
-    #portalSidebar.is-collapsed .sb-nav-item,
-    #portalSidebar.is-collapsed .sb-user {
-        justify-content: center !important;
-    }
-
-    /* ទទឹង 84px មិនគ្រប់សម្រាប់ទាំងឡូហ្គោ និងប៊ូតុង
-       ដូច្នេះពេលបង្រួម បង្ហាញតែប៊ូតុងពង្រីកវិញ */
-    #portalSidebar.is-collapsed .sb-brand {
-        padding-left: 0.5rem !important;
-        padding-right: 0.5rem !important;
-    }
-
-    #portalSidebar.is-collapsed .sb-nav-item {
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-    }
-
-    /* ផ្លាកលេខប្រែជាចំណុចតូច ពេលបង្រួម */
-    #portalSidebar.is-collapsed .sb-badge {
-        position: absolute;
-        top: 6px;
-        right: 14px;
-        min-width: 9px;
-        height: 9px;
-        padding: 0 !important;
-        font-size: 0 !important;
-        border-radius: 9999px;
-    }
-
-    /* ស្លាកលេចឡើងពេលដាក់ទស្សន៍ទ្រនិច — ជំនួស native tooltip (ស្តង់ដារលេខ 6) */
-    #portalSidebar.is-collapsed .sb-tip {
-        display: block;
-        position: absolute;
-        left: calc(100% + 10px);
-        top: 50%;
-        transform: translateY(-50%) translateX(-4px);
-        white-space: nowrap;
-        background: #0f172a;
-        color: #fff;
-        padding: 6px 10px;
-        border-radius: 8px;
-        font-size: 13px;
-        line-height: 1.4;
-        box-shadow: 0 10px 25px -8px rgba(0, 0, 0, 0.6);
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.15s ease, transform 0.15s ease;
-        z-index: 60;
-    }
-
-    #portalSidebar.is-collapsed .sb-nav-item:hover .sb-tip,
-    #portalSidebar.is-collapsed .sb-collapse-btn:hover .sb-tip,
-    #portalSidebar.is-collapsed .sb-user:hover .sb-tip {
-        opacity: 1;
-        transform: translateY(-50%) translateX(0);
-    }
-}
-
-/* លាក់ជាលំនាំដើម — បង្ហាញតែពេលបង្រួមលើអេក្រង់ធំប៉ុណ្ណោះ
-   បើមិនដូច្នេះទេ វានឹងលេចជាអក្សរធម្មតាក្នុងថតរអិលលើទូរស័ព្ទ */
-.sb-tip {
-    display: none;
-}
-
 /*
  * kpi-2up — ជម្រើសចេញពីច្បាប់ «Universal KPI Grid Scaling» ក្នុង custom.css
  * ច្បាប់នោះបង្ខំក្រឡា KPI ទាំងអស់ឱ្យទៅជួរឈរតែមួយលើទូរស័ព្ទ។ សម្រាប់កាតដែលមានតម្លៃខ្លី
@@ -318,7 +243,7 @@ html.dark .sb-nav-item[aria-current="page"]::before { background: #7DD3FC; }
 #posPortal #portalSidebar .sb-accent-soft { color: rgba(207, 250, 254, .8); }
 #posPortal #portalSidebar .sb-avatar      { background: rgba(34, 211, 238, .14); border-color: rgba(34, 211, 238, .3); color: #CFFAFE; }
 #posPortal .sb-nav-item[aria-current="page"]::before { background: #22D3EE; }
-#posPortal .sb-nav-item[aria-current="page"] { background: rgba(8, 145, 178, .22) !important; border-color: rgba(34, 211, 238, .25) !important; }
+#posPortal .sb-nav-item[aria-current="page"] { background: rgba(8, 145, 178, .2) !important; }
 
 /* អ្នកគ្រប់គ្រងវេន — របារចំហៀងពណ៌ឆ្លុះ (indigo) ដើម្បីឱ្យរូបថតអេក្រង់ប្រាប់ភ្លាមថាជាតួនាទីណា
    (ឯកសាររចនាលេខ 02 ផ្នែក 1) ។ custom.css បង្ខំ <aside> ឱ្យទៅពណ៌បៃតង ដូច្នេះត្រូវប្រើ !important */
@@ -400,3 +325,33 @@ html.dark #managerPortal aside { background-color: #0b1329 !important; }
     :is(#posPortal, #managerPortal, #loginPortal) .rounded-xl { border-radius: 8px !important; }
     :is(#posPortal, #managerPortal) .shadow-sm { box-shadow: 0 1px 2px rgba(15, 23, 42, .04) !important; }
 }
+
+/* ===== របារចំហៀងបែបវិជ្ជាជីវៈ =====
+   ផ្ទៃងងឹតអព្យាក្រឹត ជួរកម្ពស់ 36px ស្លាកក្រុមតូចៗ · ពណ៌តួនាទីបង្ហាញតែលើធាតុសកម្ម */
+#managerPortal aside { background-color: #14162b !important; }
+#posPortal aside { background-color: #0d1424 !important; }
+#portalSidebar { --sb-accent: #a5b4fc; }
+#posPortal #portalSidebar { --sb-accent: #67e8f9; }
+#portalSidebar .sb-row {
+    display: flex; align-items: center; gap: 12px; height: 36px; padding: 0 12px; border-radius: 6px;
+    color: rgba(255, 255, 255, .68); transition: background-color .12s ease, color .12s ease; white-space: nowrap;
+}
+#portalSidebar .sb-row:hover { background: rgba(255, 255, 255, .05); color: #fff; }
+#portalSidebar .sb-row .sb-icon { color: rgba(255, 255, 255, .5); font-size: 18px; }
+#portalSidebar .sb-row:hover .sb-icon { color: rgba(255, 255, 255, .8); }
+#portalSidebar .sb-nav-item[aria-current="page"] { background: rgba(255, 255, 255, .08) !important; color: #fff; }
+#portalSidebar .sb-nav-item[aria-current="page"] .sb-icon { color: var(--sb-accent) !important; }
+#portalSidebar .sb-nav-item[aria-current="page"]::before { display: none; }
+#portalSidebar .sb-label { font-size: 15px; font-weight: 500; }
+#portalSidebar .sb-group { font-size: 12.5px; font-weight: 500; color: rgba(255, 255, 255, .38); }
+#portalSidebar .sb-sub, .sb-menu .sb-sub { font-size: 12.5px; color: rgba(255, 255, 255, .5); line-height: 1.5; }
+#portalSidebar .sb-muted { color: rgba(255, 255, 255, .4); }
+.sb-menu .sb-group { font-size: 12.5px; font-weight: 500; color: rgba(255, 255, 255, .4); }
+#portalSidebar .sb-count {
+    min-width: 20px; height: 20px; padding: 0 6px; border-radius: 5px; font-size: 12px !important; font-weight: 600 !important;
+    display: inline-flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, .1); color: rgba(255, 255, 255, .85);
+}
+#portalSidebar .sb-count.hidden { display: none; }
+#portalSidebar .sb-count-warn { background: #f59e0b; color: #1c1917; }
+.sb-menu .sb-menu-item { font-size: 14.5px; color: rgba(255, 255, 255, .82); }
+.sb-menu button.sb-menu-item:hover { background: rgba(255, 255, 255, .06); color: #fff; }
