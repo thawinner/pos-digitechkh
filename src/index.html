@@ -76,7 +76,7 @@
 
             <!-- ===== ផ្ទាំងស្តាំ៖ ជំហានទី 1 ជ្រើសរើសអ្នកប្រើ · ជំហានទី 2 វាយលេខសម្ងាត់ ===== -->
             <section class="lg:col-span-8 rounded-3xl bg-white text-slate-800 shadow-xl overflow-hidden flex flex-col">
-                <!-- របារជំហានរួម (bmsStepper ក្នុង portal.js) — ដូចទំព័របិទវេន -->
+                <!-- របារជំហានរួម (bmsStepper ក្នុង portal.js) — ដូចទំព័របើក និងបិទវេន -->
                 <div class="px-6 sm:px-12 pt-5 pb-4 border-b border-slate-100">
                     <div id="loginStepper" class="max-w-2xl mx-auto"></div>
                 </div>
@@ -105,6 +105,15 @@
                             <span class="sm-td-sub text-slate-400">· ផ្ទាំងគ្រប់គ្រង · អាចប្តូរទៅលក់បាន</span>
                         </div>
                         <div id="managerTiles" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+                    </div>
+
+                    <div class="mt-7">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 inline-flex items-center justify-center"><i class="fas fa-crown text-sm"></i></span>
+                            <p class="sm-value text-slate-700">ម្ចាស់ហាង</p>
+                            <span class="sm-td-sub text-slate-400">· ប្រាក់ចំណេញ បុគ្គលិក និងតម្លៃទំនិញ</span>
+                        </div>
+                        <div id="adminTiles" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
                     </div>
 
                     <div id="facts" class="mt-auto pt-7 grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
@@ -152,14 +161,14 @@
 
         function tile(p, role) {
             const sh = openShiftOf(p.id);
-            const ring = role === 'manager' ? 'ring-indigo-100' : 'ring-cyan-100';
+            const ring = { admin: 'ring-emerald-100', manager: 'ring-indigo-100' }[role] || 'ring-cyan-100';
             const status = sh
                 ? `<span class="inline-flex items-center gap-1.5 sm-td-sub text-emerald-700"><span class="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></span>កំពុងបើក${sh.templateName} · ${sh.register}</span>`
                 : (() => {
                     const a = assignmentFor(p.id);
                     return a
                         ? `<span class="inline-flex items-center gap-1.5 sm-td-sub text-slate-500"><i class="fas fa-calendar-check text-[11px] text-cyan-600"></i>${a.template.name} · ${a.register}</span>`
-                        : `<span class="sm-td-sub text-slate-400">${role === 'manager' ? ROLE_NAME.manager : 'មិនមានក្នុងកាលវិភាគ'}</span>`;
+                        : `<span class="sm-td-sub text-slate-400">${role !== 'cashier' ? ROLE_NAME[role] : 'មិនមានក្នុងកាលវិភាគ'}</span>`;
                 })();
             return `<button onclick="pickUser('${p.id}')" type="button"
                 class="tile group text-left p-4 rounded-2xl border-2 ${sh ? 'border-emerald-200 bg-emerald-50/40' : 'border-slate-200 bg-white'} hover:border-cyan-500 transition flex items-center gap-3.5 min-h-[88px]">
@@ -209,52 +218,59 @@
            (ពីមុនគូរទាំងស្រុងរាល់ការចុច ធ្វើឱ្យចលនា fade-up លេងម្តងទៀត និងប៊ូតុងលោតពេលកំពុងចុច) */
         function renderPin() {
             const p = pinUser;
-            const manager = isManagerId(p.id);
+            const role = roleOf(p.id);
+            const manager = role !== 'cashier';
             const sh = openShiftOf(p.id);
             const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '⌫'];
             const asg = assignmentFor(p.id);
-            const dest = manager ? 'ផ្ទាំងគ្រប់គ្រង' : sh ? `បន្ត${sh.templateName} លើ ${sh.register}` : `បើក${asg ? asg.template.name : 'វេន'}លើ ${resolveRegister(p.id)}`;
+            const dest = role === 'admin' ? 'ផ្ទាំងម្ចាស់ហាង' : manager ? 'ផ្ទាំងគ្រប់គ្រង' : sh ? `បន្ត${sh.templateName} លើ ${sh.register}` : `បើក${asg ? asg.template.name : 'វេន'}លើ ${resolveRegister(p.id)}`;
+            const accent = { admin: 'emerald', manager: 'indigo' }[role] || 'cyan';
+            const tpl = sh ? null : asg && asg.template;
+            const facts = [
+                [ 'fa-arrow-right-to-bracket', 'ចូលទៅ', dest ],
+                sh ? [ 'fa-circle-play', 'វេនបើកតាំងពី', `ម៉ោង ${fmtTime(sh.openedAt)}`, 'text-emerald-700' ] : null,
+                tpl ? [ 'fa-clock', 'ម៉ោងវេន', `${tpl.start} – ${tpl.end}` ] : null,
+                role === 'cashier' ? [ 'fa-percent', 'បញ្ចុះតម្លៃបានរហូតដល់', `${discountLimitFor(p.id)}%` ] : null
+            ].filter(Boolean);
             document.getElementById('stepPin').innerHTML = `
-                <div class="h-full flex flex-col fade-up">
-                <div class="flex items-center justify-between gap-3">
-                    <button onclick="backToPick()" type="button"
-                        class="sm-td h-11 pl-3 pr-4 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-semibold inline-flex items-center gap-2">
-                        <i class="fas fa-arrow-left"></i> ប្តូរអ្នកប្រើ
-                    </button>
-                    <p class="sm-td-sub text-slate-400 hidden sm:!block"><i class="fas fa-keyboard mr-1.5"></i>អាចវាយលេខពីក្តារចុច ហើយចុច Enter</p>
-                </div>
-                <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8 items-center pt-4">
-                    <div>
-                        <div class="flex items-center gap-4">
-                            ${avatarHtml(p.id, `w-24 h-24 ring-8 ${manager ? 'ring-indigo-100' : 'ring-cyan-100'}`)}
-                            <div>
-                                <p class="text-[24px] font-bold text-slate-900 leading-tight">${p.name}</p>
-                                <p class="sm-card-sub text-slate-500">${manager ? ROLE_NAME.manager : ROLE_NAME.cashier}</p>
+                <div class="h-full grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,360px)] gap-6 md:gap-10 items-start fade-up">
+                    <div class="rounded-2xl border border-slate-200 overflow-hidden">
+                        <div class="p-5 flex items-center gap-4 border-b border-slate-100">
+                            ${avatarHtml(p.id, `w-[72px] h-[72px] ring-4 ring-${accent}-100`)}
+                            <div class="min-w-0">
+                                <p class="text-[22px] font-bold text-slate-900 leading-tight truncate">${p.name}</p>
+                                <span class="sm-td-sub font-semibold inline-flex items-center gap-1.5 mt-1 px-2 py-0.5 rounded-md bg-${accent}-50 text-${accent}-700">${ROLE_NAME[role]}</span>
                             </div>
                         </div>
-                        <div class="mt-6 rounded-2xl bg-slate-50 border border-slate-100 p-4 space-y-2">
-                            <p class="sm-td text-slate-600 flex items-center gap-2"><i class="fas fa-arrow-right-to-bracket text-slate-400 w-4"></i> ${dest}</p>
-                            ${sh ? `<p class="sm-td-sub text-emerald-700 flex items-center gap-2"><span class="w-4 inline-flex justify-center"><span class="w-2 h-2 rounded-full bg-emerald-500"></span></span> វេនបើកតាំងពីម៉ោង ${fmtTime(sh.openedAt)}</p>` : ''}
-                        </div>
-                    </div>
-
-                    <div class="w-full max-w-sm mx-auto">
-                        <p class="sm-value text-slate-700 text-center">វាយលេខសម្ងាត់</p>
-                        <div id="pinDots" class="flex items-center justify-center gap-3.5 h-8 mt-3">
-                            ${[0, 1, 2, 3, 4, 5].map(() => '<span class="w-4 h-4 rounded-full transition-colors duration-100 bg-slate-200"></span>').join('')}
-                        </div>
-                        <p id="pinMsg" class="sm-td-sub text-center mt-1 min-h-[24px] text-slate-400">4 ទៅ 6 ខ្ទង់</p>
-                        <div class="grid grid-cols-3 gap-2.5 mt-3">
-                            ${keys.map(k => `<button onclick="press('${k}')" type="button" data-pin-key
-                                class="pin-key rounded-2xl ${k === 'C' || k === '⌫' ? 'bg-slate-100 text-slate-500' : 'bg-slate-50 text-slate-800 border border-slate-200'} hover:bg-cyan-50 hover:border-cyan-300 active:bg-cyan-100 active:scale-[.97] transition-[background-color,transform] duration-75 select-none disabled:opacity-40">
-                                ${k === 'C' ? '<i class="fas fa-eraser text-lg pointer-events-none"></i>' : k === '⌫' ? '<i class="fas fa-delete-left text-lg pointer-events-none"></i>' : k}</button>`).join('')}
-                        </div>
-                        <button id="pinSubmit" onclick="submitPin()" type="button" disabled
-                            class="mt-3 w-full h-14 rounded-2xl sm-card-title font-bold transition-colors inline-flex items-center justify-center gap-2 bg-slate-100 text-slate-400 cursor-not-allowed">
-                            ចូលប្រើ <i class="fas fa-arrow-right"></i>
+                        <dl class="divide-y divide-slate-100">
+                            ${facts.map(([icon, label, value, tone]) => `<div class="flex items-center gap-3 px-5 py-3">
+                                <i class="fas ${icon} w-4 text-center text-slate-400 text-[13px]"></i>
+                                <dt class="sm-td-sub text-slate-500 flex-1">${label}</dt>
+                                <dd class="sm-td font-semibold ${tone || 'text-slate-800'} text-right">${value}</dd>
+                            </div>`).join('')}
+                        </dl>
+                        <button onclick="backToPick()" type="button"
+                            class="w-full px-5 py-3.5 border-t border-slate-100 bg-slate-50 hover:bg-slate-100 sm-td text-slate-600 font-semibold inline-flex items-center gap-2 transition">
+                            <i class="fas fa-arrow-left text-[12px]"></i> មិនមែនខ្ញុំ · ប្តូរអ្នកប្រើ
                         </button>
                     </div>
-                </div>
+
+                    <div class="w-full max-w-[360px] mx-auto">
+                        <p class="sm-card-title text-slate-800 text-center">វាយលេខសម្ងាត់</p>
+                        <div id="pinDots" class="flex items-center justify-center gap-3 h-10 mt-2" aria-live="polite"></div>
+                        <p id="pinMsg" class="sm-td-sub text-center min-h-[24px] text-slate-400"></p>
+                        <div class="grid grid-cols-3 gap-2 mt-3">
+                            ${keys.map(k => `<button onclick="press('${k}')" type="button" data-pin-key aria-label="${k === 'C' ? 'សម្អាតទាំងអស់' : k === '⌫' ? 'លុបមួយខ្ទង់' : k}"
+                                class="pin-key rounded-xl border select-none transition-[background-color,border-color,transform] duration-75 active:scale-[.97] disabled:opacity-40 ${k === 'C' || k === '⌫'
+                                    ? 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50' : 'bg-slate-50 border-slate-200 text-slate-800 hover:bg-white hover:border-cyan-400 active:bg-cyan-50'}">
+                                ${k === 'C' ? '<span class="sm-td font-semibold pointer-events-none">សម្អាត</span>' : k === '⌫' ? '<i class="fas fa-delete-left text-xl pointer-events-none"></i>' : k}</button>`).join('')}
+                        </div>
+                        <button id="pinSubmit" onclick="submitPin()" type="button" disabled
+                            class="mt-2 w-full h-14 rounded-xl sm-card-title font-bold transition-colors inline-flex items-center justify-center gap-2">
+                            ចូលប្រើ <i class="fas fa-arrow-right"></i>
+                        </button>
+                        <p class="sm-td-sub text-slate-400 text-center mt-3 max-sm:hidden"><i class="fas fa-keyboard mr-1.5"></i>វាយលេខពីក្តារចុចបាន · Enter ចូលប្រើ · Esc ត្រឡប់ក្រោយ</p>
+                    </div>
                 </div>`;
             updatePin();
         }
@@ -265,23 +281,25 @@
             if (!dots) return;
             const lockedFor = Math.ceil((POS_PIN_GUARD.lockedUntil - Date.now()) / 1000);
             const locked = lockedFor > 0;
-            Array.from(dots.children).forEach((d, i) => {
-                d.className = `w-4 h-4 rounded-full transition-colors duration-100 ${i < pin.length ? 'bg-cyan-600' : 'bg-slate-200'} ${i >= 4 && i >= pin.length ? 'opacity-50' : ''}`;
-            });
+            /* បង្ហាញ 4 ចំណុច ហើយបន្ថែមពេលវាយលើស (រហូតដល់ 6) — មិនបង្ហាញចំណុចស្រអាប់ដែលធ្វើឱ្យយល់ច្រឡំ */
+            const n = Math.max(4, pin.length);
+            dots.innerHTML = Array.from({ length: n }, (_, i) => `<span class="w-3.5 h-3.5 rounded-full transition-colors duration-100 ${i < pin.length
+                ? (pinMsg ? 'bg-rose-500' : 'bg-slate-900') : 'bg-white border-2 border-slate-300'}"></span>`).join('');
             if (shake) {
                 dots.classList.remove('shake');
                 void dots.offsetWidth;
                 dots.classList.add('shake');
             }
             const msg = document.getElementById('pinMsg');
-            msg.textContent = locked ? `វាយខុស 3 ដង · សូមរង់ចាំ ${lockedFor} វិនាទី` : pinMsg || (pin.length >= 4 ? 'ចុច «ចូលប្រើ» ឬ Enter' : '4 ទៅ 6 ខ្ទង់');
+            msg.textContent = locked ? `វាយខុស 3 ដង · សូមរង់ចាំ ${lockedFor} វិនាទី` : pinMsg || (pin.length >= 4 ? 'រួចរាល់ · ចុចចូលប្រើ' : 'លេខ 4 ទៅ 6 ខ្ទង់');
             msg.className = `sm-td-sub text-center mt-1 min-h-[24px] ${locked || pinMsg ? 'text-rose-600 font-semibold' : pin.length >= 4 ? 'text-cyan-700' : 'text-slate-400'}`;
             document.querySelectorAll('[data-pin-key]').forEach(b => { b.disabled = locked; });
             const ready = pin.length >= 4 && !locked;
             const btn = document.getElementById('pinSubmit');
             btn.disabled = !ready;
-            btn.className = `mt-3 w-full h-14 rounded-2xl sm-card-title font-bold transition-colors inline-flex items-center justify-center gap-2 ${ready
+            btn.className = `mt-2 w-full h-14 rounded-xl sm-card-title font-bold transition-colors inline-flex items-center justify-center gap-2 ${ready
                 ? 'bg-cyan-600 hover:bg-cyan-700 text-white' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`;
+            btn.setAttribute('aria-disabled', String(!ready));
             clearTimeout(lockTick);
             if (locked) lockTick = setTimeout(() => updatePin(), 1000);
         }
@@ -303,13 +321,15 @@
                 posLogin(pinUser.id);
                 renderStepper(3);
                 const next = new URLSearchParams(location.search).get('next');
-                const manager = isManagerId(pinUser.id);
-                const allowed = next && /^(cashier|manager)\/[a-z-]+\/[a-z-]+\.html$/.test(next) && (manager || next.startsWith('cashier/'));
+                const role = roleOf(pinUser.id);
+                const area = next && (next.match(/^(cashier|manager|admin)\/[a-z-]+\/[a-z-]+\.html$/) || [])[1];
+                /* ម្ចាស់ហាងមិនឈរបញ្ជរ · អ្នកគ្រប់គ្រងមិនចូលទំព័រម្ចាស់ហាង · អ្នកគិតលុយចូលបានតែទំព័រគិតលុយ */
+                const allowed = !!area && ({ admin: ['admin', 'manager'], manager: ['manager', 'cashier'], cashier: ['cashier'] }[role] || []).includes(area);
                 document.getElementById('stepPin').innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center fade-up">
                     ${avatarHtml(pinUser.id, 'w-20 h-20 ring-8 ring-emerald-100')}
                     <p class="sm-card-title text-slate-800 mt-4"><i class="fas fa-circle-check text-emerald-500 mr-1.5"></i>សូមស្វាគមន៍ ${pinUser.name}</p></div>`;
                 setTimeout(() => {
-                    location.href = allowed ? next : manager ? 'manager/dashboard/dashboard.html' : 'cashier/terminal/pos-terminal.html';
+                    location.href = allowed ? next : ROLE_HOME[role];
                 }, 450);
                 return;
             }
@@ -380,7 +400,8 @@
             setInterval(tick, 10000);
             document.getElementById('cashierTiles').innerHTML = CASHIERS.map(p => tile(p, 'cashier')).join('');
             document.getElementById('managerTiles').innerHTML = MANAGERS.map(p => tile(p, 'manager')).join('');
-            document.getElementById('demoPins').innerHTML = CASHIERS.concat(MANAGERS).map(p =>
+            document.getElementById('adminTiles').innerHTML = ADMINS.map(p => tile(p, 'admin')).join('');
+            document.getElementById('demoPins').innerHTML = CASHIERS.concat(MANAGERS, ADMINS).map(p =>
                 `<p class="sm-td-sub text-slate-300 flex items-center gap-2.5">${avatarHtml(p.id, 'w-6 h-6')}<span class="flex-1">${p.name}</span><span class="sm-figure text-white font-semibold tracking-widest">${effectivePin(p.id)}</span></p>`).join('');
             const s = posSession();
             if (s) {

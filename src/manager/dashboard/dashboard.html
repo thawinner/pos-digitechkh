@@ -68,7 +68,8 @@
                     <section class="xl:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5">
                         <h3 class="sm-card-title text-slate-700">ការលក់តាមម៉ោង</h3>
                         <p class="sm-card-sub text-slate-500">លក់សរុប (ដុល្លារ) គ្រប់បញ្ជរ</p>
-                        <div id="hourBars" class="mt-4"></div>
+                        <div id="hourBars" class="mt-3 w-full h-[220px]"></div>
+                        <p id="hourEmpty" class="hidden sm-td-sub text-slate-400 text-center mt-1">មិនទាន់មានការលក់ក្នុងថ្ងៃប្រតិបត្តិការនេះទេ</p>
                     </section>
                     <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5">
                         <h3 class="sm-card-title text-slate-700">វិធីទូទាត់</h3>
@@ -84,9 +85,11 @@
     <script src="../../shared/scripts/data.js"></script>
     <script src="../../shared/scripts/manager-data.js"></script>
     <script src="../../shared/scripts/portal.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+    <script src="../../shared/scripts/charts.js"></script>
     <script>
         /* ផ្ទាំងគ្រប់គ្រង (ឯកសាររចនាលេខ 02 ផ្នែក 5.1) — អ្វីដែលត្រូវការខ្ញុំឥឡូវនេះ និងថ្ងៃនេះទៅយ៉ាងណា
-           គ្មាន ECharts នៅទំព័រផ្ទាំងគ្រប់គ្រងទេ (បញ្ជីពិនិត្យលេខ 06 ផ្នែក ខ) — ប្រើរបារ CSS */
+           ក្រាហ្វទាំងអស់ប្រើ ECharts តាមរយៈ charts.js (posChart) */
 
         /* ប្រៀបធៀបជាមួយថ្ងៃប្រតិបត្តិការមុន ត្រឹមម៉ោងដដែល ដើម្បីឱ្យយុត្តិធម៌ពេលថ្ងៃនេះមិនទាន់ចប់ */
         function delta(now, before, money) {
@@ -305,31 +308,40 @@
                 const h = new Date(s.time).getHours();
                 hours[h] = (hours[h] || 0) + saleTotals(s.items, s.discountPercent).gross;
             });
-            const max = Math.max(1, ...Object.values(hours));
             const nowH = new Date().getHours();
-            document.getElementById('hourBars').innerHTML = `
-                <div class="flex items-end gap-1.5 h-44">
-                    ${Object.keys(hours).map(h => `
-                        <div class="flex-1 min-w-0 h-full flex flex-col justify-end items-center gap-1">
-                            <span class="text-[10px] text-slate-500 sm-figure">${hours[h] ? Math.round(hours[h]) : ''}</span>
-                            <div class="w-full rounded-t-md ${Number(h) === nowH ? 'bg-indigo-600' : 'bg-indigo-300'}" style="height:${Math.max(hours[h] / max * 100, hours[h] ? 3 : 0)}%"></div>
-                        </div>`).join('')}
-                </div>
-                <div class="flex gap-1.5 mt-1">${Object.keys(hours).map(h => `<span class="flex-1 text-center text-[10px] text-slate-400 sm-figure">${h}</span>`).join('')}</div>
-                ${sales.length ? '' : '<p class="sm-td-sub text-slate-400 text-center mt-3">មិនទាន់មានការលក់ក្នុងថ្ងៃប្រតិបត្តិការនេះទេ</p>'}`;
+            const keys = Object.keys(hours).map(Number);
+            document.getElementById('hourEmpty').classList.toggle('hidden', !!sales.length);
+            posChart('hourBars', {
+                xAxis: chartCategoryAxis(keys.map(h => pad2(h))),
+                yAxis: chartValueAxis(v => '$' + v),
+                tooltip: {
+                    formatter: ps => {
+                        const h = keys[ps[0].dataIndex];
+                        const n = sales.filter(s => new Date(s.time).getHours() === h).length;
+                        return chartTipTitle(`${pad2(h)}:00 – ${pad2((h + 1) % 24)}:00`) +
+                            chartTipRow(CHART_TONE.indigo, 'លក់សរុប', fmtUSD(hours[h])) +
+                            chartTipRow('#94a3b8', 'វិក្កយបត្រ', n);
+                    }
+                },
+                series: [{
+                    type: 'bar', barMaxWidth: 26,
+                    itemStyle: { borderRadius: [4, 4, 0, 0] },
+                    data: keys.map(h => ({ value: +hours[h].toFixed(2), itemStyle: { color: h === nowH ? CHART_TONE.indigo : CHART_TONE.indigoSoft } }))
+                }]
+            });
         }
 
         function renderPaySplit() {
             const a = aggregateSales(salesInRange(mgrToday()));
             const total = a.usdCash + a.khrCashUSD + a.khqr;
             const parts = [
-                { label: 'សាច់ប្រាក់ដុល្លារ', v: a.usdCash, cls: 'bg-emerald-500' },
-                { label: 'សាច់ប្រាក់រៀល', v: a.khrCashUSD, cls: 'bg-amber-400' },
-                { label: 'ស្កេនកូដបាគង', v: a.khqr, cls: 'bg-cyan-500' }
+                { label: 'សាច់ប្រាក់ដុល្លារ', v: a.usdCash, cls: 'bg-emerald-500', color: '#10b981' },
+                { label: 'សាច់ប្រាក់រៀល', v: a.khrCashUSD, cls: 'bg-amber-400', color: '#fbbf24' },
+                { label: 'ស្កេនកូដបាគង', v: a.khqr, cls: 'bg-cyan-500', color: '#06b6d4' }
             ];
             document.getElementById('paySplit').innerHTML = total ? `
-                <div class="h-4 rounded-full overflow-hidden flex">${parts.map(p => `<div class="${p.cls}" style="width:${p.v / total * 100}%"></div>`).join('')}</div>
-                <div class="mt-4 space-y-2.5">${parts.map(p => `
+                <div id="payDonut" class="w-full h-[150px]"></div>
+                <div class="mt-3 space-y-2.5">${parts.map(p => `
                     <div class="flex items-center gap-3">
                         <span class="w-3 h-3 rounded ${p.cls} flex-shrink-0"></span>
                         <span class="sm-td text-slate-600 flex-1">${p.label}</span>
@@ -337,6 +349,14 @@
                         <span class="sm-td-sub text-slate-400 sm-figure w-12 text-right">${Math.round(p.v / total * 100)}%</span>
                     </div>`).join('')}</div>`
                 : '<p class="sm-td-sub text-slate-400 py-6 text-center">មិនទាន់មានការលក់</p>';
+            if (total) posChart('payDonut', {
+                tooltip: { trigger: 'item', formatter: p => chartTipTitle(p.name) + chartTipRow(p.color, fmtUSD(p.value), Math.round(p.percent) + '%') },
+                series: [{
+                    type: 'pie', radius: ['58%', '88%'], avoidLabelOverlap: true, label: { show: false },
+                    itemStyle: { borderColor: '#fff', borderWidth: 2 },
+                    data: parts.map(p => ({ name: p.label, value: +p.v.toFixed(2), itemStyle: { color: p.color } }))
+                }]
+            });
         }
 
         function renderAll() {

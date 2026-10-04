@@ -7,6 +7,7 @@ this project. Some links inside them still point at the eBMS repo layout. Refere
 ## Spec — start here
 - [spec/01-cashier-pos.md](spec/01-cashier-pos.md) — cashier UI/UX plan: role identity, data rules, sidebar, every page section by section, developer notes (barcode scanner, KHQR, shift isolation)
 - [spec/02-manager-pos.md](spec/02-manager-pos.md) — manager / shift supervisor spec: authority matrix, on-the-spot override and approval queue, 7 pages, shared components, data and build order
+- [spec/03-admin-pos.md](spec/03-admin-pos.md) — owner (admin) spec: decisions, authority, dashboard, profit report, staff, products, settings, audit log
 - [spec/v1-role_cashier_pos.md](spec/v1-role_cashier_pos.md) — original v1 deep study of the cashier role (offline PWA, 80mm printing, dual-currency maths, anti-theft controls)
 
 ## Planning

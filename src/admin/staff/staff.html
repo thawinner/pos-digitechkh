@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - បុគ្គលិក</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#059669", 'primary-dark': "#047857", accent: "#34d399" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+</head>
+<body id="adminPortal" data-role-root="../.." data-active="staff" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="បុគ្គលិក"
+             data-subtitle="តួនាទី លេខសម្ងាត់ និងសិទ្ធិបញ្ចុះតម្លៃ"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+
+            <div class="w-full space-y-5">
+                <div class="bg-white rounded-2xl p-2 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-2">
+                    <div id="roleTabs" class="flex flex-wrap gap-1"></div>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <label class="relative flex-1 sm:w-[220px]">
+                            <i class="fas fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input id="search" oninput="renderList()" type="text" placeholder="ស្វែងរកឈ្មោះ ឬលេខសម្គាល់"
+                                class="sm-td w-full h-9 pl-8 pr-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:outline-none">
+                        </label>
+                        <button onclick="addPerson()" type="button" class="sm-badge h-9 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold inline-flex items-center gap-2 whitespace-nowrap"><i class="fas fa-plus"></i> បន្ថែមបុគ្គលិក</button>
+                    </div>
+                </div>
+                <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div class="max-md:hidden overflow-x-auto"><table class="w-full">
+                        <thead><tr class="border-b border-slate-100 bg-slate-50/60">
+                            <th class="sm-th py-2.5 px-5 text-left text-slate-500">បុគ្គលិក</th>
+                            <th class="sm-th py-2.5 px-3 text-left text-slate-500">តួនាទី</th>
+                            <th class="sm-th py-2.5 px-3 text-left text-slate-500">វេនប្រចាំ</th>
+                            <th class="sm-th py-2.5 px-3 text-right text-slate-500">បញ្ចុះតម្លៃបាន</th>
+                            <th class="sm-th py-2.5 px-3 text-left text-slate-500">វេនចុងក្រោយ</th>
+                            <th class="sm-th py-2.5 px-3 text-left text-slate-500">ស្ថានភាព</th>
+                            <th class="sm-th py-2.5 px-5 w-16"></th>
+                        </tr></thead>
+                        <tbody id="rows" class="divide-y divide-slate-100"></tbody>
+                    </table></div>
+                    <div id="cards" class="md:hidden divide-y divide-slate-100"></div>
+                    <div id="empty" class="hidden"></div>
+                </section>
+                <p class="sm-td-sub text-slate-500 px-1"><i class="fas fa-circle-info mr-1 text-slate-400"></i>វេនប្រចាំ និងថ្ងៃឈប់សម្រាក កំណត់នៅទំព័រ <a href="../../manager/roster/roster.html" class="text-emerald-700 font-semibold hover:underline">កាលវិភាគវេន</a> · គណនីដែលផ្អាកមិនអាចចូលប្រើបាន តែឈ្មោះនៅតែមានក្នុងប្រវត្តិ</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/admin-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+
+        /* បុគ្គលិក និងសិទ្ធិ (ឯកសាររចនាលេខ 03 ផ្នែក 5) — មានតែម្ចាស់ហាងប៉ុណ្ណោះដែលបន្ថែម ប្តូរតួនាទី ឬផ្អាកគណនី */
+
+        const TABS = [
+            { id: 'all', label: 'ទាំងអស់' },
+            { id: 'cashier', label: 'អ្នកគិតលុយ' },
+            { id: 'manager', label: 'អ្នកគ្រប់គ្រងវេន' },
+            { id: 'admin', label: 'ម្ចាស់ហាង' },
+            { id: 'inactive', label: 'បានផ្អាក' }
+        ];
+        const ROLE_CHIP = {
+            admin: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            manager: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+            cashier: 'bg-slate-50 text-slate-700 border-slate-200'
+        };
+        const ROLE_DESC = {
+            cashier: 'លក់ ទទួលប្រាក់ បើក និងបិទវេនខ្លួនឯង',
+            manager: 'អនុម័ត ត្រួតពិនិត្យវេន កាលវិភាគ និងអត្រាប្ដូរប្រាក់',
+            admin: 'ប្រាក់ចំណេញ បុគ្គលិក តម្លៃទំនិញ និងច្បាប់ហាង'
+        };
+        const DOW_KH = ['អាទិត្យ', 'ច័ន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍'];
+        let tab = 'all';
+
+        function staff() {
+            return loadStaff();
+        }
+
+        function find(id) {
+            return staff().find(p => p.id === id);
+        }
+
+        function avatarOf(p, cls) {
+            return `<span class="${cls || 'w-9 h-9'} rounded-full overflow-hidden inline-flex items-center justify-center flex-shrink-0 bg-slate-200 text-slate-600 font-semibold text-[11px] relative ${p.active ? '' : 'grayscale opacity-60'}">${p.initials}<img src="${avatarSrc(p.id)}" alt="${p.name}" class="absolute inset-0 w-full h-full object-cover" onerror="this.remove()"></span>`;
+        }
+
+        function shiftText(p) {
+            const d = (posSettings().staffDefaults || {})[p.id];
+            const t = d && shiftTemplates().find(x => x.code === d.template);
+            if (!t) return `<span class="text-slate-400">${{ cashier: 'មិនទាន់កំណត់', manager: 'ជំនួសពេលចាំបាច់', admin: 'មិនឈរបញ្ជរ' }[p.role]}</span>`;
+            return `<span class="text-slate-700">${t.name} · ${d.register}</span><span class="block sm-td-sub text-slate-400">ឈប់ថ្ងៃ${DOW_KH[Number(d.dayOff) || 0]}</span>`;
+        }
+
+        function lastShift(p) {
+            const s = mgrAllShifts().filter(x => x.cashierId === p.id).sort((a, b) => b.openedAt.localeCompare(a.openedAt))[0];
+            if (!s) return '<span class="text-slate-400">—</span>';
+            return `<span class="text-slate-700 sm-figure">${fmtDate(s.openedAt)}</span><span class="block sm-td-sub text-slate-400">${s.register}${s.status === 'open' ? ' · កំពុងបើក' : ''}</span>`;
+        }
+
+        function limitText(p) {
+            return p.role === 'cashier' ? `<span class="sm-figure">${discountLimitFor(p.id)}%</span>` : '<span class="text-slate-400">គ្មានដែនកំណត់</span>';
+        }
+
+        function statusChipOf(p) {
+            return p.active
+                ? '<span class="sm-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border bg-white text-slate-700 border-slate-200"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>សកម្ម</span>'
+                : '<span class="sm-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border bg-slate-100 text-slate-500 border-slate-200"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>បានផ្អាក</span>';
+        }
+
+        function menuItem(icon, label, act, id, danger) {
+            return `<button type="button" onclick="closeAllFloatingDropdowns(); ${act}('${id}')" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl ${danger ? 'text-rose-600 hover:bg-rose-50' : 'text-slate-700 hover:bg-slate-50'}">
+                <span class="w-7 h-7 rounded-lg ${danger ? 'bg-rose-50' : 'bg-slate-100 text-slate-600'} flex items-center justify-center"><i class="fas ${icon} text-[11px]"></i></span>${label}</button>`;
+        }
+
+        function menu(p, mid) {
+            const items = p.active ? [
+                menuItem('fa-pen', 'កែឈ្មោះ', 'editName', p.id),
+                menuItem('fa-user-shield', 'ប្តូរតួនាទី', 'changeRole', p.id),
+                menuItem('fa-key', 'កំណត់លេខសម្ងាត់ថ្មី', 'resetPin', p.id)
+            ].concat(p.role === 'cashier' ? [menuItem('fa-percent', 'ដែនកំណត់បញ្ចុះតម្លៃ', 'editLimit', p.id)] : [])
+             .concat([`<div class="h-px bg-slate-100 my-1"></div>`, menuItem('fa-user-slash', 'ផ្អាកគណនី', 'deactivate', p.id, true)])
+                : [menuItem('fa-user-check', 'បើកគណនីវិញ', 'reactivate', p.id)];
+            return `<div id="${mid}" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 text-left min-w-[230px]">${items.join('')}</div>`;
+        }
+
+        function dotsBtn(mid) {
+            return `<button onclick="toggleRowActionMenu(event, '${mid}')" type="button" aria-label="សកម្មភាព" class="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200/70 inline-flex items-center justify-center"><i class="fas fa-ellipsis-vertical text-sm"></i></button>`;
+        }
+
+        function visible() {
+            const q = document.getElementById('search').value.trim().toLowerCase();
+            return staff().filter(p => tab === 'inactive' ? !p.active : (p.active && (tab === 'all' || p.role === tab)))
+                .filter(p => !q || p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q))
+                .sort((a, b) => ['admin', 'manager', 'cashier'].indexOf(a.role) - ['admin', 'manager', 'cashier'].indexOf(b.role) || a.id.localeCompare(b.id));
+        }
+
+        function renderTabs() {
+            const all = staff();
+            const count = id => id === 'inactive' ? all.filter(p => !p.active).length : all.filter(p => p.active && (id === 'all' || p.role === id)).length;
+            document.getElementById('roleTabs').innerHTML = TABS.map(t => `<button type="button" onclick="tab='${t.id}'; renderAll()"
+                class="sm-badge h-9 px-3.5 rounded-xl transition inline-flex items-center gap-2 ${tab === t.id ? 'bg-emerald-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">${t.label}
+                <span class="text-[12px] sm-figure ${tab === t.id ? 'text-emerald-100' : 'text-slate-400'}">${count(t.id)}</span></button>`).join('');
+        }
+
+        function renderList() {
+            const list = visible();
+            const empty = document.getElementById('empty');
+            empty.classList.toggle('hidden', !!list.length);
+            empty.innerHTML = list.length ? '' : emptyState('fa-users', tab === 'inactive' ? 'គ្មានគណនីដែលបានផ្អាក' : 'រកមិនឃើញបុគ្គលិក', 'សូមសាកល្បងពាក្យស្វែងរកផ្សេង');
+            const me = id => id === ME_MANAGER ? '<span class="sm-badge ml-1.5 px-1.5 rounded bg-emerald-50 text-emerald-700">លោកអ្នក</span>' : '';
+            document.getElementById('rows').innerHTML = list.map(p => `<tr class="${p.active ? '' : 'bg-slate-50/50'}">
+                <td class="py-3 px-5"><div class="flex items-center gap-3 min-w-0">${avatarOf(p)}<div class="min-w-0"><p class="sm-td-strong text-slate-800 truncate">${p.name}${me(p.id)}</p><p class="sm-td-sub text-slate-400 sm-figure">${p.id}</p></div></div></td>
+                <td class="py-3 px-3"><span class="sm-badge inline-flex px-2.5 py-0.5 rounded-full border ${ROLE_CHIP[p.role]}">${ROLE_NAME[p.role]}</span></td>
+                <td class="py-3 px-3 sm-td">${shiftText(p)}</td>
+                <td class="py-3 px-3 sm-td text-right">${limitText(p)}</td>
+                <td class="py-3 px-3 sm-td">${lastShift(p)}</td>
+                <td class="py-3 px-3">${statusChipOf(p)}</td>
+                <td class="py-3 px-5 text-right">${dotsBtn('m-' + p.id)}${menu(p, 'm-' + p.id)}</td>
+            </tr>`).join('');
+            document.getElementById('cards').innerHTML = list.map(p => `<div class="p-4 flex items-start gap-3">
+                ${avatarOf(p, 'w-10 h-10')}
+                <div class="min-w-0 flex-1">
+                    <p class="sm-value text-slate-800 truncate">${p.name}${me(p.id)}</p>
+                    <p class="sm-td-sub text-slate-500">${ROLE_NAME[p.role]} · ${p.id}${p.role === 'cashier' ? ` · បញ្ចុះបាន ${discountLimitFor(p.id)}%` : ''}</p>
+                    <div class="mt-1.5">${statusChipOf(p)}</div>
+                </div>
+                ${dotsBtn('c-' + p.id)}${menu(p, 'c-' + p.id)}
+            </div>`).join('');
+        }
+
+        function renderAll() {
+            renderTabs();
+            renderList();
+        }
+
+        /* ===== សកម្មភាព ===== */
+
+        function nameError(name) {
+            if (name.length < 2) return 'សូមបញ្ចូលឈ្មោះពេញ';
+            if (/[A-Za-z]/.test(name)) return 'សូមវាយឈ្មោះជាអក្សរខ្មែរ';
+            return '';
+        }
+
+        function initialsOf(name) {
+            return name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('');
+        }
+
+        function pinError(pin, exceptId) {
+            if (!/^\d{4,6}$/.test(pin)) return 'លេខសម្ងាត់ត្រូវមានលេខ 4 ដល់ 6 ខ្ទង់';
+            if (/^(\d)\1+$/.test(pin) || '0123456789'.includes(pin) || '9876543210'.includes(pin)) return 'លេខសម្ងាត់នេះងាយទាយពេក · សូមជ្រើសលេខផ្សេង';
+            if (pinTaken(pin, exceptId)) return 'លេខសម្ងាត់នេះមានអ្នកប្រើរួចហើយ';
+            return '';
+        }
+
+        function randomPin(exceptId) {
+            let pin;
+            do { pin = String(1000 + Math.floor(Math.random() * 9000)); } while (pinError(pin, exceptId));
+            return pin;
+        }
+
+        async function showNewPin(p, pin) {
+            await showCustomConfirm({
+                title: `លេខសម្ងាត់របស់ ${p.name}`,
+                message: `<span class="block text-3xl font-semibold tracking-[.35em] text-slate-800 my-3 sm-figure">${pin}</span>សូមប្រាប់ផ្ទាល់មាត់ ហើយឱ្យគាត់ចងចាំ · លេខនេះនឹងមិនបង្ហាញម្តងទៀតទេ`,
+                confirmText: 'បានប្រាប់រួច',
+                hideCancel: true,
+                type: 'success'
+            });
+        }
+
+        async function addPerson() {
+            const role = await showOptionDialog({
+                title: 'បន្ថែមបុគ្គលិក',
+                message: 'ជ្រើសតួនាទី · អាចប្តូរនៅពេលក្រោយ',
+                options: ['cashier', 'manager', 'admin'].map(r => ({ value: r, label: ROLE_NAME[r], desc: ROLE_DESC[r], icon: r === 'admin' ? 'fa-crown' : r === 'manager' ? 'fa-user-shield' : 'fa-cash-register' }))
+            });
+            if (!role) return;
+            const v = await showFormDialog({
+                title: `${ROLE_NAME[role]}ថ្មី`,
+                icon: 'fa-user-plus',
+                message: 'លេខសម្ងាត់ត្រូវបង្កើតដោយស្វ័យប្រវត្តិ អាចកែបាន',
+                fields: [
+                    { key: 'name', label: 'ឈ្មោះពេញ', value: '' },
+                    { key: 'pin', label: 'លេខសម្ងាត់ចូលប្រើ', value: randomPin(), type: 'pin', hint: 'លេខ 4 ដល់ 6 ខ្ទង់ · មិនត្រូវដូចអ្នកដទៃ' }
+                ].concat(role === 'cashier' ? [{ key: 'limit', label: 'បញ្ចុះតម្លៃបានដោយខ្លួនឯងរហូតដល់', value: '3', type: 'number', suffix: '%' }] : []),
+                confirmText: 'បន្ថែម',
+                validate: x => nameError(x.name) || pinError(x.pin) || (role === 'cashier' && !(Number(x.limit) >= 0 && Number(x.limit) <= 20) ? 'ដែនកំណត់បញ្ចុះតម្លៃត្រូវនៅចន្លោះ 0 ដល់ 20%' : '')
+            });
+            if (!v) return;
+            const person = { id: nextStaffId(role), name: v.name, initials: initialsOf(v.name), pin: v.pin, role };
+            addStaff(person);
+            if (role === 'cashier') {
+                const limits = clone(posSettings().discountLimits || {});
+                limits[person.id] = Number(v.limit);
+                savePosSettings({ discountLimits: limits }, ME_MANAGER);
+            }
+            tab = role;
+            renderAll();
+            showToast(`បានបន្ថែម ${person.name} (${person.id})`);
+            await showNewPin(person, v.pin);
+        }
+
+        async function editName(id) {
+            const p = find(id);
+            const v = await showFormDialog({
+                title: 'កែឈ្មោះ', icon: 'fa-pen',
+                message: 'ឈ្មោះថ្មីបង្ហាញលើវិក្កយបត្រ និងរបាយការណ៍ចាប់ពីពេលនេះ',
+                fields: [{ key: 'name', label: 'ឈ្មោះពេញ', value: p.name }],
+                validate: x => nameError(x.name) || (x.name === p.name ? 'ឈ្មោះមិនបានប្តូរ' : '')
+            });
+            if (!v) return;
+            updateStaff(id, { name: v.name, initials: initialsOf(v.name) }, `ប្តូរឈ្មោះ ${p.name} → ${v.name}`);
+            renderAll();
+            showToast('បានរក្សាទុកឈ្មោះថ្មី');
+        }
+
+        function activeAdmins() {
+            return staff().filter(p => p.active && p.role === 'admin');
+        }
+
+        function openShiftOf(id) {
+            return liveShifts().find(s => s.cashierId === id && s.status === 'open');
+        }
+
+        async function changeRole(id) {
+            const p = find(id);
+            const role = await showOptionDialog({
+                title: `ប្តូរតួនាទីរបស់ ${p.name}`,
+                message: `បច្ចុប្បន្ន៖ ${ROLE_NAME[p.role]}`,
+                options: ['cashier', 'manager', 'admin'].filter(r => r !== p.role).map(r => ({ value: r, label: ROLE_NAME[r], desc: ROLE_DESC[r], icon: r === 'admin' ? 'fa-crown' : r === 'manager' ? 'fa-user-shield' : 'fa-cash-register' }))
+            });
+            if (!role) return;
+            if (p.role === 'admin' && activeAdmins().length <= 1) {
+                showToast('ហាងត្រូវមានម្ចាស់ហាងយ៉ាងហោចណាស់ម្នាក់ · សូមបន្ថែមម្នាក់ទៀតជាមុនសិន', 'error');
+                return;
+            }
+            const reason = await showReasonPicker({
+                title: 'មូលហេតុប្តូរតួនាទី',
+                message: `${p.name}៖ ${ROLE_NAME[p.role]} → ${ROLE_NAME[role]}`,
+                reasons: ['ដំឡើងតំណែង', 'ផ្លាស់ប្តូរការងារ', 'ជួយការងារបណ្តោះអាសន្ន'],
+                confirmText: 'ប្តូរតួនាទី'
+            });
+            if (!reason) return;
+            updateStaff(id, { role }, `ប្តូរតួនាទី ${p.name}៖ ${ROLE_NAME[p.role]} → ${ROLE_NAME[role]} · ${reason}`);
+            if (id === ME_MANAGER) {
+                showToast('តួនាទីរបស់លោកអ្នកបានប្តូរ · សូមចូលប្រើម្តងទៀត', 'warning');
+                setTimeout(() => { posLogout(); location.href = '../../index.html'; }, 1400);
+                return;
+            }
+            renderAll();
+            showToast(`${p.name} ឥឡូវជា${ROLE_NAME[role]}`);
+        }
+
+        async function resetPin(id) {
+            const p = find(id);
+            const v = await showFormDialog({
+                title: `លេខសម្ងាត់ថ្មីសម្រាប់ ${p.name}`, icon: 'fa-key',
+                message: 'លេខចាស់ឈប់ដំណើរការភ្លាមៗ',
+                fields: [{ key: 'pin', label: 'លេខសម្ងាត់ថ្មី', value: randomPin(id), type: 'pin', hint: 'បង្កើតដោយស្វ័យប្រវត្តិ · អាចវាយលេខផ្សេងបាន' }],
+                confirmText: 'កំណត់',
+                validate: x => pinError(x.pin, id) || (x.pin === (posRead('pos_pins', {})[id] || p.pin) ? 'នេះជាលេខសម្ងាត់បច្ចុប្បន្ន' : '')
+            });
+            if (!v) return;
+            setStaffPin(id, v.pin);
+            showToast('បានកំណត់លេខសម្ងាត់ថ្មី');
+            await showNewPin(p, v.pin);
+        }
+
+        async function editLimit(id) {
+            const p = find(id);
+            const cur = discountLimitFor(id);
+            const v = await showFormDialog({
+                title: 'ដែនកំណត់បញ្ចុះតម្លៃ', icon: 'fa-percent',
+                message: `${p.name} អាចបញ្ចុះតម្លៃដោយខ្លួនឯងរហូតដល់កម្រិតនេះ · លើសពីនេះត្រូវការលេខសម្ងាត់អ្នកគ្រប់គ្រង`,
+                fields: [{ key: 'limit', label: 'ភាគរយអតិបរមា', value: String(cur), type: 'number', suffix: '%', hint: '0 = ត្រូវសុំការអនុម័តរាល់ពេល' }],
+                validate: x => !(x.limit !== '' && Number(x.limit) >= 0 && Number(x.limit) <= 20) ? 'សូមបញ្ចូលចន្លោះ 0 ដល់ 20%' : Number(x.limit) === cur ? 'តម្លៃមិនបានប្តូរ' : ''
+            });
+            if (!v) return;
+            const limits = clone(posSettings().discountLimits || {});
+            limits[id] = Number(v.limit);
+            savePosSettings({ discountLimits: limits }, ME_MANAGER);
+            renderAll();
+            showToast(`${p.name} បញ្ចុះបានរហូតដល់ ${Number(v.limit)}%`);
+        }
+
+        async function deactivate(id) {
+            const p = find(id);
+            if (id === ME_MANAGER) { showToast('លោកអ្នកមិនអាចផ្អាកគណនីខ្លួនឯងបានទេ', 'error'); return; }
+            if (p.role === 'admin' && activeAdmins().length <= 1) { showToast('ហាងត្រូវមានម្ចាស់ហាងយ៉ាងហោចណាស់ម្នាក់', 'error'); return; }
+            const open = openShiftOf(id);
+            if (open) { showToast(`${p.name} កំពុងបើកវេននៅ ${open.register} · សូមបិទវេនជាមុនសិន`, 'error'); return; }
+            const reason = await showReasonPicker({
+                title: `ផ្អាកគណនី ${p.name}`,
+                message: 'គណនីនឹងមិនអាចចូលប្រើបានទៀតទេ · ប្រវត្តិលក់នៅដដែល',
+                reasons: ['លាឈប់', 'ផ្អាកការងារបណ្តោះអាសន្ន', 'បញ្ហាសុវត្ថិភាព'],
+                confirmText: 'ផ្អាកគណនី',
+                danger: true
+            });
+            if (!reason) return;
+            updateStaff(id, { active: false }, `ផ្អាកគណនី ${p.name} · ${reason}`);
+            renderAll();
+            const d = (posSettings().staffDefaults || {})[id];
+            const t = d && shiftTemplates().find(x => x.code === d.template);
+            if (t) showToast(`បានផ្អាក · ${t.name} លើ ${d.register} គ្មានអ្នកប្រចាំទៀតហើយ · សូមចាត់តាំងនៅកាលវិភាគវេន`, 'warning', 6000);
+            else showToast(`បានផ្អាកគណនី ${p.name}`);
+        }
+
+        async function reactivate(id) {
+            const p = find(id);
+            const ok = await showCustomConfirm({ title: `បើកគណនី ${p.name} វិញ?`, message: 'គាត់អាចចូលប្រើដោយលេខសម្ងាត់ចាស់', confirmText: 'បើកវិញ', type: 'success' });
+            if (!ok) return;
+            const pin = posRead('pos_pins', {})[id] || p.pin;
+            updateStaff(id, { active: true }, `បើកគណនី ${p.name} វិញ`);
+            renderAll();
+            if (pinTaken(pin, id)) {
+                showToast('លេខសម្ងាត់ចាស់មានអ្នកផ្សេងប្រើហើយ · សូមកំណត់លេខថ្មី', 'warning');
+                resetPin(id);
+            } else showToast(`បានបើកគណនី ${p.name} វិញ`);
+        }
+
+        window.onStoreChanged = renderAll;
+        document.addEventListener('DOMContentLoaded', renderAll);
+    </script>
+</body>
+</html>

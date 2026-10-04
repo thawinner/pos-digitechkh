@@ -474,7 +474,7 @@
             const s = returnDraft.sale;
             const pct = Math.min(Math.max(Number(s.discountPercent) || 0, 0), 100);
             return Object.keys(returnDraft.qty).reduce((sum, sku) =>
-                sum + getProduct(sku).price * returnDraft.qty[sku] * (1 - pct / 100), 0);
+                sum + linePrice(s.items.find(l => l.sku === sku)) * returnDraft.qty[sku] * (1 - pct / 100), 0);
         }
 
         function bumpReturn(sku, delta, max) {
@@ -491,7 +491,7 @@
                 return `<div class="p-3 flex items-center gap-3">
                     <div class="min-w-0 flex-1">
                         <p class="sm-td text-slate-700 truncate">${p.name}</p>
-                        <p class="sm-td-sub text-slate-400">${fmtUSD(p.price)} · អាចប្រគល់បាន ${l.max} ${p.unit}</p>
+                        <p class="sm-td-sub text-slate-400">${fmtUSD(linePrice(d.sale.items.find(x => x.sku === l.sku)))} · អាចប្រគល់បាន ${l.max} ${p.unit}</p>
                     </div>
                     <button onclick="bumpReturn('${l.sku}', -1, ${l.max})" type="button" class="w-10 h-10 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50"><i class="fas fa-minus text-xs"></i></button>
                     <span class="w-8 text-center sm-value sm-figure ${q ? 'text-amber-700' : 'text-slate-400'}">${q}</span>

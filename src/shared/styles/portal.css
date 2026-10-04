@@ -320,10 +320,10 @@ html.dark #managerPortal aside { background-color: #0b1329 !important; }
    ជ្រុងមូលខ្លាំង (16–24px) និងស្រមោលពណ៌ ធ្វើឱ្យអេក្រង់មើលទៅដូចគំរូរចនា មិនមែនឧបករណ៍ការងារ។
    បង្រួមជ្រុងនៅគ្រប់ទំព័រទាំងពីរតួនាទី និងទំព័រចូលប្រើ (ផ្ទាំងសន្ទនារួមក៏ស្ថិតក្រោម body ដែរ)។ */
 @media screen {
-    :is(#posPortal, #managerPortal, #loginPortal) .rounded-3xl { border-radius: 14px !important; }
-    :is(#posPortal, #managerPortal, #loginPortal) .rounded-2xl { border-radius: 10px !important; }
-    :is(#posPortal, #managerPortal, #loginPortal) .rounded-xl { border-radius: 8px !important; }
-    :is(#posPortal, #managerPortal) .shadow-sm { box-shadow: 0 1px 2px rgba(15, 23, 42, .04) !important; }
+    :is(#posPortal, #managerPortal, #adminPortal, #loginPortal) .rounded-3xl { border-radius: 14px !important; }
+    :is(#posPortal, #managerPortal, #adminPortal, #loginPortal) .rounded-2xl { border-radius: 10px !important; }
+    :is(#posPortal, #managerPortal, #adminPortal, #loginPortal) .rounded-xl { border-radius: 8px !important; }
+    :is(#posPortal, #managerPortal, #adminPortal) .shadow-sm { box-shadow: 0 1px 2px rgba(15, 23, 42, .04) !important; }
 }
 
 /* ===== របារចំហៀងបែបវិជ្ជាជីវៈ =====
@@ -355,3 +355,18 @@ html.dark #managerPortal aside { background-color: #0b1329 !important; }
 #portalSidebar .sb-count-warn { background: #f59e0b; color: #1c1917; }
 .sb-menu .sb-menu-item { font-size: 14.5px; color: rgba(255, 255, 255, .82); }
 .sb-menu button.sb-menu-item:hover { background: rgba(255, 255, 255, .06); color: #fff; }
+
+/* ===== ពណ៌របារចំហៀងតាមតួនាទី — ស្គាល់ភ្លាមថាកំពុងនៅតួនាទីណា (ស្ងប់ មិនឆ្អែតពណ៌) =====
+   អ្នកគិតលុយ = ខៀវដែន + ខៀវផ្ទៃមេឃ · អ្នកគ្រប់គ្រងវេន = ឆ្លុះ (indigo) · ម្ចាស់ហាង = បៃតងស្រអាប់ + មរកត */
+#posPortal aside { background-color: #0c1a2e !important; }
+#managerPortal aside { background-color: #1c1a42 !important; }
+#adminPortal aside { background-color: #0f2b25 !important; }
+html.dark #posPortal aside { background-color: #0a1526 !important; }
+html.dark #managerPortal aside { background-color: #16143a !important; }
+html.dark #adminPortal aside { background-color: #0b231e !important; }
+#adminPortal #portalSidebar { --sb-accent: #6ee7b7; }
+#adminPortal #portalSidebar .sb-accent { color: #A7F3D0; }
+#adminPortal #portalSidebar .sb-accent-soft { color: rgba(209, 250, 229, .75); }
+#managerPortal #portalSidebar .sb-nav-item[aria-current="page"] { background: rgba(165, 180, 252, .14) !important; }
+#posPortal #portalSidebar .sb-nav-item[aria-current="page"] { background: rgba(103, 232, 249, .12) !important; }
+#adminPortal #portalSidebar .sb-nav-item[aria-current="page"] { background: rgba(110, 231, 183, .12) !important; }

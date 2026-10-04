@@ -125,7 +125,7 @@ function genShift(dateStr, register, tpl, cashierId, ctx) {
             ev(mode === 'onsite' ? 'override_approved' : 'request_approved', t + 60000, { saleId: sale.id, approverId: approver, actorId: approver, amount: due, reason, note: 'លុបចោលវិក្កយបត្រ' });
         } else if (vr < (risky ? 0.06 : 0.022)) {
             const line = lines[0];
-            const amount = Math.round(getProduct(line.sku).price * (1 - discountPercent / 100) * 100) / 100;
+            const amount = Math.round(linePrice(line) * (1 - discountPercent / 100) * 100) / 100;
             const method = methodOf(sale) === 'split' ? 'usdCash' : methodOf(sale);
             const reason = pick(rng, reasons.return);
             sale.returns = [{ id: `REQG-${sale.id}`, lines: [{ sku: line.sku, qty: 1 }], amount, method,
@@ -377,7 +377,7 @@ function ensureManagerSeed() {
         if (sales[3]) {
             const s = sales[3];
             const line = s.items[0];
-            const amount = Math.round(getProduct(line.sku).price * (1 - (s.discountPercent || 0) / 100) * 100) / 100;
+            const amount = Math.round(linePrice(line) * (1 - (s.discountPercent || 0) / 100) * 100) / 100;
             const method = methodOf(s) === 'split' ? 'usdCash' : methodOf(s);
             list.push({ id: 'REQ-SEED-02', type: 'return', saleId: s.id, lines: [{ sku: line.sku, qty: 1 }], amount, method,
                 reason: reasons.return[0], shiftId: target.id, register: target.register, cashierId: target.cashierId,

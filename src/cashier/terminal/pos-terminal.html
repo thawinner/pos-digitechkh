@@ -606,7 +606,7 @@
         /* ទំនិញញឹកញាប់ (អ្នកគ្រប់គ្រងកំណត់) — បង្ហាញតែពេលមិនកំពុងស្វែងរក ឬត្រងប្រភេទ */
         function renderQuickKeys(q) {
             const host = document.getElementById('quickKeys');
-            const keys = (posSettings().quickKeys || []).map(getProduct).filter(Boolean);
+            const keys = (posSettings().quickKeys || []).map(getProduct).filter(p => p && p.active !== false);
             if (q || activeCategory !== 'all' || !keys.length) { host.innerHTML = ''; return; }
             host.innerHTML = `
                 <p class="sm-td-sub text-slate-400 mb-1.5 flex items-center gap-1.5"><i class="fas fa-bolt text-amber-300 text-[11px]"></i> ទំនិញញឹកញាប់</p>
@@ -631,7 +631,7 @@
         function renderProducts() {
             const q = (document.getElementById('barcodeInput').value || '').trim().toLowerCase();
             renderQuickKeys(q);
-            const matches = PRODUCTS
+            const matches = sellableProducts()
                 .filter(p => activeCategory === 'all' || p.category === activeCategory)
                 .filter(p => !q || p.name.toLowerCase().includes(q) || p.barcode.includes(q));
             const rows = matches.slice(0, GRID_LIMIT);
@@ -1488,7 +1488,7 @@
                 cashierId: ME_CASHIER,
                 register: MY_REGISTER,
                 fxRate: rate,
-                items: snap.items.map(l => ({ ...l })),
+                items: snap.items.map(l => ({ ...l, price: linePrice(l) })), // រក្សាតម្លៃពេលលក់
                 pay: { ...payNow },
                 discountPercent: snap.discountPercent,
                 discountReason: snap.discountReason,

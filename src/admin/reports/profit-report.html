@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - របាយការណ៍ប្រាក់ចំណេញ</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#059669", 'primary-dark': "#047857", accent: "#34d399" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+<style>
+    @media print {
+        .no-print { display: none !important; }
+        @page { size: A4; margin: 12mm; }
+    }
+</style>
+</head>
+<body id="adminPortal" data-role-root="../.." data-active="reports" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="របាយការណ៍ប្រាក់ចំណេញ"
+             data-subtitle="ចំណូល ថ្លៃដើម និងប្រាក់ចំណេញដុល · មើលឃើញតែម្ចាស់ហាង"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+
+            <div class="w-full space-y-5">
+                <div class="bg-white rounded-2xl p-2 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-3 no-print">
+                    <div id="viewTabs" class="flex flex-wrap gap-1"></div>
+                    <div class="flex items-center gap-2">
+                        <div id="dateRange" class="flex items-center"></div>
+                        <button onclick="window.print()" type="button" class="sm-badge h-9 px-3.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center gap-2"><i class="fas fa-print"></i> បោះពុម្ព</button>
+                    </div>
+                </div>
+                <div id="kpiRow" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
+                <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                            <p id="printHead" class="hidden print:!block sm-card-title text-slate-800 mb-1"></p>
+                            <p id="viewTitle" class="sm-card-title text-slate-800"></p>
+                            <p id="viewSub" class="sm-card-sub text-slate-500"></p>
+                        </div>
+                        <p class="sm-td-sub text-slate-400">តម្លៃមិនរួមអាករ 10% · ដកការប្រគល់វិញ និងការបញ្ចុះតម្លៃរួច</p>
+                    </div>
+                    <div class="px-5 pt-4 pb-2 border-b border-slate-100">
+                        <div class="flex items-center gap-4 sm-td-sub text-slate-500">
+                            <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-600"></span>ប្រាក់ចំណេញដុល</span>
+                            <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-slate-300"></span>ថ្លៃដើម</span>
+                            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-0.5 rounded bg-amber-500"></span>អត្រាចំណេញ</span>
+                        </div>
+                        <div id="chart" class="w-full h-[260px]"></div>
+                    </div>
+                    <div class="overflow-x-auto"><table class="w-full min-w-[720px]">
+                        <thead><tr class="border-b border-slate-100 bg-slate-50/60">
+                            <th id="labelHead" class="sm-th py-2.5 px-5 text-left text-slate-500"></th>
+                            <th class="sm-th py-2.5 px-3 text-right text-slate-500">ចំនួន</th>
+                            <th class="sm-th py-2.5 px-3 text-right text-slate-500">ចំណូល</th>
+                            <th class="sm-th py-2.5 px-3 text-right text-slate-500">ថ្លៃដើម</th>
+                            <th class="sm-th py-2.5 px-3 text-right text-slate-500">ប្រាក់ចំណេញដុល</th>
+                            <th class="sm-th py-2.5 px-5 text-left text-slate-500 w-[22%]">អត្រាចំណេញ</th>
+                        </tr></thead>
+                        <tbody id="rows" class="divide-y divide-slate-100"></tbody>
+                        <tfoot id="foot"></tfoot>
+                    </table></div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/admin-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script src="../../shared/scripts/charts.js"></script>
+    <script>
+
+        /* របាយការណ៍ប្រាក់ចំណេញ (ឯកសាររចនាលេខ 03 ផ្នែក 4) — មានតែម្ចាស់ហាងប៉ុណ្ណោះដែលឃើញថ្លៃដើម */
+
+        const VIEWS = [
+            { id: 'day', label: 'តាមថ្ងៃ', head: 'ថ្ងៃ', unit: 'វិក្កយបត្រ' },
+            { id: 'category', label: 'តាមប្រភេទ', head: 'ប្រភេទទំនិញ', unit: 'ឯកតា' },
+            { id: 'product', label: 'តាមទំនិញ', head: 'ទំនិញ', unit: 'ឯកតា' },
+            { id: 'cashier', label: 'តាមបុគ្គលិក', head: 'បុគ្គលិក', unit: 'វិក្កយបត្រ' }
+        ];
+        let view = 'day';
+
+        /* បំបែកការលក់ជាបន្ទាត់ទំនិញ៖ ចំណូលមិនរួមអាករ ថ្លៃដើម និងចំនួនដែលនៅសល់បន្ទាប់ពីប្រគល់វិញ */
+        function lines(sales) {
+            const out = [];
+            sales.forEach(s => {
+                if (isVoided(s)) return;
+                const keep = 1 - (Number(s.discountPercent) || 0) / 100;
+                s.items.forEach(l => {
+                    const q = l.qty - returnedQty(s, l.sku);
+                    if (q <= 0) return;
+                    out.push({ sale: s, sku: l.sku, qty: q, net: exVat(linePrice(l) * q * keep), cost: costOf(l.sku) * q });
+                });
+            });
+            return out;
+        }
+
+        function group(list, keyFn, countFn) {
+            const g = {};
+            list.forEach(x => {
+                const k = keyFn(x);
+                const r = g[k] = g[k] || { key: k, count: 0, net: 0, cost: 0, sales: new Set() };
+                r.net += x.net;
+                r.cost += x.cost;
+                if (countFn === 'sales') r.sales.add(x.sale.id); else r.count += x.qty;
+            });
+            return Object.values(g).map(r => Object.assign(r, {
+                count: countFn === 'sales' ? r.sales.size : r.count,
+                profit: r.net - r.cost,
+                margin: r.net ? (r.net - r.cost) / r.net * 100 : 0
+            }));
+        }
+
+        function marginBar(m) {
+            const tone = m < 20 ? 'bg-rose-500' : m < 25 ? 'bg-amber-500' : 'bg-emerald-600';
+            return `<div class="flex items-center gap-2.5"><div class="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden"><div class="h-full ${tone}" style="width:${Math.min(Math.max(m, 0), 100)}%"></div></div>
+                <span class="sm-td-strong sm-figure w-14 text-right ${m < 20 ? 'text-rose-600' : 'text-slate-700'}">${m.toFixed(1)}%</span></div>`;
+        }
+
+        function renderAll() {
+            const range = getSelectedRange();
+            const sales = salesInRange(range, {});
+            const all = lines(sales);
+            const tot = profitOf(sales);
+            const meta = VIEWS.find(v => v.id === view);
+            const days = new Set(sales.map(saleBizDate)).size || 1;
+
+            document.getElementById('viewTabs').innerHTML = VIEWS.map(v => `<button onclick="view='${v.id}'; renderAll()" type="button" class="sm-badge h-9 px-3.5 rounded-xl transition ${view === v.id
+                ? 'bg-emerald-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">${v.label}</button>`).join('');
+            document.getElementById('kpiRow').innerHTML =
+                kpiCard('ចំណូលមិនរួមអាករ', fmtUSD(tot.net), `${tot.tx} វិក្កយបត្រ · មធ្យម ${fmtUSD(tot.net / days)}/ថ្ងៃ`) +
+                kpiCard('ថ្លៃដើមទំនិញលក់', fmtUSD(tot.cost), `${tot.qty} ឯកតា`) +
+                kpiCard('ប្រាក់ចំណេញដុល', fmtUSD(tot.profit), `មធ្យម ${fmtUSD(tot.profit / days)}/ថ្ងៃ`, 'text-emerald-700') +
+                kpiCard('អត្រាចំណេញ', tot.margin.toFixed(1) + '%', `ក្នុង $100 ដែលលក់ ចំណេញ ${fmtUSD(tot.margin)}`);
+
+            let rows;
+            if (view === 'day') rows = group(all, x => saleBizDate(x.sale), 'sales').sort((a, b) => b.key.localeCompare(a.key)).map(r => Object.assign(r, { label: fmtDate(r.key + 'T12:00') }));
+            else if (view === 'category') rows = group(all, x => getProduct(x.sku).category).map(r => Object.assign(r, { label: categoryLabel(r.key) })).sort((a, b) => b.profit - a.profit);
+            else if (view === 'product') rows = group(all, x => x.sku).map(r => Object.assign(r, { label: getProduct(r.key).name, sub: `${r.key} · ថ្លៃដើម ${fmtUSD(costOf(r.key))}` })).sort((a, b) => b.profit - a.profit);
+            else rows = group(all, x => x.sale.cashierId, 'sales').map(r => Object.assign(r, { label: personName(r.key), sub: ROLE_NAME[roleOf(r.key)] })).sort((a, b) => b.profit - a.profit);
+
+            document.getElementById('printHead').textContent = `${MERCHANT.name} · របាយការណ៍ប្រាក់ចំណេញ`;
+            document.getElementById('viewTitle').textContent = `ប្រាក់ចំណេញ${meta.label}`;
+            document.getElementById('viewSub').textContent = range.start ? `${fmtDate(range.start)} – ${fmtDate(range.end || range.start)} · ${rows.length} ជួរ` : 'គ្រប់កាលបរិច្ឆេទ';
+            document.getElementById('labelHead').textContent = meta.head;
+            document.getElementById('rows').innerHTML = rows.length ? rows.map(r => `<tr class="hover:bg-slate-50/70">
+                <td class="py-3 px-5"><p class="sm-td-strong text-slate-800">${r.label}</p>${r.sub ? `<p class="sm-td-sub text-slate-400">${r.sub}</p>` : ''}</td>
+                <td class="py-3 px-3 text-right sm-td sm-figure text-slate-600">${r.count} <span class="text-slate-400">${meta.unit}</span></td>
+                <td class="py-3 px-3 text-right sm-td sm-figure">${fmtUSD(r.net)}</td>
+                <td class="py-3 px-3 text-right sm-td sm-figure text-slate-500">${fmtUSD(r.cost)}</td>
+                <td class="py-3 px-3 text-right sm-td-strong sm-figure text-emerald-700">${fmtUSD(r.profit)}</td>
+                <td class="py-3 px-5">${marginBar(r.margin)}</td>
+            </tr>`).join('') : `<tr><td colspan="6">${emptyState('fa-chart-column', 'គ្មានការលក់ក្នុងជួរនេះ', 'សូមប្តូរជួរកាលបរិច្ឆេទ')}</td></tr>`;
+            renderChart(view === 'day' ? rows.slice().reverse() : rows.slice(0, 12));
+            document.getElementById('foot').innerHTML = rows.length ? `<tr class="border-t-2 border-slate-200 bg-slate-50/60">
+                <td class="py-3 px-5 sm-td-strong text-slate-800">សរុប</td>
+                <td class="py-3 px-3 text-right sm-td sm-figure text-slate-600">${view === 'day' || view === 'cashier' ? tot.tx : tot.qty} <span class="text-slate-400">${meta.unit}</span></td>
+                <td class="py-3 px-3 text-right sm-td-strong sm-figure">${fmtUSD(tot.net)}</td>
+                <td class="py-3 px-3 text-right sm-td sm-figure text-slate-500">${fmtUSD(tot.cost)}</td>
+                <td class="py-3 px-3 text-right sm-td-strong sm-figure text-emerald-700">${fmtUSD(tot.profit)}</td>
+                <td class="py-3 px-5">${marginBar(tot.margin)}</td>
+            </tr>` : '';
+        }
+
+        /* ជួរឈរជង់ ថ្លៃដើម + ប្រាក់ចំណេញ (= ចំណូល) និងខ្សែអត្រាចំណេញលើអ័ក្សខាងស្តាំ */
+        function renderChart(rows) {
+            const short = t => t.length > 14 ? t.slice(0, 13) + '…' : t;
+            const labels = rows.map(r => view === 'day' ? r.label.slice(0, 5) : short(r.label));
+            posChart('chart', {
+                grid: { left: 4, right: 4, top: 24, bottom: 4, containLabel: true },
+                xAxis: chartCategoryAxis(labels, { axisLabel: { color: '#64748b', fontSize: 12, fontFamily: CHART_FONT, interval: 0, rotate: rows.length > 7 && view !== 'day' ? 30 : 0 } }),
+                yAxis: [chartValueAxis(v => '$' + v), chartValueAxis(v => v + '%', { splitLine: { show: false }, min: 0, max: v => Math.max(40, Math.ceil(v.max / 10) * 10) })],
+                tooltip: {
+                    formatter: ps => {
+                        const r = rows[ps[0].dataIndex];
+                        return chartTipTitle(r.label) +
+                            chartTipRow(CHART_TONE.slate, 'ចំណូល', fmtUSD(r.net)) +
+                            chartTipRow(CHART_TONE.slate, 'ថ្លៃដើម', fmtUSD(r.cost)) +
+                            chartTipRow(CHART_TONE.emerald, 'ប្រាក់ចំណេញដុល', fmtUSD(r.profit)) +
+                            chartTipRow(CHART_TONE.amber, 'អត្រាចំណេញ', r.margin.toFixed(1) + '%');
+                    }
+                },
+                series: [
+                    { type: 'bar', stack: 'n', barMaxWidth: 36, itemStyle: { color: CHART_TONE.slate }, data: rows.map(r => +r.cost.toFixed(2)) },
+                    { type: 'bar', stack: 'n', barMaxWidth: 36, itemStyle: { color: CHART_TONE.emerald, borderRadius: [4, 4, 0, 0] }, data: rows.map(r => +Math.max(r.profit, 0).toFixed(2)) },
+                    { type: 'line', yAxisIndex: 1, smooth: true, symbol: 'circle', symbolSize: 6, lineStyle: { width: 2, color: CHART_TONE.amber }, itemStyle: { color: CHART_TONE.amber }, data: rows.map(r => +r.margin.toFixed(1)) }
+                ]
+            });
+        }
+
+        window.onDateRangeApplied = renderAll;
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDateRangePicker('dateRange');
+            selectPreset('7 ថ្ងៃចុងក្រោយ');
+            renderAll();
+        });
+    </script>
+</body>
+</html>

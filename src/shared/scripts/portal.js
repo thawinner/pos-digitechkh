@@ -37,9 +37,7 @@ const PORTAL_CONFIGS = {
             { id: 'pos', label: 'ផ្ទាំងគិតលុយ', icon: 'mdi:point-of-sale', href: 'cashier/terminal/pos-terminal.html' },
             { id: 'receipts', label: 'វិក្កយបត្រក្នុងវេន', icon: 'mdi:receipt-text-outline', href: 'cashier/receipts/receipts.html', badge: true },
             { id: 'close-shift', label: 'បិទវេន និងរាប់សាច់ប្រាក់', icon: 'mdi:lock-outline', href: 'cashier/shift/close-shift.html' }
-        ],
-        /* គំរូសាកល្បង៖ ប្តូរតួនាទីដោយមិនចាំបាច់ចាកចេញ */
-        switchRole: { label: 'ប្តូរទៅអ្នកគ្រប់គ្រងវេន', icon: 'mdi:shield-account-outline', href: 'manager/dashboard/dashboard.html' }
+        ]
     },
     /* អ្នកគ្រប់គ្រងវេន (ឯកសាររចនាលេខ 02 ផ្នែក 4)
        badgeFn = ឈ្មោះអនុគមន៍ក្នុង manager-data.js ដែលត្រឡប់ចំនួនសម្រាប់ផ្លាកលេខ */
@@ -61,8 +59,27 @@ const PORTAL_CONFIGS = {
             { group: 'វិភាគ', id: 'exceptions', label: 'ករណីមិនប្រក្រតី', icon: 'mdi:alert-octagon-outline', href: 'manager/exceptions/exceptions.html' },
             { id: 'reports', label: 'របាយការណ៍លក់', icon: 'mdi:chart-box-outline', href: 'manager/reports/sales-report.html' },
             { group: 'ប្រព័ន្ធ', id: 'settings', label: 'ការកំណត់', icon: 'mdi:cog-outline', href: 'manager/settings/settings.html' }
-        ],
-        switchRole: { label: 'ប្តូរទៅផ្ទាំងគិតលុយ', icon: 'mdi:point-of-sale', href: 'cashier/terminal/pos-terminal.html' }
+        ]
+    },
+    /* ម្ចាស់ហាង (ឯកសាររចនាលេខ 03) — ទិដ្ឋភាពអាជីវកម្ម បុគ្គលិក ទំនិញ ច្បាប់ និងសវនកម្ម
+       មិនឈរបញ្ជរ · អាចប្តូរទៅទិដ្ឋភាពអ្នកគ្រប់គ្រងវេនដើម្បីជួយសម្រេចពេលចាំបាច់ */
+    adminPortal: {
+        sidebarV2: true,
+        title: 'ម្ចាស់ហាង',
+        roleName: 'ម្ចាស់ហាង',
+        roleIcon: 'mdi:crown-outline',
+        userInitials: 'ហច',
+        userName: 'ហេង ចាន់ថា',
+        userRole: 'ម្ចាស់ហាង',
+        policyNote: 'មើលឃើញថ្លៃដើម ប្រាក់ចំណេញ និងប្រវត្តិទាំងអស់ · កំណត់បុគ្គលិក តម្លៃ និងច្បាប់សាច់ប្រាក់ · មិនអាចកែ ឬលុបប្រតិបត្តិការដែលបានកត់ត្រារួច · រាល់ការកែប្រែត្រូវកត់ត្រាក្នុងសវនកម្ម។',
+        nav: [
+            { group: 'អាជីវកម្ម', id: 'dashboard', label: 'ទិដ្ឋភាពរួម', icon: 'mdi:view-dashboard-outline', href: 'admin/dashboard/dashboard.html' },
+            { id: 'reports', label: 'ចំណូល និងប្រាក់ចំណេញ', icon: 'mdi:finance', href: 'admin/reports/profit-report.html' },
+            { group: 'គ្រប់គ្រង', id: 'staff', label: 'បុគ្គលិក និងតួនាទី', icon: 'mdi:account-group-outline', href: 'admin/staff/staff.html' },
+            { id: 'products', label: 'ទំនិញ និងតម្លៃ', icon: 'mdi:tag-outline', href: 'admin/products/products.html' },
+            { id: 'settings', label: 'ច្បាប់ និងការកំណត់', icon: 'mdi:tune-variant', href: 'admin/settings/settings.html' },
+            { group: 'ត្រួតពិនិត្យ', id: 'audit', label: 'កំណត់ហេតុសវនកម្ម', icon: 'mdi:clipboard-text-clock-outline', href: 'admin/audit/audit.html' }
+        ]
     }
 };
 
@@ -97,21 +114,30 @@ function togglePolicyNote() {
 
 /* អ្នកដែលបានចូលប្រើ (data.js) ជំនួសឈ្មោះថេរក្នុងការកំណត់ច្រក
    ប៊ូតុងប្តូរតួនាទីបង្ហាញលើផ្ទាំងគិតលុយ តែពេលអ្នកចូលប្រើជាអ្នកគ្រប់គ្រងវេនប៉ុណ្ណោះ */
+const ROLE_VIEW = {
+    admin: { label: 'ម្ចាស់ហាង', icon: 'mdi:crown-outline', href: 'admin/dashboard/dashboard.html', portal: 'adminPortal' },
+    manager: { label: 'អ្នកគ្រប់គ្រងវេន', icon: 'mdi:shield-account-outline', href: 'manager/dashboard/dashboard.html', portal: 'managerPortal' },
+    cashier: { label: 'ផ្ទាំងគិតលុយ', icon: 'mdi:point-of-sale', href: 'cashier/terminal/pos-terminal.html', portal: 'posPortal' }
+};
+
 function sessionPortalConfig(cfg, portalId) {
     if (typeof posSession !== 'function') return cfg;
     const session = posSession();
     const person = session && personById(session.userId);
     if (!person) return cfg;
-    const manager = isManagerId(person.id);
+    const role = roleOf(person.id);
     const out = Object.assign({}, cfg, {
         userId: person.id,
         userInitials: person.initials,
         userName: person.name,
-        userRole: manager
-            ? (portalId === 'posPortal' ? `អ្នកគ្រប់គ្រងវេន · លក់លើ ${MY_REGISTER}` : 'អ្នកគ្រប់គ្រងវេន · សាខាកណ្តាល')
-            : `អ្នកគិតលុយលក់រាយ · ${MY_REGISTER}`
+        userRole: role === 'admin' ? 'ម្ចាស់ហាង · សាខាកណ្តាល'
+            : role === 'manager'
+                ? (portalId === 'posPortal' ? `អ្នកគ្រប់គ្រងវេន · លក់លើ ${MY_REGISTER}` : 'អ្នកគ្រប់គ្រងវេន · សាខាកណ្តាល')
+                : `អ្នកគិតលុយលក់រាយ · ${MY_REGISTER}`
     });
-    if (portalId === 'posPortal' && !manager) out.switchRole = null;
+    // ទិដ្ឋភាពដែលអ្នកប្រើម្នាក់ៗអាចប្តូរបាន៖ ម្ចាស់ហាង ↔ អ្នកគ្រប់គ្រង · អ្នកគ្រប់គ្រង ↔ ផ្ទាំងគិតលុយ
+    const views = { admin: ['admin', 'manager'], manager: ['manager', 'cashier'], cashier: [] }[role];
+    out.views = views.map(v => Object.assign({ id: v, current: ROLE_VIEW[v].portal === portalId }, ROLE_VIEW[v]));
     return out;
 }
 
@@ -134,6 +160,17 @@ function sidebarStatusHtml() {
             </div>
             <p class="sm-nav-note sb-accent-soft mt-0.5 whitespace-nowrap">${left < 0 ? `ហួសម៉ោងបិទ ${fmtDuration(-left)}` : `បិទ ${sh.end} · នៅសល់ ${Math.floor(left / 3600000)}:${pad2(Math.floor(left / 60000) % 60)}`}</p>
             <div class="h-1 rounded-full bg-white/10 mt-2 overflow-hidden"><div class="h-full ${left < 0 ? 'bg-rose-400' : 'bg-cyan-400'}" style="width:${pct}%"></div></div>`;
+    }
+    if (portal === 'adminPortal' && typeof profitOf === 'function') {
+        const today = profitOf(salesInRange(mgrToday()));
+        return `<div class="flex items-center justify-between gap-2">
+                <span class="sm-nav-note sb-accent-soft">លក់សុទ្ធថ្ងៃនេះ</span>
+                <span class="sm-nav-label text-white sm-figure">${fmtUSD(today.gross)}</span>
+            </div>
+            <div class="flex items-center justify-between gap-2 mt-1">
+                <span class="sm-nav-note sb-accent-soft">ប្រាក់ចំណេញដុល</span>
+                <span class="sm-nav-label text-emerald-300 sm-figure">${fmtUSD(today.profit)} · ${today.margin.toFixed(0)}%</span>
+            </div>`;
     }
     if (portal === 'managerPortal' && typeof mgrAllShifts === 'function') {
         const open = mgrAllShifts().filter(x => x.status === 'open').map(x => x.register);
@@ -189,12 +226,11 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar
 
 function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
     const portalId = document.body.id;
-    const isManagerPortal = portalId === 'managerPortal';
 
     let lastGroup = null;
     const navHtml = cfg.nav.map(item => {
         let groupHtml = '';
-        const group = item.group || (isManagerPortal ? '' : 'វេនរបស់ខ្ញុំ');
+        const group = item.group || (portalId === 'posPortal' ? 'វេនរបស់ខ្ញុំ' : lastGroup);
         if (group && group !== lastGroup) {
             groupHtml = `<p class="sb-group px-3 ${lastGroup ? 'pt-5' : 'pt-1'} pb-1.5">${group}</p>`;
             lastGroup = group;
@@ -215,7 +251,8 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
     const avatar = cfg.userId && typeof avatarHtml === 'function'
         ? avatarHtml(cfg.userId, 'w-8 h-8')
         : `<div class="w-8 h-8 rounded-full sb-avatar border flex items-center justify-center font-semibold text-xs flex-shrink-0">${cfg.userInitials}</div>`;
-    const roleLabel = isManagerPortal ? 'អ្នកគ្រប់គ្រងវេន' : 'ផ្ទាំងគិតលុយ';
+    const roleLabel = { adminPortal: 'ម្ចាស់ហាង', managerPortal: 'អ្នកគ្រប់គ្រងវេន', posPortal: 'ផ្ទាំងគិតលុយ' }[portalId] || cfg.title;
+    const canSwitch = (cfg.views || []).length > 1;
     const menuItem = (icon, label, attrs, tone) => `<button type="button" ${attrs}
         class="sb-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-md text-left ${tone || ''}">
         <iconify-icon icon="${icon}" class="text-[18px] flex-shrink-0 opacity-80"></iconify-icon><span class="flex-1">${label}</span></button>`;
@@ -223,8 +260,8 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
     host.outerHTML = `
         <aside id="portalSidebar" class="w-64 text-white flex flex-col flex-shrink-0 select-none z-20 border-r border-white/[0.06]">
             <div class="sb-brand h-[72px] px-6 flex items-center flex-shrink-0 border-b border-white/[0.06]">
-                <button type="button" data-sb-menu ${cfg.switchRole ? `onclick="openSidebarMenu(this, 'sbRoleMenu', 'down')"` : 'tabindex="-1"'} aria-haspopup="${cfg.switchRole ? 'menu' : 'false'}" aria-expanded="false"
-                    class="sb-switcher relative -mx-2 px-2 py-1.5 flex-1 min-w-0 flex items-center gap-3 rounded-lg ${cfg.switchRole ? 'hover:bg-white/[0.06]' : 'cursor-default'} text-left transition-colors">
+                <button type="button" data-sb-menu ${canSwitch ? `onclick="openSidebarMenu(this, 'sbRoleMenu', 'down')"` : 'tabindex="-1"'} aria-haspopup="${canSwitch ? 'menu' : 'false'}" aria-expanded="false"
+                    class="sb-switcher relative -mx-2 px-2 py-1.5 flex-1 min-w-0 flex items-center gap-3 rounded-lg ${canSwitch ? 'hover:bg-white/[0.06]' : 'cursor-default'} text-left transition-colors">
                     <span class="w-8 h-8 rounded-lg bg-white/[0.08] flex items-center justify-center flex-shrink-0">
                         <img src="${sharedRoot}/assets/logo-mark-transparent.png" alt="DIGITECHKH" class="w-5 h-5 object-contain">
                     </span>
@@ -232,16 +269,16 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
                         <span class="block text-[15px] font-semibold text-white leading-tight tracking-wide">DIGITECHKH</span>
                         <span class="block sb-sub truncate">${roleLabel}</span>
                     </span>
-                    ${cfg.switchRole ? '<iconify-icon icon="mdi:unfold-more-horizontal" class="text-lg sb-muted flex-shrink-0"></iconify-icon>' : ''}
+                    ${canSwitch ? '<iconify-icon icon="mdi:unfold-more-horizontal" class="text-lg sb-muted flex-shrink-0"></iconify-icon>' : ''}
                 </button>
             </div>
-            ${cfg.switchRole ? `<div id="sbRoleMenu" role="menu" class="sb-menu hidden z-[70] p-1.5 rounded-lg bg-[#0b1020] border border-white/10 shadow-2xl text-white">
-                <p class="px-3 pt-1.5 pb-1 sb-group">ប្តូរតួនាទី</p>
-                <div class="sb-menu-item flex items-center gap-3 px-3 py-2 rounded-md bg-white/[0.06]">
-                    <iconify-icon icon="${cfg.roleIcon}" class="text-[18px] opacity-80"></iconify-icon><span class="flex-1">${roleLabel}</span>
-                    <iconify-icon icon="mdi:check" class="text-[18px] text-emerald-400"></iconify-icon>
-                </div>
-                ${menuItem(cfg.switchRole.icon, cfg.switchRole.label.replace('ប្តូរទៅ', ''), `onclick="location.href='${roleRoot}/${cfg.switchRole.href}'"`)}
+            ${canSwitch ? `<div id="sbRoleMenu" role="menu" class="sb-menu hidden z-[70] p-1.5 rounded-lg bg-[#0b1020] border border-white/10 shadow-2xl text-white">
+                <p class="px-3 pt-1.5 pb-1 sb-group">ប្តូរទិដ្ឋភាព</p>
+                ${cfg.views.map(v => v.current
+                    ? `<div class="sb-menu-item flex items-center gap-3 px-3 py-2 rounded-md bg-white/[0.06]">
+                        <iconify-icon icon="${v.icon}" class="text-[18px] opacity-80"></iconify-icon><span class="flex-1">${v.label}</span>
+                        <iconify-icon icon="mdi:check" class="text-[18px] text-emerald-400"></iconify-icon></div>`
+                    : menuItem(v.icon, v.label, `onclick="location.href='${roleRoot}/${v.href}'"`)).join('')}
             </div>` : ''}
 
             <div id="sbStatus" class="mx-3 mt-3 px-3 py-2.5 rounded-lg bg-white/[0.04]"></div>
@@ -268,7 +305,7 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
                     <span class="min-w-0"><span class="block text-[14.5px] font-medium truncate">${cfg.userName}</span><span class="block sb-sub truncate">${cfg.userRole}</span></span>
                 </div>
                 <div class="h-px bg-white/[0.08] my-1"></div>
-                ${cfg.switchRole ? menuItem(cfg.switchRole.icon, cfg.switchRole.label, `onclick="location.href='${roleRoot}/${cfg.switchRole.href}'"`) : ''}
+                ${(cfg.views || []).filter(v => !v.current).map(v => menuItem(v.icon, `ប្តូរទៅ${v.label}`, `onclick="location.href='${roleRoot}/${v.href}'"`)).join('')}
                 ${menuItem('mdi:theme-light-dark', 'ទម្រង់ភ្លឺ ឬងងឹត', 'onclick="toggleDarkMode(); closeSidebarMenus()"')}
                 ${menuItem('mdi:shield-check-outline', 'គោលការណ៍សិទ្ធិ', "onclick=\"document.getElementById('sbPolicyBody').classList.toggle('hidden')\"")}
                 <p id="sbPolicyBody" class="hidden mx-3 mb-1.5 mt-0.5 sb-sub leading-relaxed">${cfg.policyNote}</p>
@@ -1225,6 +1262,7 @@ function bmsEnsureStepperStyles() {
         /* ផ្លូវប្រផេះភ្លឺពេកលើផ្ទៃងងឹត ហើយរង្វង់ពណ៌ស្រាលមើលទៅធ្ងន់ — បន្ថយទាំងពីរ */
         .bms-step-track { background-color: #E2E8F0; }
         html.dark .bms-step-track { background-color: #334155; }
+        .bms-step-track.bms-step-track-dark { background-color: rgba(255, 255, 255, .12); }
         html.dark .bms-step-now { --tw-ring-color: rgba(var(--bms-rgb), .28); }
         .bms-step-run  { animation: bmsStepRun 2s cubic-bezier(.4, 0, .2, 1) infinite; }
         .bms-step-halo { animation: bmsStepHalo 2s cubic-bezier(.4, 0, .2, 1) infinite; }
@@ -1315,7 +1353,7 @@ function bmsRenderStepper(hostId) {
         const now = n === current;
         if (done) return `${doneSkin.fill} text-white`;
         if (now) return `${skin.fill} text-white ring-4 ${skin.ring} bms-step-now`;
-        return 'bg-slate-100 text-slate-500 border border-slate-200';
+        return cfg.dark ? 'bg-white/5 text-slate-400 border border-white/15' : 'bg-slate-100 text-slate-500 border border-slate-200';
     };
 
     // ទម្រង់រូបតំណាងរក្សារូបតំណាងដើម ទោះជំហាននោះបានបញ្ចប់ក៏ដោយ
@@ -1326,7 +1364,7 @@ function bmsRenderStepper(hostId) {
 
     const labelTone = n => n === current
         ? `${skin.text} font-semibold`
-        : (n < current ? 'text-slate-700 font-medium' : 'text-slate-500 font-medium');
+        : (n < current ? (cfg.dark ? 'text-slate-200 font-medium' : 'text-slate-700 font-medium') : (cfg.dark ? 'text-slate-400 font-medium' : 'text-slate-500 font-medium'));
 
     const wrap = (n, inner, extra) => {
         const reachable = clickable && n <= current;
@@ -1347,7 +1385,7 @@ function bmsRenderStepper(hostId) {
                 ${steps.map((s, i) => {
                     const n = i + 1;
                     const connector = i < steps.length - 1
-                        ? `<span aria-hidden="true" class="absolute rounded-full bms-step-track"
+                        ? `<span aria-hidden="true" class="absolute rounded-full bms-step-track ${cfg.dark ? 'bms-step-track-dark' : ''}"
                                style="top:${R - T / 2}px;height:${T}px;left:calc(50% + ${R}px);right:calc(-50% + ${R}px)">${fill(n)}</span>`
                         : '';
                     const halo = n === current && inProgress && !compact
@@ -1389,7 +1427,7 @@ function bmsRenderStepper(hostId) {
                     <span class="${circle} rounded-full flex items-center justify-center flex-shrink-0 font-bold transition ${face(n)}">${glyph(s, n)}</span>
                     <span class="sm-badge ${labelTone(n)}">${s.label}</span>`;
                 const bar = i < steps.length - 1
-                    ? `<span aria-hidden="true" class="w-6 sm:w-12 h-0.5 mx-2 sm:mx-3 rounded-full flex-shrink-0 bms-step-track overflow-hidden">${fill(n)}</span>`
+                    ? `<span aria-hidden="true" class="w-6 sm:w-12 h-0.5 mx-2 sm:mx-3 rounded-full flex-shrink-0 bms-step-track ${cfg.dark ? 'bms-step-track-dark' : ''} overflow-hidden">${fill(n)}</span>`
                     : '';
                 return wrap(n, body, 'px-1 inline-flex items-center gap-2.5 flex-shrink-0') + bar;
             }).join('')}

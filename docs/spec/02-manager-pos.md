@@ -142,7 +142,7 @@ Every list page uses: one `⋮` menu per row, the shared date-range picker (GEMI
 │ │ ថតប្រាក់ ▓▓▓▓░ $430│ │                  │      │ លុបចោល 2 · ប្រគល់វិញ 1   │
 │ │ ព្យួរ 1           │ │                  │      │ បញ្ចុះលើសកំណត់ 1 · …     │
 │ └─────────────────┘ └─────────────────┘      │                          │
-├ Sales by hour (CSS bars, no ECharts) ────────┴──────────────────────────┤
+├ Sales by hour (ECharts bar) ────────────────┴──────────────────────────┤
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -156,8 +156,8 @@ Every list page uses: one `⋮` menu per row, the shared date-range picker (GEMI
   - ⋮ menu: «មើលវេន», «របាយការណ៍ពាក់កណ្តាលវេន» (X-report), «ចេញប្រាក់បាតថត» when no shift is open
 - **Approvals panel:** oldest first, age in minutes (rose after 10 min). Tapping opens the request page.
 - **Exceptions strip:** today's counts per type. Each links to the exceptions page filtered to that type.
-- Sales by hour uses plain CSS bars, because the DoD bans ECharts on dashboards. Payment-method split shows as a
-  stacked bar: USD cash / KHR cash / KHQR.
+- Sales by hour is an ECharts bar chart (the 2026-10-04 override allows ECharts on dashboards); the current hour is highlighted. Payment-method split is an ECharts donut with a legend:
+  USD cash / KHR cash / KHQR.
 
 ### 5.2 Approvals — `manager/approvals/approvals.html` + `view-request.html`
 
@@ -431,6 +431,6 @@ Everything in §§1–8 is built, plus these additions and deviations:
 | Manager switches to the till | Sells on their own register; can't approve their own sales (M-RULE 3) |
 | Demo PINs | Shown on the login page only, under a demo-info toggle, not inside the product screens |
 | Change modes | Two: «ដុល្លារ + រៀល» and «រៀលទាំងអស់». An all-USD mode was dropped because coins don't circulate |
-| Charts | CSS bars on dashboard and report; ECharts not used |
+| Charts | ECharts everywhere via `posChart()` (`shared/scripts/charts.js`) |
 | KHQR | In-terminal overlay with expiry and a stored QR hash; payment confirmation is manual (no Bakong API) |
 | Decisions taken | D1 blind count yes · D2 no separate card tender · D3 not built (no cross-shift receipt lookup yet) · D4 nearest 100 ៛ · D5 «អ្នកគ្រប់គ្រងវេន» · D6 manager reopens with reason · D7 shifts are a setting, default 2 |

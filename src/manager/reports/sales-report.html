@@ -60,7 +60,8 @@
                         </div>
                         <p id="viewTitle" class="sm-card-title text-slate-700"></p>
                         <p id="viewSub" class="sm-card-sub text-slate-500"></p>
-                        <div id="viewBody" class="mt-4"></div>
+                        <div id="viewChart" class="mt-3 w-full h-[260px]"></div>
+                        <div id="viewBody" class="mt-2"></div>
                     </div>
                 </section>
             </div>
@@ -71,6 +72,8 @@
     <script src="../../shared/scripts/data.js"></script>
     <script src="../../shared/scripts/manager-data.js"></script>
     <script src="../../shared/scripts/portal.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+    <script src="../../shared/scripts/charts.js"></script>
     <script>
         /* របាយការណ៍លក់ (ឯកសាររចនាលេខ 02 ផ្នែក 5.6) — តម្លៃលក់ ចំនួន និងការរាប់ប៉ុណ្ណោះ គ្មានថ្លៃដើម (M-RULE 2) */
 
@@ -97,20 +100,45 @@
                 kpiCard('អាករលើតម្លៃបន្ថែម', fmtUSD(a.vat), `តម្លៃមុនអាករ ${fmtUSD(a.net)} · បញ្ចុះ ${fmtUSD(a.discount)}`);
         }
 
-        /* តារាង + របារ CSS — ជួរនីមួយៗ៖ ស្លាក · តម្លៃ · ព័ត៌មានបន្ថែម */
+        /* ក្រាហ្វ ECharts (ជួរឈរ ឬរបារផ្តេកសម្រាប់ឈ្មោះវែង) + តារាងលេខ — ជួរនីមួយៗ៖ ស្លាក · តម្លៃ · ព័ត៌មានបន្ថែម */
+        function renderChart(rows, valueLabel, fmt) {
+            const box = document.getElementById('viewChart');
+            box.classList.toggle('hidden', !rows.length);
+            if (!rows.length) return;
+            const horizontal = view === 'product' || view === 'cashier' || view === 'category' || view === 'payment';
+            const list = view === 'day' ? rows.slice().reverse() : rows;
+            const labels = list.map(r => r.label.length > 22 ? r.label.slice(0, 21) + '…' : r.label);
+            box.style.height = horizontal ? `${Math.max(160, list.length * 30 + 30)}px` : '260px';
+            const cat = chartCategoryAxis(horizontal ? labels.slice().reverse() : labels, horizontal ? { axisLine: { show: false } } : {});
+            const val = chartValueAxis(v => view === 'product' ? v : '$' + v);
+            const data = (horizontal ? list.slice().reverse() : list).map(r => +Number(r.value).toFixed(2));
+            posChart(box, {
+                grid: { left: 4, right: 12, top: 12, bottom: 4, containLabel: true },
+                xAxis: horizontal ? val : cat,
+                yAxis: horizontal ? cat : val,
+                tooltip: {
+                    formatter: ps => {
+                        const r = (horizontal ? list.slice().reverse() : list)[ps[0].dataIndex];
+                        return chartTipTitle(r.label) + chartTipRow(CHART_TONE.indigo, valueLabel, fmt(r.value)) +
+                            (r.extra || []).map(x => chartTipRow('#94a3b8', x[0], x[1])).join('');
+                    }
+                },
+                series: [{ type: 'bar', barMaxWidth: horizontal ? 18 : 30, data,
+                    itemStyle: { color: CHART_TONE.indigo, borderRadius: horizontal ? [0, 4, 4, 0] : [4, 4, 0, 0] } }]
+            });
+        }
+
         function barTable(rows, valueLabel, fmt) {
+            renderChart(rows, valueLabel, fmt);
             if (!rows.length) return emptyState('fa-chart-column', 'គ្មានការលក់ក្នុងជួរនេះ', 'សូមប្តូរជួរកាលបរិច្ឆេទ ឬតម្រង');
-            const max = Math.max(...rows.map(r => r.value), 1);
-            return `<div class="overflow-x-auto"><table class="w-full min-w-[560px]">
+            return `<div class="overflow-x-auto"><table class="w-full min-w-[480px]">
                 <thead><tr class="border-b border-slate-100">
                     <th class="sm-th py-2.5 pr-3 text-left text-slate-500"></th>
-                    <th class="sm-th py-2.5 px-3 text-left text-slate-500 w-[45%]"></th>
                     <th class="sm-th py-2.5 px-3 text-right text-slate-500">${valueLabel}</th>
                     ${rows[0].extra ? rows[0].extra.map(x => `<th class="sm-th py-2.5 pl-3 text-right text-slate-500">${x[0]}</th>`).join('') : ''}
                 </tr></thead>
                 <tbody>${rows.map(r => `<tr class="border-b border-slate-50">
                     <td class="py-2 pr-3 sm-td text-slate-700 whitespace-nowrap">${r.label}</td>
-                    <td class="py-2 px-3"><div class="h-3 rounded-full bg-slate-100 overflow-hidden"><div class="h-full rounded-full bg-indigo-500" style="width:${r.value / max * 100}%"></div></div></td>
                     <td class="py-2 px-3 text-right sm-td-strong sm-figure">${fmt(r.value)}</td>
                     ${(r.extra || []).map(x => `<td class="py-2 pl-3 text-right sm-td sm-figure text-slate-600">${x[1]}</td>`).join('')}
                 </tr>`).join('')}</tbody></table></div>`;
@@ -153,7 +181,7 @@
                     const p = getProduct(l.sku);
                     const net = l.qty - returnedQty(s, l.sku);
                     const t = tally[p.category] = tally[p.category] || { amount: 0, qty: 0 };
-                    t.amount += p.price * net * (1 - (s.discountPercent || 0) / 100);
+                    t.amount += linePrice(l) * net * (1 - (s.discountPercent || 0) / 100);
                     t.qty += net;
                 }));
                 rows = Object.keys(tally).map(c => ({ label: categoryLabel(c), value: tally[c].amount, extra: [['ឯកតា', tally[c].qty]] })).sort((a, b) => b.value - a.value);
@@ -173,7 +201,7 @@
                     const net = l.qty - returnedQty(s, l.sku);
                     const t = tally[l.sku] = tally[l.sku] || { qty: 0, amount: 0 };
                     t.qty += net;
-                    t.amount += getProduct(l.sku).price * net * (1 - (s.discountPercent || 0) / 100);
+                    t.amount += linePrice(l) * net * (1 - (s.discountPercent || 0) / 100);
                 }));
                 rows = Object.keys(tally).map(sku => ({ label: getProduct(sku).name, value: tally[sku].qty, extra: [['ឯកតា', getProduct(sku).unit], ['ទឹកប្រាក់', fmtUSD(tally[sku].amount)]] }))
                     .sort((a, b) => b.value - a.value).slice(0, 15);

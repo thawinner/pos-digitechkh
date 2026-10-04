@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIGITECHKH - ការកំណត់</title>
+    <title>DIGITECHKH - ការកំណត់ហាង</title>
     <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,7 +15,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    colors: { primary: "#059669", 'primary-dark': "#047857", accent: "#34d399" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -24,14 +24,15 @@
     <link rel="stylesheet" href="../../shared/styles/custom.css">
     <link rel="stylesheet" href="../../shared/styles/portal.css">
 </head>
-<body id="managerPortal" data-role-root="../.." data-active="settings" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+<body id="adminPortal" data-role-root="../.." data-active="settings" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
 
     <div id="sidebarHost"></div>
 
     <div class="flex-1 flex flex-col h-full overflow-hidden">
-        <div id="headerHost" data-title="ការកំណត់"
-             data-subtitle="អត្រាប្ដូរប្រាក់ ទំនិញញឹកញាប់ និងមូលហេតុ · ច្បាប់សាច់ប្រាក់កំណត់ដោយម្ចាស់ហាង"></div>
+        <div id="headerHost" data-title="ការកំណត់ហាង"
+             data-subtitle="ច្បាប់សាច់ប្រាក់ វេន ផ្ទាំងគិតលុយ អត្រាប្ដូរប្រាក់ និងមូលហេតុ"></div>
         <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+
             <div class="w-full grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-5 items-start">
                 <!-- ម៉ឺនុយផ្នែក -->
                 <nav id="sectionNav" class="lg:sticky lg:top-0 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-2 flex lg:flex-col gap-1 overflow-x-auto"></nav>
@@ -55,6 +56,7 @@
     <script src="../../shared/scripts/ui-components.js"></script>
     <script src="../../shared/scripts/data.js"></script>
     <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/admin-data.js"></script>
     <script src="../../shared/scripts/portal.js"></script>
     <script src="../../shared/scripts/settings-page.js"></script>
 </body>

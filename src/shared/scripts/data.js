@@ -166,28 +166,45 @@ const MERCHANT = {
     city: 'PHNOM PENH'
 };
 
-/* លេខសម្ងាត់សម្រាប់គំរូសាកល្បងប៉ុណ្ណោះ — ប្រព័ន្ធពិតរក្សាទុកជាសញ្ញាកូដនៅម៉ាស៊ីនមេ */
-const CASHIERS = [
-    { id: 'CAS-01', name: 'ចន្ទ មករា', initials: 'ចម', pin: '1111' },
-    { id: 'CAS-02', name: 'សុខ ដារ៉ា', initials: 'សដ', pin: '2222' },
-    { id: 'CAS-03', name: 'លី សុភា', initials: 'លស', pin: '3333' }
+/* បុគ្គលិក៖ តួនាទី 3 — ម្ចាស់ហាង (admin) · អ្នកគ្រប់គ្រងវេន (manager) · អ្នកគិតលុយ (cashier)
+   លេខសម្ងាត់សម្រាប់គំរូសាកល្បងប៉ុណ្ណោះ — ប្រព័ន្ធពិតរក្សាទុកជាសញ្ញាកូដនៅម៉ាស៊ីនមេ។
+   ម្ចាស់ហាងបន្ថែមបុគ្គលិក ប្តូរតួនាទី ឬផ្អាកគណនីនៅទំព័រ «បុគ្គលិក» (រក្សាក្នុង pos_staff)។
+   គណនីដែលផ្អាកមិនអាចចូលប្រើបាន ប៉ុន្តែឈ្មោះនៅតែបង្ហាញក្នុងប្រវត្តិ (personById រកឃើញជានិច្ច)។ */
+const STAFF_SEED = [
+    { id: 'CAS-01', name: 'ចន្ទ មករា', initials: 'ចម', pin: '1111', role: 'cashier' },
+    { id: 'CAS-02', name: 'សុខ ដារ៉ា', initials: 'សដ', pin: '2222', role: 'cashier' },
+    { id: 'CAS-03', name: 'លី សុភា', initials: 'លស', pin: '3333', role: 'cashier' },
+    { id: 'MGR-01', name: 'សុខ វណ្ណា', initials: 'សវ', pin: '2468', role: 'manager' },
+    { id: 'MGR-02', name: 'ម៉ៅ ស្រីនាង', initials: 'មស', pin: '1357', role: 'manager' },
+    { id: 'ADM-01', name: 'ហេង ចាន់ថា', initials: 'ហច', pin: '9999', role: 'admin' }
 ];
+const STAFF_KEY = 'pos_staff';
 
-const MANAGERS = [
-    { id: 'MGR-01', name: 'សុខ វណ្ណា', initials: 'សវ', pin: '2468' },
-    { id: 'MGR-02', name: 'ម៉ៅ ស្រីនាង', initials: 'មស', pin: '1357' }
-];
+function staffStore() {
+    return posRead(STAFF_KEY, { added: [], changes: {} });
+}
+
+function loadStaff() {
+    const st = staffStore();
+    return STAFF_SEED.concat(st.added || []).map(p => Object.assign({ active: true }, p, (st.changes || {})[p.id] || {}));
+}
+
+const ALL_STAFF = loadStaff();
+const CASHIERS = ALL_STAFF.filter(p => p.active && p.role === 'cashier');
+const MANAGERS = ALL_STAFF.filter(p => p.active && p.role === 'manager');
+const ADMINS = ALL_STAFF.filter(p => p.active && p.role === 'admin');
 
 const REGISTERS = ['POS-01', 'POS-02', 'POS-03'];
 
 
 const ROLE_NAME = {
     cashier: 'អ្នកគិតលុយ',
-    manager: 'អ្នកគ្រប់គ្រងវេន'
+    manager: 'អ្នកគ្រប់គ្រងវេន',
+    admin: 'ម្ចាស់ហាង'
 };
 
 function personById(id) {
-    return CASHIERS.find(p => p.id === id) || MANAGERS.find(p => p.id === id) || null;
+    return ALL_STAFF.find(p => p.id === id) || null;
 }
 
 function personName(id) {
@@ -217,11 +234,12 @@ function effectivePin(id) {
 }
 
 function verifyPin(id, pin) {
-    return !!personById(id) && String(pin) === effectivePin(id);
+    const p = personById(id);
+    return !!p && p.active && String(pin) === effectivePin(id);
 }
 
 function isManagerPage() {
-    return !!document.body && document.body.id === 'managerPortal';
+    return !!document.body && (document.body.id === 'managerPortal' || document.body.id === 'adminPortal');
 }
 
 function currentActorId() {
@@ -420,6 +438,23 @@ const PRODUCTS = [
     { sku: '8890003', barcode: '8890003', name: 'អំពូលបំភ្លឺ 9 វ៉ាត់', category: 'electronic', price: 2.20, unit: 'គ្រាប់', stock: 58, icon: 'fa-lightbulb', tone: 'yellow' }
 ];
 
+/* ការកែកាតាឡុកដោយម្ចាស់ហាង (pos_catalog)៖ តម្លៃថ្មី និងការផ្អាកលក់
+   basePrice = តម្លៃដើមពេលបង្កើតទិន្នន័យគំរូ · ការលក់នីមួយៗរក្សាតម្លៃពេលលក់ (line.price)
+   ដូច្នេះការប្តូរតម្លៃមិនប៉ះពាល់វិក្កយបត្រ ឬរបាយការណ៍ចាស់ឡើយ */
+const CATALOG_KEY = 'pos_catalog';
+(function applyCatalogEdits() {
+    const edits = posRead(CATALOG_KEY, {});
+    PRODUCTS.forEach(p => {
+        p.basePrice = p.price;
+        p.active = true;
+        Object.assign(p, edits[p.sku] || {});
+    });
+})();
+
+function sellableProducts() {
+    return PRODUCTS.filter(p => p.active !== false);
+}
+
 /* ក្រដាសប្រាក់សម្រាប់រាប់សាច់ប្រាក់ */
 const USD_NOTES = [100, 50, 20, 10, 5, 1];
 const KHR_NOTES = [100000, 50000, 20000, 10000, 5000, 1000, 500, 100];
@@ -463,8 +498,9 @@ function productImgHtml(p) {
 
 function findByBarcode(code) {
     const q = String(code).trim().toLowerCase();
-    return PRODUCTS.find(p => p.barcode === q)
-        || PRODUCTS.find(p => p.name.toLowerCase().includes(q));
+    const list = sellableProducts();
+    return list.find(p => p.barcode === q)
+        || list.find(p => p.name.toLowerCase().includes(q));
 }
 
 /* ===== អតិថិជនឥណទាន =====
@@ -484,9 +520,15 @@ function getCreditCustomer(id) {
 
 /* ===== ការគណនាវិក្កយបត្រ ===== */
 
-function lineTotal(line) {
+/* តម្លៃមួយឯកតាពេលលក់ (រក្សាក្នុងបន្ទាត់) · កន្ត្រកដែលមិនទាន់លក់ប្រើតម្លៃបច្ចុប្បន្ន */
+function linePrice(line) {
+    if (line && line.price != null) return line.price;
     const p = getProduct(line.sku);
-    return p ? p.price * line.qty : 0;
+    return p ? p.price : 0;
+}
+
+function lineTotal(line) {
+    return linePrice(line) * line.qty;
 }
 
 /* អាករលើតម្លៃបន្ថែម 10% រួមក្នុងតម្លៃលក់រាយរួចហើយ ដូច្នេះត្រូវបំបែកចេញវិញ។
@@ -1043,7 +1085,7 @@ function receiptHtml(sale, options) {
             <div style="margin-bottom:6px;">
                 <div>${p.name}</div>
                 <div style="display:flex;justify-content:space-between;gap:8px;color:#475569;">
-                    <span>${l.qty} ${p.unit} × ${fmtUSD(p.price)}${back ? ` · ប្រគល់វិញ ${back}` : ''}</span>
+                    <span>${l.qty} ${p.unit} × ${fmtUSD(linePrice(l))}${back ? ` · ប្រគល់វិញ ${back}` : ''}</span>
                     <span>${fmtUSD(lineTotal(l))}</span>
                 </div>
             </div>`;
@@ -1436,12 +1478,12 @@ function genBasket(rng) {
     const br = rng();
     const n = br < 0.45 ? 1 : br < 0.75 ? 2 : br < 0.9 ? 3 : br < 0.97 ? 4 : 5;
     for (let k = 0; k < n; k++) {
-        const p = pickWeighted(rng, PRODUCTS, x => PRODUCT_WEIGHT[x.sku] || 1);
+        const p = pickWeighted(rng, PRODUCTS, x => PRODUCT_WEIGHT[x.sku] || 1); // ប្រវត្តិ៖ រួមទាំងទំនិញដែលផ្អាកលក់ពេលក្រោយ
         if (lines.some(l => l.sku === p.sku)) continue;
         const qr = rng();
         let qty = qr < 0.8 ? 1 : qr < 0.95 ? 2 : 3;
         if (p.category === 'stationery' && rng() < 0.25) qty = 2 + Math.floor(rng() * 9); // សិស្សទិញប៊ិច សៀវភៅ ជាឡូ
-        lines.push({ sku: p.sku, qty });
+        lines.push({ sku: p.sku, qty, price: p.basePrice });
     }
     return lines;
 }
@@ -1554,8 +1596,8 @@ const SESSION_KEY = 'pos_session';
 function posSession() {
     const s = posRead(SESSION_KEY, null);
     if (!s || !s.userId) return null;
-    const known = CASHIERS.concat(MANAGERS).some(p => p.id === s.userId);
-    return known ? s : null;
+    const p = personById(s.userId);
+    return p && p.active ? s : null;
 }
 
 function posLogin(userId) {
@@ -1569,6 +1611,21 @@ function posLogout() {
 function isManagerId(id) {
     return MANAGERS.some(m => m.id === id);
 }
+
+function isAdminId(id) {
+    return ADMINS.some(a => a.id === id);
+}
+
+function roleOf(id) {
+    return isAdminId(id) ? 'admin' : isManagerId(id) ? 'manager' : 'cashier';
+}
+
+/* ទំព័រដើមរបស់តួនាទីនីមួយៗ (ពី src/) */
+const ROLE_HOME = {
+    admin: 'admin/dashboard/dashboard.html',
+    manager: 'manager/dashboard/dashboard.html',
+    cashier: 'cashier/terminal/pos-terminal.html'
+};
 
 /* ===== កាលវិភាគវេន =====
    វេនមួយ (ឧ. វេនព្រឹក) អាចមានអ្នកគិតលុយច្រើននាក់ ម្នាក់មួយបញ្ជរ និងថតប្រាក់ផ្ទាល់ខ្លួន
@@ -1658,16 +1715,23 @@ function resolveRegister(personId) {
 
 const SESSION = posSession();
 const ME_CASHIER = SESSION ? SESSION.userId : 'CAS-01';
-const ME_MANAGER = SESSION && isManagerId(SESSION.userId) ? SESSION.userId : 'MGR-01';
+// ម្ចាស់ហាងអាចមើលទំព័រអ្នកគ្រប់គ្រងវេន ហើយសម្រេចក្នុងនាមខ្លួនឯង
+const ME_MANAGER = SESSION && (isManagerId(SESSION.userId) || isAdminId(SESSION.userId)) ? SESSION.userId : 'MGR-01';
 const MY_REGISTER = resolveRegister(ME_CASHIER);
 
-/* ការពារទំព័រ៖ ទំព័រអ្នកគិតលុយត្រូវការអ្នកចូលប្រើណាម្នាក់ · ទំព័រអ្នកគ្រប់គ្រងត្រូវការអ្នកគ្រប់គ្រង */
+/* ការពារទំព័រ៖ ទំព័រអ្នកគិតលុយ = អ្នកគិតលុយ ឬអ្នកគ្រប់គ្រងវេន (ម្ចាស់ហាងមិនឈរបញ្ជរ)
+   ទំព័រអ្នកគ្រប់គ្រង = អ្នកគ្រប់គ្រងវេន ឬម្ចាស់ហាង · ទំព័រម្ចាស់ហាង = ម្ចាស់ហាងប៉ុណ្ណោះ */
 (function guardPage() {
     const path = location.pathname;
-    const root = path.includes('/cashier/') || path.includes('/manager/') ? '../../' : '';
-    if ((path.includes('/cashier/') && !SESSION) || (path.includes('/manager/') && !(SESSION && isManagerId(SESSION.userId)))) {
-        location.replace(`${root}index.html?next=${encodeURIComponent(path.split('/').slice(-3).join('/'))}`);
+    const area = path.includes('/cashier/') ? 'cashier' : path.includes('/manager/') ? 'manager' : path.includes('/admin/') ? 'admin' : '';
+    if (!area) return;
+    const role = SESSION ? roleOf(SESSION.userId) : '';
+    if (area === 'cashier' && role === 'admin') {
+        location.replace(`../../${ROLE_HOME.admin}`);
+        return;
     }
+    const ok = area === 'cashier' ? !!SESSION : area === 'manager' ? role === 'manager' || role === 'admin' : role === 'admin';
+    if (!ok) location.replace(`../../index.html?next=${encodeURIComponent(path.split('/').slice(-3).join('/'))}`);
 })();
 
 

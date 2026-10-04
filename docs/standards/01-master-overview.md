@@ -29,6 +29,9 @@ Every role has a distinct visual identity: its own color accent, layout density,
 
 **Rule 3 — ECharts and Data Tables Are Separated from Dashboards**
 
+> **POS override (2026-10-04):** in this POS repo every chart uses ECharts, including the manager and owner dashboards
+> (by the owner's decision). The rest of this rule (dashboards stay action-first, full tables live on report pages) still applies.
+
 The dashboard page is **not a reporting tool**. In v1, dashboards became cluttered with charts, tables, and KPI grids that tried to do everything. In v2, dashboards are stripped to their action-core. Charts live exclusively on dedicated **Reports** pages. Heavy data tables live on dedicated **List** pages. The dashboard asks: *"What does this user need to act on RIGHT NOW?"*
 
 ---

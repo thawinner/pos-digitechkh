@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - កំណត់ហេតុសវនកម្ម</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#059669", 'primary-dark': "#047857", accent: "#34d399" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+</head>
+<body id="adminPortal" data-role-root="../.." data-active="audit" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="កំណត់ហេតុសវនកម្ម"
+             data-subtitle="អ្នកណា ធ្វើអ្វី ពេលណា · ការអនុម័ត តម្លៃ បុគ្គលិក និងការកំណត់"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+
+            <div class="w-full space-y-5">
+                <div class="bg-white rounded-2xl p-2 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-2">
+                    <div id="kindTabs" class="flex flex-wrap gap-1"></div>
+                    <div class="flex items-center gap-2 w-full lg:w-auto">
+                        <div id="personFilter" data-bms-select data-onchange="reset()" class="w-[46%] sm:w-[190px] h-9"></div>
+                        <label class="relative flex-1 lg:w-[220px]">
+                            <i class="fas fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input id="search" oninput="reset()" type="text" placeholder="ស្វែងរក"
+                                class="sm-td w-full h-9 pl-8 pr-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:outline-none">
+                        </label>
+                    </div>
+                </div>
+                <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex items-center justify-between gap-3">
+                        <div>
+                            <p class="sm-card-title text-slate-800">សកម្មភាពដែលបានកត់ត្រា</p>
+                            <p id="countNote" class="sm-card-sub text-slate-500"></p>
+                        </div>
+                        <span class="sm-td-sub text-slate-400 max-sm:hidden inline-flex items-center gap-1.5"><i class="fas fa-lock text-[11px]"></i>មិនអាចកែ ឬលុបបាន</span>
+                    </div>
+                    <div id="feed"></div>
+                    <div id="more" class="hidden px-5 py-4 border-t border-slate-100 text-center">
+                        <button onclick="limit += 60; render()" type="button" class="sm-badge h-9 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold">បង្ហាញបន្ថែម</button>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/admin-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+
+        /* កំណត់ហេតុសវនកម្ម (ឯកសាររចនាលេខ 03 ផ្នែក 8) — អ្នកណា ធ្វើអ្វី ពេលណា · អានបានតែប៉ុណ្ណោះ */
+
+        const TONE = {
+            indigo: 'bg-indigo-50 text-indigo-600', slate: 'bg-slate-100 text-slate-600', emerald: 'bg-emerald-50 text-emerald-600',
+            amber: 'bg-amber-50 text-amber-700', cyan: 'bg-cyan-50 text-cyan-700', rose: 'bg-rose-50 text-rose-600'
+        };
+        const ALL = auditTrail();
+        let kind = 'all';
+        let limit = 60;
+
+        function reset() {
+            limit = 60;
+            render();
+        }
+
+        function filtered() {
+            const q = document.getElementById('search').value.trim().toLowerCase();
+            const who = bmsGetSelect('personFilter');
+            return ALL.filter(x => (kind === 'all' || x.kind === kind) && (!who || x.by === who)
+                && (!q || `${x.title} ${x.detail} ${personName(x.by)}`.toLowerCase().includes(q)));
+        }
+
+        function dayLabel(d) {
+            const today = businessDate();
+            if (d === today) return 'ថ្ងៃនេះ';
+            if (d === isoDate(addDays(new Date(today + 'T12:00'), -1))) return 'ម្សិលមិញ';
+            return fmtDate(d + 'T12:00');
+        }
+
+        function renderTabs() {
+            const counts = {};
+            ALL.forEach(x => { counts[x.kind] = (counts[x.kind] || 0) + 1; });
+            const tabs = [{ id: 'all', label: 'ទាំងអស់', n: ALL.length }].concat(Object.keys(AUDIT_KINDS).map(k => ({ id: k, label: AUDIT_KINDS[k].label, n: counts[k] || 0 })));
+            document.getElementById('kindTabs').innerHTML = tabs.map(t => `<button type="button" onclick="kind='${t.id}'; renderTabs(); reset()"
+                class="sm-badge h-9 px-3.5 rounded-xl transition inline-flex items-center gap-2 ${kind === t.id ? 'bg-emerald-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">${t.label}
+                <span class="text-[12px] sm-figure ${kind === t.id ? 'text-emerald-100' : 'text-slate-400'}">${t.n}</span></button>`).join('');
+        }
+
+        function render() {
+            const list = filtered();
+            const shown = list.slice(0, limit);
+            document.getElementById('countNote').textContent = `${list.length} កំណត់ត្រា${list.length > shown.length ? ` · បង្ហាញ ${shown.length}` : ''}`;
+            document.getElementById('more').classList.toggle('hidden', list.length <= shown.length);
+            if (!shown.length) {
+                document.getElementById('feed').innerHTML = emptyState('fa-clipboard-list', 'គ្មានកំណត់ត្រា', 'សូមប្តូរតម្រង');
+                return;
+            }
+            let day = '';
+            document.getElementById('feed').innerHTML = shown.map(x => {
+                const d = x.at.slice(0, 10);
+                const k = AUDIT_KINDS[x.kind] || AUDIT_KINDS.settings;
+                const head = d !== day ? `<div class="px-5 py-2 bg-slate-50/80 border-y border-slate-100 sm-th text-slate-500 sticky top-0">${dayLabel(d)}</div>` : '';
+                day = d;
+                return `${head}<div class="flex items-start gap-3 px-5 py-3 border-b border-slate-50 last:border-0">
+                    <span class="w-14 sm-td-sub text-slate-400 sm-figure pt-1.5 flex-shrink-0">${fmtTime(x.at)}</span>
+                    <span class="w-8 h-8 rounded-lg ${TONE[x.tone === 'rose' ? 'rose' : k.tone]} flex items-center justify-center flex-shrink-0"><i class="fas ${k.icon} text-[12px]"></i></span>
+                    <div class="min-w-0 flex-1">
+                        <p class="sm-td-strong text-slate-800">${posEsc(x.title)}</p>
+                        ${x.detail ? `<p class="sm-td-sub text-slate-500 break-words">${posEsc(x.detail)}</p>` : ''}
+                    </div>
+                    <span class="max-sm:hidden flex items-center gap-2 flex-shrink-0 sm-td-sub text-slate-600">${avatarHtml(x.by, 'w-6 h-6')}${personName(x.by)}</span>
+                </div>`;
+            }).join('');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const ids = [...new Set(ALL.map(x => x.by))].filter(Boolean);
+            bmsSetSelectOptions('personFilter', [{ value: '', label: 'គ្រប់គ្នា' }].concat(ids.map(id => ({ value: id, label: personName(id) }))));
+            bmsSetSelect('personFilter', '');
+            renderTabs();
+            render();
+        });
+    </script>
+</body>
+</html>

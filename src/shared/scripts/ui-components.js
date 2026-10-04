@@ -109,7 +109,7 @@ function showCustomConfirm(options = {}) {
                 <h4 class="text-base font-bold text-slate-900 mb-1.5">${title}</h4>
                 <p class="text-xs text-slate-500 leading-relaxed mb-6">${message}</p>
                 <div class="flex items-center justify-center gap-2.5">
-                    <button id="bmsConfirmCancelBtn" type="button" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 transition cursor-pointer">
+                    <button id="bmsConfirmCancelBtn" type="button" class="${options.hideCancel ? 'hidden ' : ''}flex-1 py-2.5 px-4 rounded-xl text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 transition cursor-pointer">
                         ${cancelText}
                     </button>
                     <button id="bmsConfirmOkBtn" type="button" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-medium ${confirmBtnClass} shadow-sm transition cursor-pointer">
@@ -1508,6 +1508,75 @@ function showOptionDialog(opts = {}) {
         host.onclick = () => finish(null);
         host.__keyHandler = e => { if (e.key === 'Escape') { finish(null); e.stopPropagation(); } };
         document.addEventListener('keydown', host.__keyHandler, true);
+    });
+}
+
+/* opts: { title, message, icon, confirmText, fields: [{ key, label, value, type: 'text'|'number'|'pin', prefix, suffix, hint, step }],
+           validate(values) → សារកំហុស ឬ '', preview(values) → html } → Promise<values|null>
+   ប្រអប់បញ្ចូលទិន្នន័យខ្លីៗ (ឈ្មោះ តម្លៃ លេខសម្ងាត់) · preview បង្ហាញលទ្ធផលភ្លាមៗពេលវាយ (ឧ. អត្រាចំណេញថ្មី) */
+function showFormDialog(opts = {}) {
+    return new Promise(resolve => {
+        const th = POS_DIALOG_THEME[opts.dark ? 'dark' : 'light'];
+        const host = posDialogHost('posFormModal');
+        const fields = opts.fields || [];
+        const input = f => {
+            const mode = f.type === 'number' ? 'inputmode="decimal"' : f.type === 'pin' ? 'inputmode="numeric" maxlength="6" autocomplete="off"' : '';
+            return `<label class="block">
+                <span class="sm-td-sub ${th.sub} block mb-1">${posEsc(f.label)}</span>
+                <span class="flex items-center rounded-xl border ${th.input} focus-within:border-emerald-500 transition">
+                    ${f.prefix ? `<span class="pl-3 sm-td ${th.sub}">${posEsc(f.prefix)}</span>` : ''}
+                    <input data-key="${f.key}" type="text" ${mode} value="${posEsc(f.value == null ? '' : f.value)}"
+                        class="sm-value w-full h-11 px-3 bg-transparent focus:outline-none ${f.type === 'pin' ? 'tracking-[.4em] sm-figure' : ''} ${f.type === 'number' ? 'sm-figure' : ''}">
+                    ${f.suffix ? `<span class="pr-3 sm-td ${th.sub} whitespace-nowrap">${posEsc(f.suffix)}</span>` : ''}
+                </span>
+                ${f.hint ? `<span class="sm-td-sub ${th.sub} block mt-1">${f.hint}</span>` : ''}
+            </label>`;
+        };
+        host.innerHTML = `
+            <div class="w-full max-w-md rounded-3xl shadow-2xl ${th.panel} p-5 sm:p-6" onclick="event.stopPropagation()">
+                <div class="flex items-start gap-3">
+                    ${opts.icon ? `<div class="w-11 h-11 rounded-xl ${th.box} flex items-center justify-center flex-shrink-0"><i class="fas ${opts.icon}"></i></div>` : ''}
+                    <div class="min-w-0">
+                        <p class="sm-card-title ${th.title}">${posEsc(opts.title || '')}</p>
+                        ${opts.message ? `<p class="sm-td-sub ${th.sub} mt-0.5">${opts.message}</p>` : ''}
+                    </div>
+                </div>
+                <div class="space-y-3 mt-4">${fields.map(input).join('')}</div>
+                <div id="posFormPreview" class="mt-3"></div>
+                <p id="posFormErr" class="hidden sm-td-sub text-rose-500 mt-2"></p>
+                <div class="grid grid-cols-2 gap-2.5 mt-4">
+                    <button type="button" data-act="cancel" class="sm-value h-12 rounded-2xl ${th.ghost} font-semibold transition">បោះបង់</button>
+                    <button type="button" data-act="ok" class="sm-value h-12 rounded-2xl font-semibold transition ${th.primary}">${posEsc(opts.confirmText || 'រក្សាទុក')}</button>
+                </div>
+            </div>`;
+        const err = host.querySelector('#posFormErr');
+        const values = () => {
+            const out = {};
+            host.querySelectorAll('[data-key]').forEach(i => { out[i.dataset.key] = i.value.trim(); });
+            return out;
+        };
+        const refresh = () => {
+            err.classList.add('hidden');
+            if (opts.preview) host.querySelector('#posFormPreview').innerHTML = opts.preview(values()) || '';
+        };
+        host.querySelectorAll('[data-key]').forEach(i => {
+            i.oninput = refresh;
+            i.onkeydown = e => { if (e.key === 'Enter') host.querySelector('[data-act="ok"]').click(); };
+        });
+        const finish = v => { posDialogClose(host); resolve(v); };
+        host.querySelector('[data-act="cancel"]').onclick = () => finish(null);
+        host.querySelector('[data-act="ok"]').onclick = () => {
+            const v = values();
+            const msg = opts.validate ? opts.validate(v) : '';
+            if (msg) { err.textContent = msg; err.classList.remove('hidden'); return; }
+            finish(v);
+        };
+        host.onclick = () => finish(null);
+        host.__keyHandler = e => { if (e.key === 'Escape') { finish(null); e.stopPropagation(); } };
+        document.addEventListener('keydown', host.__keyHandler, true);
+        refresh();
+        const first = host.querySelector('[data-key]');
+        if (first) { first.focus(); first.select(); }
     });
 }
 

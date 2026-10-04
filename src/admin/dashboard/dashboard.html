@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - ផ្ទាំងគ្រប់គ្រង</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#059669", 'primary-dark': "#047857", accent: "#34d399" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+</head>
+<body id="adminPortal" data-role-root="../.." data-active="dashboard" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="ផ្ទាំងគ្រប់គ្រង"
+             data-subtitle="ចំណូល ប្រាក់ចំណេញ និងហានិភ័យសាច់ប្រាក់របស់ហាង"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+
+            <div class="w-full space-y-5">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div id="periodTabs" class="inline-flex bg-white border border-slate-200/80 rounded-xl p-1 shadow-sm"></div>
+                    <p id="periodNote" class="sm-td-sub text-slate-500"></p>
+                </div>
+                <div id="kpiRow" class="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
+                <div class="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-5 items-start">
+                    <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm min-w-0">
+                        <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex flex-wrap items-start justify-between gap-3">
+                            <div>
+                                <p class="sm-card-title text-slate-800">ចំណូល និងប្រាក់ចំណេញ 14 ថ្ងៃ</p>
+                                <p class="sm-card-sub text-slate-500">តម្លៃមិនរួមអាករ · ចុចលើថ្ងៃណាមួយដើម្បីមើលលម្អិត</p>
+                            </div>
+                            <div class="flex items-center gap-4 sm-td-sub text-slate-500">
+                                <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-600"></span>ប្រាក់ចំណេញដុល</span>
+                                <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-slate-300"></span>ថ្លៃដើម</span>
+                            </div>
+                        </div>
+                        <div class="p-5">
+                            <div id="dayDetail" class="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2 pb-4 mb-4 border-b border-dashed border-slate-200"></div>
+                            <div id="chart" class="h-[240px] w-full"></div>
+                        </div>
+                    </section>
+                    <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="px-5 pt-4 pb-3 border-b border-slate-100">
+                            <p class="sm-card-title text-slate-800">ត្រូវពិនិត្យ</p>
+                            <p class="sm-card-sub text-slate-500">ការងារដែលកំពុងរង់ចាំនៅក្នុងហាង</p>
+                        </div>
+                        <div id="attention" class="divide-y divide-slate-100"></div>
+                    </section>
+                </div>
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-5 items-start">
+                    <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm min-w-0">
+                        <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex items-start justify-between gap-3">
+                            <div>
+                                <p class="sm-card-title text-slate-800">លទ្ធផលតាមបុគ្គលិក</p>
+                                <p id="staffSub" class="sm-card-sub text-slate-500"></p>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto"><table class="w-full min-w-[560px]">
+                            <thead><tr class="border-b border-slate-100 bg-slate-50/60">
+                                <th class="sm-th py-2.5 px-5 text-left text-slate-500">បុគ្គលិក</th>
+                                <th class="sm-th py-2.5 px-3 text-right text-slate-500">វេន</th>
+                                <th class="sm-th py-2.5 px-3 text-right text-slate-500">លក់សរុប</th>
+                                <th class="sm-th py-2.5 px-3 text-right text-slate-500">មធ្យម</th>
+                                <th class="sm-th py-2.5 px-3 text-right text-slate-500">លុបចោល</th>
+                                <th class="sm-th py-2.5 px-5 text-right text-slate-500">ខុសគ្នាសាច់ប្រាក់</th>
+                            </tr></thead>
+                            <tbody id="staffRows" class="divide-y divide-slate-100"></tbody>
+                        </table></div>
+                    </section>
+                    <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm min-w-0">
+                        <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex items-start justify-between gap-3">
+                            <div>
+                                <p class="sm-card-title text-slate-800">ទំនិញរកប្រាក់ចំណេញបានច្រើន</p>
+                                <p class="sm-card-sub text-slate-500">តាមប្រាក់ចំណេញដុល មិនមែនតាមចំនួនលក់</p>
+                            </div>
+                            <a href="../reports/profit-report.html" class="sm-badge px-3 py-1.5 rounded-lg text-emerald-700 hover:bg-emerald-50 font-semibold whitespace-nowrap">របាយការណ៍ពេញ</a>
+                        </div>
+                        <div id="topProducts" class="divide-y divide-slate-100"></div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/admin-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script src="../../shared/scripts/charts.js"></script>
+    <script>
+
+        /* ផ្ទាំងគ្រប់គ្រងម្ចាស់ហាង (ឯកសាររចនាលេខ 03 ផ្នែក 3) — ចំណូល ប្រាក់ចំណេញ និងហានិភ័យសាច់ប្រាក់ */
+
+        const PERIODS = [
+            { id: 'today', label: 'ថ្ងៃនេះ', days: 1 },
+            { id: 'week', label: '7 ថ្ងៃ', days: 7 },
+            { id: 'all', label: '14 ថ្ងៃ', days: 14 }
+        ];
+        let period = 'today';
+        let picked = null;
+        const DAYS = adminDays(14);
+        const BY_DAY = {};
+        mgrAllSales().forEach(s => { const d = saleBizDate(s); (BY_DAY[d] = BY_DAY[d] || []).push(s); });
+
+        function periodDates(id, back) {
+            const n = PERIODS.find(p => p.id === id).days;
+            const off = back ? n : 0;
+            return DAYS.slice(Math.max(0, DAYS.length - n - off), DAYS.length - off).map(d => d.date);
+        }
+
+        /* ថ្ងៃនេះមិនទាន់ចប់ — ប្រៀបធៀបជាមួយថ្ងៃដូចគ្នាសប្តាហ៍មុន ត្រឹមម៉ោងដូចគ្នា ដើម្បីកុំឱ្យតួលេខធ្លាក់ខុសការពិត */
+        function sinceStart(s, d) {
+            return new Date(s.time) - new Date(d + 'T00:00');
+        }
+
+        function stats(dates, cutoff) {
+            const set = new Set(dates);
+            const sales = dates.flatMap(d => (BY_DAY[d] || []).filter(s => cutoff == null || sinceStart(s, d) <= cutoff));
+            const acc = profitOf(sales);
+            acc.variance = DAYS.filter(d => set.has(d.date)).reduce((t, d) => t + d.variance, 0);
+            acc.counted = mgrAllShifts().filter(s => set.has(s.date) && s.countedUSD != null).length;
+            acc.sales = sales;
+            return acc;
+        }
+
+        function current() {
+            const today = businessDate();
+            if (period === 'today') {
+                const cutoff = Date.now() - new Date(today + 'T00:00');
+                const lastWeek = isoDate(addDays(new Date(today + 'T12:00'), -7));
+                return { now: stats([today]), before: stats([lastWeek], cutoff), note: 'ប្រៀបធៀបនឹងថ្ងៃដូចគ្នាសប្តាហ៍មុន ត្រឹមម៉ោងនេះ' };
+            }
+            if (period === 'week') return { now: stats(periodDates('week')), before: stats(periodDates('week', true)), note: 'ប្រៀបធៀបនឹង 7 ថ្ងៃមុននោះ' };
+            return { now: stats(periodDates('all')), before: null, note: 'ទិន្នន័យទាំងអស់ដែលមាន' };
+        }
+
+        function delta(now, before, invert) {
+            const pct = before ? pctChange(now, before) : null;
+            if (pct == null || !isFinite(pct)) return '<span class="text-slate-400">គ្មានទិន្នន័យប្រៀបធៀប</span>';
+            const up = pct >= 0;
+            const good = invert ? !up : up;
+            return `<span class="inline-flex items-center gap-1 font-semibold ${Math.abs(pct) < 0.5 ? 'text-slate-500' : good ? 'text-emerald-700' : 'text-rose-600'}">
+                <i class="fas ${up ? 'fa-arrow-up' : 'fa-arrow-down'} text-[10px]"></i>${Math.abs(pct).toFixed(1)}%</span>`;
+        }
+
+        function kpi(label, value, sub, extra) {
+            return `<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm min-w-0">
+                <span class="sm-kpi-label text-slate-500">${label}</span>
+                <h3 class="sm-kpi-value text-slate-800 mt-1 sm-figure">${value}</h3>
+                <p class="sm-kpi-sub text-slate-500 mt-1 flex flex-wrap items-center gap-x-2">${sub}</p>
+                ${extra || ''}
+            </div>`;
+        }
+
+        function renderKpis(c) {
+            const a = c.now;
+            const b = c.before || {};
+            const tol = Number(posSettings().varianceTolerance) || 5;
+            const v = a.variance;
+            document.getElementById('kpiRow').innerHTML =
+                kpi('ចំណូលលក់', fmtUSD(a.gross), `${delta(a.gross, b.gross)}<span>${a.tx} វិក្កយបត្រ</span>`) +
+                kpi('ប្រាក់ចំណេញដុល', fmtUSD(a.profit), `${delta(a.profit, b.profit)}<span>អត្រា ${a.margin.toFixed(1)}%</span>`,
+                    `<div class="h-1.5 rounded-full bg-slate-100 mt-3 overflow-hidden"><div class="h-full bg-emerald-600" style="width:${Math.min(Math.max(a.margin, 0), 100)}%"></div></div>`) +
+                kpi('មធ្យមក្នុងមួយវិក្កយបត្រ', fmtUSD(a.avg), `${delta(a.avg, b.avg)}<span>លុបចោល ${a.voids}</span>`) +
+                (a.counted ? kpi('ខុសគ្នាសាច់ប្រាក់', `<span class="${Math.abs(v) > tol ? (v < 0 ? 'text-rose-600' : 'text-amber-600') : 'text-slate-800'}">${v > 0.005 ? '+' : ''}${fmtUSD(v)}</span>`,
+                    `<span>${v < -0.005 ? 'ខ្វះ' : v > 0.005 ? 'លើស' : 'ត្រូវគ្នា'} · ${a.counted} វេនដែលបានរាប់</span>`)
+                    : kpi('ខុសគ្នាសាច់ប្រាក់', '<span class="text-slate-400">—</span>', '<span>មិនទាន់មានវេនបិទ និងរាប់ប្រាក់</span>'));
+        }
+
+        /* ក្រាហ្វជង់៖ ថ្លៃដើម (ប្រផេះ) + ប្រាក់ចំណេញដុល (បៃតង) = ចំណូលមិនរួមអាករ · ចុចលើជួរឈរដើម្បីមើលថ្ងៃនោះ */
+        function renderChart() {
+            const today = businessDate();
+            if (!picked) picked = today;
+            const label = d => d.date === today ? 'ថ្ងៃនេះ' : String(new Date(d.date + 'T12:00').getDate());
+            const chart = posChart('chart', {
+                grid: { left: 4, right: 4, top: 12, bottom: 4, containLabel: true },
+                xAxis: chartCategoryAxis(DAYS.map(label), {
+                    axisLabel: { color: '#64748b', fontSize: 12, fontFamily: CHART_FONT,
+                        formatter: (v, i) => DAYS[i] && DAYS[i].date === picked ? `{on|${v}}` : v,
+                        rich: { on: { color: CHART_TONE.emerald, fontWeight: 700, fontFamily: CHART_FONT } } }
+                }),
+                yAxis: chartValueAxis(v => '$' + v),
+                tooltip: {
+                    formatter: ps => {
+                        const d = DAYS[ps[0].dataIndex];
+                        return chartTipTitle(d.date === today ? 'ថ្ងៃនេះ (កំពុងលក់)' : fmtDate(d.date + 'T12:00')) +
+                            chartTipRow(CHART_TONE.slate, 'ចំណូលមិនរួមអាករ', fmtUSD(d.net)) +
+                            chartTipRow(CHART_TONE.slate, 'ថ្លៃដើម', fmtUSD(d.cost)) +
+                            chartTipRow(CHART_TONE.emerald, 'ប្រាក់ចំណេញដុល', fmtUSD(d.profit)) +
+                            chartTipRow(CHART_TONE.emerald, 'អត្រាចំណេញ', d.margin.toFixed(1) + '%') +
+                            chartTipRow('#94a3b8', 'វិក្កយបត្រ', d.tx);
+                    }
+                },
+                series: [
+                    { name: 'ថ្លៃដើម', type: 'bar', stack: 'net', barMaxWidth: 34, cursor: 'pointer',
+                      data: DAYS.map(d => ({ value: +d.cost.toFixed(2), itemStyle: { color: d.date === picked ? '#94a3b8' : CHART_TONE.slate, opacity: d.date === today ? .6 : 1 } })) },
+                    { name: 'ប្រាក់ចំណេញដុល', type: 'bar', stack: 'net', barMaxWidth: 34, cursor: 'pointer',
+                      itemStyle: { borderRadius: [4, 4, 0, 0] },
+                      data: DAYS.map(d => ({ value: +Math.max(d.profit, 0).toFixed(2), itemStyle: { color: d.date === picked ? '#047857' : CHART_TONE.emerald, opacity: d.date === today ? .6 : 1 } })) }
+                ]
+            });
+            if (chart) {
+                chart.getZr().off('click');
+                chart.getZr().on('click', e => {
+                    const pt = [e.offsetX, e.offsetY];
+                    if (!chart.containPixel('grid', pt)) return;
+                    const i = chart.convertFromPixel({ seriesIndex: 0 }, pt)[0];
+                    if (DAYS[i]) pickDay(DAYS[i].date);
+                });
+            }
+            const d = DAYS.find(x => x.date === picked) || DAYS[DAYS.length - 1];
+            const cell = (label, value, tone) => `<div class="min-w-0"><p class="sm-td-sub text-slate-500">${label}</p><p class="sm-value sm-figure ${tone || 'text-slate-800'}">${value}</p></div>`;
+            document.getElementById('dayDetail').innerHTML =
+                cell(d.date === today ? 'ថ្ងៃនេះ (កំពុងលក់)' : fmtDate(d.date + 'T12:00'), fmtUSD(d.gross)) +
+                cell('ប្រាក់ចំណេញដុល', fmtUSD(d.profit), 'text-emerald-700') +
+                cell('អត្រាចំណេញ', d.margin.toFixed(1) + '%') +
+                cell('វិក្កយបត្រ', `${d.tx}${d.voids ? ` <span class="sm-td-sub text-slate-400">· លុប ${d.voids}</span>` : ''}`);
+        }
+
+        function pickDay(d) {
+            picked = d;
+            renderChart();
+        }
+
+        function attentionRow(icon, tone, title, note, href, count) {
+            return `<a href="${href}" class="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50 transition">
+                <span class="w-9 h-9 rounded-lg bg-${tone}-50 text-${tone}-600 flex items-center justify-center flex-shrink-0"><i class="fas ${icon} text-sm"></i></span>
+                <span class="min-w-0 flex-1"><span class="sm-value text-slate-800 block">${title}</span><span class="sm-td-sub text-slate-500 block truncate">${note}</span></span>
+                ${count != null ? `<span class="sm-count min-w-[26px] h-[26px] px-2 rounded-full bg-${tone}-600 text-white text-[12px] font-semibold inline-flex items-center justify-center">${count}</span>` : ''}
+                <i class="fas fa-chevron-right text-[11px] text-slate-300"></i>
+            </a>`;
+        }
+
+        function renderAttention() {
+            const rows = [];
+            const pend = pendingApprovals().length;
+            if (pend) rows.push(attentionRow('fa-shield-halved', 'amber', 'សំណើរង់ចាំអនុម័ត', 'លុបចោល និងប្រគល់វិញពីបញ្ជរ', '../../manager/approvals/approvals.html', pend));
+            const review = mgrAwaitingReviewCount();
+            if (review) rows.push(attentionRow('fa-file-signature', 'indigo', 'វេនរង់ចាំត្រួតពិនិត្យ', 'បិទរួច តែមិនទាន់ចុះហត្ថលេខា', '../../manager/shifts/shifts.html', review));
+            const drops = mgrPendingDropCount();
+            if (drops) rows.push(attentionRow('fa-vault', 'cyan', 'ប្រាក់ដាក់ទូដែកមិនទាន់ទទួល', 'ត្រូវរាប់ និងបញ្ជាក់', '../../manager/cash/cash.html', drops));
+            const tol = Number(posSettings().varianceTolerance) || 5;
+            const week = new Set(periodDates('week'));
+            const large = mgrAllShifts().filter(s => week.has(s.date)).map(s => ({ s, v: shiftVariance(s) })).filter(x => x.v && x.v.abs > tol);
+            if (large.length) rows.push(attentionRow('fa-scale-unbalanced', 'rose', 'វេនខុសគ្នាលើសល្បឹមភាព', `លើស ${fmtUSD(tol)} ក្នុង 7 ថ្ងៃ · ${[...new Set(large.map(x => personName(x.s.cashierId)))].join(' ')}`, '../../manager/exceptions/exceptions.html', large.length));
+            const low = sellableProducts().filter(p => marginOf(p) < 20);
+            if (low.length) rows.push(attentionRow('fa-tag', 'amber', 'ទំនិញចំណេញទាប', `អត្រាក្រោម 20% · ${low.map(p => PRODUCT_SHORT[p.sku] || p.name.split(' ')[0]).slice(0, 3).join(' ')}`, '../products/products.html', low.length));
+            const fx = settingsHistory().find(h => h.changes.some(c => c.key === 'fxRate'));
+            if (!fx || fx.at.slice(0, 10) !== businessDate()) {
+                rows.push(attentionRow('fa-money-bill-transfer', 'slate', 'អត្រាប្ដូរប្រាក់មិនទាន់ធ្វើបច្ចុប្បន្នភាពថ្ងៃនេះ', `កំពុងប្រើ ${fxRate()} រៀល · ${fx ? 'កែចុងក្រោយ ' + fmtDate(fx.at) : 'មិនដែលកែ'}`, '../settings/settings.html', null));
+            }
+            document.getElementById('attention').innerHTML = rows.length ? rows.join('') :
+                `<div class="px-5 py-10 text-center"><span class="w-11 h-11 rounded-full bg-emerald-50 text-emerald-600 inline-flex items-center justify-center"><i class="fas fa-check"></i></span>
+                    <p class="sm-value text-slate-700 mt-2">គ្មានអ្វីរង់ចាំទេ</p><p class="sm-td-sub text-slate-500">ហាងដំណើរការធម្មតា</p></div>`;
+        }
+
+        function renderStaff(c) {
+            const dates = new Set(period === 'today' ? [businessDate()] : periodDates(period));
+            const rows = {};
+            const row = id => rows[id] = rows[id] || { id, shifts: 0, variance: 0, counted: 0, sales: [] };
+            c.now.sales.forEach(s => row(s.cashierId).sales.push(s));
+            mgrAllShifts().filter(s => dates.has(s.date)).forEach(s => {
+                const r = row(s.cashierId);
+                r.shifts += 1;
+                const v = shiftVariance(s);
+                if (v) { r.variance += v.diff; r.counted += 1; }
+            });
+            const tol = Number(posSettings().varianceTolerance) || 5;
+            const list = Object.values(rows).map(r => Object.assign(r, profitOf(r.sales))).sort((a, b) => b.gross - a.gross);
+            document.getElementById('staffSub').textContent = `${PERIODS.find(p => p.id === period).label} · តម្លៃលក់រួមអាករ`;
+            document.getElementById('staffRows').innerHTML = list.length ? list.map(r => `<tr>
+                <td class="py-3 px-5 sm-td">${personChip(r.id)}<span class="sm-td-sub text-slate-400 ml-9 block -mt-1">${ROLE_NAME[roleOf(r.id)] || ''}</span></td>
+                <td class="py-3 px-3 text-right sm-td sm-figure">${r.shifts}</td>
+                <td class="py-3 px-3 text-right sm-td-strong sm-figure">${fmtUSD(r.gross)}</td>
+                <td class="py-3 px-3 text-right sm-td sm-figure">${fmtUSD(r.avg)}</td>
+                <td class="py-3 px-3 text-right sm-td sm-figure ${r.voids ? 'text-amber-700' : ''}">${r.voids}</td>
+                <td class="py-3 px-5 text-right sm-td-strong sm-figure ${!r.counted ? 'text-slate-400' : Math.abs(r.variance) > tol ? 'text-rose-600' : 'text-slate-700'}">${r.counted ? (r.variance > 0.005 ? '+' : '') + fmtUSD(r.variance) : 'មិនទាន់រាប់'}</td>
+            </tr>`).join('') : `<tr><td colspan="6">${emptyState('fa-users', 'គ្មានការលក់ក្នុងរយៈពេលនេះ', '')}</td></tr>`;
+        }
+
+        function renderTop(c) {
+            const t = {};
+            c.now.sales.forEach(s => {
+                if (isVoided(s)) return;
+                const keep = 1 - (Number(s.discountPercent) || 0) / 100;
+                s.items.forEach(l => {
+                    const q = l.qty - returnedQty(s, l.sku);
+                    if (q <= 0) return;
+                    const x = t[l.sku] = t[l.sku] || { qty: 0, net: 0, cost: 0 };
+                    x.qty += q;
+                    x.net += exVat(linePrice(l) * q * keep);
+                    x.cost += costOf(l.sku) * q;
+                });
+            });
+            const list = Object.keys(t).map(sku => Object.assign({ sku, profit: t[sku].net - t[sku].cost }, t[sku])).sort((a, b) => b.profit - a.profit).slice(0, 6);
+            const max = Math.max(...list.map(x => x.profit), 1);
+            document.getElementById('topProducts').innerHTML = list.length ? list.map((x, i) => {
+                const p = getProduct(x.sku);
+                return `<div class="flex items-center gap-3 px-5 py-3">
+                    <span class="w-5 sm-td-sub text-slate-400 sm-figure">${i + 1}</span>
+                    <span class="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0">${productImgHtml(p)}</span>
+                    <span class="min-w-0 flex-1">
+                        <span class="sm-td-strong text-slate-800 block truncate">${p.name}</span>
+                        <span class="block h-1.5 rounded-full bg-slate-100 mt-1.5 overflow-hidden"><span class="block h-full bg-emerald-600" style="width:${x.profit / max * 100}%"></span></span>
+                    </span>
+                    <span class="text-right flex-shrink-0">
+                        <span class="sm-td-strong sm-figure text-slate-800 block">${fmtUSD(x.profit)}</span>
+                        <span class="sm-td-sub text-slate-500 block">${x.qty} ${p.unit} · ${(x.net ? x.profit / x.net * 100 : 0).toFixed(0)}%</span>
+                    </span>
+                </div>`;
+            }).join('') : emptyState('fa-box-open', 'គ្មានការលក់ក្នុងរយៈពេលនេះ', '');
+        }
+
+        function renderTabs() {
+            document.getElementById('periodTabs').innerHTML = PERIODS.map(p => `<button type="button" onclick="period='${p.id}'; renderAll()"
+                class="sm-badge h-9 px-4 rounded-lg transition ${period === p.id ? 'bg-emerald-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">${p.label}</button>`).join('');
+        }
+
+        function renderAll() {
+            const c = current();
+            renderTabs();
+            document.getElementById('periodNote').textContent = c.note;
+            renderKpis(c);
+            renderChart();
+            renderAttention();
+            renderStaff(c);
+            renderTop(c);
+        }
+
+        window.onStoreChanged = () => location.reload();
+        document.addEventListener('DOMContentLoaded', renderAll);
+    </script>
+</body>
+</html>

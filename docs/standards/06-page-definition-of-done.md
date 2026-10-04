@@ -27,7 +27,9 @@ Use it: (1) when building a page, (2) when reviewing someone else's page, (3) at
 - [ ] No native `title=""` tooltips.
 - [ ] No modal for create / edit / view — full pages only.
 - [ ] Table rows use one `⋮` menu, not inline buttons.
-- [ ] No ECharts on a dashboard page (Reports pages only).
+- [ ] Every chart uses ECharts through `posChart()` in `shared/scripts/charts.js`. **POS override (2026-10-04):** the owner
+      asked for ECharts on all charts, dashboards included, so the eBMS «no ECharts on dashboards» rule does not apply here.
+      A dashboard chart must still support an action (pick a day, spot the peak hour), not decorate.
 
 ## C. Language
 

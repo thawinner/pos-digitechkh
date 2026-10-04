@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - ទំនិញ និងតម្លៃ</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#059669", 'primary-dark': "#047857", accent: "#34d399" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+</head>
+<body id="adminPortal" data-role-root="../.." data-active="products" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="ទំនិញ និងតម្លៃ"
+             data-subtitle="តម្លៃលក់ ថ្លៃដើម និងអត្រាចំណេញក្នុងមួយទំនិញ"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+
+            <div class="w-full space-y-5">
+                <div id="kpiRow" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
+                <div class="bg-white rounded-2xl p-2 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-2">
+                    <div id="catTabs" class="flex flex-wrap gap-1"></div>
+                    <label class="relative w-full sm:w-[240px]">
+                        <i class="fas fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input id="search" oninput="renderList()" type="text" placeholder="ស្វែងរកឈ្មោះ ឬលេខកូដ"
+                            class="sm-td w-full h-9 pl-8 pr-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:outline-none">
+                    </label>
+                </div>
+                <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div class="max-md:hidden overflow-x-auto"><table class="w-full">
+                        <thead><tr class="border-b border-slate-100 bg-slate-50/60">
+                            <th class="sm-th py-2.5 px-5 text-left text-slate-500">ទំនិញ</th>
+                            <th class="sm-th py-2.5 px-3 text-right text-slate-500">តម្លៃលក់</th>
+                            <th class="sm-th py-2.5 px-3 text-right text-slate-500">ថ្លៃដើម</th>
+                            <th class="sm-th py-2.5 px-3 text-right text-slate-500">ចំណេញក្នុងមួយឯកតា</th>
+                            <th class="sm-th py-2.5 px-3 text-left text-slate-500 w-[16%]">អត្រាចំណេញ</th>
+                            <th class="sm-th py-2.5 px-3 text-right text-slate-500">លក់ 14 ថ្ងៃ</th>
+                            <th class="sm-th py-2.5 px-5 w-16"></th>
+                        </tr></thead>
+                        <tbody id="rows" class="divide-y divide-slate-100"></tbody>
+                    </table></div>
+                    <div id="cards" class="md:hidden divide-y divide-slate-100"></div>
+                    <div id="empty" class="hidden"></div>
+                </section>
+                <p class="sm-td-sub text-slate-500 px-1"><i class="fas fa-circle-info mr-1 text-slate-400"></i>តម្លៃលក់រួមអាករ 10% · ថ្លៃដើមមិនរួមអាករ · ការប្តូរតម្លៃមានប្រសិទ្ធភាពលើការលក់បន្ទាប់ វិក្កយបត្រចាស់រក្សាតម្លៃដើមរបស់វា</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/admin-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+
+        /* ទំនិញ តម្លៃ និងថ្លៃដើម (ឯកសាររចនាលេខ 03 ផ្នែក 6) — អ្នកគ្រប់គ្រងវេន និងអ្នកគិតលុយមិនឃើញថ្លៃដើមទេ */
+
+        let cat = 'all';
+        const LOW = 20;
+
+        /* ចំនួនលក់ និងប្រាក់ចំណេញ 14 ថ្ងៃ ក្នុងមួយទំនិញ */
+        const SOLD = {};
+        mgrAllSales().forEach(s => {
+            if (isVoided(s)) return;
+            const keep = 1 - (Number(s.discountPercent) || 0) / 100;
+            s.items.forEach(l => {
+                const q = l.qty - returnedQty(s, l.sku);
+                if (q <= 0) return;
+                const x = SOLD[l.sku] = SOLD[l.sku] || { qty: 0, net: 0 };
+                x.qty += q;
+                x.net += exVat(linePrice(l) * q * keep);
+            });
+        });
+
+        function profitPer(p) {
+            return exVat(p.price) - costOf(p.sku);
+        }
+
+        function marginTone(m) {
+            return m < LOW ? 'text-rose-600' : m < 25 ? 'text-amber-700' : 'text-emerald-700';
+        }
+
+        function marginCell(p) {
+            const m = marginOf(p);
+            const bar = m < LOW ? 'bg-rose-500' : m < 25 ? 'bg-amber-500' : 'bg-emerald-600';
+            return `<div class="flex items-center gap-2.5"><div class="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden"><div class="h-full ${bar}" style="width:${Math.min(Math.max(m, 0), 60) / 60 * 100}%"></div></div>
+                <span class="sm-td-strong sm-figure w-12 text-right ${marginTone(m)}">${m.toFixed(0)}%</span></div>`;
+        }
+
+        function priceCell(p) {
+            const changed = p.basePrice != null && Math.abs(p.price - p.basePrice) > 0.001;
+            return `<span class="sm-td-strong sm-figure text-slate-800">${fmtUSD(p.price)}</span>${changed ? `<span class="block sm-td-sub text-slate-400 sm-figure line-through">${fmtUSD(p.basePrice)}</span>` : ''}`;
+        }
+
+        function menuItem(icon, label, act, sku, danger) {
+            return `<button type="button" onclick="closeAllFloatingDropdowns(); ${act}('${sku}')" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl ${danger ? 'text-rose-600 hover:bg-rose-50' : 'text-slate-700 hover:bg-slate-50'}">
+                <span class="w-7 h-7 rounded-lg ${danger ? 'bg-rose-50' : 'bg-slate-100 text-slate-600'} flex items-center justify-center"><i class="fas ${icon} text-[11px]"></i></span>${label}</button>`;
+        }
+
+        function menu(p, mid) {
+            return `<div id="${mid}" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 text-left min-w-[220px]">
+                ${menuItem('fa-tag', 'ប្តូរតម្លៃលក់', 'editPrice', p.sku)}
+                ${menuItem('fa-truck-ramp-box', 'កែថ្លៃដើម', 'editCost', p.sku)}
+                <div class="h-px bg-slate-100 my-1"></div>
+                ${p.active === false ? menuItem('fa-circle-play', 'បើកលក់វិញ', 'toggleActive', p.sku) : menuItem('fa-circle-pause', 'ផ្អាកលក់', 'toggleActive', p.sku, true)}
+            </div>`;
+        }
+
+        function dotsBtn(mid) {
+            return `<button onclick="toggleRowActionMenu(event, '${mid}')" type="button" aria-label="សកម្មភាព" class="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200/70 inline-flex items-center justify-center"><i class="fas fa-ellipsis-vertical text-sm"></i></button>`;
+        }
+
+        function visible() {
+            const q = document.getElementById('search').value.trim().toLowerCase();
+            return PRODUCTS.filter(p => cat === 'all' || (cat === 'low' ? p.active !== false && marginOf(p) < LOW : cat === 'paused' ? p.active === false : p.category === cat))
+                .filter(p => !q || p.name.toLowerCase().includes(q) || p.sku.includes(q));
+        }
+
+        function renderKpis() {
+            const live = sellableProducts();
+            const tot = Object.keys(SOLD).reduce((a, k) => ({ net: a.net + SOLD[k].net, cost: a.cost + costOf(k) * SOLD[k].qty }), { net: 0, cost: 0 });
+            const blended = tot.net ? (tot.net - tot.cost) / tot.net * 100 : 0;
+            const low = live.filter(p => marginOf(p) < LOW);
+            document.getElementById('kpiRow').innerHTML =
+                kpiCard('ទំនិញកំពុងលក់', `${live.length}`, `ក្នុង ${PRODUCTS.length} មុខ · ${CATEGORIES.length - 1} ប្រភេទ`) +
+                kpiCard('អត្រាចំណេញជាមធ្យម', blended.toFixed(1) + '%', 'ថ្លឹងតាមការលក់ 14 ថ្ងៃ', 'text-emerald-700') +
+                kpiCard('ចំណេញទាប', `${low.length}`, `អត្រាក្រោម ${LOW}%`, low.length ? 'text-rose-600' : '') +
+                kpiCard('បានផ្អាកលក់', `${PRODUCTS.length - live.length}`, 'មិនបង្ហាញលើផ្ទាំងគិតលុយ');
+        }
+
+        function renderTabs() {
+            const tabs = CATEGORIES.map(c => ({ id: c.id, label: c.label }))
+                .concat([{ id: 'low', label: 'ចំណេញទាប' }, { id: 'paused', label: 'បានផ្អាក' }]);
+            document.getElementById('catTabs').innerHTML = tabs.map(t => `<button type="button" onclick="cat='${t.id}'; renderAll()"
+                class="sm-badge h-9 px-3.5 rounded-xl transition ${cat === t.id ? 'bg-emerald-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">${t.label}</button>`).join('');
+        }
+
+        function renderList() {
+            const list = visible();
+            const empty = document.getElementById('empty');
+            empty.classList.toggle('hidden', !!list.length);
+            empty.innerHTML = list.length ? '' : emptyState('fa-box-open', 'គ្មានទំនិញក្នុងបញ្ជីនេះ', cat === 'low' ? 'ទំនិញទាំងអស់មានអត្រាចំណេញល្អ' : 'សូមសាកល្បងពាក្យស្វែងរកផ្សេង');
+            const paused = p => p.active === false ? '<span class="sm-badge ml-1.5 px-1.5 rounded bg-slate-100 text-slate-500">ផ្អាក</span>' : '';
+            const thumb = (p, c) => `<span class="${c} rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 ${p.active === false ? 'grayscale opacity-60' : ''}">${productImgHtml(p)}</span>`;
+            document.getElementById('rows').innerHTML = list.map(p => {
+                const s = SOLD[p.sku] || { qty: 0 };
+                return `<tr class="${p.active === false ? 'bg-slate-50/50' : ''}">
+                    <td class="py-2.5 px-5"><div class="flex items-center gap-3 min-w-0">${thumb(p, 'w-11 h-11')}<div class="min-w-0"><p class="sm-td-strong text-slate-800 truncate">${p.name}${paused(p)}</p><p class="sm-td-sub text-slate-400"><span class="sm-figure">${p.sku}</span> · ${categoryLabel(p.category)}</p></div></div></td>
+                    <td class="py-2.5 px-3 text-right">${priceCell(p)}</td>
+                    <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-600">${fmtUSD(costOf(p.sku))}</td>
+                    <td class="py-2.5 px-3 text-right sm-td-strong sm-figure ${marginTone(marginOf(p))}">${fmtUSD(profitPer(p))}</td>
+                    <td class="py-2.5 px-3">${marginCell(p)}</td>
+                    <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-600">${s.qty} <span class="text-slate-400">${p.unit}</span></td>
+                    <td class="py-2.5 px-5 text-right">${dotsBtn('m-' + p.sku)}${menu(p, 'm-' + p.sku)}</td>
+                </tr>`;
+            }).join('');
+            document.getElementById('cards').innerHTML = list.map(p => `<div class="p-4 flex items-start gap-3">
+                ${thumb(p, 'w-12 h-12')}
+                <div class="min-w-0 flex-1">
+                    <p class="sm-value text-slate-800 truncate">${p.name}${paused(p)}</p>
+                    <p class="sm-td-sub text-slate-500 sm-figure">${fmtUSD(p.price)} · ថ្លៃដើម ${fmtUSD(costOf(p.sku))}</p>
+                    <p class="sm-td-sub font-semibold ${marginTone(marginOf(p))}">ចំណេញ ${marginOf(p).toFixed(0)}% · ${fmtUSD(profitPer(p))}/${p.unit}</p>
+                </div>
+                ${dotsBtn('c-' + p.sku)}${menu(p, 'c-' + p.sku)}
+            </div>`).join('');
+        }
+
+        function renderAll() {
+            renderKpis();
+            renderTabs();
+            renderList();
+        }
+
+        /* ===== សកម្មភាព ===== */
+
+        function money(v) {
+            const n = Number(String(v).replace(/[$,\s]/g, ''));
+            return v !== '' && isFinite(n) ? Math.round(n * 100) / 100 : NaN;
+        }
+
+        function marginPreview(price, cost) {
+            if (!(price > 0) || !(cost >= 0)) return '';
+            const net = exVat(price);
+            const m = (net - cost) / net * 100;
+            return `<div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 grid grid-cols-3 gap-2">
+                <div><p class="sm-td-sub text-slate-500">មិនរួមអាករ</p><p class="sm-value sm-figure text-slate-800">${fmtUSD(net)}</p></div>
+                <div><p class="sm-td-sub text-slate-500">ចំណេញ/ឯកតា</p><p class="sm-value sm-figure ${marginTone(m)}">${fmtUSD(net - cost)}</p></div>
+                <div><p class="sm-td-sub text-slate-500">អត្រាចំណេញ</p><p class="sm-value sm-figure ${marginTone(m)}">${m.toFixed(1)}%</p></div>
+            </div>${m < 0 ? '<p class="sm-td-sub text-rose-600 mt-1.5"><i class="fas fa-triangle-exclamation mr-1"></i>តម្លៃនេះលក់ខាតដើម</p>' : m < LOW ? `<p class="sm-td-sub text-amber-700 mt-1.5">អត្រាចំណេញក្រោម ${LOW}%</p>` : ''}`;
+        }
+
+        async function editPrice(sku) {
+            const p = getProduct(sku);
+            const cost = costOf(sku);
+            const v = await showFormDialog({
+                title: 'ប្តូរតម្លៃលក់', icon: 'fa-tag',
+                message: `${p.name} · ថ្លៃដើម ${fmtUSD(cost)}`,
+                fields: [{ key: 'price', label: 'តម្លៃលក់ថ្មី (រួមអាករ)', value: p.price.toFixed(2), type: 'number', prefix: '$', suffix: `/${p.unit}` }],
+                preview: x => marginPreview(money(x.price), cost),
+                validate: x => {
+                    const n = money(x.price);
+                    if (!(n > 0)) return 'សូមបញ្ចូលតម្លៃត្រឹមត្រូវ';
+                    if (n > 1000) return 'តម្លៃខ្ពស់ពេក · សូមពិនិត្យម្តងទៀត';
+                    if (Math.abs(n - p.price) < 0.001) return 'តម្លៃមិនបានប្តូរ';
+                    return '';
+                }
+            });
+            if (!v) return;
+            const n = money(v.price);
+            if (exVat(n) < cost && !(await showCustomConfirm({ title: 'លក់ខាតដើម?', message: `តម្លៃ ${fmtUSD(n)} ទាបជាងថ្លៃដើម · បន្តឬ?`, confirmText: 'បន្ត', danger: true }))) return;
+            const old = p.price;
+            updateCatalog(sku, { price: n }, `ប្តូរតម្លៃ ${p.name}៖ ${fmtUSD(old)} → ${fmtUSD(n)}`);
+            p.price = n;
+            renderAll();
+            showToast(`តម្លៃថ្មី ${fmtUSD(n)} មានប្រសិទ្ធភាពលើការលក់បន្ទាប់`);
+        }
+
+        async function editCost(sku) {
+            const p = getProduct(sku);
+            const cur = costOf(sku);
+            const v = await showFormDialog({
+                title: 'កែថ្លៃដើម', icon: 'fa-truck-ramp-box',
+                message: `${p.name} · តម្លៃលក់ ${fmtUSD(p.price)} · តាមវិក្កយបត្រអ្នកផ្គត់ផ្គង់ចុងក្រោយ`,
+                fields: [{ key: 'cost', label: 'ថ្លៃដើមក្នុងមួយឯកតា (មិនរួមអាករ)', value: cur.toFixed(2), type: 'number', prefix: '$', suffix: `/${p.unit}` }],
+                preview: x => marginPreview(p.price, money(x.cost)),
+                validate: x => {
+                    const n = money(x.cost);
+                    if (!(n >= 0)) return 'សូមបញ្ចូលថ្លៃដើមត្រឹមត្រូវ';
+                    if (Math.abs(n - cur) < 0.001) return 'ថ្លៃដើមមិនបានប្តូរ';
+                    return '';
+                }
+            });
+            if (!v) return;
+            const n = money(v.cost);
+            setCost(sku, n, `កែថ្លៃដើម ${p.name}៖ ${fmtUSD(cur)} → ${fmtUSD(n)}`);
+            renderAll();
+            showToast('បានរក្សាទុកថ្លៃដើម · របាយការណ៍ប្រាក់ចំណេញគណនាឡើងវិញ');
+        }
+
+        async function toggleActive(sku) {
+            const p = getProduct(sku);
+            if (p.active === false) {
+                updateCatalog(sku, { active: true }, `បើកលក់ ${p.name} វិញ`);
+                p.active = true;
+                renderAll();
+                showToast(`${p.name} បង្ហាញលើផ្ទាំងគិតលុយវិញ`);
+                return;
+            }
+            const reason = await showReasonPicker({
+                title: `ផ្អាកលក់ ${p.name}`,
+                message: 'ទំនិញនឹងបាត់ពីផ្ទាំងគិតលុយ និងការស្កេនបាកូដ · ប្រវត្តិលក់នៅដដែល',
+                reasons: ['អស់ពីស្តុក', 'ឈប់លក់ទំនិញនេះ', 'ទំនិញមានបញ្ហាគុណភាព', 'រង់ចាំតម្លៃថ្មី'],
+                confirmText: 'ផ្អាកលក់',
+                danger: true
+            });
+            if (!reason) return;
+            const quick = (posSettings().quickKeys || []).includes(sku);
+            updateCatalog(sku, { active: false }, `ផ្អាកលក់ ${p.name} · ${reason}`);
+            p.active = false;
+            renderAll();
+            showToast(quick ? `បានផ្អាក · ប៊ូតុងទំនិញញឹកញាប់នេះនឹងលាក់ពីផ្ទាំងគិតលុយ` : `បានផ្អាកលក់ ${p.name}`);
+        }
+
+        window.onStoreChanged = () => location.reload();
+        document.addEventListener('DOMContentLoaded', renderAll);
+    </script>
+</body>
+</html>

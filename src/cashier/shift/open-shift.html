@@ -61,7 +61,7 @@
 
     <main class="flex-1 w-full px-3 md:px-6 py-5">
         <!-- របារជំហាន -->
-        <div id="steps" class="w-full flex items-center gap-2 mb-5 overflow-x-auto"></div>
+        <div id="steps" class="w-full max-w-2xl mx-auto mb-5"></div>
         <div id="stage" class="w-full"></div>
     </main>
 
@@ -144,14 +144,16 @@
         /* ===== របារជំហាន ===== */
 
         function renderSteps() {
-            const steps = [['overview', 'fa-calendar-day', 'ជ្រើសរើសវេន'], ['count', 'fa-coins', 'រាប់ប្រាក់បាតថត'], ['approve', 'fa-user-shield', 'អ្នកគ្រប់គ្រងបញ្ជាក់']];
-            const idx = stage === 'overview' ? 0 : 1;
-            document.getElementById('steps').innerHTML = steps.map(([id, icon, label], i) => `
-                ${i ? `<span class="h-0.5 w-6 sm:w-12 rounded-full flex-shrink-0 ${i <= idx ? 'bg-cyan-500' : 'bg-white/10'}"></span>` : ''}
-                <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border flex-shrink-0 ${i === idx
-                    ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-100' : i < idx ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200' : 'border-white/10 text-slate-500'}">
-                    <i class="fas ${i < idx ? 'fa-check' : icon} text-[12px]"></i><span class="sm-td-sub font-semibold whitespace-nowrap">${label}</span>
-                </span>`).join('');
+            bmsStepper('steps', {
+                dark: true,
+                variant: 'icon',
+                size: 'md',
+                tone: 'amber',
+                doneTone: 'brand',
+                current: stage === 'overview' ? 1 : 2,
+                steps: [{ icon: 'fa-calendar-day', label: 'ជ្រើសរើសវេន' }, { icon: 'fa-coins', label: 'រាប់ប្រាក់បាតថត' }, { icon: 'fa-user-shield', label: 'អ្នកគ្រប់គ្រងបញ្ជាក់' }],
+                onStep: n => { if (n === 1) { stage = 'overview'; render(); } }
+            });
         }
 
         /* ===== ជំហាន 1៖ ទិដ្ឋភាពរួម ===== */
