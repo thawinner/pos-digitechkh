@@ -418,24 +418,41 @@ const PRODUCTS = [
     { sku: '8850002', barcode: '8850002', name: 'កាហ្វេកំប៉ុង នេស្ការ្វេ', category: 'drink', price: 1.25, unit: 'កំប៉ុង', stock: 96, icon: 'fa-mug-hot', tone: 'amber' },
     { sku: '8850003', barcode: '8850003', name: 'ទឹកក្រូច មីរិនដា 1.5 លីត្រ', category: 'drink', price: 1.75, unit: 'ដប', stock: 64, icon: 'fa-wine-bottle', tone: 'orange' },
     { sku: '8850004', barcode: '8850004', name: 'ទឹកដោះគោ ដាច់ឡាក់', category: 'drink', price: 2.10, unit: 'ប្រអប់', stock: 48, icon: 'fa-glass-water', tone: 'blue' },
+    { sku: '8850005', barcode: '8850005', name: 'ភេសជ្ជៈកូកា-កូឡា កំប៉ុង 330 មីលីលីត្រ', category: 'drink', price: 0.65, unit: 'កំប៉ុង', stock: 180, icon: 'fa-bottle-water', tone: 'rose' },
+    { sku: '8850006', barcode: '8850006', name: 'ភេសជ្ជៈប៉ូវកម្លាំង ការ៉ាបាវ', category: 'drink', price: 0.60, unit: 'កំប៉ុង', stock: 150, icon: 'fa-bolt', tone: 'yellow' },
+    { sku: '8850007', barcode: '8850007', name: 'តែបៃតង អូអ៊ីស៊ី 500 មីលីលីត្រ', category: 'drink', price: 0.90, unit: 'ដប', stock: 90, icon: 'fa-leaf', tone: 'emerald' },
+    { sku: '8850008', barcode: '8850008', name: 'ទឹកដូង 350 មីលីលីត្រ', category: 'drink', price: 1.00, unit: 'ដប', stock: 60, icon: 'fa-glass-water', tone: 'lime' },
 
     { sku: '8860001', barcode: '8860001', name: 'នំប៉័ង សាំងវិច', category: 'snack', price: 1.50, unit: 'ដុំ', stock: 35, icon: 'fa-bread-slice', tone: 'amber' },
     { sku: '8860002', barcode: '8860002', name: 'ដំឡូងបំពង លេយ៍', category: 'snack', price: 1.20, unit: 'កញ្ចប់', stock: 120, icon: 'fa-cookie-bite', tone: 'yellow' },
     { sku: '8860003', barcode: '8860003', name: 'សូកូឡា ស្នីកគ័រ', category: 'snack', price: 0.95, unit: 'ដុំ', stock: 150, icon: 'fa-candy-cane', tone: 'rose' },
     { sku: '8860004', barcode: '8860004', name: 'នំខេក ចម្រុះរសជាតិ', category: 'snack', price: 2.50, unit: 'ប្រអប់', stock: 28, icon: 'fa-cake-candles', tone: 'pink' },
+    { sku: '8860005', barcode: '8860005', name: 'មីកញ្ចប់ មាម៉ា', category: 'snack', price: 0.40, unit: 'កញ្ចប់', stock: 300, icon: 'fa-bowl-food', tone: 'orange' },
+    { sku: '8860006', barcode: '8860006', name: 'នំខូឃី អូរីអូ', category: 'snack', price: 1.10, unit: 'កញ្ចប់', stock: 80, icon: 'fa-cookie', tone: 'slate' },
+    { sku: '8860007', barcode: '8860007', name: 'ស្ករគ្រាប់ មេនតូស', category: 'snack', price: 0.50, unit: 'បំពង់', stock: 140, icon: 'fa-candy-cane', tone: 'sky' },
+    { sku: '8860008', barcode: '8860008', name: 'គ្រាប់ស្វាយចន្ទីលីង 100 ក្រាម', category: 'snack', price: 2.80, unit: 'កញ្ចប់', stock: 36, icon: 'fa-seedling', tone: 'amber' },
 
     { sku: '8870001', barcode: '8870001', name: 'សាប៊ូបោកខោអាវ 1 គីឡូក្រាម', category: 'household', price: 3.40, unit: 'កញ្ចប់', stock: 52, icon: 'fa-soap', tone: 'emerald' },
     { sku: '8870002', barcode: '8870002', name: 'ក្រដាសអនាម័យ 10 ដុំ', category: 'household', price: 4.20, unit: 'កញ្ចប់', stock: 40, icon: 'fa-toilet-paper', tone: 'slate' },
     { sku: '8870003', barcode: '8870003', name: 'ថ្នាំដុសធ្មេញ ខូលហ្គេត', category: 'household', price: 1.80, unit: 'ដប', stock: 88, icon: 'fa-tooth', tone: 'cyan' },
     { sku: '8870004', barcode: '8870004', name: 'សាប៊ូងូតទឹក ឡាក់ស៍', category: 'household', price: 2.75, unit: 'ដប', stock: 60, icon: 'fa-pump-soap', tone: 'purple' },
+    { sku: '8870005', barcode: '8870005', name: 'ទឹកលាងចាន ស៊ុនឡាយ 750 មីលីលីត្រ', category: 'household', price: 1.95, unit: 'ដប', stock: 56, icon: 'fa-hand-sparkles', tone: 'lime' },
+    { sku: '8870006', barcode: '8870006', name: 'ច្រាសដុសធ្មេញ ទន់', category: 'household', price: 1.10, unit: 'ដើម', stock: 70, icon: 'fa-tooth', tone: 'sky' },
+    { sku: '8870007', barcode: '8870007', name: 'ក្រដាសជូតមុខ ហោប៉ៅ កញ្ចប់ 10', category: 'household', price: 1.30, unit: 'កញ្ចប់', stock: 90, icon: 'fa-box-tissue', tone: 'pink' },
 
     { sku: '8880001', barcode: '8880001', name: 'សៀវភៅសរសេរ 100 ទំព័រ', category: 'stationery', price: 0.75, unit: 'ក្បាល', stock: 200, icon: 'fa-book', tone: 'blue' },
     { sku: '8880002', barcode: '8880002', name: 'ប៊ិច ខៀវ ដំណក់', category: 'stationery', price: 0.35, unit: 'ដើម', stock: 320, icon: 'fa-pen', tone: 'indigo' },
     { sku: '8880003', barcode: '8880003', name: 'ខ្មៅដៃខ្មៅ កញ្ចប់ 12 ដើម', category: 'stationery', price: 1.60, unit: 'កញ្ចប់', stock: 75, icon: 'fa-pencil', tone: 'amber' },
+    { sku: '8880004', barcode: '8880004', name: 'ជ័រលុប', category: 'stationery', price: 0.25, unit: 'ដុំ', stock: 260, icon: 'fa-eraser', tone: 'pink' },
+    { sku: '8880005', barcode: '8880005', name: 'បន្ទាត់ 30 សង់ទីម៉ែត្រ', category: 'stationery', price: 0.40, unit: 'ដើម', stock: 150, icon: 'fa-ruler', tone: 'cyan' },
+    { sku: '8880006', barcode: '8880006', name: 'កាវបិទក្រដាស', category: 'stationery', price: 0.80, unit: 'ដើម', stock: 90, icon: 'fa-paste', tone: 'violet' },
 
     { sku: '8890001', barcode: '8890001', name: 'ថ្មពិល ទំហំតូច កញ្ចប់ 4', category: 'electronic', price: 2.40, unit: 'កញ្ចប់', stock: 66, icon: 'fa-battery-full', tone: 'lime' },
     { sku: '8890002', barcode: '8890002', name: 'ខ្សែសាកទូរស័ព្ទ 1 ម៉ែត្រ', category: 'electronic', price: 3.90, unit: 'ខ្សែ', stock: 44, icon: 'fa-plug', tone: 'violet' },
-    { sku: '8890003', barcode: '8890003', name: 'អំពូលបំភ្លឺ 9 វ៉ាត់', category: 'electronic', price: 2.20, unit: 'គ្រាប់', stock: 58, icon: 'fa-lightbulb', tone: 'yellow' }
+    { sku: '8890003', barcode: '8890003', name: 'អំពូលបំភ្លឺ 9 វ៉ាត់', category: 'electronic', price: 2.20, unit: 'គ្រាប់', stock: 58, icon: 'fa-lightbulb', tone: 'yellow' },
+    { sku: '8890004', barcode: '8890004', name: 'កាសស្តាប់ចម្រៀង', category: 'electronic', price: 4.50, unit: 'គ្រឿង', stock: 24, icon: 'fa-headphones', tone: 'slate' },
+    { sku: '8890005', barcode: '8890005', name: 'ក្បាលសាកទូរស័ព្ទ 20 វ៉ាត់', category: 'electronic', price: 6.50, unit: 'គ្រឿង', stock: 20, icon: 'fa-plug-circle-bolt', tone: 'indigo' },
+    { sku: '8890006', barcode: '8890006', name: 'ពិលដៃ សាកបាន', category: 'electronic', price: 3.20, unit: 'ដើម', stock: 30, icon: 'fa-lightbulb', tone: 'amber' }
 ];
 
 /* ការកែកាតាឡុកដោយម្ចាស់ហាង (pos_catalog)៖ តម្លៃថ្មី និងការផ្អាកលក់
@@ -476,7 +493,12 @@ const PRODUCT_PHOTOS = ['8850001', '8850002', '8850003', '8850004', '8860001', '
 const PRODUCT_SHORT = {
     '8870001': 'សាប៊ូម្សៅ', '8870002': 'ក្រដាស', '8870003': 'ថ្នាំដុស', '8870004': 'សាប៊ូ',
     '8880001': 'សៀវភៅ', '8880002': 'ប៊ិច', '8880003': 'ខ្មៅដៃ',
-    '8890001': 'ថ្មពិល', '8890002': 'ខ្សែសាក', '8890003': 'អំពូល'
+    '8890001': 'ថ្មពិល', '8890002': 'ខ្សែសាក', '8890003': 'អំពូល',
+    '8850005': 'កូកា', '8850006': 'ប៉ូវកម្លាំង', '8850007': 'តែបៃតង', '8850008': 'ទឹកដូង',
+    '8860005': 'មីកញ្ចប់', '8860006': 'ខូឃី', '8860007': 'ស្ករគ្រាប់', '8860008': 'ស្វាយចន្ទី',
+    '8870005': 'ទឹកលាងចាន', '8870006': 'ច្រាសធ្មេញ', '8870007': 'ក្រដាសជូត', '8880004': 'ជ័រលុប',
+    '8880005': 'បន្ទាត់', '8880006': 'កាវ', '8890004': 'កាស', '8890005': 'ក្បាលសាក',
+    '8890006': 'ពិលដៃ'
 };
 const CATEGORY_TILE = { drink: '#3f6f8f', snack: '#9a6a3a', household: '#4f7a68', stationery: '#5a6690', electronic: '#7a5f80' };
 
@@ -1455,7 +1477,10 @@ const PRODUCT_WEIGHT = {
     '8860001': 4, '8860002': 5, '8860003': 4, '8860004': 1.5,
     '8870001': 1.2, '8870002': 1.5, '8870003': 1.2, '8870004': 0.8,
     '8880001': 2.5, '8880002': 3, '8880003': 0.8,
-    '8890001': 1, '8890002': 0.5, '8890003': 0.6
+    '8890001': 1, '8890002': 0.5, '8890003': 0.6,
+    '8850005': 6, '8850006': 5, '8850007': 3, '8850008': 1.5, '8860005': 5, '8860006': 2.5,
+    '8860007': 2, '8860008': 0.8, '8870005': 1, '8870006': 0.8, '8870007': 1.5, '8880004': 1.5,
+    '8880005': 1, '8880006': 0.7, '8890004': 0.3, '8890005': 0.3, '8890006': 0.3
 };
 
 /* ម៉ោងលក់ចន្លោះ fromMs–toMs តាមទម្រង់ម៉ោងមមាញឹក (dayFactor៖ ចុងសប្តាហ៍ ឬថ្ងៃស្ងាត់) */
