@@ -30,9 +30,42 @@
         .dot-pop { animation: dotPop .16s ease-out; }
         .tile-live { box-shadow: inset 3px 0 0 #10b981; }
         .tile:focus-visible, .pin-key:focus-visible { outline: 3px solid #22d3ee; outline-offset: 2px; }
+        /* ផ្ទាំងចាប់ផ្តើម៖ ឡូហ្គោ និងចំណុចលោតបី */
+        #splash { position: fixed; inset: 0; z-index: 100; background: #0b1220; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity .4s ease, visibility .4s ease; }
+        #splash.splash-out { opacity: 0; visibility: hidden; }
+        #splash.splash-out .splash-center { transform: scale(1.04); }
+        .splash-center { display: flex; flex-direction: column; align-items: center; gap: 40px; transition: transform .4s ease; }
+        .splash-mark { animation: splashMark .5s cubic-bezier(.2,.8,.2,1) both; }
+        .splash-word { animation: splashWord .5s cubic-bezier(.2,.8,.2,1) .12s both; }
+        .splash-dots { animation: fadeUp .4s ease .3s both; }
+        .splash-dots span { width: 8px; height: 8px; border-radius: 9999px; background: #22c55e; animation: splashDot 1.2s ease-in-out infinite; }
+        .splash-dots span:nth-child(2) { animation-delay: .2s; }
+        .splash-dots span:nth-child(3) { animation-delay: .4s; }
+        .splash-foot { animation: fadeUp .4s ease .4s both; }
+        @keyframes splashMark { from { opacity: 0; transform: scale(.8); } to { opacity: 1; transform: none; } }
+        @keyframes splashWord { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: none; } }
+        @keyframes splashDot { 0%, 100% { transform: scale(.6); opacity: .3; } 40% { transform: scale(1); opacity: 1; } }
+        @media (prefers-reduced-motion: reduce) {
+            .splash-mark, .splash-word, .splash-dots, .splash-foot, .splash-dots span { animation: none; }
+            #splash, .splash-center { transition: none; }
+        }
     </style>
 </head>
 <body id="loginPortal" data-role-root="." class="login-bg min-h-screen font-sans text-slate-100 text-[16px]">
+
+    <div id="splash" role="status" aria-label="កំពុងផ្ទុក">
+        <div class="splash-center">
+            <div class="flex items-center gap-4">
+                <img src="shared/assets/logo-mark-transparent.png" alt="" class="splash-mark w-[72px] h-[72px] object-contain">
+                <div class="splash-word">
+                    <p class="text-[40px] leading-none font-bold tracking-tight"><span class="text-white">DIGITECH</span><span class="text-[#22c55e]">KH</span></p>
+                    <p class="sm-td-sub text-slate-400 mt-2 tracking-wide">ប្រព័ន្ធគិតលុយលក់រាយ</p>
+                </div>
+            </div>
+            <div class="splash-dots flex items-center gap-2.5"><span></span><span></span><span></span></div>
+        </div>
+        <p class="splash-foot absolute bottom-8 sm-td-sub text-slate-500">© <span id="splashYear"></span> DIGITECHKH</p>
+    </div>
 
     <main class="min-h-screen w-full flex items-center justify-center px-4 py-6">
         <div class="w-full max-w-[1120px] grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -450,6 +483,19 @@
             renderRoster();
             renderStepper(1);
         });
+
+        /* ផ្ទាំងចាប់ផ្តើមបង្ហាញរាល់ពេលបើកទំព័រ យ៉ាងតិច 1.2 វិនាទី រួចរលាយបាត់ */
+        (function () {
+            const splash = document.getElementById('splash');
+            document.getElementById('splashYear').textContent = new Date().getFullYear();
+            const started = Date.now();
+            const hide = () => setTimeout(() => {
+                splash.classList.add('splash-out');
+                setTimeout(() => splash.remove(), 450);
+            }, Math.max(0, 1200 - (Date.now() - started)));
+            if (document.readyState === 'complete') hide();
+            else window.addEventListener('load', hide);
+        })();
     </script>
 </body>
 </html>
