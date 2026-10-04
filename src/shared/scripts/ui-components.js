@@ -1512,7 +1512,7 @@ function showOptionDialog(opts = {}) {
 }
 
 /* opts: { title, subtitle, value, min, max, unit, dark } → Promise<number|null>
-   ផ្ទាំងលេខសម្រាប់អេក្រង់ប៉ះ (ឧ. កំណត់ចំនួនទំនិញ 12 ដោយមិនចាំបាច់ចុច + ១២ ដង) */
+   ផ្ទាំងលេខសម្រាប់អេក្រង់ប៉ះ (ឧ. កំណត់ចំនួនទំនិញ 12 ដោយមិនចាំបាច់ចុច + 12 ដង) */
 function showNumberPad(opts = {}) {
     return new Promise(resolve => {
         const th = POS_DIALOG_THEME[opts.dark ? 'dark' : 'light'];

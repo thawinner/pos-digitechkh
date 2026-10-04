@@ -12,29 +12,7 @@
 const HISTORY_DAYS = 14;
 const SAFE_START = { usd: 1500, khr: 6000000 };
 const OVERLAY_KEY = 'pos_overlay';
-const MGR_SEED_KEY = 'pos_mgr_seed_v1';
-
-/* ===== លេខចៃដន្យដែលអាចបង្កើតឡើងវិញបាន ===== */
-
-function hashStr(s) {
-    let h = 2166136261;
-    for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
-    return h >>> 0;
-}
-
-function rngFor(key) {
-    let a = hashStr(key);
-    return () => {
-        a |= 0; a = a + 0x6D2B79F5 | 0;
-        let t = Math.imul(a ^ a >>> 15, 1 | a);
-        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-        return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    };
-}
-
-function pick(rng, list) {
-    return list[Math.floor(rng() * list.length)];
-}
+const MGR_SEED_KEY = 'pos_mgr_seed_v2';
 
 function addDays(d, n) {
     const x = new Date(d);
@@ -50,24 +28,16 @@ function businessDate() {
     return isoDate(m < first ? addDays(now, -1) : now);
 }
 
-/* ===== ការបង្កើតប្រវត្តិ ===== */
+/* ===== ការបង្កើតប្រវត្តិ =====
+   ធ្វើត្រាប់តាមហាងលក់រាយតូចមួយនៅភ្នំពេញ៖ មនុស្សច្រើនពេលព្រឹក ថ្ងៃត្រង់ និងល្ងាច ស្ងាត់ពេលយប់ជ្រៅ
+   កន្ត្រកភាគច្រើនមាន 1 ទៅ 2 មុខ ទំនិញលក់ដាច់ (ទឹក កាហ្វេ នំ) លក់ច្រើនជាងគ្រឿងអគ្គិសនីឆ្ងាយ */
 
-function genPay(rng, due) {
-    const r = rng();
-    const rate = 4100;
-    if (r < 0.42) {
-        const opts = [Math.ceil(due), Math.ceil(due / 5) * 5, Math.ceil(due / 10) * 10];
-        let usd = pick(rng, opts);
-        if (usd < due) usd = Math.ceil(due);
-        return { usdCash: usd, khrCash: 0, khqr: 0 };
-    }
-    if (r < 0.67) {
-        const k = due * rate;
-        return { usdCash: 0, khrCash: pick(rng, [Math.ceil(k / 1000) * 1000, Math.ceil(k / 5000) * 5000, Math.ceil(k / 10000) * 10000]), khqr: 0 };
-    }
-    if (r < 0.93) return { usdCash: 0, khrCash: 0, khqr: Math.round(due * 100) / 100 };
-    const usd = Math.floor(due);
-    return { usdCash: usd, khrCash: Math.ceil((due - usd) * rate / 1000) * 1000 || 1000, khqr: 0 };
+/* អត្រាប្តូរប្រាក់ប្រចាំថ្ងៃ៖ ថ្ងៃនេះ = តម្លៃក្នុងការកំណត់ ថ្ងៃមុនៗប្រែប្រួលតិចៗ (ជំហាន 5 រៀល) */
+function fxForDate(dateStr) {
+    const base = Number(posSettings().fxRate) || 4100;
+    if (dateStr >= businessDate()) return base;
+    const r = rngFor(`fx|${dateStr}`)();
+    return base + Math.round((r - 0.5) * 6) * 5;
 }
 
 function genShift(dateStr, register, tpl, cashierId, ctx) {
@@ -81,18 +51,23 @@ function genShift(dateStr, register, tpl, cashierId, ctx) {
     const st = posSettings();
     const reasons = st.reasons;
 
+    const rate = fxForDate(dateStr);
+    // ភាគច្រើនបើកវេនមុនម៉ោង 2 ទៅ 10 នាទី ម្តងម្កាលយឺត (អ្នកមានហានិភ័យយឺតញឹកជាង)
+    const late = rng() < (risky ? 0.18 : 0.06);
+    const openOffset = late ? 8 + Math.floor(rng() * 20) : -2 - Math.floor(rng() * 9);
     const shift = {
         id, date: dateStr, register, cashierId,
         templateCode: tpl.code, templateName: tpl.name, start: tpl.start, end: tpl.end,
-        openedAt: isoLocal(new Date(start.getTime() + Math.floor(rng() * 8) * 60000)),
-        fxRate: 4100, floatUSD: 200, floatKHR: 400000, floatIssuedUSD: 200, floatIssuedKHR: 400000,
+        openedAt: isoLocal(new Date(start.getTime() + openOffset * 60000)),
+        fxRate: rate, floatUSD: 200, floatKHR: 400000, floatIssuedUSD: 200, floatIssuedKHR: 400000,
         floatApprovedBy: pick(rng, managers), status: 'open', generated: true
     };
 
     const nowMs = Date.now();
-    const count = 18 + Math.floor(rng() * 22);
-    const span = end - start - 15 * 60000;
-    const times = Array.from({ length: count }, () => start.getTime() + 10 * 60000 + rng() * span).sort((a, b) => a - b);
+    // ចំនួនការលក់តាមម៉ោង (ចុងសប្តាហ៍មនុស្សច្រើនជាង) · ម៉ោងលក់ត្រូវគ្នានឹងទម្រង់ម៉ោងមមាញឹក
+    const dow = start.getDay();
+    const dayFactor = (dow === 6 ? 1.15 : dow === 0 ? 1.1 : 1) * (0.85 + rng() * 0.3);
+    const times = genSaleTimes(rng, new Date(shift.openedAt).getTime() + 2 * 60000, end.getTime() - 5 * 60000, dayFactor);
     const prefix = receiptPrefix(register, start);
     const sales = [];
     const events = [];
@@ -104,13 +79,7 @@ function genShift(dateStr, register, tpl, cashierId, ctx) {
 
     times.forEach((t, i) => {
         if (t > nowMs) return;
-        const lines = [];
-        const n = 1 + Math.floor(rng() * 4);
-        for (let k = 0; k < n; k++) {
-            const p = pick(rng, PRODUCTS);
-            if (lines.some(l => l.sku === p.sku)) continue;
-            lines.push({ sku: p.sku, qty: 1 + Math.floor(rng() * (p.category === 'stationery' ? 6 : 3)) });
-        }
+        const lines = genBasket(rng);
         let discountPercent = 0;
         let discountReason = '';
         let discountApproverId = '';
@@ -124,13 +93,13 @@ function genShift(dateStr, register, tpl, cashierId, ctx) {
             discountApproverId = pick(rng, managers);
         }
         const due = saleTotals(lines, discountPercent).gross;
-        const pay = genPay(rng, due);
+        const pay = genPay(rng, due, rate);
         const sale = {
             id: prefix + String(i + 1).padStart(4, '0'), time: isoLocal(new Date(t)), shiftId: id, cashierId, register,
-            fxRate: 4100, items: lines, pay, discountPercent, discountReason, discountApproverId, customerId: '',
+            fxRate: rate, items: lines, pay, discountPercent, discountReason, discountApproverId, customerId: '',
             status: 'completed', generated: true
         };
-        sale.change = splitChange(paidTotal(pay, 4100) - due, 4100, defaultChangeMode(pay));
+        sale.change = splitChange(paidTotal(pay, rate) - due, rate, defaultChangeMode(pay));
 
         if (rng() < (risky ? 0.12 : 0.05)) ev('line_removed', t - 60000, { amount: pick(rng, PRODUCTS).price });
         if (rng() < 0.012) ev('cart_cleared', t - 90000, { amount: 2 + rng() * 10 });
@@ -160,7 +129,7 @@ function genShift(dateStr, register, tpl, cashierId, ctx) {
             const method = methodOf(sale) === 'split' ? 'usdCash' : methodOf(sale);
             const reason = pick(rng, reasons.return);
             sale.returns = [{ id: `REQG-${sale.id}`, lines: [{ sku: line.sku, qty: 1 }], amount, method,
-                amountKHR: method === 'khrCash' ? Math.round(amount * 4100 / 100) * 100 : 0, reason, approvedBy: approver, at: decidedAt }];
+                amountKHR: method === 'khrCash' ? Math.round(amount * rate / 100) * 100 : 0, reason, approvedBy: approver, at: decidedAt }];
             approvals.push({ id: `REQG-${sale.id}`, type: 'return', saleId: sale.id, lines: [{ sku: line.sku, qty: 1 }], amount, method, reason,
                 shiftId: id, register, cashierId, raisedAt: isoLocal(new Date(t + 30000)), status: 'approved', decidedBy: approver, decidedAt, mode, generated: true });
             ev(mode === 'onsite' ? 'override_approved' : 'request_approved', t + 60000, { saleId: sale.id, approverId: approver, actorId: approver, amount, reason, note: 'ប្រគល់ទំនិញវិញ' });
@@ -179,14 +148,15 @@ function genShift(dateStr, register, tpl, cashierId, ctx) {
         receivedUSD: 200, receivedKHR: 400000, generated: true
     }];
     const usdIn = sales.filter(s => !isVoided(s)).reduce((n, s) => n + s.pay.usdCash, 0);
-    if (usdIn > 150 && sales.length > 6) {
+    if (usdIn > 120 && sales.length > 6) {
         const at = new Date(sales[Math.floor(sales.length * 0.7)].time).getTime();
         const pending = !ctx.closed && rng() < 0.7;
+        const dropUSD = Math.max(Math.floor((usdIn * 0.7 - 20) / 50) * 50, 50);
         movements.push({
-            id: `MVG-${id}-D`, type: 'drop', register, shiftId: id, usd: 100, khr: 0, reason: '', ref: '',
+            id: `MVG-${id}-D`, type: 'drop', register, shiftId: id, usd: dropUSD, khr: 0, reason: '', ref: '',
             createdBy: cashierId, createdAt: isoLocal(new Date(at)), status: pending ? 'pending' : 'confirmed', generated: true,
             confirmedBy: pending ? '' : pick(rng, managers), confirmedAt: pending ? '' : isoLocal(new Date(at + 15 * 60000)),
-            receivedUSD: pending ? 0 : 100, receivedKHR: 0
+            receivedUSD: pending ? 0 : dropUSD, receivedKHR: 0
         });
     }
     if (rng() < 0.15 && sales.length) {
@@ -209,7 +179,7 @@ function genShift(dateStr, register, tpl, cashierId, ctx) {
         if (rng() < 0.2) dKHR = pick(rng, [-1000, -500, 500, 1000]);
         const countedUSD = Math.round(s.expectedUSD) + dUSD;
         const countedKHR = Math.round(s.expectedKHR / 100) * 100 + dKHR;
-        const v = varianceOf(countedUSD, countedKHR, s.expectedUSD, s.expectedKHR, 4100);
+        const v = varianceOf(countedUSD, countedKHR, s.expectedUSD, s.expectedKHR, rate);
         const closedAt = new Date(end.getTime() + (3 + Math.floor(rng() * 15)) * 60000);
         Object.assign(shift, {
             status: 'closed', closedAt: isoLocal(closedAt), countedUSD, countedKHR,
@@ -256,7 +226,8 @@ function generateHistory() {
                 if (start > now) return;
                 const closed = now >= new Date(end.getTime() + 20 * 60000);
                 // ត្រួតពិនិត្យរួច លើកលែងតែវេនចុងក្រោយនៃថ្ងៃប្រតិបត្តិការ (អ្នកគ្រប់គ្រងពិនិត្យនៅព្រឹកបន្ទាប់)
-                const reviewed = closed && !(d === 0 && tpl.code === tpls[tpls.length - 1].code);
+                // អ្នកគ្រប់គ្រងពិនិត្យវេននៅព្រឹកបន្ទាប់ · វេនដែលបិទក្នុង 14 ម៉ោងចុងក្រោយនៅរង់ចាំត្រួតពិនិត្យ
+                const reviewed = closed && end.getTime() < now.getTime() - 14 * 3600000;
                 const g = genShift(dateStr, register, tpl, a.cashierId, { closed, reviewed });
                 out.shifts.push(g.shift);
                 out.sales.push(...g.sales);
@@ -395,7 +366,8 @@ function ensureManagerSeed() {
             .filter(s => s.shiftId === target.id && !isVoided(s) && !(s.returns || []).length)
             .sort((a, b) => b.time.localeCompare(a.time));
         const reasons = posSettings().reasons;
-        const list = liveApprovals();
+        // សំណើគំរូពីកំណែមុនចង្អុលទៅវិក្កយបត្រដែលលែងមាន
+        const list = liveApprovals().filter(a => !String(a.id).startsWith('REQ-SEED-'));
         if (sales[1]) {
             const s = sales[1];
             list.push({ id: 'REQ-SEED-01', type: 'void', saleId: s.id, amount: saleTotals(s.items, s.discountPercent).gross,

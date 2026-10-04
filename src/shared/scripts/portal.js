@@ -390,7 +390,7 @@ function renderPortalHeader() {
     const notes = portalNotificationList();
 
     const backBtn = backHref
-        ? `<a id="portalBackBtn" href="${backHref}" title="ត្រឡប់ក្រោយ"
+        ? `<a id="portalBackBtn" href="${backHref}" aria-label="ត្រឡប់ក្រោយ"
               class="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center justify-center transition border border-slate-200/70 flex-shrink-0">
                <i class="fas fa-arrow-left text-sm"></i>
            </a>`
@@ -409,8 +409,7 @@ function renderPortalHeader() {
             <div class="flex items-center gap-1.5 flex-shrink-0">
                 <!-- Dark Mode Toggle Button -->
                 <button onclick="toggleDarkMode()" type="button" aria-label="ប្តូររវាងទម្រង់ភ្លឺ និងទម្រង់ងងឹត" id="darkModeToggleBtn"
-                    class="w-10 h-10 rounded-xl text-slate-500 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition cursor-pointer"
-                    title="ប្តូររវាងទម្រង់ភ្លឺ និងទម្រង់ងងឹត">
+                    class="w-10 h-10 rounded-xl text-slate-500 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition cursor-pointer">
                     <iconify-icon id="darkModeIcon" icon="mdi:weather-night" class="text-xl"></iconify-icon>
                 </button>
 

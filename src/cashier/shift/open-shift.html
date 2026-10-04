@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIGITECHKH - បើកវេន</title>
+    <title>DIGITECHKH - ចាប់ផ្តើមវេន</title>
     <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,93 +24,75 @@
     <link rel="stylesheet" href="../../shared/styles/custom.css">
     <link rel="stylesheet" href="../../shared/styles/portal.css">
     <style>
-        main button, main input, main a.pos-tap { min-height: 48px; }
-        .pos-num::-webkit-outer-spin-button, .pos-num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        .pos-num { -moz-appearance: textfield; }
+        /* ទំព័រចាប់ផ្តើមវេន — រចនាងងឹតដូចផ្ទាំងគិតលុយ (មិនមែនទម្រង់ដូចទំព័របិទវេនទេ)
+           ព្រោះនេះជាច្រកចូលផ្ទាំងគិតលុយ មិនមែនការងាររដ្ឋបាល */
+        .os-shell { min-height: 100vh; min-height: 100dvh; background: #0b1220; }
+        .os-panel { background: #111a2b; border: 1px solid rgba(255, 255, 255, .08); }
+        .os-shell button, .os-shell a.os-tap { min-height: 44px; }
+        .os-num::-webkit-outer-spin-button, .os-num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .os-num { -moz-appearance: textfield; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+        .fade-up { animation: fadeUp .22s ease; }
     </style>
 </head>
-<body id="posPortal" data-role-root="../.." data-active="pos" class="bg-teal-50/40 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+<body id="posPortal" data-role-root="../.." data-active="pos" class="os-shell font-sans text-slate-100 text-[16px] flex flex-col">
 
-    <div id="sidebarHost"></div>
-
-    <div class="flex-1 flex flex-col h-full overflow-hidden">
-        <div id="headerHost" data-title="បើកវេន និងរាប់ប្រាក់បាតថត"
-             data-subtitle="រាប់ប្រាក់ដែលអ្នកគ្រប់គ្រងវេនប្រគល់ឱ្យ មុនចាប់ផ្តើមលក់"></div>
-
-        <main class="flex-1 overflow-x-hidden overflow-y-auto px-4 md:px-6 lg:px-16 py-6">
-            <div class="w-full space-y-5">
-
-                <!-- វេនមុន -->
-                <div id="lastShiftNote"></div>
-
-                <!-- គំរូវេន -->
-                <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5">
-                    <div class="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                            <h3 class="sm-card-title text-slate-700">វេនដែលត្រូវបើក</h3>
-                            <p class="sm-card-sub text-slate-500">ជ្រើសរើសដោយស្វ័យប្រវត្តិតាមម៉ោងបច្ចុប្បន្ន · អាចប្តូរបាន</p>
-                        </div>
-                        <div class="sm-td-sub text-slate-500 text-right">
-                            <p><span class="text-slate-400">បញ្ជរ</span> <span id="regLabel" class="sm-value text-slate-700"></span></p>
-                            <p><span class="text-slate-400">អ្នកគិតលុយ</span> <span id="cashierLabel" class="sm-value text-slate-700"></span></p>
-                        </div>
-                    </div>
-                    <div id="templateChips" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 mt-4"></div>
-                    <div id="templateWarn" class="mt-3"></div>
-                </section>
-
-                <!-- ប្រាក់បាតថតដែលបានចេញ -->
-                <section id="issuedCard"></section>
-
-                <!-- រាប់ក្រដាសប្រាក់ -->
-                <section class="grid grid-cols-1 xl:grid-cols-2 gap-5">
-                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-                        <div class="p-5 border-b border-slate-100">
-                            <h3 class="sm-card-title text-slate-700">ក្រដាសប្រាក់ដុល្លារ</h3>
-                            <p class="sm-card-sub text-slate-500">រាប់ជាមួយអ្នកគ្រប់គ្រងវេន ហើយបញ្ចូលចំនួនសន្លឹក</p>
-                        </div>
-                        <div id="usdNotes" class="p-5 space-y-3"></div>
-                        <div class="px-5 py-4 bg-teal-50/60 border-t border-slate-100 flex items-center justify-between">
-                            <span class="sm-card-title text-slate-700">សរុបជាដុល្លារ</span>
-                            <span id="usdCounted" class="sm-kpi-value text-slate-800 sm-figure"></span>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-                        <div class="p-5 border-b border-slate-100">
-                            <h3 class="sm-card-title text-slate-700">ក្រដាសប្រាក់រៀល</h3>
-                            <p class="sm-card-sub text-slate-500">រាប់ជាមួយអ្នកគ្រប់គ្រងវេន ហើយបញ្ចូលចំនួនសន្លឹក</p>
-                        </div>
-                        <div id="khrNotes" class="p-5 space-y-3"></div>
-                        <div class="px-5 py-4 bg-teal-50/60 border-t border-slate-100 flex items-center justify-between">
-                            <span class="sm-card-title text-slate-700">សរុបជារៀល</span>
-                            <span id="khrCounted" class="sm-kpi-value text-slate-800 sm-figure"></span>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="mismatchCard"></section>
+    <!-- ===== របារខាងលើ (ដូចផ្ទាំងគិតលុយ) ===== -->
+    <header class="h-14 flex-shrink-0 border-b border-white/10 bg-[#0b1220] flex items-center justify-between gap-3 px-3 md:px-5">
+        <div class="flex items-center gap-2.5 min-w-0">
+            <img src="../../shared/assets/logo-mark-transparent.png" alt="DIGITECHKH" class="w-7 h-7 object-contain flex-shrink-0">
+            <div class="flex-shrink-0">
+                <span class="sm-value text-white leading-tight whitespace-nowrap block">ចាប់ផ្តើមវេន</span>
+                <span id="regLabel" class="sm-td-sub text-slate-400 leading-tight whitespace-nowrap block"></span>
             </div>
-        </main>
+        </div>
+        <span class="hidden sm:!inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10">
+            <i class="fas fa-clock text-cyan-400 text-xs"></i>
+            <span id="liveClock" class="sm-badge text-white font-semibold sm-figure"></span>
+        </span>
+        <div class="flex items-center gap-2 flex-shrink-0">
+            <span id="meChip" class="flex items-center gap-2"></span>
+            <button onclick="handleLogout()" type="button" aria-label="ចាកចេញ"
+                class="px-3 rounded-xl text-slate-300 hover:text-rose-200 hover:bg-rose-500/10 inline-flex items-center gap-2 transition">
+                <i class="fas fa-right-from-bracket"></i><span class="sm-badge hidden md:!inline">ចាកចេញ</span>
+            </button>
+        </div>
+    </header>
 
-        <div id="actionBar" class="flex-shrink-0 bg-white border-t border-slate-200 px-4 md:px-6 lg:px-16 py-3"
-             style="box-shadow: 0 -6px 16px rgba(15, 23, 42, .05)"></div>
-    </div>
+    <main class="flex-1 w-full px-3 md:px-6 py-5">
+        <!-- របារជំហាន -->
+        <div id="steps" class="w-full flex items-center gap-2 mb-5 overflow-x-auto"></div>
+        <div id="stage" class="w-full"></div>
+    </main>
 
     <script src="../../shared/scripts/ui-components.js"></script>
     <script src="../../shared/scripts/data.js"></script>
     <script src="../../shared/scripts/portal.js"></script>
     <script>
-        /* បើកវេន (ផែនការកែលម្អ C3 · C22)
-           វេនមួយ = អ្នកគិតលុយម្នាក់ ថតប្រាក់មួយ។ ប្រាក់បាតថតត្រូវរាប់ជាមួយអ្នកគ្រប់គ្រងវេន
-           ហើយអ្នកគ្រប់គ្រងបញ្ជាក់ដោយលេខសម្ងាត់ (ច្បាប់មនុស្សពីរនាក់ — ស្រាវជ្រាវ §4)។ */
+        /* ចាប់ផ្តើមវេន (ផែនការកែលម្អ C3 · C22 · ឯកសាររចនាលេខ 02 ផ្នែក 11)
+           ជំហាន 1 ទិដ្ឋភាពរួម៖ កាលវិភាគថ្ងៃនេះ (មាន / គ្មាន) ការជ្រើសរើសវេន ប្រាក់បាតថតដែលត្រូវទទួល
+           ជំហាន 2 រាប់ប្រាក់បាតថតតាមក្រដាសប្រាក់ · ជំហាន 3 អ្នកគ្រប់គ្រងបញ្ជាក់ដោយលេខសម្ងាត់
+           វេនមួយ = អ្នកគិតលុយម្នាក់ ថតប្រាក់មួយ (ច្បាប់មនុស្សពីរនាក់ — ស្រាវជ្រាវ §4) */
 
         const countUSD = {};
         const countKHR = {};
         let templateCode = '';
         let mismatchNote = '';
+        let stage = 'overview';   // overview | count
+
+        /* បញ្ជរដែលត្រូវបើក៖ តាមកាលវិភាគនៃវេនដែលបានជ្រើស បើគ្មាន ប្រើបញ្ជរដែលប្រព័ន្ធកំណត់ពេលចូលប្រើ */
+        function reg() {
+            const t = chosenTemplate();
+            const a = t && rosterFor(templateDateFor(t, new Date()), t.code).find(x => x.cashierId === ME_CASHIER);
+            return a ? a.register : MY_REGISTER;
+        }
+
+        function regBusy() {
+            return liveShifts().some(x => x.status === 'open' && x.register === reg() && x.cashierId !== ME_CASHIER);
+        }
 
         function issuedFloat() {
-            const m = pendingFloatFor(MY_REGISTER);
+            const m = pendingFloatFor(reg());
             const st = posSettings();
             return m
                 ? { usd: m.usd, khr: m.khr, movement: m, by: m.createdBy }
@@ -129,138 +111,256 @@
             return shiftTemplates().find(t => t.code === templateCode) || null;
         }
 
-        function rosterNote() {
-            const a = assignmentFor(ME_CASHIER);
-            return a
-                ? `<div class="p-4 rounded-2xl bg-cyan-50 border border-cyan-200 flex items-start gap-3 mb-3">
-                    <i class="fas fa-calendar-check text-cyan-700 mt-0.5 flex-shrink-0"></i>
-                    <p class="sm-card-sub text-cyan-900">តាមកាលវិភាគ៖ <span class="sm-value">${a.template.name} ${a.template.start}–${a.template.end}</span> លើ <span class="sm-value">${a.register}</span> · ${fmtKhDate(a.date + 'T12:00')}</p></div>`
-                : `<div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-start gap-3 mb-3">
-                    <i class="fas fa-calendar-xmark text-amber-700 mt-0.5 flex-shrink-0"></i>
-                    <p class="sm-card-sub text-amber-900">លោកអ្នកមិនមានក្នុងកាលវិភាគវេននេះទេ។ អ្នកគ្រប់គ្រងវេនអាចអនុម័តឱ្យបើកវេនបាន ហើយត្រូវបានកត់ត្រា។</p></div>`;
+        function workedToday() {
+            const today = templateDateFor(chosenTemplate() || shiftTemplates()[0], new Date());
+            return liveShifts().filter(x => x.cashierId === ME_CASHIER && x.date === today)
+                .reduce((h, x) => h + (new Date(x.closedAt || new Date()) - new Date(x.openedAt)) / 3600000, 0);
         }
 
-        function renderLastShift() {
-            const last = lastShiftFor(MY_REGISTER);
-            const host = document.getElementById('lastShiftNote');
-            if (!last) { host.innerHTML = rosterNote(); return; }
-            host.innerHTML = rosterNote() + `
-                <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-3">
-                    <i class="fas fa-clock-rotate-left text-slate-500 mt-0.5 flex-shrink-0"></i>
-                    <p class="sm-card-sub text-slate-600">
-                        វេនមុន <span class="sm-value text-slate-700">${last.id}</span> ·
-                        ${personName(last.cashierId)} · បិទម៉ោង ${last.closedAt ? fmtTime(last.closedAt) : '—'}
-                        ${last.status === 'closed' ? ' · រង់ចាំអ្នកគ្រប់គ្រងវេនត្រួតពិនិត្យ' : ''}
-                    </p>
-                </div>`;
+        /* កាលវិភាគរបស់ខ្ញុំថ្ងៃនេះ (គ្រប់វេន) — មិនត្រឹមតែវេនបច្ចុប្បន្ន */
+        function myRosterToday() {
+            const slot = rosterSlotNow();
+            if (!slot) return [];
+            return shiftTemplates().map(t => {
+                const date = templateDateFor(t, new Date());
+                const a = rosterFor(date, t.code).find(x => x.cashierId === ME_CASHIER);
+                return a ? Object.assign({ template: t, date }, a) : null;
+            }).filter(Boolean);
         }
 
-        function renderTemplates() {
+        /* ពេលវេលាធៀបនឹងវេន៖ មិនទាន់ដល់ / ដល់ម៉ោង / ហួសម៉ោង */
+        function timing(t) {
             const now = new Date();
-            const inside = templateAt(now);
-            document.getElementById('templateChips').innerHTML = shiftTemplates().map(t => {
-                const on = t.code === templateCode;
-                const live = inside && inside.code === t.code;
-                return `<button onclick="pickTemplate('${t.code}')" type="button"
-                    class="text-left p-4 rounded-2xl border-2 transition ${on ? 'border-teal-600 bg-teal-50' : 'border-slate-200 hover:border-teal-300 bg-white'}">
-                    <span class="flex items-center justify-between gap-2">
-                        <span class="sm-card-title ${on ? 'text-teal-800' : 'text-slate-700'}">${t.name}</span>
-                        ${live ? '<span class="sm-badge px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">ម៉ោងនេះ</span>' : ''}
-                    </span>
-                    <span class="sm-value sm-figure ${on ? 'text-teal-700' : 'text-slate-500'} block mt-1">${t.start} – ${t.end} · ${templateHours(t)} ម៉ោង</span>
-                </button>`;
-            }).join('');
+            const start = dateAt(templateDateFor(t, now), t.start);
+            const end = shiftEndDate({ date: templateDateFor(t, now), start: t.start, end: t.end });
+            if (now < start) return { state: 'soon', text: `ចាប់ផ្តើមក្នុង ${fmtDuration(start - now)}`, tone: 'text-sky-300' };
+            if (now > end) return { state: 'past', text: `បានបញ្ចប់ម៉ោង ${t.end}`, tone: 'text-slate-400' };
+            const late = now - start;
+            return late > 10 * 60000
+                ? { state: 'late', text: `យឺត ${fmtDuration(late)} ក្រោយម៉ោងចាប់ផ្តើម`, tone: 'text-amber-300' }
+                : { state: 'now', text: 'ដល់ម៉ោងចាប់ផ្តើមហើយ', tone: 'text-emerald-300' };
+        }
 
-            const warn = document.getElementById('templateWarn');
+        /* ===== របារជំហាន ===== */
+
+        function renderSteps() {
+            const steps = [['overview', 'fa-calendar-day', 'ជ្រើសរើសវេន'], ['count', 'fa-coins', 'រាប់ប្រាក់បាតថត'], ['approve', 'fa-user-shield', 'អ្នកគ្រប់គ្រងបញ្ជាក់']];
+            const idx = stage === 'overview' ? 0 : 1;
+            document.getElementById('steps').innerHTML = steps.map(([id, icon, label], i) => `
+                ${i ? `<span class="h-0.5 w-6 sm:w-12 rounded-full flex-shrink-0 ${i <= idx ? 'bg-cyan-500' : 'bg-white/10'}"></span>` : ''}
+                <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border flex-shrink-0 ${i === idx
+                    ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-100' : i < idx ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200' : 'border-white/10 text-slate-500'}">
+                    <i class="fas ${i < idx ? 'fa-check' : icon} text-[12px]"></i><span class="sm-td-sub font-semibold whitespace-nowrap">${label}</span>
+                </span>`).join('');
+        }
+
+        /* ===== ជំហាន 1៖ ទិដ្ឋភាពរួម ===== */
+
+        function templateCard(t, mine) {
+            const on = t.code === templateCode;
+            const tm = timing(t);
+            const crew = rosterFor(templateDateFor(t, new Date()), t.code).filter(a => a.cashierId !== ME_CASHIER);
+            return `<button onclick="pickTemplate('${t.code}')" type="button"
+                class="text-left p-4 rounded-2xl border-2 transition ${on ? 'border-cyan-500 bg-[#0f2433]' : 'border-white/10 bg-[#111a2b] hover:border-white/25'}">
+                <span class="flex items-start justify-between gap-2">
+                    <span>
+                        <span class="sm-card-title ${on ? 'text-white' : 'text-slate-200'} block">${t.name}</span>
+                        <span class="sm-td sm-figure text-slate-400 block">${t.start} – ${t.end} · ${templateHours(t)} ម៉ោង</span>
+                    </span>
+                    ${mine ? '<span class="sm-td-sub px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-200 border border-cyan-500/30 whitespace-nowrap">វេនរបស់ខ្ញុំ</span>'
+                        : on ? '<span class="sm-td-sub px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-200 border border-amber-500/30 whitespace-nowrap">ជំនួសវេន</span>' : ''}
+                </span>
+                <span class="sm-td-sub ${tm.tone} block mt-2"><i class="fas fa-clock mr-1"></i>${tm.text}</span>
+                <span class="sm-td-sub text-slate-500 block mt-1 truncate">${crew.length ? crew.map(a => `${personName(a.cashierId)} ${a.register}`).join(' · ') : 'មិនមានអ្នកផ្សេងក្នុងវេននេះ'}</span>
+            </button>`;
+        }
+
+        function scheduleHero() {
+            const mine = myRosterToday();
             const t = chosenTemplate();
-            if (!inside) {
-                warn.innerHTML = `<div class="p-3 rounded-xl bg-amber-50 border border-amber-200 sm-td-sub text-amber-800 flex items-start gap-2">
-                    <i class="fas fa-moon mt-0.5"></i> ក្រៅម៉ោងវេនទាំងអស់ (ហាងបិទ)។ បើត្រូវលក់បន្ថែម អ្នកគ្រប់គ្រងវេនត្រូវអនុម័ត ហើយវេននឹងបង្ហាញថាហួសម៉ោងភ្លាម។</div>`;
-            } else if (t && t.code !== inside.code) {
-                warn.innerHTML = `<div class="p-3 rounded-xl bg-amber-50 border border-amber-200 sm-td-sub text-amber-800 flex items-start gap-2">
-                    <i class="fas fa-triangle-exclamation mt-0.5"></i> វេនដែលជ្រើសរើសមិនត្រូវនឹងម៉ោងបច្ចុប្បន្នទេ (${inside.name} ${inside.start}–${inside.end})។</div>`;
-            } else {
-                warn.innerHTML = '';
+            const me = personById(ME_CASHIER);
+            const hour = new Date().getHours();
+            const hello = hour < 11 ? 'អរុណសួស្តី' : hour < 17 ? 'ទិវាសួស្តី' : 'សាយណ្ហសួស្តី';
+            if (mine.length) {
+                const m = mine.find(x => x.template.code === templateCode) || mine[0];
+                const tm = timing(m.template);
+                return `<div class="os-panel rounded-xl border-l-4 !border-l-cyan-500 p-5">
+                    <div class="flex items-center gap-3">
+                        ${avatarHtml(me.id, 'w-11 h-11')}
+                        <div class="min-w-0">
+                            <p class="sm-value text-white leading-tight">${me.name}</p>
+                            <p class="sm-td-sub text-slate-400">${hello} · អ្នកគិតលុយ</p>
+                        </div>
+                    </div>
+                    <p class="sm-td-sub text-slate-400 mt-5">វេនរបស់អ្នកថ្ងៃនេះ</p>
+                    <div class="flex flex-wrap items-end justify-between gap-4 mt-1">
+                        <div>
+                            <p class="text-[26px] font-semibold text-white leading-tight">${m.template.name} <span class="sm-figure text-slate-300 text-[20px] font-medium">${m.template.start}–${m.template.end}</span></p>
+                            <p class="sm-td text-slate-300 mt-1">បញ្ជរ <span class="text-white font-semibold">${m.register}</span>${m.cover ? ' · <span class="text-amber-300">ជំនួសវេន</span>' : ''} · <span class="${tm.tone}">${tm.text}</span></p>
+                        </div>
+                        <button onclick="goCount()" type="button" ${t ? '' : 'disabled'}
+                            class="sm-card-title h-14 px-6 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold inline-flex items-center gap-2 transition">
+                            រាប់ប្រាក់បាតថត <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>`;
             }
+            return `<div class="os-panel rounded-xl border-l-4 !border-l-amber-400 p-5">
+                <div class="flex items-center gap-3">
+                    ${avatarHtml(me.id, 'w-11 h-11')}
+                    <div class="min-w-0">
+                        <p class="sm-value text-white leading-tight">${me.name}</p>
+                        <p class="sm-td-sub text-slate-400">${hello} · អ្នកគិតលុយ</p>
+                    </div>
+                </div>
+                <div class="mt-5 flex items-start gap-3">
+                    <i class="fas fa-calendar-xmark text-amber-300 text-lg mt-1"></i>
+                    <div>
+                        <p class="sm-card-title text-white">ថ្ងៃនេះអ្នកមិនមានវេនក្នុងកាលវិភាគទេ</p>
+                        <p class="sm-td text-slate-300 mt-1">បើអ្នកមកជំនួសវេនអ្នកណាម្នាក់ សូមជ្រើសរើសវេនខាងក្រោម។ អ្នកគ្រប់គ្រងវេនត្រូវអនុម័ត ហើយកាលវិភាគនឹងកត់ត្រាថា «ជំនួស»។</p>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2.5 mt-5">
+                    <button onclick="goCount()" type="button" ${t ? '' : 'disabled'}
+                        class="sm-value h-12 px-5 rounded-xl bg-amber-400 hover:bg-amber-300 text-[#0b1220] font-semibold inline-flex items-center gap-2 transition disabled:opacity-40">
+                        ជំនួស${t ? t.name : 'វេន'} លើ ${reg()} <i class="fas fa-arrow-right"></i>
+                    </button>
+                    <button onclick="handleLogout()" type="button" class="sm-value h-12 px-5 rounded-xl border border-white/15 hover:bg-white/5 text-slate-200 font-medium inline-flex items-center gap-2">
+                        <i class="fas fa-right-from-bracket"></i> មិនមែនទេ · ចាកចេញ
+                    </button>
+                </div>
+            </div>`;
+        }
+
+        function sideCards() {
+            const f = issuedFloat();
+            const last = lastShiftFor(reg());
+            const ct = chosenTemplate();
+            const slot = ct ? { date: templateDateFor(ct, new Date()), template: ct } : rosterSlotNow();
+            const team = slot ? rosterFor(slot.date, slot.template.code) : [];
+            const card = (icon, tone, title, body) => `
+                <div class="os-panel rounded-xl p-4">
+                    <p class="sm-td-sub text-slate-400 flex items-center gap-2"><i class="fas ${icon} ${tone}"></i>${title}</p>
+                    <div class="mt-2">${body}</div>
+                </div>`;
+            return card('fa-hand-holding-dollar', 'text-sky-300', 'ប្រាក់បាតថតដែលត្រូវទទួល', `
+                    <p class="text-[24px] font-bold text-white sm-figure leading-tight">${fmtUSD(f.usd)}</p>
+                    <p class="sm-value text-slate-300 sm-figure">${fmtKHR(f.khr)}</p>
+                    <p class="sm-td-sub text-slate-500 mt-1">${f.movement ? `ចេញដោយ ${personName(f.by)} ម៉ោង ${fmtTime(f.movement.createdAt)}` : 'ចំនួនស្តង់ដារ · រាប់ជាមួយអ្នកគ្រប់គ្រងវេន'}</p>`)
+                + card('fa-cash-register', 'text-cyan-300', `បញ្ជរ ${reg()}`, last
+                    ? `<div class="flex items-center gap-3">${avatarHtml(last.cashierId, 'w-9 h-9')}
+                        <div class="min-w-0"><p class="sm-td text-slate-200 truncate">វេនមុន៖ ${personName(last.cashierId)} · ${last.templateName}</p>
+                        <p class="sm-td-sub text-slate-500">${last.closedAt ? `បិទ ${fmtDate(last.closedAt)} ${fmtTime(last.closedAt)}` : 'មិនទាន់បិទ'} · ${SHIFT_STATUS[last.status].label}</p></div></div>`
+                    : '<p class="sm-td text-slate-400">មិនទាន់មានវេនលើបញ្ជរនេះទេ</p>')
+                + card('fa-users', 'text-indigo-300', slot ? `ក្រុមការងារ${slot.template.name}` : 'ក្រុមការងារ', team.length
+                    ? `<div class="space-y-2">${team.map(a => `<div class="flex items-center gap-2.5">${avatarHtml(a.cashierId, 'w-7 h-7')}
+                        <span class="sm-td text-slate-200 flex-1 truncate">${personName(a.cashierId)}${a.cashierId === ME_CASHIER ? ' (ខ្ញុំ)' : ''}</span>
+                        <span class="sm-td-sub text-slate-400">${a.register}</span></div>`).join('')}</div>`
+                    : '<p class="sm-td text-amber-300">គ្មានអ្នកគិតលុយក្នុងកាលវិភាគ</p>');
+        }
+
+        function renderOverview() {
+            const mine = myRosterToday().map(m => m.template.code);
+            document.getElementById('stage').innerHTML = `
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 fade-up">
+                    <div class="xl:col-span-2 space-y-5">
+                        ${scheduleHero()}
+                        <div>
+                            <p class="sm-value text-slate-300 mb-2.5">${mine.length ? 'ឬជ្រើសរើសវេនផ្សេង (ជំនួសវេន)' : 'វេនថ្ងៃនេះ'}</p>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">${shiftTemplates().map(t => templateCard(t, mine.includes(t.code))).join('')}</div>
+                            <p id="limitNote" class="sm-td-sub text-rose-300 mt-2"></p>
+                        </div>
+                    </div>
+                    <div class="space-y-3">${sideCards()}
+                        <div class="rounded-2xl border border-white/10 p-4 sm-td-sub text-slate-400 space-y-1.5">
+                            <p><i class="fas fa-user-lock w-4 text-slate-500"></i> មួយថតប្រាក់ មួយអ្នកទទួលខុសត្រូវ</p>
+                            <p><i class="fas fa-mug-hot w-4 text-slate-500"></i> ពេលសម្រាក ចាក់សោរបញ្ជរ មិនបាច់បិទវេន</p>
+                            <p><i class="fas fa-scale-balanced w-4 text-slate-500"></i> អតិបរមា 12 ម៉ោងក្នុងមួយថ្ងៃ</p>
+                        </div>
+                    </div>
+                </div>`;
+            const over = chosenTemplate() && workedToday() + templateHours(chosenTemplate()) > 12;
+            document.getElementById('limitNote').textContent = over ? 'លើស 12 ម៉ោងក្នុងមួយថ្ងៃ ដែលជាកំណត់ច្បាប់ · មិនអាចបើកវេននេះបានទេ' : '';
         }
 
         function pickTemplate(code) {
             templateCode = code;
-            renderTemplates();
-            renderActionBar();
+            render();
         }
 
-        function renderIssued() {
-            const f = issuedFloat();
-            document.getElementById('issuedCard').innerHTML = `
-                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 flex flex-wrap items-center gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-xl flex-shrink-0"><i class="fas fa-hand-holding-dollar"></i></div>
-                    <div class="min-w-0 flex-1">
-                        <p class="sm-card-title text-slate-700">ប្រាក់បាតថតដែលត្រូវទទួល</p>
-                        <p class="sm-card-sub text-slate-500">${f.movement
-                            ? `ចេញដោយ ${personName(f.by)} ម៉ោង ${fmtTime(f.movement.createdAt)}`
-                            : 'ចំនួនស្តង់ដារក្នុងការកំណត់ · មិនទាន់មានការចេញប្រាក់ពីអ្នកគ្រប់គ្រងទេ'}</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="sm-kpi-value text-slate-800 sm-figure">${fmtUSD(f.usd)}</p>
-                        <p class="sm-value text-slate-500 sm-figure">${fmtKHR(f.khr)}</p>
-                    </div>
-                </div>`;
+        function goCount() {
+            if (!chosenTemplate()) return showToast('សូមជ្រើសរើសវេន', 'warning');
+            if (workedToday() + templateHours(chosenTemplate()) > 12) return showToast('លើស 12 ម៉ោងក្នុងមួយថ្ងៃ · មិនអាចបើកវេនបន្ថែមបានទេ', 'error');
+            if (regBusy()) return showToast(`បញ្ជរ ${reg()} កំពុងបើកវេនដោយអ្នកផ្សេង`, 'error');
+            stage = 'count';
+            render();
+            window.scrollTo(0, 0);
         }
 
-        function noteRow(currency, note, label) {
+        /* ===== ជំហាន 2៖ រាប់ប្រាក់បាតថត ===== */
+
+        function noteTile(currency, note) {
             const map = currency === 'usd' ? countUSD : countKHR;
-            const step = (delta, icon, aria, skin) => `
-                <button onclick="bump('${currency}', ${note}, ${delta})" type="button" aria-label="${aria} ${label}"
-                    class="w-10 !min-h-[40px] h-10 rounded-xl border ${skin} inline-flex items-center justify-center transition flex-shrink-0">
-                    <i class="fas ${icon} text-xs"></i>
-                </button>`;
-            return `
-                <div class="flex items-center gap-3 py-0.5">
-                    <span class="w-24 flex-shrink-0 sm-value text-slate-700 sm-figure whitespace-nowrap">${label}</span>
-                    <div class="flex items-center gap-1.5 flex-shrink-0 ml-auto sm:ml-0">
-                        ${step(-1, 'fa-minus', 'បន្ថយ', 'border-slate-200 text-slate-500 hover:bg-slate-50')}
-                        <input id="${currency}In-${note}" type="number" inputmode="numeric" min="0" step="1" value="${map[note] || ''}" placeholder="0"
-                            oninput="setCount('${currency}', ${note}, this.value)" aria-label="ចំនួនសន្លឹក ${label}"
-                            class="pos-num sm-value w-16 !min-h-[40px] h-10 px-1 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-center focus:outline-none focus:border-teal-600 focus:bg-white transition">
-                        ${step(1, 'fa-plus', 'បន្ថែម', 'border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100')}
-                    </div>
-                    <span data-line="${currency}-${note}" class="hidden sm:!block sm-value sm-figure flex-1 text-right text-slate-300 whitespace-nowrap">—</span>
-                </div>`;
+            const q = map[note] || 0;
+            const label = currency === 'usd' ? '$' + note : note.toLocaleString('en-US') + ' ៛';
+            return `<div class="rounded-2xl border ${q ? 'border-cyan-600/60 bg-[#0f2433]' : 'border-white/10 bg-[#111a2b]'} p-3">
+                <div class="flex items-baseline justify-between gap-2">
+                    <span class="sm-value text-white sm-figure">${label}</span>
+                    <span data-sub="${currency}-${note}" class="sm-td-sub sm-figure ${q ? 'text-cyan-200' : 'text-slate-600'}">${q ? (currency === 'usd' ? fmtUSD(note * q) : fmtKHR(note * q)) : '—'}</span>
+                </div>
+                <div class="flex items-center gap-1.5 mt-2.5">
+                    <button onclick="bump('${currency}', ${note}, -1)" type="button" aria-label="បន្ថយ ${label}"
+                        class="w-11 h-11 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300"><i class="fas fa-minus text-xs"></i></button>
+                    <input id="${currency}In-${note}" type="number" inputmode="numeric" min="0" value="${q || ''}" placeholder="0"
+                        oninput="setCount('${currency}', ${note}, this.value)" onfocus="this.select()" aria-label="ចំនួនសន្លឹក ${label}"
+                        class="os-num sm-value flex-1 min-w-0 h-11 rounded-xl bg-[#0b1220] border border-white/10 text-white text-center focus:outline-none focus:border-cyan-500">
+                    <button onclick="bump('${currency}', ${note}, 1)" type="button" aria-label="បន្ថែម ${label}"
+                        class="w-11 h-11 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white"><i class="fas fa-plus text-xs"></i></button>
+                </div>
+            </div>`;
         }
 
-        function renderNotes() {
-            document.getElementById('usdNotes').innerHTML = USD_NOTES.map(n => noteRow('usd', n, '$' + n)).join('');
-            document.getElementById('khrNotes').innerHTML = KHR_NOTES.map(n => noteRow('khr', n, n.toLocaleString('en-US') + ' ៛')).join('');
-            refreshTotals();
+        function renderCount() {
+            const t = chosenTemplate();
+            document.getElementById('stage').innerHTML = `
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 fade-up">
+                    <div class="xl:col-span-2 space-y-5">
+                        <div class="flex items-center justify-between gap-3">
+                            <button onclick="stage='overview'; render()" type="button" class="sm-td px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 inline-flex items-center gap-2">
+                                <i class="fas fa-arrow-left"></i> ត្រឡប់
+                            </button>
+                            <p class="sm-td-sub text-slate-400 text-right">${t.name} ${t.start}–${t.end} · ${reg()} · រាប់ជាមួយអ្នកគ្រប់គ្រងវេន</p>
+                        </div>
+                        <section>
+                            <p class="sm-value text-slate-200 mb-2.5"><i class="fas fa-money-bill-wave text-emerald-300 mr-1.5"></i>ក្រដាសប្រាក់ដុល្លារ</p>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">${USD_NOTES.map(n => noteTile('usd', n)).join('')}</div>
+                        </section>
+                        <section>
+                            <p class="sm-value text-slate-200 mb-2.5"><i class="fas fa-money-bill-1 text-amber-300 mr-1.5"></i>ក្រដាសប្រាក់រៀល</p>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">${KHR_NOTES.map(n => noteTile('khr', n)).join('')}</div>
+                        </section>
+                    </div>
+                    <aside class="xl:sticky xl:top-4 self-start os-panel rounded-xl p-5 space-y-4" id="summary"></aside>
+                </div>`;
+            renderSummary();
         }
 
         function bump(currency, note, delta) {
             const map = currency === 'usd' ? countUSD : countKHR;
             map[note] = Math.max((map[note] || 0) + delta, 0);
-            const input = document.getElementById(`${currency}In-${note}`);
-            if (input) input.value = map[note] || '';
-            refreshTotals();
+            renderCount();
         }
 
         function setCount(currency, note, value) {
             const map = currency === 'usd' ? countUSD : countKHR;
             map[note] = Math.max(parseInt(value, 10) || 0, 0);
-            refreshTotals();
-        }
-
-        function refreshTotals() {
-            const paint = (key, qty, text) => document.querySelectorAll(`[data-line="${key}"]`).forEach(el => {
-                el.textContent = qty ? text : '—';
-                el.classList.toggle('text-slate-700', !!qty);
-                el.classList.toggle('text-slate-300', !qty);
-            });
-            USD_NOTES.forEach(n => paint(`usd-${n}`, countUSD[n], fmtUSD(n * countUSD[n])));
-            KHR_NOTES.forEach(n => paint(`khr-${n}`, countKHR[n], fmtKHR(n * countKHR[n])));
-            document.getElementById('usdCounted').textContent = fmtUSD(totalUSD());
-            document.getElementById('khrCounted').textContent = fmtKHR(totalKHR());
-            renderMismatch();
-            renderActionBar();
+            const el = document.querySelector(`[data-sub="${currency}-${note}"]`);
+            const q = map[note];
+            if (el) {
+                el.textContent = q ? (currency === 'usd' ? fmtUSD(note * q) : fmtKHR(note * q)) : '—';
+                el.className = `sm-td-sub sm-figure ${q ? 'text-cyan-200' : 'text-slate-600'}`;
+            }
+            renderSummary();
         }
 
         function mismatch() {
@@ -268,39 +368,10 @@
             return { dUSD: totalUSD() - f.usd, dKHR: totalKHR() - f.khr };
         }
 
-        function renderMismatch() {
-            const m = mismatch();
-            const host = document.getElementById('mismatchCard');
-            if (!(totalUSD() + totalKHR()) || (Math.abs(m.dUSD) < 0.005 && Math.abs(m.dKHR) < 0.5)) {
-                host.innerHTML = '';
-                return;
-            }
-            const prev = document.getElementById('mismatchNote');
-            if (prev) mismatchNote = prev.value;
-            host.innerHTML = `
-                <div class="bg-white rounded-2xl border border-amber-200 shadow-sm p-5">
-                    <div class="flex items-start gap-3">
-                        <i class="fas fa-triangle-exclamation text-amber-600 mt-1"></i>
-                        <div class="min-w-0 flex-1">
-                            <h3 class="sm-card-title text-amber-800">ចំនួនរាប់បានមិនស្មើនឹងប្រាក់ដែលបានចេញ</h3>
-                            <p class="sm-td text-amber-700 sm-figure mt-0.5">ដុល្លារ ${fmtSigned(m.dUSD, fmtUSD)} · រៀល ${fmtSigned(m.dKHR, fmtKHR, 0.5)}</p>
-                        </div>
-                    </div>
-                    <textarea id="mismatchNote" rows="2" oninput="mismatchNote = this.value; renderActionBar()"
-                        placeholder="សូមពន្យល់ ឧទាហរណ៍៖ ខ្វះក្រដាស 500 ៛ · អ្នកគ្រប់គ្រងនឹងបំពេញបន្ថែម..."
-                        class="sm-td w-full mt-3 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 focus:outline-none focus:border-teal-600 transition resize-none">${escapeText(mismatchNote)}</textarea>
-                </div>`;
-        }
-
-        function workedToday() {
-            const today = templateDateFor(chosenTemplate() || shiftTemplates()[0], new Date());
-            return liveShifts().filter(x => x.cashierId === ME_CASHIER && x.date === today)
-                .reduce((h, x) => h + (new Date(x.closedAt || new Date()) - new Date(x.openedAt)) / 3600000, 0);
-        }
-
         function blocker() {
             if (!chosenTemplate()) return 'សូមជ្រើសរើសវេន';
-            if (workedToday() + templateHours(chosenTemplate()) > 12) return 'លើស 12 ម៉ោងក្នុងមួយថ្ងៃ ដែលជាកំណត់ច្បាប់ · មិនអាចបើកវេនបន្ថែមបានទេ';
+            if (workedToday() + templateHours(chosenTemplate()) > 12) return 'លើស 12 ម៉ោងក្នុងមួយថ្ងៃ ដែលជាកំណត់ច្បាប់';
+            if (regBusy()) return `បញ្ជរ ${reg()} កំពុងបើកវេនដោយអ្នកផ្សេង`;
             if (!(totalUSD() + totalKHR())) return 'សូមរាប់ប្រាក់បាតថតជាមុនសិន';
             const m = mismatch();
             const off = Math.abs(m.dUSD) >= 0.005 || Math.abs(m.dKHR) >= 0.5;
@@ -308,27 +379,53 @@
             return '';
         }
 
-        function renderActionBar() {
+        function renderSummary() {
+            const host = document.getElementById('summary');
+            if (!host) return;
+            const f = issuedFloat();
+            const m = mismatch();
+            const counted = totalUSD() + totalKHR() > 0;
+            const off = counted && (Math.abs(m.dUSD) >= 0.005 || Math.abs(m.dKHR) >= 0.5);
             const why = blocker();
-            const t = chosenTemplate();
-            document.getElementById('actionBar').innerHTML = `
-                <div class="w-full h-12 flex items-center justify-between gap-3">
-                    <a href="../receipts/receipts.html"
-                       class="sm-value h-12 px-5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold transition inline-flex items-center gap-2 flex-shrink-0">
-                        <i class="fas fa-receipt"></i> <span class="hidden sm:!inline">វិក្កយបត្រវេនមុន</span>
-                    </a>
-                    <div class="min-w-0 flex-1 text-center hidden sm:!block">
-                        <p class="sm-td-sub text-slate-400 truncate">${t ? `${t.name} ${t.start}–${t.end}` : 'មិនទាន់ជ្រើសរើសវេន'}</p>
-                        <p class="sm-td font-semibold truncate sm-figure ${why ? 'text-amber-700' : 'text-emerald-700'}">
-                            ${why || `រាប់បាន ${fmtUSD(totalUSD())} · ${fmtKHR(totalKHR())}`}</p>
-                    </div>
-                    <button onclick="startShift()" type="button" ${why ? 'disabled' : ''}
-                        class="sm-value h-12 px-6 rounded-xl font-semibold transition inline-flex items-center gap-2 flex-shrink-0 ${why
-                            ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-teal-600 hover:bg-teal-700 text-white shadow-sm'}">
-                        <i class="fas fa-play"></i> ចាប់ផ្តើមវេន
-                    </button>
-                </div>`;
+            const tone = d => Math.abs(d) < 0.5 ? 'text-emerald-300' : d > 0 ? 'text-amber-300' : 'text-rose-300';
+            const prev = document.getElementById('mismatchNote');
+            if (prev) mismatchNote = prev.value;
+            host.innerHTML = `
+                <p class="sm-card-title text-white">សង្ខេបប្រាក់បាតថត</p>
+                <div class="grid grid-cols-[1fr_auto_auto] gap-x-5 gap-y-2 items-baseline sm-td sm-figure">
+                    <span></span><span class="sm-td-sub text-slate-500 text-right">ដុល្លារ</span><span class="sm-td-sub text-slate-500 text-right">រៀល</span>
+                    <span class="text-slate-400">ត្រូវទទួល</span><span class="text-right text-slate-200">${fmtUSD(f.usd)}</span><span class="text-right text-slate-200">${fmtKHR(f.khr)}</span>
+                    <span class="text-slate-400">រាប់បាន</span><span class="text-right text-white font-semibold">${fmtUSD(totalUSD())}</span><span class="text-right text-white font-semibold">${fmtKHR(totalKHR())}</span>
+                    <span class="col-span-3 border-t border-white/10"></span>
+                    <span class="text-slate-400">ខុសគ្នា</span>
+                    <span class="text-right font-semibold ${counted ? tone(m.dUSD * 100) : 'text-slate-600'}">${counted ? fmtSigned(m.dUSD, fmtUSD) : '—'}</span>
+                    <span class="text-right font-semibold ${counted ? tone(m.dKHR) : 'text-slate-600'}">${counted ? fmtSigned(m.dKHR, fmtKHR, 0.5) : '—'}</span>
+                </div>
+                ${counted && !off ? '<p class="sm-td-sub text-emerald-300 flex items-center gap-2"><i class="fas fa-circle-check"></i>ត្រឹមត្រូវនឹងប្រាក់ដែលបានចេញ</p>' : ''}
+                ${off ? `<div>
+                    <p class="sm-td-sub text-amber-300 mb-1.5"><i class="fas fa-triangle-exclamation mr-1"></i>ចំនួនមិនស្មើ · សូមពន្យល់</p>
+                    <textarea id="mismatchNote" rows="2" oninput="mismatchNote = this.value; renderButton()"
+                        placeholder="ឧ. ខ្វះក្រដាស 500 ៛ · អ្នកគ្រប់គ្រងនឹងបំពេញបន្ថែម..."
+                        class="sm-td w-full px-3 py-2.5 rounded-xl bg-[#0b1220] border border-white/10 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 resize-none">${escapeText(mismatchNote)}</textarea>
+                </div>` : ''}
+                <div id="startBtn"></div>`;
+            renderButton();
         }
+
+        function renderButton() {
+            const why = blocker();
+            const host = document.getElementById('startBtn');
+            if (!host) return;
+            host.innerHTML = `
+                <button onclick="startShift()" type="button" ${why ? 'disabled' : ''}
+                    class="w-full h-14 rounded-2xl sm-card-title font-bold inline-flex items-center justify-center gap-2 transition ${why
+                        ? 'bg-white/5 text-slate-500 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500 text-white'}">
+                    <i class="fas fa-user-shield"></i> អ្នកគ្រប់គ្រងបញ្ជាក់ ហើយចាប់ផ្តើមវេន
+                </button>
+                <p class="sm-td-sub text-center mt-2 ${why ? 'text-amber-300' : 'text-slate-500'}">${why || 'អ្នកគ្រប់គ្រងវាយលេខសម្ងាត់លើអេក្រង់នេះ'}</p>`;
+        }
+
+        /* ===== ជំហាន 3៖ អ្នកគ្រប់គ្រងបញ្ជាក់ និងបើកវេន ===== */
 
         async function startShift() {
             const why = blocker();
@@ -341,18 +438,19 @@
                 title: 'បញ្ជាក់ប្រាក់បាតថត និងបើកវេន',
                 lines: [
                     ['វេន', `${t.name} ${t.start}–${t.end}`],
-                    ['បញ្ជរ · អ្នកគិតលុយ', `${MY_REGISTER} · ${personName(ME_CASHIER)}`],
+                    ['បញ្ជរ · អ្នកគិតលុយ', `${reg()} · ${personName(ME_CASHIER)}`],
                     ['ប្រាក់ដែលបានចេញ', `${fmtUSD(f.usd)} · ${fmtKHR(f.khr)}`],
                     ['រាប់បាន', `${fmtUSD(totalUSD())} · ${fmtKHR(totalKHR())}`]
                 ],
                 reason: note || 'ប្រាក់បាតថតត្រឹមត្រូវ',
                 excludeIds: [ME_CASHIER],
-                confirmText: 'អនុម័ត និងបើកវេន'
+                confirmText: 'អនុម័ត និងបើកវេន',
+                dark: true
             });
             if (!ok) return;
 
             const shift = openShiftRecord({
-                register: MY_REGISTER,
+                register: reg(),
                 cashierId: ME_CASHIER,
                 template: t,
                 floatUSD: totalUSD(),
@@ -364,7 +462,7 @@
             });
             const now = isoLocal(new Date());
             const move = f.movement || {
-                id: newId('MV'), type: 'float', register: MY_REGISTER, usd: f.usd, khr: f.khr,
+                id: newId('MV'), type: 'float', register: reg(), usd: f.usd, khr: f.khr,
                 reason: '', ref: '', createdBy: ok.approverId, createdAt: now
             };
             saveMovement(Object.assign({}, move, {
@@ -372,18 +470,30 @@
                 receivedUSD: totalUSD(), receivedKHR: totalKHR(), note
             }));
             // ជំនួសវេន៖ បើមិនមែនវេនតាមកាលវិភាគ កត់ត្រាក្នុងកាលវិភាគដោយស្វ័យប្រវត្តិ (រក្សាវេនផ្សេងដែលធ្វើរួចក្នុងថ្ងៃនេះ)
-            const rostered = rosterFor(shift.date, t.code).some(a => a.cashierId === ME_CASHIER && a.register === MY_REGISTER);
+            const rostered = rosterFor(shift.date, t.code).some(a => a.cashierId === ME_CASHIER && a.register === reg());
             if (!rostered) {
-                const list = rosterFor(shift.date, t.code).filter(a => a.register !== MY_REGISTER && a.cashierId !== ME_CASHIER);
-                list.push({ cashierId: ME_CASHIER, register: MY_REGISTER, cover: true, by: ok.approverId });
+                const list = rosterFor(shift.date, t.code).filter(a => a.register !== reg() && a.cashierId !== ME_CASHIER);
+                list.push({ cashierId: ME_CASHIER, register: reg(), cover: true, by: ok.approverId });
                 saveRoster(shift.date, t.code, list);
             }
-            logPosEvent('shift_opened', { shiftId: shift.id, register: MY_REGISTER, cashierId: ME_CASHIER,
+            logPosEvent('shift_opened', { shiftId: shift.id, register: reg(), cashierId: ME_CASHIER,
                 approverId: ok.approverId, note });
             setTerminalLock(false);
             clearCart();
             showToast(`បានបើក ${t.name} · ${shift.id}`, 'success');
             setTimeout(() => { location.href = '../terminal/pos-terminal.html'; }, 600);
+        }
+
+        function render() {
+            const lbl = document.getElementById('regLabel');
+            lbl.textContent = `${reg()} · ${lbl.dataset.date || ''}`;
+            renderSteps();
+            if (stage === 'overview') renderOverview(); else renderCount();
+        }
+
+        function tick() {
+            const now = new Date();
+            document.getElementById('liveClock').textContent = `${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}`;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -392,16 +502,17 @@
                 return;
             }
             const now = new Date();
-            const asg = assignmentFor(ME_CASHIER);
-            const t = (asg && asg.template) || templateAt(now) || lastStartedTemplate(now) || shiftTemplates()[0];
+            const mine = myRosterToday();
+            const current = templateAt(now);
+            const pick = mine.find(m => current && m.template.code === current.code) || mine.find(m => timing(m.template).state !== 'past') || mine[0];
+            const t = (pick && pick.template) || current || lastStartedTemplate(now) || shiftTemplates()[0];
             templateCode = t ? t.code : '';
-            document.getElementById('regLabel').textContent = MY_REGISTER;
-            document.getElementById('cashierLabel').textContent = personName(ME_CASHIER);
-            setPortalSubtitle(`${MY_REGISTER} · ${personName(ME_CASHIER)} · ${fmtKhDate(now)}`);
-            renderLastShift();
-            renderTemplates();
-            renderIssued();
-            renderNotes();
+            const me = personById(ME_CASHIER);
+            document.getElementById('regLabel').dataset.date = fmtKhDate(now);
+            document.getElementById('meChip').innerHTML = `${avatarHtml(me.id, 'w-8 h-8')}<span class="sm-badge text-slate-200 hidden md:!inline">${me.name}</span>`;
+            tick();
+            setInterval(tick, 1000);
+            render();
         });
     </script>
 </body>

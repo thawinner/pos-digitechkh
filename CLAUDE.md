@@ -54,6 +54,10 @@ src/
 - **`data.js` (both roles)** holds only what a till needs: catalogue, people + PINs, settings (`posSettings()`), the
   shift model, live records, `summarizeShift()` (per-currency expected cash), `receiptHtml()`, `zReportHtml()`,
   `logPosEvent()`. It must never hold other shifts' history — that keeps the cashier's shift lock real.
+- **Mock data model** (`data.js`, shared by the live seed and the history): `genSaleTimes` follows the busy-hour curve
+  `HOUR_WEIGHT`, `genBasket` uses popularity weights `PRODUCT_WEIGHT` (mostly 1–2 items, ≈ $3 average), and `genPay`
+  sets the tender mix. On a cashier's day off, `defaultRoster` puts a shift supervisor on the till as cover.
+  Historic exchange rates vary slightly per day (`fxForDate`). Shifts closed in the last 14 hours stay unreviewed.
 - **`manager-data.js` (manager pages only)** generates 14 days of deterministic history from the roster, merges it with
   live data (`mgrAllShifts/Sales/Movements/Approvals/Events`), stores manager decisions on generated records as
   overlays (`pos_overlay`), and computes exceptions, sales aggregates and the safe balance.
@@ -96,6 +100,7 @@ old eBMS layout; the rules apply as-is. Condensed:
 - It overrides Tailwind's type scale with `!important` (`.text-xs` = 14.5px, `.text-sm` = 15.5px, `.text-base` = 16.5px).
   Check it before debugging any font size. Restore hierarchy with ID-scoped rules (`#posPortal ...`).
 - `hidden sm:inline` never shows; round elements are forced to 13.5px.
+- On phones, `header p` is `display: none`. Use `<span class="block">` for text that must stay visible in a header.
 - It hides scrollbars globally and holds the `< 1024px` off-canvas drawer rules.
 - On phones, `div:has(> a[href*="create-"])` is forced to `display: flex`, so a hidden ⋮ menu containing a link to a
   `create-*.html` page shows permanently. Use a `<button onclick="location.href=…">` inside menus instead.

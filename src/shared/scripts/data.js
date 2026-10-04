@@ -434,23 +434,30 @@ function categoryLabel(id) {
 
 /* ===== រូបភាពទំនិញ =====
    រូបថតរក្សាទុកក្នុង shared/assets/products/<sku>.png ជាទម្រង់ដែលផ្ទៃខាងក្រោយថ្លា។
-   បើឯកសារមិនទាន់មាន ប្រព័ន្ធបង្ហាញរូបតំណាងជំនួសក្នុងរង្វង់ពណ៌ស្រាល
-   ដូច្នេះក្រឡាមិនដែលមើលទៅដូចរូបភាពខូចឡើយ។ */
+   ទំនិញដែលគ្មានរូបថត បង្ហាញក្រឡាពណ៌តាមប្រភេទ និងឈ្មោះខ្លី ដូចម៉ាស៊ីនគិតលុយទូទៅ
+   (មិនស្នើរូបភាពដែលគ្មាន ដូច្នេះគ្មានកំហុស 404)។ ពេលបន្ថែមរូបថត ត្រូវបន្ថែមលេខកូដក្នុងបញ្ជីខាងក្រោម។ */
+
+const PRODUCT_PHOTOS = ['8850001', '8850002', '8850003', '8850004', '8860001', '8860002', '8860003', '8860004'];
+const PRODUCT_SHORT = {
+    '8870001': 'សាប៊ូម្សៅ', '8870002': 'ក្រដាស', '8870003': 'ថ្នាំដុស', '8870004': 'សាប៊ូ',
+    '8880001': 'សៀវភៅ', '8880002': 'ប៊ិច', '8880003': 'ខ្មៅដៃ',
+    '8890001': 'ថ្មពិល', '8890002': 'ខ្សែសាក', '8890003': 'អំពូល'
+};
+const CATEGORY_TILE = { drink: '#3f6f8f', snack: '#9a6a3a', household: '#4f7a68', stationery: '#5a6690', electronic: '#7a5f80' };
 
 function productImageSrc(p) {
     const root = (document.body && document.body.dataset.roleRoot) || '.';
     return `${root}/shared/assets/products/${p.sku}.png`;
 }
 
-function productImgHtml(p, iconSize) {
-    return `
-        <img src="${productImageSrc(p)}" alt="${p.name}" loading="lazy"
-             class="w-full h-full object-contain"
-             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-        <span style="display:none" class="w-full h-full items-center justify-center">
-            <span class="w-[66%] aspect-square rounded-[22%] bg-${p.tone}-400/10 border border-${p.tone}-400/25 text-${p.tone}-300 flex items-center justify-center">
-                <i class="fas ${p.icon} ${iconSize || 'text-2xl'}"></i>
-            </span>
+function productImgHtml(p) {
+    if (PRODUCT_PHOTOS.includes(p.sku)) {
+        return `<img src="${productImageSrc(p)}" alt="${p.name}" loading="lazy" class="w-full h-full object-contain">`;
+    }
+    const label = PRODUCT_SHORT[p.sku] || p.name.split(' ')[0];
+    return `<span class="w-full h-full flex items-center justify-center" style="container-type:size">
+            <span class="w-[78%] h-[78%] rounded-md flex items-center justify-center text-white font-semibold text-center leading-tight px-[6%]"
+                  style="background:${CATEGORY_TILE[p.category] || '#64748b'};font-size:clamp(9px,17cqmin,22px)">${label}</span>
         </span>`;
 }
 
@@ -1364,22 +1371,103 @@ function simpleHash(text) {
     return (h1.toString(16).padStart(8, '0') + h2.toString(16).padStart(8, '0')).repeat(2);
 }
 
-/* ===== ទិន្នន័យគំរូសម្រាប់ការបង្ហាញ =====
-   ពេលបើកលើកដំបូង បង្កើតវេនរបស់ POS-01 ដែលកំពុងបើកតាមគំរូវេនដែលបានចាប់ផ្តើមថ្ងៃនេះ
-   រួមទាំងការលក់ 9 ដែលចែកស្មើតាមពេលវេលាក្នុងវេន។ បើមុនម៉ោងវេនដំបូង គ្មានវេនបើកទេ
-   ហើយផ្ទាំងគិតលុយនាំទៅទំព័របើកវេន។ */
+/* ===== ម៉ាស៊ីនបង្កើតទិន្នន័យគំរូ (ប្រើរួមដោយការលក់ក្នុងវេនបច្ចុប្បន្ន និងប្រវត្តិរបស់អ្នកគ្រប់គ្រង) =====
+   ធ្វើត្រាប់តាមហាងលក់រាយតូចមួយនៅភ្នំពេញ៖ មនុស្សច្រើនពេលព្រឹក ថ្ងៃត្រង់ និងល្ងាច ស្ងាត់ពេលយប់ជ្រៅ
+   កន្ត្រកភាគច្រើនមាន 1 ទៅ 2 មុខ ទំនិញលក់ដាច់ (ទឹក កាហ្វេ នំ) លក់ច្រើនជាងគ្រឿងអគ្គិសនីឆ្ងាយ។
+   លេខចៃដន្យអាចបង្កើតឡើងវិញបាន ដូច្នេះទិន្នន័យដដែលរាល់ពេលបើក។ */
 
-const SHIFT_SALE_SEED = [
-    { items: [{ sku: '8850001', qty: 4 }, { sku: '8860002', qty: 2 }], pay: { usdCash: 5.00, khrCash: 0, khqr: 0 } },
-    { items: [{ sku: '8870001', qty: 1 }, { sku: '8870003', qty: 2 }], pay: { usdCash: 0, khrCash: 30000, khqr: 0 } },
-    { items: [{ sku: '8890002', qty: 1 }, { sku: '8890001', qty: 2 }], pay: { usdCash: 0, khrCash: 0, khqr: 8.70 } },
-    { items: [{ sku: '8860001', qty: 3 }, { sku: '8850002', qty: 3 }, { sku: '8860003', qty: 2 }], pay: { usdCash: 11.00, khrCash: 0, khqr: 0 } },
-    { items: [{ sku: '8880001', qty: 10 }, { sku: '8880002', qty: 12 }], pay: { usdCash: 5.00, khrCash: 30000, khqr: 0 } },
-    { items: [{ sku: '8870002', qty: 2 }, { sku: '8870004', qty: 1 }], pay: { usdCash: 0, khrCash: 0, khqr: 11.15 } },
-    { items: [{ sku: '8850003', qty: 2 }, { sku: '8860004', qty: 1 }], pay: { usdCash: 7.00, khrCash: 0, khqr: 0 } },
-    { items: [{ sku: '8890003', qty: 4 }, { sku: '8880003', qty: 2 }], pay: { usdCash: 0, khrCash: 50000, khqr: 0 } },
-    { items: [{ sku: '8850004', qty: 3 }, { sku: '8860003', qty: 4 }], pay: { usdCash: 4.00, khrCash: 0, khqr: 6.10 } }
-];
+function hashStr(s) {
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+    return h >>> 0;
+}
+
+function rngFor(key) {
+    let a = hashStr(key);
+    return () => {
+        a |= 0; a = a + 0x6D2B79F5 | 0;
+        let t = Math.imul(a ^ a >>> 15, 1 | a);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+}
+
+function pick(rng, list) {
+    return list[Math.floor(rng() * list.length)];
+}
+
+function pickWeighted(rng, list, weightOf) {
+    const total = list.reduce((n, x) => n + weightOf(x), 0);
+    let r = rng() * total;
+    for (const x of list) {
+        r -= weightOf(x);
+        if (r <= 0) return x;
+    }
+    return list[list.length - 1];
+}
+
+const HOUR_WEIGHT = [0.35, 0.2, 0.12, 0.08, 0.1, 0.35, 0.8, 1.3, 1.2, 0.9, 0.85, 1.2, 1.4, 1.0, 0.8, 0.85, 1.0, 1.4, 1.6, 1.5, 1.2, 0.9, 0.7, 0.5];
+const SALES_PER_HOUR = 5.5;
+const PRODUCT_WEIGHT = {
+    '8850001': 10, '8850002': 7, '8850003': 3, '8850004': 3,
+    '8860001': 4, '8860002': 5, '8860003': 4, '8860004': 1.5,
+    '8870001': 1.2, '8870002': 1.5, '8870003': 1.2, '8870004': 0.8,
+    '8880001': 2.5, '8880002': 3, '8880003': 0.8,
+    '8890001': 1, '8890002': 0.5, '8890003': 0.6
+};
+
+/* ម៉ោងលក់ចន្លោះ fromMs–toMs តាមទម្រង់ម៉ោងមមាញឹក (dayFactor៖ ចុងសប្តាហ៍ ឬថ្ងៃស្ងាត់) */
+function genSaleTimes(rng, fromMs, toMs, dayFactor) {
+    const times = [];
+    const first = new Date(fromMs);
+    first.setMinutes(0, 0, 0);
+    for (let h = first.getTime(); h < toMs; h += 3600000) {
+        const n = Math.round(HOUR_WEIGHT[new Date(h).getHours()] * SALES_PER_HOUR * (dayFactor || 1) * (0.7 + rng() * 0.6));
+        for (let k = 0; k < n; k++) {
+            const t = h + rng() * 3600000;
+            if (t > fromMs && t < toMs) times.push(t);
+        }
+    }
+    return times.sort((a, b) => a - b);
+}
+
+function genBasket(rng) {
+    const lines = [];
+    const br = rng();
+    const n = br < 0.45 ? 1 : br < 0.75 ? 2 : br < 0.9 ? 3 : br < 0.97 ? 4 : 5;
+    for (let k = 0; k < n; k++) {
+        const p = pickWeighted(rng, PRODUCTS, x => PRODUCT_WEIGHT[x.sku] || 1);
+        if (lines.some(l => l.sku === p.sku)) continue;
+        const qr = rng();
+        let qty = qr < 0.8 ? 1 : qr < 0.95 ? 2 : 3;
+        if (p.category === 'stationery' && rng() < 0.25) qty = 2 + Math.floor(rng() * 9); // សិស្សទិញប៊ិច សៀវភៅ ជាឡូ
+        lines.push({ sku: p.sku, qty });
+    }
+    return lines;
+}
+
+/* របៀបបង់ប្រាក់៖ ដុល្លារ ~42% · រៀល ~25% · KHQR ~26% · ចម្រុះ ~7% */
+function genPay(rng, due, rate) {
+    const r = rng();
+    if (r < 0.42) {
+        const opts = [Math.ceil(due), Math.ceil(due / 5) * 5, Math.ceil(due / 10) * 10];
+        let usd = pick(rng, opts);
+        if (usd < due) usd = Math.ceil(due);
+        return { usdCash: usd, khrCash: 0, khqr: 0 };
+    }
+    if (r < 0.67) {
+        const k = due * rate;
+        return { usdCash: 0, khrCash: pick(rng, [Math.ceil(k / 1000) * 1000, Math.ceil(k / 5000) * 5000, Math.ceil(k / 10000) * 10000]), khqr: 0 };
+    }
+    if (r < 0.93) return { usdCash: 0, khrCash: 0, khqr: Math.round(due * 100) / 100 };
+    const usd = Math.floor(due);
+    return { usdCash: usd, khrCash: Math.ceil((due - usd) * rate / 1000) * 1000 || 1000, khqr: 0 };
+}
+
+/* ===== ទិន្នន័យគំរូសម្រាប់ការបង្ហាញ =====
+   ពេលបើកលើកដំបូង បង្កើតវេនដែលកំពុងបើកសម្រាប់អ្នកនៅបញ្ជរ POS-01 តាមកាលវិភាគ (ឬអ្នកដំបូងក្នុងវេន)
+   រួមទាំងការលក់តាមម៉ោងមមាញឹកចាប់ពីបើកវេនដល់ឥឡូវ។ បើមុនម៉ោងវេនដំបូង ឬគ្មាននរណាក្នុងវេន
+   គ្មានវេនបើកទេ ហើយផ្ទាំងគិតលុយនាំទៅទំព័របើកវេន។ */
 
 function ensurePosSeed() {
     if (posRead(POS_KEYS.seed, null)) return;
@@ -1389,7 +1477,8 @@ function ensurePosSeed() {
     const lead = crew.find(a => a.register === 'POS-01') || crew[0];
     if (tpl && lead) {
         const dateStr = templateDateFor(tpl, now);
-        const openedAt = dateAt(dateStr, tpl.start);
+        const rng = rngFor(`live|${dateStr}|${tpl.code}`);
+        const openedAt = new Date(dateAt(dateStr, tpl.start).getTime() - (2 + Math.floor(rng() * 8)) * 60000);
         const rate = POS_SETTINGS_DEFAULTS.fxRate;
         const shift = {
             id: `SHIFT-${dateStr.replace(/-/g, '')}-${lead.register.replace('-', '')}-${tpl.code}`,
@@ -1410,27 +1499,28 @@ function ensurePosSeed() {
             status: 'open'
         };
         // ការលក់ឈប់ត្រឹមម៉ោងបិទវេន ទោះហួសម៉ោងក៏ដោយ
-        const endMs = Math.min(now.getTime() - 5 * 60000, shiftEndDate(shift).getTime());
-        const startMs = openedAt.getTime() + 10 * 60000;
-        const span = Math.max(endMs - startMs, 60000);
-        const step = span / SHIFT_SALE_SEED.length;
+        const endMs = Math.min(now.getTime() - 3 * 60000, shiftEndDate(shift).getTime());
+        const dow = now.getDay();
+        const times = genSaleTimes(rng, openedAt.getTime() + 4 * 60000, endMs, dow === 6 ? 1.15 : dow === 0 ? 1.1 : 1);
         const prefix = receiptPrefix(lead.register, now);
-        const sales = SHIFT_SALE_SEED.map((seed, i) => {
+        const sales = times.map((t, i) => {
+            const items = genBasket(rng);
+            const due = saleTotals(items, 0).gross;
+            const pay = genPay(rng, due, rate);
             const sale = {
                 id: prefix + String(i + 1).padStart(4, '0'),
-                time: isoLocal(new Date(startMs + step * i)),
+                time: isoLocal(new Date(t)),
                 shiftId: shift.id,
                 cashierId: lead.cashierId,
                 register: lead.register,
                 fxRate: rate,
-                items: seed.items,
-                pay: seed.pay,
+                items,
+                pay,
                 discountPercent: 0,
                 customerId: '',
                 status: 'completed'
             };
-            const due = saleTotals(sale.items, 0).gross;
-            sale.change = splitChange(paidTotal(sale.pay, rate) - due, rate, defaultChangeMode(sale.pay));
+            sale.change = splitChange(paidTotal(pay, rate) - due, rate, defaultChangeMode(pay));
             return sale;
         });
         posWrite(POS_KEYS.shifts, [shift]);
@@ -1495,9 +1585,17 @@ function rosterKey(dateStr, code) {
 function defaultRoster(dateStr, code) {
     const dow = new Date(dateStr + 'T12:00').getDay();
     const defs = posSettings().staffDefaults || {};
-    return CASHIERS.concat(MANAGERS)
-        .filter(p => defs[p.id] && defs[p.id].template === code && Number(defs[p.id].dayOff) !== dow && defs[p.id].register)
+    const owners = CASHIERS.concat(MANAGERS).filter(p => defs[p.id] && defs[p.id].template === code && defs[p.id].register);
+    const list = owners.filter(p => Number(defs[p.id].dayOff) !== dow)
         .map(p => ({ cashierId: p.id, register: defs[p.id].register }));
+    // ថ្ងៃឈប់សម្រាករបស់អ្នកគិតលុយ៖ អ្នកគ្រប់គ្រងវេនឈរបញ្ជរជំនួស (ហាងតូចមិនទុកវេនទទេ)
+    // ឆ្លាស់គ្នារវាងអ្នកគ្រប់គ្រងទាំងពីរ · ថ្ងៃមួយមានតែម្នាក់ឈប់ ដូច្នេះមិនលើស 12 ម៉ោង
+    if (!list.length && owners.length && MANAGERS.length) {
+        const off = owners[0];
+        const day = Math.floor(new Date(dateStr + 'T12:00').getTime() / 86400000);
+        list.push({ cashierId: MANAGERS[day % MANAGERS.length].id, register: defs[off.id].register, cover: true });
+    }
+    return list;
 }
 
 /* ផ្លាស់បុគ្គលិកទៅវេនផ្សេងសម្រាប់ថ្ងៃមួយ (ជំនួសវេន)៖ ដកចេញពីវេនផ្សេងទៀតក្នុងថ្ងៃនោះ

@@ -31,7 +31,7 @@
     <div class="flex-1 flex flex-col h-full overflow-hidden">
         <div id="headerHost" data-title="ផ្ទាំងគ្រប់គ្រង"
              data-subtitle="ថ្ងៃប្រតិបត្តិការ"></div>
-        <main class="flex-1 overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
             <div class="w-full space-y-5">
                 <div id="kpiRow" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
                 <section id="todo"></section>
@@ -145,13 +145,13 @@
                 <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4">
                     <div class="flex items-center justify-between gap-3 mb-3">
                         <h3 class="sm-card-title text-slate-700">ការងាររបស់អ្នក</h3>
-                        <span class="sm-badge px-2.5 py-0.5 rounded-full ${items.length ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}">${items.length ? `${items.length} ត្រូវធ្វើ` : 'រួចរាល់ទាំងអស់'}</span>
+                        <span class="sm-badge ${items.length ? 'text-amber-700' : 'text-emerald-700'} font-semibold">${items.length ? `${items.length} ត្រូវធ្វើ` : 'រួចរាល់ទាំងអស់'}</span>
                     </div>
                     ${items.length ? `<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2.5">${items.map(i => `
-                        <a href="${i.href}" class="group flex items-center gap-3 p-3 rounded-xl border border-${i.tone}-200 bg-${i.tone}-50/50 hover:bg-${i.tone}-50 transition">
-                            <span class="w-10 h-10 rounded-xl bg-white text-${i.tone}-600 border border-${i.tone}-200 flex items-center justify-center flex-shrink-0"><i class="fas ${i.icon}"></i></span>
+                        <a href="${i.href}" class="group flex items-center gap-3 pl-3 pr-3 py-2.5 rounded-lg border border-slate-200 border-l-[3px] border-l-${i.tone}-500 bg-white hover:bg-slate-50 transition">
+                            <i class="fas ${i.icon} w-4 text-center text-${i.tone}-600 flex-shrink-0"></i>
                             <span class="min-w-0 flex-1"><span class="sm-value text-slate-800 block truncate">${i.title}</span><span class="sm-td-sub text-slate-500 block truncate">${i.note}</span></span>
-                            <span class="sm-badge px-3 py-1.5 rounded-lg bg-white border border-${i.tone}-200 text-${i.tone}-700 font-semibold flex-shrink-0 group-hover:bg-${i.tone}-600 group-hover:text-white transition">${i.cta}</span>
+                            <span class="sm-badge text-slate-600 font-semibold flex-shrink-0 group-hover:text-slate-900 inline-flex items-center gap-1.5">${i.cta}<i class="fas fa-chevron-right text-[10px]"></i></span>
                         </a>`).join('')}</div>`
                     : '<p class="sm-card-sub text-slate-500 flex items-center gap-2"><i class="fas fa-circle-check text-emerald-500"></i>គ្មានអ្វីរង់ចាំអ្នកទេ · បញ្ជរទាំងអស់ដំណើរការធម្មតា</p>'}
                 </div>`;

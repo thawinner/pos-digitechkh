@@ -76,3 +76,5 @@ flood-fill ចាប់ពីគែមរូប ដូច្នេះមាន�
 បន្ទាប់មកស្រមោលស្រាលៗត្រូវកាត់ចេញបន្តិចម្តងៗពីគែមចូលក្នុង។
 
 ប្រសិនបើរូបថតមានផ្ទៃថ្លារួចហើយ សូមរក្សាវាទុកដដែល។
+
+After adding `<sku>.png` here, add the SKU to `PRODUCT_PHOTOS` in `src/shared/scripts/data.js`. Products not in that list show a flat colour tile with a short name and no image request.

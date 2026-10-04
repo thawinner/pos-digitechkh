@@ -767,7 +767,7 @@
             renderProducts();
         }
 
-        /* ចុចលើចំនួន → ផ្ទាំងលេខ (ឧ. ប៊ិច 12 ដើម ចុចម្តង មិនមែន + ១១ ដង) */
+        /* ចុចលើចំនួន → ផ្ទាំងលេខ (ឧ. ប៊ិច 12 ដើម ចុចម្តង មិនមែន + 11 ដង) */
         async function editQty(sku) {
             const line = cart.find(l => l.sku === sku);
             if (!line) return;
@@ -1017,7 +1017,7 @@
             document.getElementById('paymentPanel').innerHTML = `
                 <button onclick="enterCheckout()" type="button" ${ready ? '' : 'disabled'}
                     class="sm-card-title w-full !min-h-[64px] px-5 rounded-2xl font-bold transition inline-flex items-center justify-between gap-3 ${ready
-                        ? 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-lg shadow-cyan-900/40'
+                        ? 'bg-cyan-600 hover:bg-cyan-500 text-white'
                         : 'bg-white/5 text-slate-600 cursor-not-allowed'}">
                     <span class="inline-flex items-center gap-2.5"><i class="fas fa-cash-register"></i> គិតលុយ</span>
                     <i class="fas fa-arrow-right"></i>
@@ -1280,7 +1280,7 @@
             const tabs = TENDERS.map(x => `
                 <button onclick="setTender('${x.id}')" type="button"
                     class="!min-h-[50px] h-[50px] rounded-xl border flex flex-col items-center justify-center gap-0.5 transition ${tenderMode === x.id
-                        ? 'bg-cyan-600 border-cyan-500 text-white shadow-lg shadow-cyan-900/30'
+                        ? 'bg-cyan-600 border-cyan-500 text-white'
                         : 'bg-[#0f172a] border-white/10 text-slate-300 hover:border-cyan-600'}">
                     <i class="fas ${x.icon} text-sm"></i><span class="sm-td-sub font-semibold">${x.label}</span>
                 </button>`).join('');
@@ -1342,7 +1342,7 @@
 
             document.getElementById('cartLines').innerHTML = `
                 <div class="p-3 space-y-2.5">
-                    <div class="rounded-2xl bg-gradient-to-br from-cyan-500/15 to-cyan-500/5 border border-cyan-500/25 px-4 py-2.5 flex items-end justify-between gap-3">
+                    <div class="rounded-2xl bg-cyan-500/10 border border-cyan-500/25 px-4 py-2.5 flex items-end justify-between gap-3">
                         <div>
                             <p class="sm-td-sub text-cyan-200">ទឹកប្រាក់ត្រូវទូទាត់</p>
                             <p class="pos-total mt-0.5">${fmtUSD(due)}</p>
@@ -1397,7 +1397,7 @@
             document.getElementById('paymentPanel').innerHTML = `
                 <button onclick="finishSale()" type="button" ${canFinish ? '' : 'disabled'}
                     class="sm-card-title w-full !min-h-[64px] rounded-2xl font-bold transition inline-flex items-center justify-center gap-2 ${canFinish
-                        ? 'bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg shadow-emerald-900/40'
+                        ? 'bg-emerald-500 hover:bg-emerald-400 text-white'
                         : 'bg-[#374151] text-slate-500 cursor-not-allowed'}">
                     <i class="fas ${canFinish && pay.khqr > 0.005 ? 'fa-qrcode' : 'fa-circle-check'}"></i> ${canFinish && pay.khqr > 0.005 ? 'បង្ហាញកូដស្កេនបាគង' : 'បញ្ចប់ការទូទាត់'}
                     <span class="hidden xl:!inline sm-td-sub font-medium opacity-70 ml-1">Enter</span>
