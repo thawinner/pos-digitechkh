@@ -2104,11 +2104,11 @@ function assignShift(dateStr, code, personId, register, meta) {
         if (t.code === code) return;
         const list = rosterFor(dateStr, t.code);
         if (list.some(a => a.cashierId === personId)) {
-            movedFrom = t.code;
-            // P21: បើបុគ្គលិកកំពុងបើកថតប្រាក់ផ្ទាល់លើវេននោះ មិនត្រូវដកចេញឡើយ
-            const openShifts = posRead(POS_KEYS.shifts, []).filter(s => s.status === 'open' && s.cashierId === personId && s.date === dateStr && s.templateCode === t.code);
-            if (!openShifts.length) {
+            // P21: វេនដែលចាប់ផ្តើមរួច (កំពុងធ្វើ ឬជាប្រវត្តិ) មិនត្រូវដកចេញឡើយ · នេះជាវេនទ្វេ មិនមែនការផ្លាស់
+            const hasDrawer = posRead(POS_KEYS.shifts, []).some(s => s.cashierId === personId && s.date === dateStr && s.templateCode === t.code);
+            if (!hasDrawer && dateAt(dateStr, t.start) > new Date()) {
                 saveRoster(dateStr, t.code, list.filter(a => a.cashierId !== personId));
+                movedFrom = t.code;
             }
         }
     });

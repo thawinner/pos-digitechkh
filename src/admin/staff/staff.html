@@ -376,13 +376,13 @@
                 ],
                 preview: vals => {
                     const base = Number(vals.baseSalary) || 0;
-                    const hr = (base / 208).toFixed(2);
-                    const ot = (hr * 1.5).toFixed(2);
-                    const night = (hr * 2.0).toFixed(2);
+                    const hr = base / PAY_RULES.monthHours;
+                    const line = (label, mult, tone) => `<div class="flex justify-between text-slate-600"><span>${label}</span><span class="font-semibold ${tone} sm-figure">$${(hr * mult).toFixed(2)} /ម៉ោង</span></div>`;
                     return `<div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-xs space-y-1">
-                        <div class="flex justify-between text-slate-600"><span>ម៉ោងធម្មតា (1.0x):</span><span class="font-semibold text-slate-800 sm-figure">$${hr} /ម៉ោង</span></div>
-                        <div class="flex justify-between text-slate-600"><span>ថែមម៉ោង OT (1.5x):</span><span class="font-semibold text-emerald-600 sm-figure">$${ot} /ម៉ោង</span></div>
-                        <div class="flex justify-between text-slate-600"><span>ម៉ោងយប់/បុណ្យ (2.0x):</span><span class="font-semibold text-indigo-600 sm-figure">$${night} /ម៉ោង</span></div>
+                        ${line('ម៉ោងធម្មតា', 1, 'text-slate-800')}
+                        ${line('ម៉ោងបន្ថែម · 150%', PAY_RULES.otMult, 'text-emerald-600')}
+                        ${line('ម៉ោងយប់ និងថ្ងៃឈប់ · 200%', PAY_RULES.nightMult, 'text-indigo-600')}
+                        ${line('អវត្តមានមួយថ្ងៃ (កាត់)', PAY_RULES.monthHours / PAY_RULES.workDays, 'text-rose-600')}
                     </div>`;
                 },
                 confirmText: 'រក្សាទុក',

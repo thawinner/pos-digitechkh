@@ -1,6 +1,6 @@
 # Shift Scheduling UX — Improvement Plan
 
-> **Date:** 2026-10-05 · **Status:** Proposed, nothing built yet · §2.4 adds a reported, reproduced bug (S17–S21); §5 designs the manager and cashier flows for it (S22–S30)
+> **Date:** 2026-10-05 · **Status:** Built (commit `bf39e59`), reviewed and corrected 2026-10-05; see §0
 > **Scope:** the two places where a shift gets added:
 > 1. **Roster** «កាលវិភាគវេន» (`manager/roster/roster.html`): putting a person on a shift for a date, removing
 >    them, and editing their default shift «វេនប្រចាំ».
@@ -15,6 +15,28 @@
 Line numbers are as of 2026-10-05 and will drift. Item IDs use the prefix **S** (shift scheduling).
 
 ---
+
+## 0. Review of the build (2026-10-05)
+
+The plan was built in `bf39e59`. A review in the browser (1440×900 and 390×844, clock set to 06:05, 09:00 and 14:10)
+found and fixed:
+
+| Area | Problem found | Fix |
+|---|---|---|
+| Roster rules | Night shift → next morning (0 h rest, 16 h straight) was **recommended** | Rest < 11 h now blocks («ធ្វើការជាប់គ្នា») |
+| Roster rules | A cashier with an open drawer was blocked outright, so the partial cover (§5.2) never appeared; hours counted only to *now* | Open drawer is projected to its end; the dialog offers «ជំនួសត្រឹម 14:00–17:50» |
+| Roster rules | `assignShift()` still removed people from shifts that had already started | Only shifts that haven't started are moved; started ones stay (double shift) |
+| Roster rules | Weekly hours for a partial cover counted the full 8 h | Counts the short shift's real length |
+| Assign dialog | Over-48 h and back-to-back people listed under «ណែនាំ»; list jumped to top on every click; «(OT)»; native tooltips; a checkbox for a choice that wasn't optional | Three groups (recommended / with caveats / blocked); scroll kept; Khmer only; day bar only when relevant, short shift stated as a fact |
+| Roster grid | 7th day cut off at 1440 px; 21 dashed «បន្ថែម» buttons; names truncated; «ត្រឡប់ទៅលំនាំដើម» spilling into the next day | Fixed-width columns fit the week; «បន្ថែម» only on filled cells and on hover; compact chips; «ជំនួស / ដល់» on the second line |
+| Roster phone | Five staff cards before the schedule | Schedule first, staff cards after |
+| Dashboard coverage | English «(Shift Coverage)»; 6 «មិនមានវេន + ចាត់តាំង» filler rows contradicting «គ្រប់វេនមានបុគ្គលិក»; a no-show shown as «បានបញ្ចប់»; «នឹងលើស 12 ម៉ោង» never fired | Only real people listed; «មិនបានបើកវេន» / «បានបិទវេន» / «យឺត 12 នាទី»; projected hours |
+| Login schedule | Active shift header wrapped into 4 lines | One line, «ឥឡូវនេះ» |
+| Open-shift | `capFor()` guard never fired, so a short shift under 2 h could open | Uses `partialAllowed` |
+| Terminal | Next shift showed the template end instead of the short shift's end | Shows `from`–`until` |
+| Content `<aside>` | Global sidebar CSS painted side panels dark (create-movement, view-stock-in, open-shift) | Side panels use `<div>` |
+
+Still open: the sidebar became collapsible in `be4f02c`, which CLAUDE.md forbids («The sidebar is never collapsible»).
 
 ## 1. The goal in one sentence
 

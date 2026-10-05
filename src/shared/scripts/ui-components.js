@@ -1725,12 +1725,15 @@ function showAssignDialog(opts = {}) {
         let isPartial = !!(selCand && selCand.partialAllowed);
 
         const renderDialog = () => {
+            const prevList = host.querySelector('[data-list]');
+            const listScroll = prevList ? prevList.scrollTop : 0;
             selCand = candidates.find(c => c.id === selId) || candidates[0];
             const occupant = currentRoster.find(a => a.register === selReg && a.cashierId !== selId);
             const isReplacing = !!occupant;
 
-            const recommended = candidates.filter(c => c.rank <= 4);
-            const others = candidates.filter(c => c.rank > 4);
+            const recommended = candidates.filter(c => !c.blocked && c.rank <= 2);
+            const others = candidates.filter(c => !c.blocked && c.rank > 2);
+            const blockedList = candidates.filter(c => c.blocked);
 
             const toneMap = {
                 emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200',
@@ -1750,11 +1753,11 @@ function showAssignDialog(opts = {}) {
                         ${avatarHtml(c.id, 'w-8 h-8')}
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-2">
-                                <span class="sm-value text-slate-800 text-xs truncate">${c.name}</span>
-                                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full border ${toneMap[c.tone] || 'border-slate-200 text-slate-600'}">${c.chip}</span>
+                                <span class="sm-td text-slate-800 truncate">${c.name}</span>
+                                <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap ${toneMap[c.tone] || 'border-slate-200 text-slate-600'}">${c.chip}</span>
                             </div>
-                            <div class="text-[11px] text-slate-500 mt-0.5 sm-figure flex items-center gap-2">
-                                <span>${c.hoursBefore} → ${c.hoursAfter} ម៉ោង</span>
+                            <div class="text-[12px] text-slate-500 mt-0.5 sm-figure flex flex-wrap items-center gap-x-2">
+                                <span class="whitespace-nowrap">សប្តាហ៍នេះ ${c.hoursBefore} → ${c.hoursAfter} ម៉ោង</span>
                                 ${c.reason ? `<span class="${c.blocked ? 'text-rose-600' : 'text-amber-600 font-medium'} truncate">${c.reason}</span>` : ''}
                             </div>
                         </div>
@@ -1762,45 +1765,38 @@ function showAssignDialog(opts = {}) {
                 `;
             };
 
+            // របារម៉ោងថ្ងៃនេះ៖ បង្ហាញតែពេលបុគ្គលិកបានធ្វើការរួចថ្ងៃនេះ (វេនទ្វេ) · ពេលនោះវេនខ្លីជាជម្រើសតែមួយ
             let dayBarHtml = '';
-            if (selCand) {
+            if (selCand && (selCand.workedToday > 0 || selCand.partialAllowed)) {
                 const worked = selCand.workedToday || 0;
-                const shiftH = isPartial && selCand.capTime ? (minutesOf(selCand.capTime) - minutesOf(tpl.start)) / 60 : templateHours(tpl);
+                const shiftH = isPartial && selCand.capTime ? ((minutesOf(selCand.capTime) - minutesOf(tpl.start) + 1440) % 1440) / 60 : templateHours(tpl);
                 const workedPct = Math.min(100, (worked / 12) * 100);
                 const shiftPct = Math.min(100 - workedPct, (Math.max(0, shiftH) / 12) * 100);
-                const freePct = Math.max(0, 100 - workedPct - shiftPct);
-
                 dayBarHtml = `
-                    <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2 mt-2">
-                        <div class="flex items-center justify-between text-xs">
-                            <span class="font-medium text-slate-700">កម្រិតម៉ោងថ្ងៃនេះ៖ ${worked} / 12 ម៉ោង</span>
-                            <span class="text-slate-500 sm-figure">${selCand.openDrawerNow ? `កំពុងបើកថតប្រាក់ ${selCand.openDrawerNow.templateName}` : ''}</span>
+                    <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
+                        <div class="flex items-center justify-between gap-2 text-[13px]">
+                            <span class="font-semibold text-slate-700">${selCand.name} · ថ្ងៃនេះ</span>
+                            <span class="text-slate-600 sm-figure font-semibold">${Math.round((worked + shiftH) * 10) / 10} / 12 ម៉ោង</span>
                         </div>
-                        <div class="h-3 w-full bg-slate-200 rounded-full overflow-hidden flex">
-                            <div style="width: ${workedPct}%" class="bg-indigo-600 h-full" title="បានធ្វើការ"></div>
-                            <div style="width: ${shiftPct}%" class="bg-indigo-300 h-full" title="វេននេះ"></div>
-                            <div style="width: ${freePct}%" class="bg-slate-100 h-full" title="ទំនេរ"></div>
+                        <div class="h-2.5 w-full bg-slate-200 rounded-full overflow-hidden flex">
+                            <div style="width: ${workedPct}%" class="bg-slate-500 h-full"></div>
+                            <div style="width: ${shiftPct}%" class="bg-indigo-500 h-full"></div>
                         </div>
-                        <div class="flex items-center gap-4 text-[10px] text-slate-500">
-                            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded bg-indigo-600"></span>បានធ្វើការ (${worked} ម៉ោង)</span>
-                            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded bg-indigo-300"></span>វេននេះ (${Math.round(shiftH*10)/10} ម៉ោង)</span>
-                            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded bg-slate-200"></span>ទំនេរ</span>
+                        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-slate-500">
+                            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-slate-500"></span>${selCand.openDrawerNow ? `${selCand.openDrawerNow.templateName} ${worked} ម៉ោង` : `បានធ្វើ ${worked} ម៉ោង`}</span>
+                            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-indigo-500"></span>វេននេះ ${Math.round(shiftH * 10) / 10} ម៉ោង</span>
                         </div>
-                        ${selCand.partialAllowed ? `
-                            <div class="pt-1 flex items-center justify-between">
-                                <label class="flex items-center gap-2 cursor-pointer text-xs font-semibold text-amber-800">
-                                    <input type="checkbox" id="partialCheckbox" ${isPartial ? 'checked' : ''} class="w-4 h-4 text-indigo-600 rounded">
-                                    <span>ជំនួសត្រឹម ${tpl.start}–${selCand.capTime} (វេនខ្លី ដើម្បីកុំឱ្យលើស 12 ម៉ោង)</span>
-                                </label>
-                            </div>
-                        ` : ''}
+                        ${isPartial ? `
+                            <p class="text-[13px] font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                                <i class="fas fa-scissors mr-1.5 text-amber-600"></i>វេនខ្លី ${tpl.start}–${selCand.capTime} ដើម្បីកុំឱ្យលើស 12 ម៉ោង · ${selCand.capTime}–${tpl.end} នៅខ្វះអ្នក
+                            </p>` : ''}
                     </div>
                 `;
             }
 
             const warningLines = [];
             if (selCand && selCand.over48) {
-                warningLines.push(`<p class="text-xs font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 flex items-center gap-2"><i class="fas fa-clock text-amber-600"></i><span>បុគ្គលិកនេះធ្វើការ ${selCand.hoursAfter} ម៉ោងក្នុងសប្តាហ៍នេះ (លើស 48 ម៉ោង) · គិតជាម៉ោងបន្ថែម/ថែមម៉ោង (OT)</span></p>`);
+                warningLines.push(`<p class="text-xs font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 flex items-center gap-2"><i class="fas fa-clock text-amber-600"></i><span>បុគ្គលិកនេះធ្វើការ ${selCand.hoursAfter} ម៉ោងក្នុងសប្តាហ៍នេះ · លើស 48 ម៉ោង ត្រូវបង់ម៉ោងបន្ថែម</span></p>`);
             }
             if (selCand && selCand.leavesGap) {
                 warningLines.push(`<p class="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2"><i class="fas fa-triangle-exclamation mr-1.5"></i>${selCand.leavesGap} ថ្ងៃនេះនឹងគ្មានអ្នកគិតលុយ</p>`);
@@ -1822,21 +1818,25 @@ function showAssignDialog(opts = {}) {
                     </div>
 
                     <div class="space-y-3">
-                        <div class="space-y-1.5 max-h-[220px] overflow-y-auto pr-1">
+                        <div data-list class="space-y-1.5 max-h-[min(340px,42vh)] overflow-y-auto pr-1">
                             ${recommended.length ? `
-                                <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">ណែនាំ</p>
+                                <p class="text-[12px] font-semibold text-slate-500">ណែនាំ</p>
                                 ${recommended.map(candRow).join('')}
                             ` : ''}
                             ${others.length ? `
-                                <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mt-2">ផ្សេងទៀត</p>
+                                <p class="text-[12px] font-semibold text-slate-500 ${recommended.length ? 'pt-2' : ''}">អាចចាត់តាំងបាន តែមានចំណុចត្រូវដឹង</p>
                                 ${others.map(candRow).join('')}
+                            ` : ''}
+                            ${blockedList.length ? `
+                                <p class="text-[12px] font-semibold text-slate-500 pt-2">មិនអាចចាត់តាំង</p>
+                                ${blockedList.map(candRow).join('')}
                             ` : ''}
                         </div>
 
                         ${dayBarHtml}
 
                         <div>
-                            <label class="text-xs font-semibold text-slate-600 block mb-1.5">បញ្ជរគិតលុយ</label>
+                            <p class="text-[13px] font-semibold text-slate-600 mb-1.5">បញ្ជរគិតលុយ</p>
                             <div class="flex flex-wrap gap-2">
                                 ${REGISTERS.map(r => {
                                     const occ = currentRoster.find(a => a.register === r && a.cashierId !== selId);
@@ -1853,7 +1853,7 @@ function showAssignDialog(opts = {}) {
                         </div>
 
                         <div>
-                            <label class="text-xs font-semibold text-slate-600 block mb-1.5">មូលហេតុនៃការចាត់តាំង (ជាជម្រើស)</label>
+                            <p class="text-[13px] font-semibold text-slate-600 mb-1.5">មូលហេតុ <span class="font-normal text-slate-400">· មិនចាំបាច់</span></p>
                             <div class="flex flex-wrap gap-1.5">
                                 ${reasonsList.map(re => `
                                     <button type="button" data-reason="${re}" class="h-8 px-2.5 rounded-lg border text-xs transition ${selReason === re ? 'bg-indigo-100 text-indigo-700 border-indigo-300 font-semibold' : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border-slate-200'}">
@@ -1874,6 +1874,9 @@ function showAssignDialog(opts = {}) {
                     </div>
                 </div>
             `;
+
+            const newList = host.querySelector('[data-list]');
+            if (newList) newList.scrollTop = listScroll;
 
             host.querySelectorAll('[data-cand]').forEach(el => {
                 el.onclick = () => {
@@ -1903,13 +1906,6 @@ function showAssignDialog(opts = {}) {
                 };
             });
 
-            const pCheck = host.querySelector('#partialCheckbox');
-            if (pCheck) {
-                pCheck.onchange = () => {
-                    isPartial = pCheck.checked;
-                    renderDialog();
-                };
-            }
 
             host.querySelector('[data-act="cancel"]').onclick = () => finish(null);
             const okBtn = host.querySelector('[data-act="ok"]');

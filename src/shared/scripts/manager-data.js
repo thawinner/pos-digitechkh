@@ -1093,33 +1093,43 @@ function rosterCheck(personId, dateStr, code) {
     const newWeekHrs = Math.round((weekHrs + tHours) * 10) / 10;
     const over48 = newWeekHrs > 48;
 
-    const workedHrs = hoursWorkedToday(personId, dateStr);
-    const cap = capFor(personId, dateStr, t ? t.start : '00:00');
+    // ម៉ោងថ្ងៃនេះ = ម៉ោងបានធ្វើ + ម៉ោងដែលនៅសល់នៃថតប្រាក់កំពុងបើក (ប៉ាន់ដល់ម៉ោងបិទវេន មិនមែនត្រឹមឥឡូវ)
+    const openDrawerNow = posRead(POS_KEYS.shifts, []).find(s => s.status === 'open' && s.cashierId === personId && s.date === dateStr && s.templateCode !== code);
+    const openRemain = openDrawerNow ? Math.max(0, (shiftEndDate(openDrawerNow) - new Date()) / 3600000) : 0;
+    const workedHrs = Math.round((hoursWorkedToday(personId, dateStr) + openRemain) * 10) / 10;
     const todayTotal = Math.round((workedHrs + tHours) * 10) / 10;
     const over12 = todayTotal > 12;
-    const partialAllowed = over12 && cap.partialAllowed;
+    const remainHours = Math.max(0, 12 - workedHrs);
+    const capM = t ? Math.floor((minutesOf(t.start) + remainHours * 60) / 10) * 10 : 0;
+    const capTime = `${pad2(Math.floor((capM % 1440) / 60))}:${pad2(capM % 60)}`;
+    const partialAllowed = over12 && remainHours >= 2;
+    // វេនខ្លី៖ ម៉ោងក្នុងសប្តាហ៍គិតតែម៉ោងដែលធ្វើពិត
+    const weekAfter = partialAllowed ? Math.round((weekHrs + ((capM - minutesOf(t.start) + 1440) % 1440) / 60) * 10) / 10 : newWeekHrs;
 
-    const otherTpls = shiftTemplates().filter(x => x.code !== code && rosterFor(dateStr, x.code).some(a => a.cashierId === personId));
-    const openDrawerNow = posRead(POS_KEYS.shifts, []).find(s => s.status === 'open' && s.cashierId === personId && s.date === dateStr);
+    // វេនផ្សេងដែលចាប់ផ្តើមរួច (ឬកំពុងបើក) នៅដដែល = វេនទ្វេ · មានតែវេនមិនទាន់ចាប់ផ្តើមទេ ដែលត្រូវផ្លាស់ចេញ
+    const started = x => dateAt(dateStr, x.start) <= new Date();
+    const otherTpls = shiftTemplates().filter(x => x.code !== code && !started(x) && rosterFor(dateStr, x.code).some(a => a.cashierId === personId));
 
-    // ពិនិត្យការសម្រាកជាប់គ្នា (យ៉ាងហោច 11 ម៉ោង D-S3)
+    // សម្រាកយ៉ាងហោច 11 ម៉ោងរវាងវេន (D-S3) · វេនយប់ម្សិលមិញ → វេនព្រឹកថ្ងៃនេះ = ធ្វើការជាប់គ្នា
     let backToBack = false;
     if (t) {
         const prevDate = isoDate(addDays(new Date(dateStr + 'T12:00'), -1));
-        const prevNightTpl = shiftTemplates().find(x => x.start >= '20:00' || x.end <= '08:00');
-        if (prevNightTpl && t.start <= '08:00') {
-            const wasOnNight = rosterFor(prevDate, prevNightTpl.code).some(a => a.cashierId === personId);
-            if (wasOnNight) backToBack = true;
-        }
+        shiftTemplates().filter(x => minutesOf(x.end) <= minutesOf(x.start)).forEach(n => {
+            if (!rosterFor(prevDate, n.code).some(a => a.cashierId === personId)) return;
+            let rest = minutesOf(t.start) - minutesOf(n.end);
+            if (rest < 0) rest += 1440;
+            if (rest < 11 * 60) backToBack = true;
+        });
     }
 
-    const blocked = (over12 && !partialAllowed) || (openDrawerNow && openDrawerNow.templateCode !== code);
+    const blocked = (over12 && !partialAllowed) || backToBack;
 
     let reason = '';
-    if (openDrawerNow && openDrawerNow.templateCode !== code) reason = `កំពុងបើកថតប្រាក់${openDrawerNow.templateName} លើ ${openDrawerNow.register}`;
-    else if (over12 && !partialAllowed) reason = `ធ្វើការ ${todayTotal} ម៉ោងថ្ងៃនេះ · លើស 12 ម៉ោង`;
-    else if (backToBack) reason = 'ធ្វើការជាប់គ្នា · សម្រាកមិនគ្រប់ 11 ម៉ោង';
-    else if (over48) reason = `ថែមម៉ោង (OT) ${newWeekHrs} ម៉ោង/សប្តាហ៍`;
+    if (backToBack) reason = 'ទើបចេញពីវេនយប់ · សម្រាកមិនគ្រប់ 11 ម៉ោង';
+    else if (over12 && !partialAllowed) reason = `${todayTotal} ម៉ោងថ្ងៃនេះ · លើស 12 ម៉ោង`;
+    else if (partialAllowed) reason = `ធ្វើការ ${workedHrs} ម៉ោងរួច · ធ្វើបានត្រឹម ${capTime}`;
+    else if (openDrawerNow) reason = `កំពុងធ្វើការ${openDrawerNow.templateName} · ${openDrawerNow.register}`;
+    else if (over48) reason = `${newWeekHrs} ម៉ោងក្នុងសប្តាហ៍ · លើស 48`;
 
     return {
         ok: !blocked,
@@ -1128,10 +1138,10 @@ function rosterCheck(personId, dateStr, code) {
         over48,
         over12,
         partialAllowed,
-        capTime: cap.capTime,
-        remainHours: cap.remainHours,
+        capTime,
+        remainHours: Math.round(remainHours * 10) / 10,
         hoursBefore: weekHrs,
-        hoursAfter: newWeekHrs,
+        hoursAfter: weekAfter,
         workedToday: workedHrs,
         todayTotal,
         isDayOff,
@@ -1156,7 +1166,7 @@ function rankCandidates(dateStr, code) {
 
         if (check.blocked) {
             rank = 99;
-            chip = check.openDrawerNow ? 'កំពុងធ្វើការ' : 'លើស 12 ម៉ោង';
+            chip = check.backToBack ? 'ធ្វើការជាប់គ្នា' : 'លើស 12 ម៉ោង';
             tone = 'rose';
         } else if (check.partialAllowed) {
             rank = 6;
@@ -1168,7 +1178,7 @@ function rankCandidates(dateStr, code) {
             tone = 'amber';
         } else if (check.over48) {
             rank = check.isDayOff ? 4 : 3;
-            chip = 'ថែមម៉ោង (OT)';
+            chip = 'លើស 48 ម៉ោង';
             tone = 'amber';
         } else if (check.isDayOff) {
             rank = 3;

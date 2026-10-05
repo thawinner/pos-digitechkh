@@ -1,215 +1,218 @@
-# គោលការណ៍គ្រប់គ្រងម៉ោងធ្វើការ បុគ្គលិក និងការគណនាប្រាក់បៀវត្សរ៍ (Staff Work Time & Payroll Specification)
+# Staff Work Time & Payroll — Spec
 
-ឯកសារនេះរៀបរាប់លម្អិតអំពីប្រព័ន្ធគ្រប់គ្រងព័ត៌មានបុគ្គលិក ម៉ោងធ្វើការ កាលវិភាគវេន ការថែមម៉ោង (Overtime / Bonus Time) និងរូបមន្តគណនាប្រាក់បៀវត្សរ៍ប្រចាំខែ/ប្រចាំសប្តាហ៍ ស្របតាមច្បាប់ការងារនៃព្រះរាជាណាចក្រកម្ពុជា និងលំហូរប្រតិបត្តិការនៃប្រព័ន្ធ DIGITECHKH POS។
+> **Date:** 2026-10-05 · **Status:** built (owner payroll page, real-time engine); open decisions in §9
+> **Code:** `shared/scripts/admin-data.js` (`PAY_RULES`, `classifyWork`, `attendanceRows`, `calculateStaffPayroll`,
+> `getStaffTimesheet`) · `admin/reports/payroll.html` · `admin/staff/staff.html` (pay settings)
+> **Related:** [02-manager-pos.md §11](02-manager-pos.md) (shift model),
+> [planning/shift-scheduling-ux.md](../planning/shift-scheduling-ux.md) (roster, short shifts),
+> [research/pos-market-research.md](../research/pos-market-research.md) (labour law, cited as **R§11**)
 
----
-
-## 1. រចនាសម្ព័ន្ធទិន្នន័យព័ត៌មានបុគ្គលិក (Employee Data Structure)
-
-បុគ្គលិកម្នាក់ៗក្នុងប្រព័ន្ធមានកំណត់ត្រាព័ត៌មានស្នូលសម្រាប់គ្រប់គ្រងវត្តមាន និងបើកប្រាក់បៀវត្សរ៍៖
-
-```json
-{
-  "id": "CAS-01",
-  "employeeCode": "EMP-001",
-  "name": "ចន្ទ មករា",
-  "role": "cashier",
-  "phone": "012 345 678",
-  "joinedDate": "2026-01-15",
-  "compensation": {
-    "payType": "monthly",
-    "baseSalaryUSD": 250.00,
-    "hourlyRateUSD": 1.20,
-    "overtimeRateUSD": 1.80,
-    "nightRateUSD": 2.40,
-    "holidayRateUSD": 2.40,
-    "foodAllowanceUSD": 30.00,
-    "attendanceBonusUSD": 15.00
-  },
-  "schedule": {
-    "defaultTemplate": "A",
-    "defaultRegister": "POS-01",
-    "dayOff": 1
-  },
-  "banking": {
-    "bankName": "ABA Bank",
-    "accountName": "CHAN MAKARA",
-    "accountNumber": "000 123 456"
-  }
-}
-```
-
-### ការពិពណ៌នាលម្អិតអំពីធាតុនីមួយៗ៖
-1. **អត្តសញ្ញាណបុគ្គលិក (Employee Identity)**៖
-   - `id`: លេខកូដសម្គាល់ក្នុងប្រព័ន្ធ POS (`CAS-01`, `CAS-02`, `MGR-01`)
-   - `name`: ឈ្មោះពេញជាភាសាខ្មែរ
-   - `role`: តួនាទី (`cashier` អ្នកគិតលុយ, `manager` អ្នកគ្រប់គ្រង, `admin` ម្ចាស់ហាង)
-2. **កញ្ចប់ប្រាក់បំណាច់ និងប្រាក់ឈ្នួល (Compensation & Rates)**៖
-   - `payType`: ប្រភេទប្រាក់ឈ្នួល (`monthly` ប្រាក់ខែគោលប្រចាំខែ ឬ `hourly` គិតតាមម៉ោងជាក់ស្តែង)
-   - `baseSalaryUSD`: ប្រាក់ខែគោលគិតជាដុល្លារ (USD)
-   - `hourlyRateUSD`: ថ្លៃឈ្នួលគោលក្នុងមួយម៉ោងធម្មតា
-   - `overtimeRateUSD`: ថ្លៃឈ្នួលម៉ោងថែម (OT Rate = 150%)
-   - `nightRateUSD`: ថ្លៃឈ្នួលម៉ោងយប់ (Night Rate = 200%)
-   - `holidayRateUSD`: ថ្លៃឈ្នួលថ្ងៃសម្រាក/បុណ្យជាតិ (Holiday/Day Off Rate = 200%)
-   - `foodAllowanceUSD`: ប្រាក់ឧបត្ថម្ភថ្លៃបាយប្រចាំខែ
-   - `attendanceBonusUSD`: ប្រាក់រង្វាន់ឧស្សាហ៍ព្យាយាម (Attendance Bonus) ប្រសិនបើមិនដែលមកយឺត ឬអវត្តមាន
-3. **កាលវិភាគលំនាំដើម (Schedule Defaults)**៖
-   - `defaultTemplate`: វេនប្រចាំ (`A` វេនព្រឹក, `B` វេនរសៀល, `C` វេនយប់)
-   - `defaultRegister`: បញ្ជរប្រចាំ (`POS-01`, `POS-02`, `POS-03`)
-   - `dayOff`: ថ្ងៃឈប់សម្រាកប្រចាំសប្តាហ៍ (0 = អាទិត្យ, 1 = ច័ន្ទ, 2 = អង្គារ...)
+The first version of this spec paid from fixed numbers per person (`otHours = 16` for CAS-01 and so on) and a
+timesheet invented from the day of the month. This version pays from **real time**: when the cashier actually opened
+and closed their drawer.
 
 ---
 
-## 2. បទដ្ឋានម៉ោងធ្វើការ និងវេនការងារ (Working Hours & Shifts Standard)
+## 1. Principles
 
-យោងតាមច្បាប់ស្តីពីការងារនៃព្រះរាជាណាចក្រកម្ពុជា (មាត្រា 137 ដល់ 145)៖
-
-### 2.1 ម៉ោងការងារធម្មតា (Standard Regular Hours)
-* **ម៉ោងធម្មតាប្រចាំថ្ងៃ**៖ **8 ម៉ោង** ក្នុងមួយវេន/មួយថ្ងៃ។
-* **ថ្ងៃធ្វើការប្រចាំសប្តាហ៍**៖ **6 ថ្ងៃ** ក្នុងមួយសប្តាហ៍ (មានថ្ងៃសម្រាកយ៉ាងតិច 1 ថ្ងៃ)។
-* **ម៉ោងស្តង់ដារប្រចាំសប្តាហ៍**៖ $8 \text{ ម៉ោង} \times 6 \text{ ថ្ងៃ} = \mathbf{48 \text{ ម៉ោង/សប្តាហ៍}}$។
-* **ម៉ោងស្តង់ដារប្រចាំខែ**៖ $48 \text{ ម៉ោង} \times 4.333 \approx \mathbf{208 \text{ ម៉ោង/ខែ}}$ (ឬ 26 ថ្ងៃធ្វើការ)។
-
-### 2.2 គំរូវេនការងារ (Shift Templates)
-ហាងដែលបើកដំណើរការ 24 ម៉ោងត្រូវបានបែងចែកជា 3 វេនស្មើគ្នា៖
-| វេន | ឈ្មោះវេន | ចន្លោះម៉ោង | រយៈពេល | លក្ខណៈពិសេស |
-|---|---|---|---|---|
-| **A** | វេនព្រឹក | 06:00 – 14:00 | 8 ម៉ោង | វេនលក់ពេលព្រឹក (ថ្ងៃធម្មតា) |
-| **B** | វេនរសៀល | 14:00 – 22:00 | 8 ម៉ោង | វេនលក់ពេលរសៀល និងល្ងាច |
-| **C** | វេនយប់ | 22:00 – 06:00 | 8 ម៉ោង | ឆ្លងកាត់អធ្រាត្រ មាន **7 ម៉ោងជាម៉ោងការងារពេលយប់** (22:00–05:00) |
-
-### 2.3 កម្រិតការពារសុវត្ថិភាពការងារ (Labour Safety Limits)
-1. **កម្រិតអតិបរមាប្រចាំថ្ងៃ (Daily Maximum)**៖ **12 ម៉ោងក្នុងមួយថ្ងៃ**។
-   - ប្រព័ន្ធ **ហាមឃាត់ដាច់ខាត (Hard Block)** មិនឱ្យបុគ្គលិកបើកវេនដែលធ្វើឱ្យម៉ោងសរុបក្នុងថ្ងៃនោះលើស 12 ម៉ោងឡើយ។
-   - ប្រសិនបើសល់ម៉ោងតិចជាង 8 ម៉ោង (ឧ. បានធ្វើ 6 ម៉ោងរួច) បុគ្គលិកអាចបើកបានត្រឹម **វេនខ្លី (Short Shift)** ប៉ុណ្ណោះ។
-2. **កម្រិតសម្រាកអប្បបរមា (Minimum Rest Period)**៖ **11 ម៉ោងជាប់គ្នា**។
-   - ហាមមិនឱ្យបុគ្គលិកធ្វើវេនយប់ (22:00–06:00) ហើយចូលវេនព្រឹក (06:00–14:00) នៃថ្ងៃបន្ទាប់ភ្លាមៗឡើយ ព្រោះគ្មានពេលសម្រាកគ្រប់គ្រាន់។
+1. **Real time, not planned time.** A cashier's worked time is the drawer shift from `openedAt` to `closedAt`. The
+   roster only says what was *expected*; the difference between the two is attendance (late, early, absent).
+2. **One rule set, in one place.** Every multiplier and limit lives in `PAY_RULES` (`admin-data.js`). The payroll page,
+   the timesheet, the payslip and the staff pay preview all read it.
+3. **Show the working.** Every amount on the payroll page can be traced to hours, and every hour to a dated shift in
+   the timesheet. Nothing is a lump sum.
+4. **Never take money silently.** Deductions that need a judgement (cash shortages) are shown, not deducted, until the
+   owner decides (§9 D-P3).
+5. **Who sees what.** Owner: everything. Manager: hours in the roster, no pay. Cashier: only their own hours (§7.3),
+   never pay rates of others. Pay data stays in `admin-data.js`, which only owner pages load.
 
 ---
 
-## 3. គោលការណ៍ម៉ោងបន្ថែម (Overtime / Bonus Time) និងការងារពេលយប់
+## 2. Where time comes from
 
-ប្រព័ន្ធ POS មិនរារាំងបុគ្គលិកដែលធ្វើការលើសពី 48 ម៉ោងក្នុងមួយសប្តាហ៍នោះឡើយ ព្រោះបុគ្គលិកអាចស្ម័គ្រចិត្តធ្វើការបន្ថែមម៉ោង ដើម្បីទទួលបានប្រាក់បំណាច់បន្ថែម (Bonus / Overtime Pay)៖
+| Source | Field | Used for |
+|---|---|---|
+| Drawer shift (`pos_shifts` + generated history via `mgrAllShifts()`) | `openedAt`, `closedAt`, `date`, `templateCode`, `register`, `variance` | real hours, night hours, cash shortage |
+| Open drawer shift | `openedAt`, no `closedAt` | counted **up to now**, marked «កំពុងធ្វើ» |
+| Roster (`rosterFor(date, code)`) | `cashierId`, `register`, `cover`, `from` / `until` (short shift) | expected start and end, absences |
+| Staff defaults (`posSettings().staffDefaults`) | `dayOff` | rest-day work |
+| Pay settings (`pos_staff_compensation`) | base salary, allowances, bank | pay |
 
-### 3.1 ចំណាត់ថ្នាក់ម៉ោងការងារ និងអត្រាគុណប្រាក់ឈ្នួល (Rate Multipliers)
+A drawer shift belongs to its **business date** (`shift.date`), so a night shift 22:00–06:00 counts on the day it
+started.
 
-| ប្រភេទម៉ោងការងារ | លក្ខខណ្ឌកំណត់ | អត្រាគុណ (Multiplier) | ការគណនាថ្លៃឈ្នួល/ម៉ោង |
-|---|---|:---:|---|
-| **ម៉ោងធម្មតា (Regular Hours)** | ម៉ោងធ្វើការរហូតដល់ 48 ម៉ោង/សប្តាហ៍ ក្នុងចន្លោះ 06:00–22:00 | **100% (1.0x)** | $1.0 \times \text{Hourly Rate}$ |
-| **ម៉ោងបន្ថែមពេលថ្ងៃ (Daytime OT)** | ម៉ោងលើសពី 48 ម៉ោង/សប្តាហ៍ ក្នុងចន្លោះ 06:00–22:00 | **150% (1.5x)** | $1.5 \times \text{Hourly Rate}$ |
-| **ម៉ោងការងារពេលយប់ (Night Work)** | ម៉ោងក្នុងចន្លោះ 22:00 ដល់ 05:00 ព្រឹក (មាត្រា 139) | **200% (2.0x)** | $2.0 \times \text{Hourly Rate}$ |
-| **ធ្វើការថ្ងៃសម្រាក (Day Off Work)** | ធ្វើការនៅថ្ងៃឈប់សម្រាកប្រចាំសប្តាហ៍របស់ខ្លួន | **200% (2.0x)** | $2.0 \times \text{Hourly Rate}$ |
-| **ធ្វើការថ្ងៃបុណ្យជាតិ (Public Holiday)** | ធ្វើការនៅថ្ងៃបុណ្យជាតិផ្លូវការដែលរដ្ឋប្រកាស | **200% (2.0x)** | $2.0 \times \text{Hourly Rate}$ (+ ប្រាក់បុណ្យធម្មតា) |
-
-### 3.2 ឧទាហរណ៍ជាក់ស្តែងនៃការគណនាម៉ោងថែម (Practical Example)
-ឧបមាថាអ្នកគិតលុយ **សុខ ដារ៉ា** មានប្រាក់ខែគោល 250 ដុល្លារ ($1.20 ដុល្លារ/ម៉ោង)៖
-- ក្នុងសប្តាហ៍ទី 1 គាត់បានធ្វើការសរុប **56 ម៉ោង** (ស្មើនឹង 7 វេន ឬបានមកជួយជំនួស 1 វេននៅថ្ងៃសម្រាក)៖
-  - **ម៉ោងធម្មតា (Regular Hours)** = 48 ម៉ោង $\times \$1.20 = \mathbf{\$57.60}$
-  - **ម៉ោងបន្ថែម/ថែមម៉ោង (OT Hours)** = 8 ម៉ោង $\times (\$1.20 \times 1.5) = 8 \times \$1.80 = \mathbf{\$14.40}$
-  - **សរុបប្រាក់ឈ្នួលសប្តាហ៍នោះ** = $\$57.60 + \$14.40 = \mathbf{\$72.00}$ (កើនឡើង 14.40 ដុល្លារជាប្រាក់ Bonus/OT)។
+**Managers** sell on the till only to cover; most of their work is not on a drawer. They are paid a **fixed monthly
+salary** and their hours are not tracked for pay (the page shows «ប្រាក់ខែថេរ · មិនគិតម៉ោង»). **The owner** is not on
+the payroll.
 
 ---
 
-## 4. រូបមន្តគណនាប្រាក់បៀវត្សរ៍សរុបប្រចាំខែ (Monthly Payroll Calculation Formulas)
+## 3. Rules (`PAY_RULES`)
 
-### 4.1 ការគណនាថ្លៃឈ្នួលក្នុងមួយម៉ោងគោល (Base Hourly Rate)
-$$\text{Base Hourly Rate} = \frac{\text{Base Salary}}{26 \text{ ថ្ងៃ} \times 8 \text{ ម៉ោង}} = \frac{\text{Base Salary}}{208 \text{ ម៉ោង}}$$
-
-*ឧទាហរណ៍*៖ ប្រាក់ខែគោល 250 ដុល្លារ $\rightarrow \frac{250}{208} = \mathbf{1.2019 \text{ ដុល្លារ/ម៉ោង}}$ (យក $1.20 ដុល្លារ)។
-
-### 4.2 ប្រាក់ចំណូលសរុប (Gross Earnings)
-$$\text{Gross Earnings} = \text{Base Regular Pay} + \text{OT Pay} + \text{Night Pay} + \text{Day Off Pay} + \text{Allowances} + \text{Attendance Bonus}$$
-
-1. **ប្រាក់ម៉ោងធម្មតា (Base Regular Pay)**៖
-   $$\text{Regular Hours Worked} \times \text{Base Hourly Rate}$$
-2. **ប្រាក់ថែមម៉ោងធម្មតា (Daytime OT Pay)**៖
-   $$\text{OT Hours} \times (\text{Base Hourly Rate} \times 1.5)$$
-3. **ប្រាក់បន្ថែមម៉ោងយប់ (Night Differential Pay)**៖
-   $$\text{Night Hours} \times (\text{Base Hourly Rate} \times 2.0)$$
-4. **ប្រាក់ធ្វើការថ្ងៃសម្រាក/បុណ្យ (Day Off / Holiday Pay)**៖
-   $$\text{Holiday Hours} \times (\text{Base Hourly Rate} \times 2.0)$$
-5. **ប្រាក់ឧបត្ថម្ភ (Allowances)**៖
-   $$\text{Food Allowance} + \text{Transport Allowance}$$
-6. **ប្រាក់រង្វាន់ឧស្សាហ៍ព្យាយាម (Attendance Bonus)**៖
-   - ផ្តល់ជូនពេញលេញ 15 ដុល្លារ ប្រសិនបើគ្មានអវត្តមាន និងមិនដែលយឺតលើស 3 ដងក្នុងមួយខែ។
-
-### 4.3 ការកាត់កង (Deductions)
-$$\text{Total Deductions} = \text{Unexcused Absence} + \text{Unexplained Drawer Shortage} + \text{NSSF (2\%)} + \text{Salary Tax}$$
-
-1. **អវត្តមានគ្មានច្បាប់ (Unexcused Absence)**៖
-   $$\text{Absence Days} \times \left(\frac{\text{Base Salary}}{26}\right)$$
-2. **ការខ្វះសាច់ប្រាក់ថតលើសល្បឹមភាព (Unexplained Drawer Shortage)**៖
-   - ប្រសិនបើតារាងបិទវេន និងការរាប់លុយជាក់ស្តែង (Cash Count) ខ្វះលើសពីល្បឹមភាពអនុញ្ញាត ($\pm \$5.00$) ហើយអ្នកគ្រប់គ្រង និងម្ចាស់ហាងបានស៊ើបអង្កេតបញ្ជាក់ថាមកពីការធ្វេសប្រហែសរបស់អ្នកគិតលុយ។
-3. **វិភាគទាន ប.ស.ស ផ្នែកថែទាំសុខភាព (NSSF Contribution)**៖
-   - 2% នៃប្រាក់ខែជាប់កាតព្វកិច្ច (ពិដានអតិបរមាប្រមាណ 26,000 រៀល ឬ ~6.50 ដុល្លារ)។
-4. **ពន្ធលើប្រាក់បៀវត្សរ៍ (Tax on Salary)**៖
-   - គណនាតាមតារាងអត្រាពន្ធរំកិលរបស់អគ្គនាយកដ្ឋានពន្ធដារ (GDT) កម្ពុជា (ប្រាក់ខែក្រោម 1,500,000 រៀល ឬ ~375 ដុល្លារ ជាប់អត្រាពន្ធ 0%)។
-
-### 4.4 ប្រាក់បៀវត្សរ៍ជាក់ស្តែងដែលត្រូវបើក (Net Take-Home Pay)
-$$\mathbf{\text{Net Pay}} = \mathbf{\text{Gross Earnings}} - \mathbf{\text{Total Deductions}}$$
+| Rule | Value | Source |
+|---|---|---|
+| Normal hours per day | 8 h | Labour Law, R§11 |
+| Normal hours per week (Monday–Sunday) | 48 h | Labour Law, R§11 |
+| Working days per month | 26 (so the hourly rate = base ÷ 208) | spec v1 |
+| Overtime, daytime | 150 % | Labour Law |
+| Overtime, at night | 200 % | Labour Law |
+| Night work 22:00–05:00 | 200 % (**to confirm**, D-P1) | R§11 |
+| Work on the weekly rest day | 200 % | R§11 |
+| Grace before «late» / «left early» counts | 10 min | product rule |
+| Attendance bonus | no absence and at most 3 lates in the period | product rule |
+| Max per day / min rest | 12 h / 11 h, enforced when **rostering and opening**, not in pay | [shift-scheduling-ux.md](../planning/shift-scheduling-ux.md) |
 
 ---
 
-## 5. ទម្រង់តារាងសន្លឹកបើកប្រាក់បៀវត្សរ៍ (Payroll Summary Sheet Template)
+## 4. How each minute is classified
 
-ខាងក្រោមនេះជាទម្រង់គំរូតារាងដែលប្រព័ន្ធអាចទាញចេញ (Export) សម្រាប់ម្ចាស់ហាង និងអ្នកគ្រប់គ្រងផ្ទៀងផ្ទាត់ និងបើកប្រាក់បៀវត្សរ៍ប្រចាំខែ៖
-
-| ល.រ | លេខកូដ | ឈ្មោះបុគ្គលិក | តួនាទី | ប្រាក់ខែគោល | ម៉ោងធម្មតា | ម៉ោងថែម (OT) | ម៉ោងយប់ | ថ្ងៃឈប់ | ប្រាក់សរុប (Gross) | កាត់កង | ប្រាក់ជាក់ស្តែង (Net Pay) | វិធីទូទាត់ |
-|:---:|:---:|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| 1 | CAS-01 | ចន្ទ មករា | អ្នកគិតលុយ | $250.00 | 208 ម៉ | 16 ម៉ ($28.80) | 0 ម៉ | 0 ម៉ | $323.80 | -$5.00 | **$318.80** | ABA (ផ្ទេរ) |
-| 2 | CAS-02 | សុខ ដារ៉ា | អ្នកគិតលុយ | $250.00 | 208 ម៉ | 24 ម៉ ($43.20) | 0 ម៉ | 1 ថ្ងៃ | $338.20 | $0.00 | **$338.20** | ABA (ផ្ទេរ) |
-| 3 | CAS-03 | លី សុភា | អ្នកគិតលុយ | $250.00 | 208 ម៉ | 8 ម៉ ($14.40) | 182 ម៉ ($109.20) | 0 ម៉ | $418.60 | $0.00 | **$418.60** | ABA (ផ្ទេរ) |
-| 4 | MGR-01 | សុខ វណ្ណា | អ្នកគ្រប់គ្រង | $450.00 | 208 ម៉ | 0 ម៉ | 0 ម៉ | 0 ម៉ | $495.00 | $0.00 | **$495.00** | ABA (ផ្ទេរ) |
-| 5 | MGR-02 | ម៉ៅ ស្រីនាង | អ្នកគ្រប់គ្រង | $450.00 | 208 ម៉ | 8 ម៉ ($25.96) | 0 ម៉ | 0 ម៉ | $520.96 | $0.00 | **$520.96** | ABA (ផ្ទេរ) |
-
-*កំណត់សម្គាល់*៖ ប្រាក់សរុប (Gross) រួមបញ្ចូលប្រាក់ឧបត្ថម្ភថ្លៃបាយ 30 ដុល្លារ និងប្រាក់រង្វាន់ឧស្សាហ៍ព្យាយាម 15 ដុល្លារ។
-
----
-
-## 6. ទិន្នន័យដែលប្រព័ន្ធ POS កត់ត្រាទុកស្វ័យប្រវត្តិ (Automated Data Sources)
-
-ដើម្បីកុំឱ្យម្ចាស់ហាង ឬអ្នកគ្រប់គ្រងត្រូវស្រង់ម៉ោងដោយដៃ ប្រព័ន្ធ POS កត់ត្រាទិន្នន័យជាក់ស្តែងតាមរយៈព្រឹត្តិការណ៍នីមួយៗ៖
-
-1. **ម៉ោងបើក និងបិទវេនជាក់ស្តែង (Actual Clock-in / Clock-out)**៖
-   - កត់ត្រាក្នុង `pos_shift_state_v2`៖ `openedAt`, `closedAt`, `actualHours`។
-2. **ការជំនួសវេន និងម៉ោងបន្ថែម (Cover & Overtime Tracking)**៖
-   - ក្នុង `rosterFor(date, template)` និង `liveShifts()`៖ ប្រព័ន្ធកត់ត្រាស្លាក `cover: true` និងចំនួនម៉ោងសរុបក្នុងសប្តាហ៍ `hoursWorked`។
-3. **ការអនុវត្តការងារ និងហានិភ័យសាច់ប្រាក់ (Performance & Accountability)**៖
-   - ចំនួនវិក្កយបត្រដែលបានលក់ (`txCount`)
-   - ចំណូលសរុបដែលរកបាន (`grossSales`)
-   - ករណីលុបចោលវិក្កយបត្រ (`voidCount`)
-   - ភាពខុសគ្នានៃការរាប់សាច់ប្រាក់ថត (`cashVarianceUSD`, `cashVarianceKHR`)
-   - កំណត់ត្រាហត្ថលេខាត្រួតពិនិត្យរបស់អ្នកគ្រប់គ្រង (`reviewedBy`, `reviewNote`)
-
----
-
-## 7. លំហូរការងារគ្រប់គ្រង និងបើកប្រាក់បៀវត្សរ៍ (Operational Workflow)
+`classifyWork(personId, start, end)` walks every drawer shift in 5-minute steps, starting from the Monday of the
+first week so the weekly limit is right, and puts each step in exactly one bucket:
 
 ```
-[ប្រចាំថ្ងៃ]
-អ្នកគិតលុយបើក/បិទវេន (open-shift / close-shift)
-       ↓
-អ្នកគ្រប់គ្រងត្រួតពិនិត្យ និងចុះហត្ថលេខា (view-shift.html)
-       ↓
-[ប្រចាំសប្តាហ៍]
-អ្នកគ្រប់គ្រងពិនិត្យវត្តមាន និងម៉ោងធ្វើការក្នុងកាលវិភាគ (roster.html)
-ផ្ទៀងផ្ទាត់បុគ្គលិកដែលបានថែមម៉ោង (OT) ឬជំនួសវេន
-       ↓
-[ដំណាច់ខែ]
-ប្រព័ន្ធប្រមូលផ្តុំទិន្នន័យ (Timesheet & Shift Aggregation)
-       ↓
-ម្ចាស់ហាងពិនិត្យតារាងបៀវត្សរ៍រួម (Staff & Payroll Dashboard)
-       ↓
-អនុម័ត និងចេញប័ណ្ណចំណាយទូទាត់ប្រាក់បៀវត្សរ៍ (Disbursement Voucher)
-       ↓
-បោះពុម្ពប័ណ្ណបើកប្រាក់ខែ (Payslip) ជូនបុគ្គលិកម្នាក់ៗ
+if the shift's date is the person's weekly day off      → dayOff
+else add the step to the day counter and the week counter
+     if day > 8 h or week > 48 h                         → ot      (otNight if 22:00–05:00)
+     else                                                 → regular (night  if 22:00–05:00)
 ```
+
+- Daily and weekly overtime are **never counted twice**: one counter crossing its limit is enough.
+- Rest-day minutes don't add to the week counter (they are already paid at 200 %).
+- The page shows: **ម៉ោងពិត** = all buckets · **ធម្មតា** = regular + night · **បន្ថែម** = ot + otNight ·
+  **យប់** = night + otNight · **ថ្ងៃឈប់** = dayOff.
 
 ---
 
-## 8. សេចក្តីសន្និដ្ឋានសម្រាប់ដំណាក់កាលអភិវឌ្ឍន៍បន្ទាប់ (Next Steps for Code Implementation)
+## 5. Attendance: plan against reality
 
-នៅពេលឈានដល់ការសរសេរកូដម៉ូឌុលបើកប្រាក់បៀវត្សរ៍ (Payroll Module) មុខងារសំខាន់ៗដែលត្រូវបន្ថែមរួមមាន៖
-1. **ទំព័រគ្រប់គ្រងប្រវត្តិរូប និងកម្រៃបុគ្គលិក**៖ ក្នុង `admin/staff/edit-staff.html` បន្ថែមផ្នែកកំណត់ប្រាក់ខែគោល, ថ្លៃឈ្នួលម៉ោងបន្ថែម, និងគណនីធនាគារ។
-2. **ទំព័ររបាយការណ៍ម៉ោងធ្វើការ និងបៀវត្សរ៍**៖ `admin/reports/payroll.html` បង្ហាញតារាងសរុបម៉ោងធម្មតា, ម៉ោងថែម (OT), ម៉ោងយប់, ការកាត់កង, និងប្រាក់ខែត្រូវបើក។
-3. **ប័ណ្ណបើកប្រាក់ខែបោះពុម្ពផ្លូវការ (Enterprise A4 Payslip Print)**៖ ទម្រង់បោះពុម្ព A4 តាមស្តង់ដារលេខ 12 នៃគម្រោង ដែលមានហត្ថលេខាអ្នកទទួល និងអ្នកអនុម័ត។
+`attendanceRows(personId, start, end)` lists every roster entry for the person, and matches it with a drawer shift
+on the same date and template.
+
+| Case | Rule | Shown as |
+|---|---|---|
+| Rostered, shift ended, no drawer shift | absent | «អវត្តមាន» rose |
+| Opened more than 10 min after the planned start | late, minutes kept | «យឺត 18 នាទី» amber |
+| Closed more than 10 min before the planned end | left early | «ចេញមុន 25 នាទី» amber |
+| Drawer shift with no roster entry | worked, unplanned | «មិនមានក្នុងកាលវិភាគ» amber |
+| Roster entry marked `cover` | worked as cover | «ជំនួស» amber |
+| Short shift (`until`) | planned end = `until`, not the template end | normal |
+| Rostered in the future | not listed | — |
+
+---
+
+## 6. Pay
+
+All amounts in USD, rounded to cents at the end of each line. `hourly = base ÷ 208`.
+
+| Line | Monthly cashier | Manager |
+|---|---|---|
+| Base salary | `base × share` (share = 1 for a full calendar month, else days ÷ days in month) | same |
+| Overtime | `ot × hourly × 1.5 + otNight × hourly × 2.0` | — |
+| Night premium | `night × hourly × (2.0 − 1)`: the base already pays the hour, only the extra is added | — |
+| Rest-day work | `dayOff × hourly × 2.0` (these hours are outside the 26 paid days) | — |
+| Food allowance | `allowance × share` | same |
+| Attendance bonus | `bonus × share` if no absence and ≤ 3 lates, else 0 («គ្មានរង្វាន់វត្តមាន») | same |
+| **Deduction:** absence | `absent days × base ÷ 26` | — |
+| Cash shortage | **shown, not deducted** («ខ្វះថត $3.24 · មិនកាត់») | — |
+| NSSF, salary tax | $0.00 (not built, D-P4) | same |
+
+`net = base + overtime + night + rest-day + allowance + bonus − absence`.
+
+Once a period is **disbursed**, the row shows the paid amount from `pos_payroll_disbursements`. If a later
+recalculation differs (a reopened shift, a corrected roster), the row adds «គណនាថ្មី $…» so the owner sees the gap
+instead of the paid figure changing under them.
+
+### 6.1 Worked examples (base $250, hourly ≈ $1.2019)
+
+**Double day (the case from shift-scheduling-ux §2.4).** ចន្ទ មករា opens the morning at 05:53, closes at 14:00, then
+works a short afternoon shift 14:00–17:50.
+
+| Bucket | Hours | Pay |
+|---|---|---|
+| regular (first 8 h) | 8.0 | in base |
+| ot (beyond 8 h that day) | 3.9 | 3.9 × 1.2019 × 1.5 = **$7.03** |
+| total real time | 11.9 | the 12 h cap held |
+
+**Night shift.** លី សុភា opens 22:14, closes 06:10 (late 14 min).
+
+| Bucket | Hours | Pay |
+|---|---|---|
+| night (22:14–05:00) | 6.8 | 6.8 × 1.2019 × 1.0 = **$8.17** premium |
+| regular (05:00–06:10) | 1.2 | in base |
+| attendance | late 14 min | counts toward the 3-late limit |
+
+---
+
+## 7. Screens
+
+### 7.1 Owner: `admin/reports/payroll.html` «ម៉ោងការងារ និងប្រាក់បៀវត្សរ៍»
+
+- **Toolbar:** tabs (all / cashiers / managers / to pay / paid), date range (default: this month), «បើកប្រាក់ខែទាំងអស់»,
+  «បោះពុម្ពតារាង». There is **no demo-data reset button** on this page; the login page's reset covers it.
+- **KPIs** (shared `kpiCard()`, no icons): amount to pay · real hours (overtime, night) · absences (lates) · paid count.
+- **Sub-title** states the period and whether base pay is prorated, e.g. «01/10/2026 ដល់ 31/10/2026 · ខែពេញ · ម៉ោងគិតដល់ថ្ងៃនេះ».
+- **Table:** ល.រ · បុគ្គលិក (role, code) · ម៉ោងពិត (shifts, «កំពុងធ្វើ») · បែងចែកម៉ោង (chips) · វត្តមាន (chips) ·
+  ប្រាក់ខែគោល · ប្រាក់បន្ថែម · កាត់កង · ត្រូវបើក · ស្ថានភាព · ⋮
+- **⋮ menu:** ម៉ោងធ្វើការលម្អិត (cashiers) · ប័ណ្ណបើកប្រាក់ខែ · បើកប្រាក់ខែ (if unpaid). No native tooltips.
+- **Timesheet:** one row per rostered or worked shift: date · shift · planned window · real window · hours · bucket
+  chips · drawer variance · notes (late, early, absent, cover, working now).
+- **Payslip:** earnings and deductions as in §6, real hours and shift count in the header, shortage as a note.
+
+### 7.2 Owner: pay settings in `admin/staff/staff.html`
+
+Base salary, food allowance, attendance bonus, bank. The live preview shows the hourly, overtime, night and
+one-day-absence amounts, all from `PAY_RULES`.
+
+### 7.3 Cashier: own hours (not built, P2)
+
+The cashier sees only their own time, never money:
+
+- terminal «វេនរបស់អ្នកថ្ងៃនេះ» and open-shift already show hours worked today against the 12 h limit;
+- to add: a «ម៉ោងរបស់ខ្ញុំ» line on the close-shift result, «សប្តាហ៍នេះ 33 ម៉ោង · បន្ថែម 2.6 ម៉ោង · យឺត 1 ដង», so
+  disputes are settled from the same numbers the owner pays from. This needs an own-hours helper in `data.js` that
+  reads only the signed-in person's shifts.
+
+---
+
+## 8. Data
+
+| Key / function | Content |
+|---|---|
+| `pos_staff_compensation` | `{ [staffId]: { baseSalaryUSD, foodAllowanceUSD, attendanceBonusUSD, payType, bankName, accountName, accountNumber, employeeCode, phone, joinedDate } }`; edits write `pos_admin_log` |
+| `pos_payroll_disbursements` | `{ id, staffId, periodKey, periodLabel, baseSalaryUSD, grossUSD, deductionsUSD, netUSD, method, at, by }`; seeded with September 2026 |
+| `PAY_RULES` | §3 |
+| `workSessions(id, from, to)` | drawer shifts with open/close times (open = now) |
+| `classifyWork(id, start, end)` | `{ totals, perShift }` in minutes per bucket |
+| `attendanceRows(id, start, end)` | plan vs reality rows (§5) |
+| `calculateStaffPayroll(range)` | `{ staffPayrolls[], summary }` |
+| `getStaffTimesheet(id, range)` | rows for the timesheet dialog |
+
+Mock history covers the last 14 days, so a month view before then has hours only for those days.
+
+---
+
+## 9. Decisions needed
+
+| ID | Question | Recommendation |
+|---|---|---|
+| D-P1 | Night work premium: 200 % (research doc) or 130 % (some sources for non-overtime night work)? | **Confirm with an accountant**; it changes a night cashier's pay by ~$150 a month. One constant (`PAY_RULES.nightMult`) |
+| D-P2 | Are breaks (terminal locked) unpaid time? | **No** for now: the lock is short and the cashier stays at the till. Revisit if locks over 30 min become common |
+| D-P3 | Deduct cash shortages from pay? | **Only after** the manager's shift review says «cashier at fault» and the owner confirms per case. Until then: shown, not deducted |
+| D-P4 | NSSF and salary tax | Build when a real payroll is run; amounts are $0.00 placeholders today |
+| D-P5 | Should overtime need approval before it is paid? | **Yes, later:** overtime from a roster cover or short shift is pre-approved; overtime from staying late after the shift end shows «មិនទាន់អនុម័ត» and is paid once the manager approves |
+| D-P6 | Round real time? | **No rounding** of clock times; hours shown to 0.1 h, pay to the cent |
+| D-P7 | Hourly staff (`payType: 'hourly'`) | Not used by any demo person; when added, pay regular hours × rate instead of the base |
+
+---
+
+## 10. Status (2026-10-05)
+
+| Item | Status |
+|---|---|
+| Real-time engine (§4–§6) | Done |
+| Payroll page: real hours, chips, ⋮ menu, Khmer-only, KPIs without icons, demo reset removed | Done |
+| Timesheet: plan vs real, buckets, attendance flags | Done |
+| Payslip from real numbers, shortage as a note | Done |
+| Paid periods show the paid amount and flag recalculation | Done |
+| Cashier own-hours view (§7.3) | Not built |
+| D-P1 – D-P7 | Open |

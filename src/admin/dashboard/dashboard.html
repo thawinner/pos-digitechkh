@@ -341,24 +341,23 @@
             const shrink = typeof shrinkageStats === 'function' ? shrinkageStats({ start: mStart, end: mEnd }) : { totalValue: 0, totalQty: 0, eventsCount: 0 };
             const unconfirmed = typeof unconfirmedStockInCount === 'function' ? unconfirmedStockInCount() : 0;
 
-            const card = (icon, tone, label, value, sub, href) => `
-                <a href="${href}" class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm hover:border-slate-300 transition block group">
-                    <div class="flex items-center justify-between">
-                        <span class="sm-kpi-label text-slate-500">${label}</span>
-                        <span class="w-8 h-8 rounded-lg bg-${tone}-50 text-${tone}-600 flex items-center justify-center text-xs group-hover:scale-105 transition"><i class="fas ${icon}"></i></span>
-                    </div>
-                    <h3 class="sm-kpi-value text-slate-800 mt-2 sm-figure">${value}</h3>
-                    <p class="sm-kpi-sub text-slate-500 mt-1 flex items-center justify-between">
+            // កាតដូចទំព័រផ្សេងទៀត (kpiCard)៖ គ្មានរូបតំណាង · ពណ៌លើតួលេខបង្ហាញពេលត្រូវយកចិត្តទុកដាក់
+            const card = (tone, label, value, sub, href) => `
+                <a href="${href}" class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm hover:border-slate-300 transition block group min-w-0">
+                    <span class="sm-kpi-label text-slate-500">${label}</span>
+                    <h3 class="sm-kpi-value ${tone} mt-1 sm-figure">${value}</h3>
+                    <p class="sm-kpi-sub text-slate-500 mt-1 flex items-center justify-between gap-2">
                         <span>${sub}</span>
                         <i class="fas fa-arrow-right text-[10px] text-slate-300 group-hover:text-slate-600 transition"></i>
                     </p>
                 </a>
             `;
+            const n = v => Number(v || 0).toLocaleString('en-US');
 
             document.getElementById('stockKpiRow').innerHTML =
-                card('fa-boxes-stacked', 'emerald', 'តម្លៃស្តុកសរុប (ថ្លៃដើម)', fmtUSD(stockVal.totalValue), `${stockVal.totalUnits} ឯកតា · ${stockVal.productCount} មុខទំនិញ`, '../reports/stock-value.html') +
-                card('fa-truck-ramp-box', unconfirmed > 0 ? 'amber' : 'slate', 'ស្តុកចូលរង់ចាំបញ្ជាក់ថ្លៃដើម', `${unconfirmed} វិក្កយបត្រ`, unconfirmed > 0 ? 'ត្រូវការបញ្ចូលថ្លៃដើម' : 'បានបញ្ជាក់រួចរាល់', '../stock/stock-in.html') +
-                card('fa-box-archive', shrink.totalValue > 0 ? 'rose' : 'slate', 'ការខាតបង់ស្តុកខែនេះ', fmtUSD(shrink.totalValue), `${shrink.totalQty} ឯកតា · ${shrink.eventsCount} ករណី`, '../reports/shrinkage.html');
+                card('text-slate-800', 'តម្លៃស្តុកសរុប · ថ្លៃដើម', fmtUSD(stockVal.totalValue), `${n(stockVal.totalUnits)} ឯកតា · ${stockVal.productCount} មុខទំនិញ`, '../reports/stock-value.html') +
+                card(unconfirmed > 0 ? 'text-amber-700' : 'text-slate-800', 'ស្តុកចូលរង់ចាំបញ្ជាក់ថ្លៃដើម', `${unconfirmed} វិក្កយបត្រ`, unconfirmed > 0 ? 'ត្រូវការបញ្ចូលថ្លៃដើម' : 'បានបញ្ជាក់រួចរាល់', '../stock/stock-in.html') +
+                card(shrink.totalValue > 0 ? 'text-rose-600' : 'text-slate-800', 'ការខាតបង់ស្តុកខែនេះ', fmtUSD(shrink.totalValue), `${n(shrink.totalQty)} ឯកតា · ${shrink.eventsCount} ករណី`, '../reports/shrinkage.html');
         }
 
         function renderTabs() {

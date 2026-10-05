@@ -454,21 +454,21 @@
                 const isPast = tNow > end;
 
                 const statusBadge = now
-                    ? `<span class="ml-auto text-[11px] font-semibold text-cyan-300 flex items-center gap-1.5">
-                        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>កំពុងដំណើរការ${openCount > 0 ? ` · ${openCount} បញ្ជរបើក` : ''}</span>`
+                    ? `<span class="ml-auto text-[11px] font-semibold text-cyan-300 flex items-center gap-1.5 whitespace-nowrap">
+                        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>ឥឡូវនេះ</span>`
                     : isPast
-                        ? `<span class="ml-auto text-[11px] font-medium text-slate-500">បានបញ្ចប់</span>`
-                        : `<span class="ml-auto text-[11px] font-medium text-slate-400">មិនទាន់ដល់</span>`;
+                        ? `<span class="ml-auto text-[11px] font-medium text-slate-500 whitespace-nowrap">បានបញ្ចប់</span>`
+                        : `<span class="ml-auto text-[11px] font-medium text-slate-400 whitespace-nowrap">មិនទាន់ដល់</span>`;
 
                 return `<div class="pl-3 border-l-2 ${now ? 'border-cyan-400' : 'border-white/10'}">
                     <p class="sm-td-sub flex items-center gap-2 ${now ? 'text-white font-semibold' : 'text-slate-400'}">
-                        ${t.name}<span class="${now ? 'text-slate-300' : 'text-slate-500'} font-normal">${t.start}–${t.end}</span>
+                        <span class="whitespace-nowrap">${t.name}</span><span class="${now ? 'text-slate-300' : 'text-slate-500'} font-normal sm-figure whitespace-nowrap">${t.start}–${t.end}</span>
                         ${statusBadge}
                     </p>
                     <div class="mt-1.5 space-y-1">${list.length ? list.map(a => `<p class="sm-td-sub flex items-center gap-2 ${now ? 'text-slate-200' : 'text-slate-400'}">
                         ${avatarHtml(a.cashierId, 'w-5 h-5')}
                         <span class="truncate">${personName(a.cashierId)}</span>
-                        ${a.open ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" title="កំពុងបើក"></span>' : ''}
+                        ${a.open ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" aria-label="កំពុងបើក"></span>' : ''}
                         ${a.unrostered ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-medium whitespace-nowrap">មិនមានក្នុងកាលវិភាគ</span>'
                             : a.cover ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-medium whitespace-nowrap">ជំនួស</span>' : ''}
                         <span class="ml-auto ${now ? 'text-slate-300' : 'text-slate-500'}">${a.register}</span></p>`).join('')

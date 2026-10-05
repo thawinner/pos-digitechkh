@@ -278,7 +278,7 @@
                         </button>
                     </div>
                 </div>` : ''}
-                ${over ? (cap ? `<div class="px-5 py-3.5 bg-amber-500/10 border-b border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                ${over ? (cap && cap.partialAllowed ? `<div class="px-5 py-3.5 bg-amber-500/10 border-b border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                         <p class="sm-value text-amber-200"><i class="fas fa-clock text-amber-400 mr-1.5"></i>អ្នកបានធ្វើការ ${fmtHoursDuration(cap.workedHours)} ថ្ងៃនេះ</p>
                         <p class="sm-td-sub text-amber-300/80">អាចបើកវេនខ្លីដល់ម៉ោង ${cap.capTime} (នៅសល់ ${fmtHoursDuration(cap.remainHours)}) · ត្រូវការអ្នកគ្រប់គ្រងអនុម័ត</p>
@@ -377,7 +377,7 @@
             if (!chosenTemplate()) return showToast('សូមជ្រើសរើសវេន', 'warning');
             if (short) {
                 const cap = capFor(ME_CASHIER, templateDateFor(chosenTemplate(), new Date()), chosenTemplate().start);
-                if (!cap) return showToast('មិនអាចបើកវេនខ្លីបានទេ (សល់តិចជាង 2 ម៉ោង)', 'error');
+                if (!cap.partialAllowed) return showToast('មិនអាចបើកវេនខ្លីបានទេ · នៅសល់តិចជាង 2 ម៉ោង', 'error');
                 isShortShift = true;
                 shortShiftCap = cap.capTime;
             } else {
@@ -434,7 +434,7 @@
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">${KHR_NOTES.map(n => noteTile('khr', n)).join('')}</div>
                         </section>
                     </div>
-                    <aside class="xl:sticky xl:top-4 self-start os-panel rounded-xl p-5 space-y-4" id="summary"></aside>
+                    <div class="xl:sticky xl:top-4 self-start os-panel rounded-xl p-5 space-y-4" id="summary"></div>
                 </div>`;
             renderSummary();
         }

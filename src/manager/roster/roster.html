@@ -32,22 +32,22 @@
         <div id="headerHost" data-title="កាលវិភាគវេន"
              data-subtitle="វេនប្រចាំ ការជំនួសវេន និងបញ្ជររបស់អ្នកគិតលុយ"></div>
         <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
-            <div class="w-full space-y-5">
+            <div class="w-full flex flex-col gap-5">
                 <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 flex flex-wrap items-center justify-between gap-3">
                     <div class="flex items-center gap-2">
                         <button onclick="shiftWeek(-7)" type="button" aria-label="សប្តាហ៍មុន" class="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600"><i class="fas fa-chevron-left text-xs"></i></button>
-                        <p id="weekLabel" class="sm-value text-slate-800 min-w-[200px] text-center"></p>
+                        <p id="weekLabel" class="sm-value text-slate-800 md:min-w-[200px] text-center whitespace-nowrap"></p>
                         <button onclick="shiftWeek(7)" type="button" aria-label="សប្តាហ៍បន្ទាប់" class="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600"><i class="fas fa-chevron-right text-xs"></i></button>
-                        <button onclick="weekStart=startOfWeek(); render()" type="button" class="sm-badge h-10 px-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold">ថ្ងៃនេះ</button>
+                        <button onclick="weekStart=startOfWeek(); render()" type="button" class="sm-badge h-10 px-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold whitespace-nowrap">ថ្ងៃនេះ</button>
                     </div>
                     <div id="autoFillBar" class="flex items-center gap-2"></div>
                 </div>
 
-                <div id="hoursCard"></div>
+                <div id="hoursCard" class="max-md:order-last"></div>
 
                 <!-- Desktop Grid View (Visible on desktop >= 768px) -->
                 <div class="max-md:hidden bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-x-auto">
-                    <table class="w-full min-w-[1000px]" id="grid"></table>
+                    <table class="w-full table-fixed min-w-[880px]" id="grid"></table>
                 </div>
 
                 <!-- Mobile Phone Day View (S12, Visible on mobile < 768px) -->
@@ -113,7 +113,8 @@
                             ${avatarHtml(p.id, 'w-10 h-10')}
                             <div class="min-w-0 flex-1">
                                 <p class="sm-td text-slate-700 truncate font-semibold">${p.name}</p>
-                                <p class="sm-td-sub sm-figure ${over ? 'text-rose-600 font-semibold' : 'text-slate-500'}">${h[p.id] || 0} ម៉ោង / សប្តាហ៍${over ? ' · លើស 48' : ''}</p>
+                                <p class="sm-td-sub sm-figure whitespace-nowrap ${over ? 'text-rose-600 font-semibold' : 'text-slate-500'}">${h[p.id] || 0} ម៉ោង/សប្តាហ៍</p>
+                                ${over ? '<span class="inline-block mt-0.5 text-[11px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 rounded px-1.5 whitespace-nowrap">លើស 48 ម៉ោង</span>' : ''}
                             </div>
                             <div class="relative">
                                 <button onclick="toggleStaffMenu('${p.id}', event)" type="button" aria-label="ម៉ឺនុយ" class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center flex-shrink-0">
@@ -281,27 +282,25 @@
             // Suggestion for empty cell (S4)
             const cand = (!list.length && !past) ? (rankCandidates(date, t.code).find(c => !c.blocked) || null) : null;
 
-            return `<td class="align-top p-2 border-l border-slate-100 ${past ? 'bg-slate-50/60' : ''}">
+            return `<td class="group/cell align-top p-2 border-l border-slate-100 ${past ? 'bg-slate-50/60' : date === isoDate(new Date()) ? 'bg-indigo-50/30' : ''}">
                 <div class="space-y-1.5">
                     ${list.map((a, i) => {
                         const actual = shifts.find(s => s.register === a.register);
                         const mismatch = actual && actual.cashierId !== a.cashierId;
                         const isLiveOpen = actual && actual.status === 'open' && actual.cashierId === a.cashierId;
 
-                        return `<div class="group flex items-center gap-2 rounded-xl border ${mismatch || a.cover ? 'border-amber-300 bg-amber-50/60' : 'border-slate-200 bg-white'} px-2 py-1.5">
-                            ${avatarHtml(a.cashierId, 'w-7 h-7')}
+                        return `<div class="group/chip flex items-center gap-1.5 rounded-xl border ${mismatch || a.cover ? 'border-amber-300 bg-amber-50/60' : 'border-slate-200 bg-white'} pl-1.5 pr-1 py-1.5">
+                            ${avatarHtml(a.cashierId, 'w-6 h-6')}
                             <div class="min-w-0 flex-1">
                                 <p class="text-[12px] font-semibold text-slate-700 truncate">
                                     ${personName(a.cashierId)}
-                                    ${a.cover ? ' <span class="text-[10px] font-semibold text-amber-700 bg-amber-100 rounded px-1">ជំនួស</span>' : ''}
-                                    ${a.until ? ` <span class="text-[10px] font-semibold text-amber-800 bg-amber-100 rounded px-1">ដល់ ${a.until}</span>` : ''}
                                 </p>
-                                <p class="text-[11px] text-slate-400 sm-figure">${a.register}${actual ? ` · ${SHIFT_STATUS[actual.status].label}` : ''}${mismatch ? ` · ${personName(actual.cashierId)} ជំនួស` : ''}</p>
+                                <p class="text-[11px] text-slate-400 sm-figure truncate">${a.cover ? '<span class="text-amber-700 font-semibold">ជំនួស</span> · ' : ''}${a.until ? `<span class="text-amber-700 font-semibold">ដល់ ${a.until}</span> · ` : ''}${a.register}${actual ? ` · ${SHIFT_STATUS[actual.status].label}` : ''}${mismatch ? ` · ${personName(actual.cashierId)} ជំនួស` : ''}</p>
                             </div>
                             ${past ? '' : (isLiveOpen ? `
-                                <button onclick="showLockedDrawerTip('${personName(a.cashierId)}', '${actual.id}')" type="button" aria-label="កំពុងបើកថតប្រាក់" class="w-7 h-7 rounded-lg text-amber-600 hover:bg-amber-100 flex-shrink-0 flex items-center justify-center" title="កំពុងបើកថតប្រាក់"><i class="fas fa-lock text-xs"></i></button>
+                                <button onclick="showLockedDrawerTip('${personName(a.cashierId)}', '${actual.id}')" type="button" aria-label="កំពុងបើកថតប្រាក់" class="w-6 h-6 rounded-lg text-amber-600 hover:bg-amber-100 flex-shrink-0 flex items-center justify-center"><i class="fas fa-lock text-xs"></i></button>
                             ` : `
-                                <button onclick="removeAt('${date}', '${t.code}', ${i})" type="button" aria-label="ដកចេញ" class="w-7 h-7 rounded-lg text-slate-300 hover:text-rose-600 hover:bg-rose-50 flex-shrink-0"><i class="fas fa-xmark text-xs"></i></button>
+                                <button onclick="removeAt('${date}', '${t.code}', ${i})" type="button" aria-label="ដកចេញ" class="w-6 h-6 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex-shrink-0 [@media(hover:hover)]:hidden group-hover/chip:!block focus:!block"><i class="fas fa-xmark text-xs"></i></button>
                             `)}
                         </div>
                         ${a.until ? `
@@ -313,22 +312,20 @@
                         : (cand ? `
                             <div class="rounded-xl border border-amber-300 bg-amber-50/70 p-2 text-left">
                                 <p class="text-[12px] font-semibold text-amber-800"><i class="fas fa-triangle-exclamation mr-1"></i>គ្មានអ្នកគិតលុយ</p>
-                                <div class="mt-1.5 flex items-center justify-between gap-1">
-                                    <button onclick="quickAssign('${date}', '${t.code}', '${cand.id}')" type="button" class="text-[11px] font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg px-2 py-1 truncate">
-                                        <i class="fas fa-user-plus mr-1"></i>ចាត់ ${cand.name}
-                                    </button>
-                                    <button onclick="addTo('${date}', '${t.code}')" type="button" class="text-[11px] font-semibold text-slate-500 hover:text-slate-800">ជ្រើសផ្សេង</button>
-                                </div>
-                                <p class="text-[10px] text-slate-500 mt-1 sm-figure">${cand.hoursBefore} → ${cand.hoursAfter} ម៉ោង · ${cand.chip}</p>
+                                <button onclick="quickAssign('${date}', '${t.code}', '${cand.id}')" type="button" class="mt-1.5 w-full flex items-center gap-1.5 text-[12px] font-semibold text-indigo-700 bg-white hover:bg-indigo-50 border border-indigo-200 rounded-lg px-1.5 py-1 text-left">
+                                    ${avatarHtml(cand.id, 'w-5 h-5')}<span class="truncate">ចាត់ ${cand.name}</span>
+                                </button>
+                                <p class="text-[11px] text-slate-500 mt-1 sm-figure truncate">${cand.hoursBefore} → ${cand.hoursAfter} ម៉ោង · ${cand.chip}</p>
+                                <button onclick="addTo('${date}', '${t.code}')" type="button" class="mt-0.5 text-[11px] font-semibold text-slate-500 hover:text-slate-800">ជ្រើសអ្នកផ្សេង</button>
                             </div>
                         ` : `<p class="text-[12px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-2 py-2"><i class="fas fa-triangle-exclamation mr-1"></i>គ្មានអ្នកគិតលុយ · ត្រូវរកអ្នកជំនួស</p>`))}
 
-                    ${past ? '' : `<button onclick="addTo('${date}', '${t.code}')" type="button" class="w-full rounded-xl border border-dashed border-slate-300 hover:border-indigo-400 hover:bg-indigo-50 text-[12px] text-slate-500 hover:text-indigo-700 py-1.5"><i class="fas fa-plus mr-1"></i>បន្ថែម</button>`}
+                    ${past || !list.length ? '' : `<button onclick="addTo('${date}', '${t.code}')" type="button" class="w-full rounded-xl border border-dashed border-slate-300 hover:border-indigo-400 hover:bg-indigo-50 text-[12px] text-slate-500 hover:text-indigo-700 py-1 transition-opacity [@media(hover:hover)]:opacity-0 group-hover/cell:opacity-100 focus:opacity-100"><i class="fas fa-plus mr-1"></i>បន្ថែម</button>`}
 
                     ${custom ? `
-                        <div class="flex items-center justify-between px-1 pt-0.5">
-                            <span class="text-[10px] text-indigo-600 font-semibold inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>បានកែ</span>
-                            <button onclick="resetCell('${date}', '${t.code}')" type="button" class="text-[10px] text-slate-400 hover:text-slate-600 underline">ត្រឡប់ទៅលំនាំដើម</button>
+                        <div class="flex flex-wrap items-center gap-x-2 px-1 pt-0.5">
+                            <span class="text-[11px] text-indigo-600 font-semibold inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>បានកែ</span>
+                            ${past ? '' : `<button onclick="resetCell('${date}', '${t.code}')" type="button" class="text-[11px] text-slate-400 hover:text-slate-700">ត្រឡប់វិញ</button>`}
                         </div>
                     ` : ''}
                 </div>
@@ -432,8 +429,8 @@
 
             document.getElementById('grid').innerHTML = `
                 <thead><tr class="bg-slate-50 border-b border-slate-100">
-                    <th class="sm-th py-3 px-3 text-left text-slate-500 w-[130px]">វេន</th>
-                    ${ds.map(d => `<th class="sm-th py-3 px-2 text-left border-l border-slate-100 ${isoDate(d) === today ? 'text-indigo-700' : 'text-slate-500'}">${DOW_KH[d.getDay()]}<span class="block text-[12px] font-medium sm-figure">${fmtDate(d)}</span></th>`).join('')}
+                    <th class="sm-th py-3 px-3 text-left text-slate-500 w-[104px]">វេន</th>
+                    ${ds.map(d => `<th class="sm-th py-3 px-2 text-left border-l border-slate-100 ${isoDate(d) === today ? 'text-indigo-700 bg-indigo-50/70' : 'text-slate-500'}">${DOW_KH[d.getDay()]}<span class="block text-[12px] font-medium sm-figure">${fmtDate(d)}</span></th>`).join('')}
                 </tr></thead>
                 <tbody>${shiftTemplates().map(t => `<tr class="border-b border-slate-100" id="row-tpl-${t.code}">
                     <td class="align-top p-3"><p class="sm-value text-slate-700">${t.name}</p><p class="sm-td-sub text-slate-400 sm-figure">${t.start}–${t.end}</p></td>

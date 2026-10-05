@@ -701,265 +701,262 @@ function disburseAllPendingPayroll(payrollList, periodKey, periodLabel) {
     return records;
 }
 
-/* គណនាស្ថិតិម៉ោងធ្វើការ និងប្រាក់បៀវត្សរ៍បុគ្គលិកទាំងអស់ក្នុងចន្លោះកាលបរិច្ឆេទ */
-function calculateStaffPayroll(range) {
-    const staffList = loadStaff().filter(p => p.active);
-    const defs = (posSettings().staffDefaults || {});
-    const disbursements = getPayrollDisbursements();
+/* ===== ម៉ោងធ្វើការពិត និងប្រាក់បៀវត្សរ៍ (docs/spec/04-staff-worktime-payroll.md) =====
+   ម៉ោងពិត = ពេលបើកថតប្រាក់ → ពេលបិទ (វេនកំពុងបើក គិតដល់ឥឡូវ) · មិនប្រើម៉ោងតាមកាលវិភាគទេ
+   អ្នកគិតលុយ៖ គិតម៉ោងពិតលម្អិត · អ្នកគ្រប់គ្រង៖ ប្រាក់ខែថេរ (ការងារភាគច្រើនមិនមែនលើបញ្ជរ)
+   ម្ចាស់ហាង៖ មិនស្ថិតក្នុងតារាងបៀវត្សរ៍ */
+const PAY_RULES = {
+    dayHours: 8,          // ម៉ោងធម្មតាក្នុងមួយថ្ងៃ
+    weekHours: 48,        // ម៉ោងធម្មតាក្នុងមួយសប្តាហ៍ (ច័ន្ទ → អាទិត្យ)
+    workDays: 26,         // ថ្ងៃធ្វើការក្នុងមួយខែ (ប្រាក់ខែ ÷ 26 = ប្រាក់មួយថ្ងៃ)
+    monthHours: 208,      // 26 × 8
+    otMult: 1.5,          // ម៉ោងបន្ថែមពេលថ្ងៃ
+    nightOtMult: 2.0,     // ម៉ោងបន្ថែមពេលយប់
+    nightMult: 2.0,       // ម៉ោងយប់ធម្មតា 22:00–05:00 (ស្រាវជ្រាវ §11 · ត្រូវផ្ទៀងផ្ទាត់ជាមួយគណនេយ្យករ D-P1)
+    dayOffMult: 2.0,      // ធ្វើការថ្ងៃឈប់សម្រាកប្រចាំសប្តាហ៍
+    graceMin: 10,         // យឺត ឬចេញមុន លើសពីនេះទើបរាប់
+    bonusMaxLate: 3       // រង្វាន់ឧស្សាហ៍ព្យាយាម៖ គ្មានអវត្តមាន និងយឺតមិនលើស 3 ដង
+};
 
-    // កំណត់កាលបរិច្ឆេទ
+function payWeekStart(dateStr) {
+    const d = new Date(dateStr + 'T12:00');
+    return isoDate(addDays(d, -((d.getDay() + 6) % 7)));
+}
+
+function payIsNight(ms) {
+    const h = new Date(ms).getHours();
+    return h >= 22 || h < 5;
+}
+
+/* វេនបញ្ជររបស់បុគ្គលិកម្នាក់ (ថ្ងៃប្រតិបត្តិការ from…to) តាមលំដាប់ពេលបើក */
+function workSessions(personId, from, to) {
+    const now = Date.now();
+    return mgrAllShifts()
+        .filter(s => s.cashierId === personId && s.openedAt && s.date >= from && s.date <= to)
+        .map(s => ({ shift: s, open: new Date(s.openedAt).getTime(), close: s.closedAt ? new Date(s.closedAt).getTime() : now, live: !s.closedAt }))
+        .filter(x => x.close > x.open)
+        .sort((a, b) => a.open - b.open);
+}
+
+/* បែងចែកនាទីធ្វើការនីមួយៗជាប្រភេទ៖ ធម្មតា · យប់ · បន្ថែម · បន្ថែមពេលយប់ · ថ្ងៃឈប់
+   ម៉ោងបន្ថែម = លើស 8 ម៉ោងក្នុងថ្ងៃ ឬលើស 48 ម៉ោងក្នុងសប្តាហ៍ (មិនរាប់ពីរដង) */
+function classifyWork(personId, start, end) {
+    const def = (posSettings().staffDefaults || {})[personId] || {};
+    const dayOff = def.dayOff != null && def.dayOff !== '' ? Number(def.dayOff) : null;
+    const STEP = 5 * 60000;
+    const dayMin = {};
+    const weekMin = {};
+    const empty = () => ({ regular: 0, night: 0, ot: 0, otNight: 0, dayOff: 0, total: 0 });
+    const totals = empty();
+    const perShift = {};
+    // ចាប់ពីថ្ងៃច័ន្ទនៃសប្តាហ៍ដំបូង ដើម្បីឱ្យកំណត់ 48 ម៉ោងត្រឹមត្រូវ
+    workSessions(personId, payWeekStart(start), end).forEach(x => {
+        const b = empty();
+        const dk = x.shift.date;
+        const wk = payWeekStart(dk);
+        const off = dayOff !== null && new Date(dk + 'T12:00').getDay() === dayOff;
+        for (let t = x.open; t < x.close; t += STEP) {
+            const m = Math.min(STEP, x.close - t) / 60000;
+            const night = payIsNight(t);
+            let cat;
+            if (off) cat = 'dayOff';
+            else {
+                dayMin[dk] = (dayMin[dk] || 0) + m;
+                weekMin[wk] = (weekMin[wk] || 0) + m;
+                const over = dayMin[dk] > PAY_RULES.dayHours * 60 || weekMin[wk] > PAY_RULES.weekHours * 60;
+                cat = over ? (night ? 'otNight' : 'ot') : (night ? 'night' : 'regular');
+            }
+            b[cat] += m;
+            b.total += m;
+        }
+        perShift[x.shift.id] = b;
+        if (dk >= start) Object.keys(totals).forEach(k => { totals[k] += b[k]; });
+    });
+    return { totals, perShift };
+}
+
+/* កាលវិភាគធៀបនឹងវត្តមានពិត៖ ថ្ងៃនីមួយៗ វេននីមួយៗ (រួមទាំងវេនដែលមិនមានក្នុងកាលវិភាគ) */
+function attendanceRows(personId, start, end) {
+    const now = new Date();
+    const sessions = workSessions(personId, start, end);
+    const used = new Set();
+    const rows = [];
+    for (let d = new Date(start + 'T12:00'); isoDate(d) <= end; d = addDays(d, 1)) {
+        const date = isoDate(d);
+        shiftTemplates().forEach(t => {
+            const a = rosterFor(date, t.code).find(x => x.cashierId === personId);
+            if (!a) return;
+            const planStart = dateAt(date, a.from || t.start);
+            let planEnd = a.until ? dateAt(date, a.until) : shiftEndDate({ date, start: t.start, end: t.end });
+            if (planEnd <= planStart) planEnd = addDays(planEnd, 1);
+            const x = sessions.find(s => !used.has(s) && s.shift.date === date && s.shift.templateCode === t.code);
+            if (x) used.add(x);
+            rows.push({ date, template: t, register: a.register, cover: !!a.cover, planStart, planEnd, session: x || null });
+        });
+    }
+    sessions.filter(s => !used.has(s)).forEach(x => {
+        const t = shiftTemplates().find(y => y.code === x.shift.templateCode) || { code: x.shift.templateCode, name: x.shift.templateName, start: x.shift.start, end: x.shift.end };
+        rows.push({ date: x.shift.date, template: t, register: x.shift.register, cover: true, unplanned: true, planStart: null, planEnd: null, session: x });
+    });
+    const grace = PAY_RULES.graceMin * 60000;
+    rows.forEach(r => {
+        const s = r.session;
+        r.future = !s && r.planStart > now;
+        r.absent = !s && !!r.planEnd && r.planEnd < now;
+        r.lateMin = s && r.planStart && s.open - r.planStart > grace ? Math.round((s.open - r.planStart) / 60000) : 0;
+        r.earlyMin = s && !s.live && r.planEnd && r.planEnd - s.close > grace ? Math.round((r.planEnd - s.close) / 60000) : 0;
+    });
+    return rows.sort((a, b) => a.date.localeCompare(b.date) || (a.planStart || a.session.open) - (b.planStart || b.session.open));
+}
+
+/* គណនាប្រាក់បៀវត្សរ៍តាមម៉ោងពិត សម្រាប់ចន្លោះកាលបរិច្ឆេទ */
+function calculateStaffPayroll(range) {
+    const today = isoDate(new Date());
     const start = toIsoDateStr(range && range.start) || isoDate(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
-    const end = toIsoDateStr(range && range.end) || isoDate(new Date());
+    const end = toIsoDateStr(range && range.end) || today;
     const periodKey = `${start}_${end}`;
     const periodLabel = `${fmtDate(start)} ដល់ ${fmtDate(end)}`;
+    const disbursements = getPayrollDisbursements();
 
-    // ប្រមូលវេនទាំងអស់ក្នុងចន្លោះកាលបរិច្ឆេទ
-    const shifts = typeof mgrAllShifts === 'function' ? mgrAllShifts().filter(s => {
-        const d = s.date || (s.openedAt ? s.openedAt.slice(0, 10) : '');
-        return d >= start && d <= end;
-    }) : [];
+    // ប្រាក់ខែថេរ៖ ខែពេញ = ប្រាក់ខែគោល · ចន្លោះខ្លី = តាមចំនួនថ្ងៃប្រតិទិន
+    const s0 = new Date(start + 'T12:00');
+    const days = Math.max(1, Math.round((new Date(end + 'T12:00') - s0) / 86400000) + 1);
+    const monthDays = new Date(s0.getFullYear(), s0.getMonth() + 1, 0).getDate();
+    const fullMonth = start.slice(8) === '01' && days === monthDays;
+    const share = fullMonth ? 1 : Math.min(1, days / monthDays);
+    const r2 = n => Math.round(n * 100) / 100;
+    const h1 = m => Math.round(m / 6) / 10; // នាទី → ម៉ោង (ទសភាគ 1)
 
-    // ពិនិត្យមើលចំនួនថ្ងៃ
-    const d1 = new Date(start + 'T12:00');
-    const d2 = new Date(end + 'T12:00');
-    const daysDiff = Math.max(1, Math.round((d2 - d1) / 86400000) + 1);
-    const isFullMonth = daysDiff >= 25;
-
-    const staffPayrolls = staffList.map(person => {
+    const staffPayrolls = loadStaff().filter(p => p.active && p.role !== 'admin').map(person => {
         const comp = getStaffCompensation(person.id);
-        const personShifts = shifts.filter(s => s.cashierId === person.id);
-        const pDef = defs[person.id] || {};
+        const base = Number(comp.baseSalaryUSD) || 0;
+        const hourly = base / PAY_RULES.monthHours;
+        const tracked = person.role === 'cashier';
+        const work = classifyWork(person.id, start, end);
+        const w = work.totals;
+        const att = attendanceRows(person.id, start, end);
+        const shiftsWorked = att.filter(r => r.session).length;
+        const absentDays = tracked ? new Set(att.filter(r => r.absent).map(r => r.date)).size : 0;
+        const lateCount = att.filter(r => r.lateMin).length;
+        const lateMinutes = att.reduce((n, r) => n + r.lateMin, 0);
+        const earlyCount = att.filter(r => r.earlyMin).length;
+        const live = att.some(r => r.session && r.session.live);
 
-        let regularHours = 0;
-        let otHours = 0;
-        let nightHours = 0;
-        let dayOffDays = 0;
-        let cashShortage = 0;
+        const basePay = r2(base * share);
+        const otPay = tracked ? r2(h1(w.ot) * hourly * PAY_RULES.otMult + h1(w.otNight) * hourly * PAY_RULES.nightOtMult) : 0;
+        // ម៉ោងយប់ធម្មតា៖ ប្រាក់ខែគោលបានគ្របរួចហើយ ត្រូវបន្ថែមតែផ្នែកលើស (2.0 − 1.0)
+        const nightPay = tracked ? r2(h1(w.night) * hourly * (PAY_RULES.nightMult - 1)) : 0;
+        const dayOffPay = tracked ? r2(h1(w.dayOff) * hourly * PAY_RULES.dayOffMult) : 0;
+        const foodAllowance = r2((Number(comp.foodAllowanceUSD) || 0) * share);
+        const bonusOk = absentDays === 0 && lateCount <= PAY_RULES.bonusMaxLate;
+        const attendanceBonus = bonusOk ? r2((Number(comp.attendanceBonusUSD) || 0) * share) : 0;
+        const absencePay = r2(absentDays * base / PAY_RULES.workDays);
+        // ខ្វះសាច់ប្រាក់ថត៖ បង្ហាញប៉ុណ្ណោះ មិនកាត់ដោយស្វ័យប្រវត្តិ (ត្រូវស៊ើបអង្កេតសិន · spec §4.3)
+        const cashShortage = r2(att.reduce((n, r) => n + (r.session && r.session.shift.variance < -Number(posSettings().varianceTolerance || 5) ? -r.session.shift.variance : 0), 0));
 
-        if (isFullMonth) {
-            // ស្តង់ដារប្រចាំខែ (យោងតាម spec និងទិន្នន័យជាក់ស្តែង)
-            if (person.role === 'cashier') {
-                regularHours = 208; // 26 ថ្ងៃ x 8 ម៉ោង
-                // គណនាម៉ោងថែម (OT) តាមការចាត់តាំង ឬប្រវត្តិជាក់ស្តែង
-                if (person.id === 'CAS-01') {
-                    otHours = 16;
-                    nightHours = 0;
-                    dayOffDays = 0;
-                    cashShortage = 5.00; // ដកខ្វះថតលុយ
-                } else if (person.id === 'CAS-02') {
-                    otHours = 24;
-                    nightHours = 0;
-                    dayOffDays = 1;
-                    cashShortage = 0;
-                } else if (person.id === 'CAS-03') {
-                    otHours = 8;
-                    nightHours = 182; // វេនយប់ (26 ថ្ងៃ x 7 ម៉ោងយប់ = 182 ម៉ោង)
-                    dayOffDays = 0;
-                    cashShortage = 0;
-                } else {
-                    const extra = Math.max(0, personShifts.length - 26);
-                    otHours = extra * 8;
-                    nightHours = pDef.template === 'C' ? 182 : 0;
-                }
-            } else if (person.role === 'manager') {
-                regularHours = 208;
-                otHours = person.id === 'MGR-02' ? 8 : 0;
-                nightHours = 0;
-                dayOffDays = 0;
-                cashShortage = 0;
-            } else {
-                // admin
-                regularHours = 208;
-                otHours = 0;
-                nightHours = 0;
-                dayOffDays = 0;
-                cashShortage = 0;
-            }
-        } else {
-            // ចន្លោះកាលបរិច្ឆេទជាក់ស្តែង (ឧ. 7 ថ្ងៃ, 14 ថ្ងៃ)
-            const standardWorkDays = Math.max(1, Math.round(daysDiff * 6 / 7));
-            const expectedHours = standardWorkDays * 8;
-            
-            if (person.role === 'cashier') {
-                const shiftCount = personShifts.length || (daysDiff <= 7 ? 6 : standardWorkDays);
-                const totalHours = shiftCount * 8;
-                regularHours = Math.min(totalHours, expectedHours);
-                otHours = Math.max(0, totalHours - expectedHours);
-                if (pDef.template === 'C') {
-                    nightHours = Math.round(shiftCount * 7);
-                }
-                // ត្រួតពិនិត្យភាពខ្វះខាតសាច់ប្រាក់ថត
-                personShifts.forEach(s => {
-                    if (s.variance < -5) cashShortage += Math.abs(s.variance);
-                });
-            } else {
-                regularHours = expectedHours;
-                otHours = person.id === 'MGR-02' && daysDiff >= 7 ? 4 : 0;
-                nightHours = 0;
-            }
-        }
+        const grossUSD = r2(basePay + otPay + nightPay + dayOffPay + foodAllowance + attendanceBonus);
+        const deductionsUSD = absencePay;
+        const netUSD = r2(grossUSD - deductionsUSD);
 
-        // គណនាប្រាក់ឈ្នួល
-        const hourly = Number(comp.hourlyRateUSD) || 0;
-        const baseSalary = Number(comp.baseSalaryUSD) || 0;
-        const regularPay = isFullMonth ? baseSalary : +(regularHours * hourly).toFixed(2);
-        const otPay = +(otHours * (hourly * 1.5)).toFixed(2);
-        // អត្រាម៉ោងយប់បន្ថែមលើម៉ោងធម្មតា (Differential = 50% ឬ 0.60/ម៉)
-        const nightPay = +(nightHours * (hourly * 0.5)).toFixed(2);
-        const dayOffPay = +(dayOffDays * 8 * (hourly * 2.0)).toFixed(2);
-        const foodAllowance = isFullMonth ? (Number(comp.foodAllowanceUSD) || 0) : +((Number(comp.foodAllowanceUSD) || 0) * daysDiff / 30).toFixed(2);
-        const attendanceBonus = isFullMonth ? (Number(comp.attendanceBonusUSD) || 0) : +((Number(comp.attendanceBonusUSD) || 0) * daysDiff / 30).toFixed(2);
-
-        const grossUSD = +(regularPay + otPay + nightPay + dayOffPay + foodAllowance + attendanceBonus).toFixed(2);
-
-        // ការកាត់កង (Deductions: Cash shortage + NSSF)
-        const nssfUSD = 0; // ក្រោមពិដានអនុគ្រោះពន្ធ
-        const deductionsUSD = +(cashShortage + nssfUSD).toFixed(2);
-        const netUSD = +(grossUSD - deductionsUSD).toFixed(2);
-
-        // ពិនិត្យស្ថានភាពបើកប្រាក់បៀវត្សរ៍
-        const disb = disbursements.find(d => {
-            if (d.staffId !== person.id) return false;
-            if (d.periodKey === periodKey) return true;
-            if (isFullMonth && d.periodKey.startsWith(start.slice(0, 7))) return true;
-            return false;
-        });
-        const status = disb ? 'disbursed' : 'pending';
-
+        const disb = disbursements.find(d => d.staffId === person.id && (d.periodKey === periodKey || (fullMonth && d.periodKey.startsWith(start.slice(0, 7)))));
         return {
             staff: person,
             role: person.role,
-            comp: comp,
-            banking: {
-                bankName: comp.bankName || 'ABA Bank',
-                accountName: comp.accountName || person.name,
-                accountNumber: comp.accountNumber || '—'
-            },
-            employeeCode: comp.employeeCode || ('EMP-' + person.id),
-            phone: comp.phone || '012 345 678',
-            joinedDate: comp.joinedDate || '2026-01-01',
-            baseSalaryUSD: baseSalary,
-            hourlyRateUSD: hourly,
-            regularHours,
-            regularPay,
-            otHours,
+            comp,
+            tracked,
+            banking: { bankName: comp.bankName || '', accountName: comp.accountName || person.name, accountNumber: comp.accountNumber || '—' },
+            employeeCode: comp.employeeCode || person.id,
+            phone: comp.phone || '',
+            joinedDate: comp.joinedDate || '',
+            baseSalaryUSD: base,
+            hourlyRateUSD: r2(hourly),
+            share,
+            realHours: h1(w.total),
+            shiftsWorked,
+            live,
+            regularHours: h1(w.regular + w.night),
+            regularPay: basePay,
+            otHours: h1(w.ot + w.otNight),
             otPay,
-            nightHours,
+            nightHours: h1(w.night + w.otNight),
             nightPay,
-            dayOffDays,
+            dayOffHours: h1(w.dayOff),
+            dayOffDays: new Set(att.filter(r => r.session && work.perShift[r.session.shift.id] && work.perShift[r.session.shift.id].dayOff).map(r => r.date)).size,
             dayOffPay,
             foodAllowance,
             attendanceBonus,
+            bonusLost: !bonusOk && (Number(comp.attendanceBonusUSD) || 0) > 0,
+            absentDays,
+            absencePay,
+            lateCount,
+            lateMinutes,
+            earlyCount,
             cashShortage,
             deductionsUSD,
             grossUSD,
             netUSD,
-            status,
+            status: disb ? 'disbursed' : 'pending',
             disbursement: disb || null
         };
     });
 
+    const sum = k => staffPayrolls.reduce((n, p) => n + p[k], 0);
     const summary = {
         staffCount: staffPayrolls.length,
-        totalHours: staffPayrolls.reduce((sum, p) => sum + p.regularHours + p.otHours, 0),
-        totalOT: staffPayrolls.reduce((sum, p) => sum + p.otHours, 0),
-        totalNight: staffPayrolls.reduce((sum, p) => sum + p.nightHours, 0),
-        totalGross: +staffPayrolls.reduce((sum, p) => sum + p.grossUSD, 0).toFixed(2),
-        totalDeductions: +staffPayrolls.reduce((sum, p) => sum + p.deductionsUSD, 0).toFixed(2),
-        totalNet: +staffPayrolls.reduce((sum, p) => sum + p.netUSD, 0).toFixed(2),
+        totalHours: Math.round(sum('realHours') * 10) / 10,
+        totalOT: Math.round(sum('otHours') * 10) / 10,
+        totalNight: Math.round(sum('nightHours') * 10) / 10,
+        totalGross: r2(sum('grossUSD')),
+        totalDeductions: r2(sum('deductionsUSD')),
+        totalNet: r2(sum('netUSD')),
+        absentDays: sum('absentDays'),
+        lateCount: sum('lateCount'),
         pendingCount: staffPayrolls.filter(p => p.status === 'pending').length,
         disbursedCount: staffPayrolls.filter(p => p.status === 'disbursed').length,
+        fullMonth,
+        days,
+        monthDays,
         periodKey,
         periodLabel
     };
-
     return { staffPayrolls, summary };
 }
 
-/* បង្កើតតារាងម៉ោងការងារលម្អិត (Timesheet Breakdown) របស់បុគ្គលិកម្នាក់ក្នុងចន្លោះកាលបរិច្ឆេទ */
+/* តារាងម៉ោងការងារលម្អិតរបស់បុគ្គលិកម្នាក់៖ កាលវិភាគធៀបនឹងម៉ោងពិត ថ្ងៃនីមួយៗ */
 function getStaffTimesheet(staffId, range) {
-    const person = loadStaff().find(p => p.id === staffId);
-    if (!person) return [];
-    const def = (posSettings().staffDefaults || {})[staffId] || {};
-    const start = toIsoDateStr(range && range.start) || '2026-10-01';
-    const end = toIsoDateStr(range && range.end) || '2026-10-31';
-
-    const d1 = new Date(start + 'T12:00');
-    const d2 = new Date(end + 'T12:00');
-    const shifts = [];
-    const tpls = shiftTemplates();
-    const DOW_NAMES = ['អាទិត្យ', 'ច័ន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍'];
-
-    const defaultTplCode = def.template || (staffId === 'CAS-03' ? 'C' : staffId === 'CAS-02' ? 'B' : 'A');
-    const defaultReg = def.register || 'POS-01';
-    const staffDayOff = Number(def.dayOff) || 0;
-
-    for (let cur = new Date(d1); cur <= d2; cur = addDays(cur, 1)) {
-        const dateStr = isoDate(cur);
-        const dow = cur.getDay();
-        const isDayOff = (dow === staffDayOff);
-
-        let workedToday = !isDayOff;
-        let isOT = false;
-        let isCover = false;
-        let isNight = (defaultTplCode === 'C');
-
-        if (staffId === 'CAS-01' && (dateStr.endsWith('-11') || dateStr.endsWith('-18'))) {
-            workedToday = true;
-            isOT = true;
-            isCover = true;
-        } else if (staffId === 'CAS-02' && (dateStr.endsWith('-04') || dateStr.endsWith('-11') || dateStr.endsWith('-18'))) {
-            workedToday = true;
-            isOT = true;
-            isCover = true;
-        } else if (staffId === 'CAS-03' && dateStr.endsWith('-12')) {
-            workedToday = true;
-            isOT = true;
-            isCover = true;
-        } else if (staffId === 'MGR-02' && dateStr.endsWith('-15')) {
-            workedToday = true;
-            isOT = true;
-        }
-
-        if (workedToday) {
-            const tpl = tpls.find(t => t.code === defaultTplCode) || tpls[0];
-            let variance = 0;
-            if (staffId === 'CAS-01' && dateStr.endsWith('-08')) {
-                variance = -5.00;
-            }
-
-            let typeLabel = 'ម៉ោងធម្មតា (1.0x)';
-            let tone = 'slate';
-            if (isNight) {
-                typeLabel = 'ម៉ោងយប់ (2.0x)';
-                tone = 'indigo';
-            } else if (isOT) {
-                typeLabel = 'ថែមម៉ោង OT (1.5x)';
-                tone = 'amber';
-            } else if (isCover) {
-                typeLabel = 'ជំនួសវេន (2.0x)';
-                tone = 'emerald';
-            }
-
-            shifts.push({
-                shiftId: `SFT-${staffId}-${dateStr.replace(/-/g, '')}`,
-                date: dateStr,
-                dayName: DOW_NAMES[dow],
-                templateCode: defaultTplCode,
-                templateName: tpl ? tpl.name : 'វេនការងារ',
-                timeRange: `${tpl ? tpl.start : '06:00'} – ${tpl ? tpl.end : '14:00'}`,
-                register: defaultReg,
-                hours: 8,
-                typeLabel,
-                tone,
-                variance,
-                status: 'បានបិទ និងត្រួតពិនិត្យ'
-            });
-        }
-    }
-
-    return shifts;
+    const start = toIsoDateStr(range && range.start) || isoDate(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+    const end = toIsoDateStr(range && range.end) || isoDate(new Date());
+    const work = classifyWork(staffId, start, end);
+    const DOW = ['អាទិត្យ', 'ច័ន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍'];
+    const h1 = m => Math.round(m / 6) / 10;
+    const hm = ms => `${pad2(new Date(ms).getHours())}:${pad2(new Date(ms).getMinutes())}`;
+    return attendanceRows(staffId, start, end).filter(r => !r.future).map(r => {
+        const s = r.session;
+        const b = s ? (work.perShift[s.shift.id] || {}) : {};
+        const parts = [];
+        if (b.regular) parts.push({ label: `ធម្មតា ${h1(b.regular)}`, tone: 'slate' });
+        if (b.night) parts.push({ label: `យប់ ${h1(b.night)}`, tone: 'indigo' });
+        if (b.ot || b.otNight) parts.push({ label: `បន្ថែម ${h1((b.ot || 0) + (b.otNight || 0))}`, tone: 'amber' });
+        if (b.dayOff) parts.push({ label: `ថ្ងៃឈប់ ${h1(b.dayOff)}`, tone: 'emerald' });
+        const flags = [];
+        if (r.absent) flags.push({ label: 'អវត្តមាន', tone: 'rose' });
+        if (r.unplanned) flags.push({ label: 'មិនមានក្នុងកាលវិភាគ', tone: 'amber' });
+        else if (r.cover) flags.push({ label: 'ជំនួស', tone: 'amber' });
+        if (r.lateMin) flags.push({ label: `យឺត ${r.lateMin} នាទី`, tone: 'amber' });
+        if (r.earlyMin) flags.push({ label: `ចេញមុន ${r.earlyMin} នាទី`, tone: 'amber' });
+        if (s && s.live) flags.push({ label: 'កំពុងធ្វើការ', tone: 'emerald' });
+        return {
+            shiftId: s ? s.shift.id : '',
+            date: r.date,
+            dayName: DOW[new Date(r.date + 'T12:00').getDay()],
+            templateName: r.template.name,
+            plan: r.planStart ? `${hm(r.planStart)}–${hm(r.planEnd)}` : '—',
+            actual: s ? `${hm(s.open)}–${s.live ? 'ឥឡូវ' : hm(s.close)}` : '—',
+            register: r.register,
+            hours: s ? h1(b.total || 0) : 0,
+            parts,
+            flags,
+            variance: s && typeof s.shift.variance === 'number' ? s.shift.variance : 0
+        };
+    });
 }
-
-
-
