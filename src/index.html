@@ -53,6 +53,14 @@
 </head>
 <body id="loginPortal" data-role-root="." class="login-bg min-h-screen font-sans text-slate-100 text-[16px]">
 
+    <!-- Dark Mode Toggle Button -->
+    <div class="fixed top-4 right-4 z-40">
+        <button onclick="toggleDarkMode()" type="button" aria-label="ប្តូររវាងទម្រង់ភ្លឺ និងទម្រង់ងងឹត" id="darkModeToggleBtn"
+            class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center transition border border-white/10 cursor-pointer shadow-lg backdrop-blur-sm">
+            <iconify-icon id="darkModeIcon" icon="mdi:weather-night" class="text-xl"></iconify-icon>
+        </button>
+    </div>
+
     <div id="splash" role="status" aria-label="កំពុងផ្ទុក">
         <div class="splash-center">
             <div class="flex items-center gap-4">
@@ -319,16 +327,23 @@
         function updatePin(shake) {
             const dots = document.getElementById('pinDots');
             if (!dots) return;
+            const dark = typeof isDarkMode === 'function' ? isDarkMode() : document.documentElement.classList.contains('dark');
             const lockedFor = Math.ceil((POS_PIN_GUARD.lockedUntil - Date.now()) / 1000);
             const locked = lockedFor > 0;
             /* បង្ហាញ 4 ចំណុច ហើយបន្ថែមពេលវាយលើស (រហូតដល់ 6) — មិនបង្ហាញចំណុចស្រអាប់ដែលធ្វើឱ្យយល់ច្រឡំ */
             const n = Math.max(4, pin.length);
             const err = locked || !!pinMsg;
             const ready = pin.length >= 4 && !locked;
+            const dotActive = pinMsg ? 'bg-rose-500' : (dark ? 'bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.6)]' : 'bg-slate-900');
+            const dotInactive = dark ? 'bg-slate-700/80' : 'bg-slate-200';
             dots.innerHTML = Array.from({ length: n }, (_, i) => `<span class="w-3.5 h-3.5 rounded-full ${i < pin.length
-                ? (pinMsg ? 'bg-rose-500' : 'bg-slate-900') + (i === pin.length - 1 && !pinMsg ? ' dot-pop' : '') : 'bg-slate-200'}"></span>`).join('');
-            document.getElementById('pinBox').className = `mt-1.5 h-14 rounded-lg border bg-white flex items-center justify-center transition-colors ${err
-                ? 'border-rose-400 bg-rose-50/40' : pin.length ? 'border-slate-900 ring-2 ring-slate-900/5' : 'border-slate-300'}`;
+                ? dotActive + (i === pin.length - 1 && !pinMsg ? ' dot-pop' : '') : dotInactive}"></span>`).join('');
+
+            const boxClass = dark
+                ? (err ? 'border-rose-400 bg-rose-950/20' : pin.length ? 'border-cyan-400 ring-2 ring-cyan-400/20 bg-slate-900/80' : 'border-slate-700 bg-slate-900/60')
+                : (err ? 'border-rose-400 bg-rose-50/40' : pin.length ? 'border-slate-900 ring-2 ring-slate-900/5 bg-white' : 'border-slate-300 bg-white');
+            document.getElementById('pinBox').className = `mt-1.5 h-14 rounded-lg border flex items-center justify-center transition-colors ${boxClass}`;
+
             if (shake) {
                 dots.classList.remove('shake');
                 void dots.offsetWidth;
@@ -338,12 +353,14 @@
             msg.innerHTML = locked ? `<i class="fas fa-lock mr-1.5"></i>វាយខុស 3 ដង · សូមរង់ចាំ ${lockedFor} វិនាទី`
                 : pinMsg ? `<i class="fas fa-circle-exclamation mr-1.5"></i>${pinMsg}`
                 : ready ? '<i class="fas fa-check mr-1.5"></i>ចុច «ចូលប្រើ» ឬ Enter' : '';
-            msg.className = `sm-td-sub mt-1.5 min-h-[22px] ${err ? 'text-rose-600 font-semibold' : 'text-emerald-700'}`;
+            msg.className = `sm-td-sub mt-1.5 min-h-[22px] ${err ? 'text-rose-500 font-semibold' : (dark ? 'text-emerald-400' : 'text-emerald-700')}`;
             document.querySelectorAll('[data-pin-key]').forEach(b => { b.disabled = locked; });
             const btn = document.getElementById('pinSubmit');
             btn.disabled = !ready;
-            btn.className = `mt-3 w-full h-12 rounded-lg sm-value font-semibold transition-colors inline-flex items-center justify-center gap-2 ${ready
-                ? 'bg-slate-900 border border-slate-900 hover:bg-slate-800 text-white' : 'bg-white border border-slate-200 text-slate-400 cursor-not-allowed'}`;
+            const submitClass = ready
+                ? (dark ? 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold border border-cyan-400 shadow-md' : 'bg-slate-900 border border-slate-900 hover:bg-slate-800 text-white')
+                : (dark ? 'bg-white/5 border border-white/10 text-slate-500 cursor-not-allowed' : 'bg-white border border-slate-200 text-slate-400 cursor-not-allowed');
+            btn.className = `mt-3 w-full h-12 rounded-lg sm-value font-semibold transition-colors inline-flex items-center justify-center gap-2 ${submitClass}`;
             btn.setAttribute('aria-disabled', String(!ready));
             clearTimeout(lockTick);
             if (locked) lockTick = setTimeout(() => updatePin(), 1000);
@@ -461,6 +478,7 @@
         });
 
         document.addEventListener('DOMContentLoaded', () => {
+            if (typeof initDarkMode === 'function') initDarkMode();
             document.getElementById('branchLabel').textContent = MERCHANT.branch;
             tick();
             setInterval(tick, 10000);
@@ -482,6 +500,10 @@
             renderRegisters();
             renderRoster();
             renderStepper(1);
+        });
+
+        window.addEventListener('bms-theme-change', () => {
+            updatePin();
         });
 
         /* ផ្ទាំងចាប់ផ្តើមបង្ហាញរាល់ពេលបើកទំព័រ យ៉ាងតិច 1.2 វិនាទី រួចរលាយបាត់ */

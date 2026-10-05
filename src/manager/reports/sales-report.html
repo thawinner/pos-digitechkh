@@ -225,6 +225,7 @@
         }
 
         window.onDateRangeApplied = renderAll;
+        window.onThemeChanged = renderAll;
 
         document.addEventListener('DOMContentLoaded', () => {
             bmsSetSelectOptions('registerFilter', [{ value: '', label: 'គ្រប់បញ្ជរ' }].concat(REGISTERS.map(r => ({ value: r, label: r }))));

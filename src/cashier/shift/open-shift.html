@@ -51,6 +51,11 @@
             <span id="liveClock" class="sm-badge text-white font-semibold sm-figure"></span>
         </span>
         <div class="flex items-center gap-2 flex-shrink-0">
+            <!-- Dark Mode Toggle Button -->
+            <button onclick="toggleDarkMode()" type="button" aria-label="ប្តូររវាងទម្រង់ភ្លឺ និងទម្រង់ងងឹត" id="darkModeToggleBtn"
+                class="w-9 h-9 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 flex items-center justify-center transition cursor-pointer">
+                <iconify-icon id="darkModeIcon" icon="mdi:weather-night" class="text-lg"></iconify-icon>
+            </button>
             <span id="meChip" class="flex items-center gap-2"></span>
             <button onclick="handleLogout()" type="button" aria-label="ចាកចេញ"
                 class="px-3 rounded-xl text-slate-300 hover:text-rose-200 hover:bg-rose-500/10 inline-flex items-center gap-2 transition">
@@ -481,6 +486,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            if (typeof initDarkMode === 'function') initDarkMode();
             if (currentShift()) {
                 location.replace('../terminal/pos-terminal.html');
                 return;
@@ -496,6 +502,10 @@
             document.getElementById('meChip').innerHTML = `${avatarHtml(me.id, 'w-8 h-8')}<span class="sm-badge text-slate-200 hidden md:!inline">${me.name}</span>`;
             tick();
             setInterval(tick, 1000);
+            render();
+        });
+
+        window.addEventListener('bms-theme-change', () => {
             render();
         });
     </script>

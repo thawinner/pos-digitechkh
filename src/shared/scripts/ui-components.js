@@ -1154,6 +1154,16 @@ const POS_DIALOG_THEME = {
     }
 };
 
+function getPosDialogTheme(opts = {}) {
+    if (opts && opts.dark !== undefined) {
+        return POS_DIALOG_THEME[opts.dark ? 'dark' : 'light'];
+    }
+    const isDark = (typeof isDarkMode === 'function' && isDarkMode()) ||
+                   document.documentElement.classList.contains('dark') ||
+                   (document.body && document.body.classList.contains('dark'));
+    return POS_DIALOG_THEME[isDark ? 'dark' : 'light'];
+}
+
 function posDialogHost(id) {
     let host = document.getElementById(id);
     if (!host) {
@@ -1198,7 +1208,7 @@ function posKeypadHtml(th) {
  */
 function showManagerOverride(opts = {}) {
     return new Promise(resolve => {
-        const th = POS_DIALOG_THEME[opts.dark ? 'dark' : 'light'];
+        const th = getPosDialogTheme(opts);
         const host = posDialogHost('posOverrideModal');
         const managers = (typeof MANAGERS !== 'undefined' ? MANAGERS : [])
             .filter(m => !(opts.excludeIds || []).includes(m.id));
@@ -1347,7 +1357,7 @@ function showManagerOverride(opts = {}) {
 /* opts: { title, message, userId, dark, confirmText, danger } → Promise<boolean> */
 function showPinConfirm(opts = {}) {
     return new Promise(resolve => {
-        const th = POS_DIALOG_THEME[opts.dark ? 'dark' : 'light'];
+        const th = getPosDialogTheme(opts);
         const host = posDialogHost('posPinModal');
         const person = typeof personById === 'function' ? personById(opts.userId) : null;
         const state = { pin: '', msg: '', tick: null };
@@ -1433,7 +1443,7 @@ function showPinConfirm(opts = {}) {
 /* opts: { title, message, reasons: [], dark, confirmText, danger } → Promise<string|null> */
 function showReasonPicker(opts = {}) {
     return new Promise(resolve => {
-        const th = POS_DIALOG_THEME[opts.dark ? 'dark' : 'light'];
+        const th = getPosDialogTheme(opts);
         const host = posDialogHost('posReasonPickerModal');
         const reasons = opts.reasons || [];
         let picked = '';
@@ -1484,7 +1494,7 @@ function showReasonPicker(opts = {}) {
 /* opts: { title, message, options: [{ value, label, desc, icon }], dark } → Promise<value|null> */
 function showOptionDialog(opts = {}) {
     return new Promise(resolve => {
-        const th = POS_DIALOG_THEME[opts.dark ? 'dark' : 'light'];
+        const th = getPosDialogTheme(opts);
         const host = posDialogHost('posOptionModal');
         host.innerHTML = `
             <div class="w-full max-w-md rounded-3xl shadow-2xl ${th.panel} p-5 sm:p-6" onclick="event.stopPropagation()">
@@ -1516,7 +1526,7 @@ function showOptionDialog(opts = {}) {
    ប្រអប់បញ្ចូលទិន្នន័យខ្លីៗ (ឈ្មោះ តម្លៃ លេខសម្ងាត់) · preview បង្ហាញលទ្ធផលភ្លាមៗពេលវាយ (ឧ. អត្រាចំណេញថ្មី) */
 function showFormDialog(opts = {}) {
     return new Promise(resolve => {
-        const th = POS_DIALOG_THEME[opts.dark ? 'dark' : 'light'];
+        const th = getPosDialogTheme(opts);
         const host = posDialogHost('posFormModal');
         const fields = opts.fields || [];
         const input = f => {
@@ -1584,7 +1594,7 @@ function showFormDialog(opts = {}) {
    ផ្ទាំងលេខសម្រាប់អេក្រង់ប៉ះ (ឧ. កំណត់ចំនួនទំនិញ 12 ដោយមិនចាំបាច់ចុច + 12 ដង) */
 function showNumberPad(opts = {}) {
     return new Promise(resolve => {
-        const th = POS_DIALOG_THEME[opts.dark ? 'dark' : 'light'];
+        const th = getPosDialogTheme(opts);
         const host = posDialogHost('posNumberPadModal');
         const min = opts.min != null ? opts.min : 0;
         const max = opts.max != null ? opts.max : 9999;

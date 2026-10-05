@@ -270,6 +270,7 @@
         }
 
         window.onStoreChanged = () => renderAll();
+        window.onThemeChanged = () => renderAll();
         document.addEventListener('DOMContentLoaded', () => {
             renderTabs();
             renderAll();

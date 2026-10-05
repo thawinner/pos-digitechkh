@@ -326,6 +326,7 @@
 
         window.onDateRangeApplied = renderAll;
         window.onStoreChanged = () => renderAll();
+        window.onThemeChanged = () => renderAll();
         document.addEventListener('DOMContentLoaded', () => {
             renderTabs();
             renderDateRangePicker('dateRange');

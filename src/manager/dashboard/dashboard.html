@@ -365,7 +365,7 @@
                 tooltip: { trigger: 'item', formatter: p => chartTipTitle(p.name) + chartTipRow(p.color, fmtUSD(p.value), Math.round(p.percent) + '%') },
                 series: [{
                     type: 'pie', radius: ['58%', '88%'], avoidLabelOverlap: true, label: { show: false },
-                    itemStyle: { borderColor: '#fff', borderWidth: 2 },
+                    itemStyle: { borderColor: (typeof chartIsDark === 'function' && chartIsDark()) ? '#0f172a' : '#fff', borderWidth: 2 },
                     data: parts.map(p => ({ name: p.label, value: +p.v.toFixed(2), itemStyle: { color: p.color } }))
                 }]
             });
@@ -384,6 +384,7 @@
         }
 
         window.onStoreChanged = renderAll;
+        window.onThemeChanged = renderAll;
 
         document.addEventListener('DOMContentLoaded', () => {
             setPortalSubtitle(`ថ្ងៃប្រតិបត្តិការ ${fmtKhDate(businessDate() + 'T12:00')} · ${MERCHANT.branch} · ${personName(ME_MANAGER)}`);

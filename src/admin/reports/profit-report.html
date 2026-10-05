@@ -189,7 +189,7 @@
             const labels = rows.map(r => view === 'day' ? r.label.slice(0, 5) : short(r.label));
             posChart('chart', {
                 grid: { left: 4, right: 4, top: 24, bottom: 4, containLabel: true },
-                xAxis: chartCategoryAxis(labels, { axisLabel: { color: '#64748b', fontSize: 12, fontFamily: CHART_FONT, interval: 0, rotate: rows.length > 7 && view !== 'day' ? 30 : 0 } }),
+                xAxis: chartCategoryAxis(labels, { axisLabel: { color: (typeof chartIsDark === 'function' && chartIsDark()) ? '#94a3b8' : '#64748b', fontSize: 12, fontFamily: CHART_FONT, interval: 0, rotate: rows.length > 7 && view !== 'day' ? 30 : 0 } }),
                 yAxis: [chartValueAxis(v => '$' + v), chartValueAxis(v => v + '%', { splitLine: { show: false }, min: 0, max: v => Math.max(40, Math.ceil(v.max / 10) * 10) })],
                 tooltip: {
                     formatter: ps => {
@@ -202,7 +202,7 @@
                     }
                 },
                 series: [
-                    { type: 'bar', stack: 'n', barMaxWidth: 36, itemStyle: { color: CHART_TONE.slate }, data: rows.map(r => +r.cost.toFixed(2)) },
+                    { type: 'bar', stack: 'n', barMaxWidth: 36, itemStyle: { color: (typeof chartIsDark === 'function' && chartIsDark()) ? '#475569' : CHART_TONE.slate }, data: rows.map(r => +r.cost.toFixed(2)) },
                     { type: 'bar', stack: 'n', barMaxWidth: 36, itemStyle: { color: CHART_TONE.emerald, borderRadius: [4, 4, 0, 0] }, data: rows.map(r => +Math.max(r.profit, 0).toFixed(2)) },
                     { type: 'line', yAxisIndex: 1, smooth: true, symbol: 'circle', symbolSize: 6, lineStyle: { width: 2, color: CHART_TONE.amber }, itemStyle: { color: CHART_TONE.amber }, data: rows.map(r => +r.margin.toFixed(1)) }
                 ]
@@ -210,6 +210,7 @@
         }
 
         window.onDateRangeApplied = renderAll;
+        window.onThemeChanged = renderAll;
         document.addEventListener('DOMContentLoaded', () => {
             renderDateRangePicker('dateRange');
             selectPreset('7 ថ្ងៃចុងក្រោយ');

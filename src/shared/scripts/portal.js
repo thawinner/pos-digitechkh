@@ -7,6 +7,14 @@ data-role-root និង data-active លើ <body> ប៉ុណ្ណោះ។ �
 ត្រូវបង្កើតចេញពីអនុគមន៍តែមួយ របារចំហៀងគ្រប់ទំព័រដូចគ្នា 100%
 ដោយស្វ័យប្រវត្តិ ទោះស្ថិតក្នុងថតជាន់ផ្សេងគ្នាក៏ដោយ។ */
 
+// អនុវត្ត dark mode ភ្លាមៗដើម្បីការពារ flash of light mode (FOUC)
+try {
+    if (localStorage.getItem('bms_theme') === 'dark') {
+        document.documentElement.classList.add('dark');
+        if (document.body) document.body.classList.add('dark');
+    }
+} catch (e) {}
+
 // ផ្ទុក Iconify MDI Web Component ដោយស្វ័យប្រវត្តិ
 if (!document.querySelector('script[src*="iconify"]')) {
     const iconifyScript = document.createElement('script');
@@ -366,17 +374,25 @@ function isDarkMode() {
 }
 
 function updateDarkModeUI(isDark) {
-    const icon = document.getElementById('darkModeIcon');
-    if (icon) {
+    const icons = document.querySelectorAll('#darkModeIcon, [data-dark-toggle-icon]');
+    icons.forEach(icon => {
         icon.setAttribute('icon', isDark ? 'mdi:weather-sunny' : 'mdi:weather-night');
         icon.className = isDark ? 'text-xl text-amber-400' : 'text-xl text-slate-500';
-    }
+    });
     if (isDark) {
         document.documentElement.classList.add('dark');
-        document.body.classList.add('dark');
+        if (document.body) document.body.classList.add('dark');
     } else {
         document.documentElement.classList.remove('dark');
-        document.body.classList.remove('dark');
+        if (document.body) document.body.classList.remove('dark');
+    }
+
+    // Call page callbacks if defined
+    if (typeof window.onThemeChanged === 'function') {
+        try { window.onThemeChanged(isDark); } catch (e) { console.error(e); }
+    }
+    if (typeof window.renderAll === 'function') {
+        try { window.renderAll(); } catch (e) { console.error(e); }
     }
 
     // Dispatch custom event for pages with specialized widgets
@@ -1009,6 +1025,7 @@ window.addEventListener('bms-store-changed', e => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+    initDarkMode();
     renderPortalSidebar();
     // ក្បាលទំព័រត្រូវបង្កើតមុនថតចល័ត ព្រោះថតចល័តបញ្ចូលប៊ូតុងម៉ឺនុយទៅក្នុងក្បាលទំព័រ
     renderPortalHeader();
@@ -1292,6 +1309,7 @@ function bmsRenderStepper(hostId) {
     if (!host || !cfg) return;
     bmsEnsureStepperStyles();
 
+    const isDark = Boolean(cfg.dark || (typeof isDarkMode === 'function' && isDarkMode()));
     const steps = cfg.steps || [];
     const current = Number(cfg.current) || 1;
     const skin = BMS_STEPPER_TONES[cfg.tone] || BMS_STEPPER_TONES.teal;
@@ -1359,7 +1377,7 @@ function bmsRenderStepper(hostId) {
         const now = n === current;
         if (done) return `${doneSkin.fill} text-white`;
         if (now) return `${skin.fill} text-white ring-4 ${skin.ring} bms-step-now`;
-        return cfg.dark ? 'bg-white/5 text-slate-400 border border-white/15' : 'bg-slate-100 text-slate-500 border border-slate-200';
+        return isDark ? 'bg-white/5 text-slate-400 border border-white/15' : 'bg-slate-100 text-slate-500 border border-slate-200';
     };
 
     // ទម្រង់រូបតំណាងរក្សារូបតំណាងដើម ទោះជំហាននោះបានបញ្ចប់ក៏ដោយ
@@ -1370,7 +1388,7 @@ function bmsRenderStepper(hostId) {
 
     const labelTone = n => n === current
         ? `${skin.text} font-semibold`
-        : (n < current ? (cfg.dark ? 'text-slate-200 font-medium' : 'text-slate-700 font-medium') : (cfg.dark ? 'text-slate-400 font-medium' : 'text-slate-500 font-medium'));
+        : (n < current ? (isDark ? 'text-slate-200 font-medium' : 'text-slate-700 font-medium') : (isDark ? 'text-slate-400 font-medium' : 'text-slate-500 font-medium'));
 
     const wrap = (n, inner, extra) => {
         const reachable = clickable && n <= current;
@@ -1391,7 +1409,7 @@ function bmsRenderStepper(hostId) {
                 ${steps.map((s, i) => {
                     const n = i + 1;
                     const connector = i < steps.length - 1
-                        ? `<span aria-hidden="true" class="absolute rounded-full bms-step-track ${cfg.dark ? 'bms-step-track-dark' : ''}"
+                        ? `<span aria-hidden="true" class="absolute rounded-full bms-step-track ${isDark ? 'bms-step-track-dark' : ''}"
                                style="top:${R - T / 2}px;height:${T}px;left:calc(50% + ${R}px);right:calc(-50% + ${R}px)">${fill(n)}</span>`
                         : '';
                     const halo = n === current && inProgress && !compact
@@ -1433,7 +1451,7 @@ function bmsRenderStepper(hostId) {
                     <span class="${circle} rounded-full flex items-center justify-center flex-shrink-0 font-bold transition ${face(n)}">${glyph(s, n)}</span>
                     <span class="sm-badge ${labelTone(n)}">${s.label}</span>`;
                 const bar = i < steps.length - 1
-                    ? `<span aria-hidden="true" class="w-6 sm:w-12 h-0.5 mx-2 sm:mx-3 rounded-full flex-shrink-0 bms-step-track ${cfg.dark ? 'bms-step-track-dark' : ''} overflow-hidden">${fill(n)}</span>`
+                    ? `<span aria-hidden="true" class="w-6 sm:w-12 h-0.5 mx-2 sm:mx-3 rounded-full flex-shrink-0 bms-step-track ${isDark ? 'bms-step-track-dark' : ''} overflow-hidden">${fill(n)}</span>`
                     : '';
                 return wrap(n, body, 'px-1 inline-flex items-center gap-2.5 flex-shrink-0') + bar;
             }).join('')}
@@ -1471,3 +1489,12 @@ function bmsStepperSet(hostId, current) {
     cfg.current = current;
     bmsRenderStepper(hostId);
 }
+
+// ធ្វើបច្ចុប្បន្នភាព Stepper ឡើងវិញដោយស្វ័យប្រវត្តិតាមស្បែកងងឹត/ភ្លឺ
+window.addEventListener('bms-theme-change', () => {
+    if (typeof BMS_STEPPER_STATE !== 'undefined') {
+        Object.keys(BMS_STEPPER_STATE).forEach(hostId => {
+            bmsRenderStepper(hostId);
+        });
+    }
+});

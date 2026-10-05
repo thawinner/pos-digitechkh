@@ -6,7 +6,7 @@
 const CHART_FONT = "'Kantumruy Pro', sans-serif";
 const CHART_TONE = {
     emerald: '#059669', emeraldSoft: '#a7f3d0', indigo: '#4f46e5', indigoSoft: '#c7d2fe',
-    slate: '#cbd5e1', amber: '#f59e0b', rose: '#e11d48', cyan: '#0891b2'
+    slate: '#94a3b8', amber: '#f59e0b', rose: '#e11d48', cyan: '#0891b2'
 };
 
 function chartIsDark() {
@@ -23,7 +23,8 @@ function chartBase() {
             trigger: 'axis',
             confine: true,
             backgroundColor: '#0f172a',
-            borderWidth: 0,
+            borderWidth: 1,
+            borderColor: dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
             padding: [8, 12],
             textStyle: { color: '#f8fafc', fontFamily: CHART_FONT, fontSize: 13 },
             extraCssText: 'border-radius:8px;box-shadow:0 8px 24px rgba(15,23,42,.18)',
@@ -50,7 +51,7 @@ function chartValueAxis(fmt, extra) {
     return Object.assign({
         type: 'value',
         splitNumber: 4,
-        axisLabel: { color: dark ? '#64748b' : '#94a3b8', fontSize: 11, fontFamily: CHART_FONT, formatter: fmt || (v => v) },
+        axisLabel: { color: dark ? '#94a3b8' : '#64748b', fontSize: 11, fontFamily: CHART_FONT, formatter: fmt || (v => v) },
         splitLine: { lineStyle: { color: dark ? '#1e293b' : '#f1f5f9' } }
     }, extra || {});
 }
@@ -78,4 +79,19 @@ function posChart(el, option) {
     }
     chart.setOption(option, { replaceMerge: ['series', 'xAxis', 'yAxis'] });
     return chart;
+}
+
+// ធ្វើបច្ចុប្បន្នភាពមូលដ្ឋានគ្រឹះក្រាហ្វពេលប្តូរស្បែក
+if (typeof window !== 'undefined') {
+    window.addEventListener('bms-theme-change', () => {
+        if (window.echarts) {
+            document.querySelectorAll('[_echarts_instance_]').forEach(el => {
+                const chart = echarts.getInstanceByDom(el);
+                if (chart) {
+                    chart.setOption(chartBase());
+                    chart.resize();
+                }
+            });
+        }
+    });
 }

@@ -191,11 +191,11 @@
         function renderChart() {
             const today = businessDate();
             if (!picked) picked = today;
-            const label = d => d.date === today ? 'ថ្ងៃនេះ' : String(new Date(d.date + 'T12:00').getDate());
+            const isDark = typeof chartIsDark === 'function' ? chartIsDark() : false;
             const chart = posChart('chart', {
                 grid: { left: 4, right: 4, top: 12, bottom: 4, containLabel: true },
                 xAxis: chartCategoryAxis(DAYS.map(label), {
-                    axisLabel: { color: '#64748b', fontSize: 12, fontFamily: CHART_FONT,
+                    axisLabel: { color: isDark ? '#94a3b8' : '#64748b', fontSize: 12, fontFamily: CHART_FONT,
                         formatter: (v, i) => DAYS[i] && DAYS[i].date === picked ? `{on|${v}}` : v,
                         rich: { on: { color: CHART_TONE.emerald, fontWeight: 700, fontFamily: CHART_FONT } } }
                 }),
@@ -213,7 +213,7 @@
                 },
                 series: [
                     { name: 'ថ្លៃដើម', type: 'bar', stack: 'net', barMaxWidth: 34, cursor: 'pointer',
-                      data: DAYS.map(d => ({ value: +d.cost.toFixed(2), itemStyle: { color: d.date === picked ? '#94a3b8' : CHART_TONE.slate, opacity: d.date === today ? .6 : 1 } })) },
+                      data: DAYS.map(d => ({ value: +d.cost.toFixed(2), itemStyle: { color: d.date === picked ? (isDark ? '#cbd5e1' : '#94a3b8') : (isDark ? '#475569' : CHART_TONE.slate), opacity: d.date === today ? .6 : 1 } })) },
                     { name: 'ប្រាក់ចំណេញដុល', type: 'bar', stack: 'net', barMaxWidth: 34, cursor: 'pointer',
                       itemStyle: { borderRadius: [4, 4, 0, 0] },
                       data: DAYS.map(d => ({ value: +Math.max(d.profit, 0).toFixed(2), itemStyle: { color: d.date === picked ? '#047857' : CHART_TONE.emerald, opacity: d.date === today ? .6 : 1 } })) }
@@ -378,6 +378,7 @@
         }
 
         window.onStoreChanged = () => location.reload();
+        window.onThemeChanged = renderAll;
         document.addEventListener('DOMContentLoaded', renderAll);
     </script>
 </body>
