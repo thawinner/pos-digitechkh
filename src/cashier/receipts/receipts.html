@@ -24,11 +24,66 @@
     <link rel="stylesheet" href="../../shared/styles/custom.css">
     <link rel="stylesheet" href="../../shared/styles/portal.css">
     <style>
+        @page {
+            size: 80mm 160mm;
+            margin: 0;
+        }
+
         @media print {
-            body * { visibility: hidden !important; }
-            #printArea, #printArea * { visibility: visible !important; }
-            #printArea { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
-            @page { size: 80mm auto; margin: 4mm; }
+            @page {
+                size: 80mm 160mm;
+                margin: 0;
+            }
+
+            html, body {
+                width: 80mm !important;
+                min-width: 80mm !important;
+                max-width: 80mm !important;
+                height: auto !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+                color: #0f172a !important;
+                overflow: visible !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            body * {
+                visibility: hidden !important;
+            }
+
+            #sidebarHost,
+            #headerHost,
+            header,
+            aside,
+            nav,
+            main,
+            .no-print {
+                display: none !important;
+            }
+
+            #printArea,
+            #printArea * {
+                visibility: visible !important;
+            }
+
+            #printArea {
+                display: block !important;
+                position: static !important;
+                width: 80mm !important;
+                max-width: 80mm !important;
+                margin: 0 auto !important;
+                padding: 2mm 2mm 4mm 2mm !important;
+                box-sizing: border-box !important;
+                overflow: visible !important;
+            }
+
+            #printArea > div {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 auto !important;
+            }
         }
     </style>
 </head>
@@ -295,6 +350,12 @@
                         ${req.map(a => `<p class="sm-td-sub ${a.status === 'rejected' ? 'text-rose-600' : a.status === 'approved' ? 'text-emerald-700' : 'text-amber-700'}">
                             ${APPROVAL_TYPE[a.type].label} · ${APPROVAL_STATUS[a.status].label}${a.decidedBy ? ` ដោយ ${personName(a.decidedBy)}` : ''}${a.decisionNote ? ` · ${escapeText(a.decisionNote)}` : ''}</p>`).join('')}
                     </div>
+                    <div class="md:col-span-2 pt-3 border-t border-slate-200/80 flex items-center justify-between">
+                        <span class="sm-td-sub text-slate-400">ទំហំក្រដាស៖ ម៉ាស៊ីនបោះពុម្ពកម្តៅ 80mm</span>
+                        <button onclick="reprint('${s.id}')" type="button" class="sm-badge h-9 px-3.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white font-medium inline-flex items-center gap-2 text-xs shadow-sm">
+                            <i class="fas fa-print"></i> បោះពុម្ពវិក្កយបត្រ (ក្រដាសតូច 80mm)
+                        </button>
+                    </div>
                 </div>`;
         }
 
@@ -371,10 +432,14 @@
             closeAllFloatingDropdowns();
             const sale = shiftSales().find(s => s.id === id);
             if (!sale) return showToast(`រកមិនឃើញវិក្កយបត្រ ${id}`, 'error');
-            document.getElementById('printArea').innerHTML = receiptHtml(sale, { reprint: true });
             logPosEvent('reprint', { saleId: id, shiftId: sale.shiftId });
             showToast(`កំពុងបញ្ជូនវិក្កយបត្រ ${id} ទៅម៉ាស៊ីនបោះពុម្ពកម្តៅ 80mm`, 'info');
-            setTimeout(() => window.print(), 400);
+            if (typeof printThermalReceipt === 'function') {
+                printThermalReceipt(sale, { reprint: true });
+            } else {
+                document.getElementById('printArea').innerHTML = receiptHtml(sale, { reprint: true });
+                setTimeout(() => window.print(), 250);
+            }
         }
 
         /* ===== សំណើលុបចោល និងប្រគល់ទំនិញវិញ (ផែនការកែលម្អ C5) =====

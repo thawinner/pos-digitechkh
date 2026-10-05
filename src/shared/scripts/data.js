@@ -1409,7 +1409,7 @@ function receiptHtml(sale, options) {
     const taxInvoice = customer && customer.vattin;
 
     return `
-        <div style="width:72mm;margin:0 auto;font-family:'Kantumruy Pro',sans-serif;font-size:12px;line-height:1.5;color:#0f172a;position:relative;">
+        <div class="receipt-ticket" style="width:72mm;max-width:100%;margin:0 auto;font-family:'Kantumruy Pro',sans-serif;font-size:12px;line-height:1.5;color:#0f172a;position:relative;background:#ffffff;">
             <div style="text-align:center;padding-bottom:8px;border-bottom:1px dashed #94a3b8;">
                 <div style="font-size:15px;font-weight:700;">${MERCHANT.name}</div>
                 <div style="color:#475569;">${MERCHANT.branch}</div>
@@ -1451,6 +1451,145 @@ function receiptHtml(sale, options) {
                 ${opts.reprint ? '<div style="margin-top:6px;font-weight:600;">-- បោះពុម្ពឡើងវិញ --</div>' : ''}
             </div>
         </div>`;
+}
+
+/* ===== បោះពុម្ពវិក្កយបត្រលើក្រដាសតូច (Small Paper / 80mm Thermal Receipt Printer) =====
+   គណនាកម្ពស់ជាក់ស្តែង និងកំណត់ទំហំក្រដាស 80mm x [height]mm (Small Paper) ដោយមិនឱ្យធ្លាក់ចូលក្រដាស A4 ឡើយ */
+function printThermalReceipt(sale, options) {
+    if (!sale) return;
+    const content = receiptHtml(sale, options);
+
+    // 1. Sync ជាមួយ #printArea ក្នុងទំព័រ
+    const printArea = document.getElementById('printArea');
+    if (printArea) {
+        printArea.innerHTML = content;
+    }
+
+    // 2. វាស់កម្ពស់ជាក់ស្តែងនៃវិក្កយបត្រ (Dynamic Receipt Height Measurement)
+    const measurer = document.createElement('div');
+    measurer.style.position = 'fixed';
+    measurer.style.left = '-9999px';
+    measurer.style.top = '0';
+    measurer.style.width = '72mm';
+    measurer.style.padding = '0';
+    measurer.style.margin = '0';
+    measurer.style.fontFamily = "'Kantumruy Pro', sans-serif";
+    measurer.style.fontSize = '12px';
+    measurer.style.lineHeight = '1.5';
+    measurer.style.visibility = 'hidden';
+    measurer.innerHTML = content;
+    document.body.appendChild(measurer);
+    const measuredPx = measurer.scrollHeight || measurer.offsetHeight || 440;
+    document.body.removeChild(measurer);
+
+    // 96px = 25.4mm -> 1px = 0.2645833mm; បន្ថែម 8mm សុវត្ថិភាពដើម្បីកុំឱ្យដាច់ទៅទំព័រទី 2
+    const heightMm = Math.max(90, Math.ceil(measuredPx * 0.2645833) + 8);
+
+    // 3. កំណត់ @page លើទំព័រមេ ប្រសិនបើ browser បោះពុម្ពលើ parent window
+    let dynamicStyle = document.getElementById('dynamicThermalPageStyle');
+    if (!dynamicStyle) {
+        dynamicStyle = document.createElement('style');
+        dynamicStyle.id = 'dynamicThermalPageStyle';
+        document.head.appendChild(dynamicStyle);
+    }
+    dynamicStyle.innerHTML = `
+        @page {
+            size: 80mm ${heightMm}mm !important;
+            margin: 0mm !important;
+        }
+        @media print {
+            @page {
+                size: 80mm ${heightMm}mm !important;
+                margin: 0mm !important;
+            }
+        }
+    `;
+
+    // 4. បង្កើត iFrame ដែលមានទំហំពិតប្រាកដ និងមិន hide/zero dimension ដែលនាំឱ្យ Chrome បដិសេធ
+    let frame = document.getElementById('thermalReceiptPrintFrame');
+    if (frame) {
+        frame.remove();
+    }
+    frame = document.createElement('iframe');
+    frame.id = 'thermalReceiptPrintFrame';
+    frame.style.position = 'fixed';
+    frame.style.left = '-9999px';
+    frame.style.top = '0';
+    frame.style.width = '80mm';
+    frame.style.height = `${heightMm}mm`;
+    frame.style.border = '0';
+    frame.style.opacity = '0.01';
+    frame.style.pointerEvents = 'none';
+    document.body.appendChild(frame);
+
+    const frameDoc = frame.contentWindow.document;
+    frameDoc.open();
+    frameDoc.write(`<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <title>វិក្កយបត្រ - ${sale.id}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        @page {
+            size: 80mm ${heightMm}mm;
+            margin: 0;
+        }
+        @media print {
+            @page {
+                size: 80mm ${heightMm}mm;
+                margin: 0;
+            }
+            html, body {
+                width: 80mm !important;
+                height: ${heightMm}mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .receipt-sheet {
+                width: 76mm !important;
+                margin: 0 auto !important;
+                padding: 2mm 2mm 4mm 2mm !important;
+            }
+        }
+        html, body {
+            width: 80mm;
+            margin: 0;
+            padding: 0;
+            background: #ffffff;
+            font-family: 'Kantumruy Pro', sans-serif;
+            color: #0f172a;
+            -webkit-font-smoothing: antialiased;
+        }
+        .receipt-sheet {
+            width: 76mm;
+            margin: 0 auto;
+            padding: 2mm 2mm 4mm 2mm;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt-sheet">
+        ${content}
+    </div>
+</body>
+</html>`);
+    frameDoc.close();
+
+    setTimeout(() => {
+        try {
+            frame.contentWindow.focus();
+            frame.contentWindow.print();
+        } catch (e) {
+            window.print();
+        }
+    }, 280);
 }
 
 /* ===== របាយការណ៍បិទវេន A4 =====

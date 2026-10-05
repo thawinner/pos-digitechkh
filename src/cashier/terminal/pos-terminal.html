@@ -74,11 +74,66 @@
 
         #khqrBox img, #khqrBox canvas { width: 100%; height: auto; image-rendering: pixelated; }
 
+        @page {
+            size: 80mm 160mm;
+            margin: 0;
+        }
+
         @media print {
-            body * { visibility: hidden !important; }
-            #printArea, #printArea * { visibility: visible !important; }
-            #printArea { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
-            @page { size: 80mm auto; margin: 4mm; }
+            @page {
+                size: 80mm 160mm;
+                margin: 0;
+            }
+
+            html, body {
+                width: 80mm !important;
+                min-width: 80mm !important;
+                max-width: 80mm !important;
+                height: auto !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+                color: #0f172a !important;
+                overflow: visible !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            body * {
+                visibility: hidden !important;
+            }
+
+            header,
+            aside,
+            nav,
+            main,
+            .pos-shell > header,
+            .pos-shell > .pos-body,
+            .no-print {
+                display: none !important;
+            }
+
+            #printArea,
+            #printArea * {
+                visibility: visible !important;
+            }
+
+            #printArea {
+                display: block !important;
+                position: static !important;
+                width: 80mm !important;
+                max-width: 80mm !important;
+                margin: 0 auto !important;
+                padding: 2mm 2mm 4mm 2mm !important;
+                box-sizing: border-box !important;
+                overflow: visible !important;
+            }
+
+            #printArea > div {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 auto !important;
+            }
         }
     </style>
 </head>
@@ -1602,8 +1657,12 @@
         /* ===== បញ្ចប់ការលក់ ===== */
 
         function printReceipt(sale, reprint) {
-            document.getElementById('printArea').innerHTML = receiptHtml(sale, { reprint: reprint === true });
-            window.print();
+            if (typeof printThermalReceipt === 'function') {
+                printThermalReceipt(sale, { reprint: reprint === true });
+            } else {
+                document.getElementById('printArea').innerHTML = receiptHtml(sale, { reprint: reprint === true });
+                window.print();
+            }
         }
 
         function printLastReceipt() {

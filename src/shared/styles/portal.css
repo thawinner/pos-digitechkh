@@ -310,11 +310,6 @@ html.dark #managerPortal aside { background-color: #0b1329 !important; }
         color: #64748b;
         text-align: center;
     }
-
-    @page {
-        size: A4;
-        margin: 14mm 12mm;
-    }
 }
 /* ===== រាងជ្រុង និងស្រមោល៖ ស្ងប់ស្ងាត់ ដូចម៉ាស៊ីនគិតលុយពិត =====
    ជ្រុងមូលខ្លាំង (16–24px) និងស្រមោលពណ៌ ធ្វើឱ្យអេក្រង់មើលទៅដូចគំរូរចនា មិនមែនឧបករណ៍ការងារ។

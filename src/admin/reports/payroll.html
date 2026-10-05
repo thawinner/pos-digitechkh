@@ -24,13 +24,185 @@
     <link rel="stylesheet" href="../../shared/styles/custom.css">
     <link rel="stylesheet" href="../../shared/styles/portal.css">
     <style>
+        .print-only { display: none !important; }
+
         @media print {
-            .no-print { display: none !important; }
-            #payslipModalBackdrop { position: static !important; background: transparent !important; }
-            #payslipModalContent { box-shadow: none !important; border: none !important; max-width: 100% !important; padding: 0 !important; width: 100% !important; }
-            body { background: white !important; overflow: visible !important; height: auto !important; }
-            main { padding: 0 !important; overflow: visible !important; }
-            @page { size: A4; margin: 10mm; }
+            /* 1. Page Standard: A4 Landscape for financial ledger table */
+            @page {
+                size: A4 landscape;
+                margin: 8mm 10mm 8mm 10mm;
+            }
+
+            /* 2. Global Print Reset */
+            html, body {
+                width: 100% !important;
+                height: auto !important;
+                background: #ffffff !important;
+                color: #0f172a !important;
+                overflow: visible !important;
+                font-size: 11px !important;
+                line-height: 1.35 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            #sidebarHost,
+            #headerHost,
+            nav,
+            aside,
+            header,
+            .no-print,
+            button {
+                display: none !important;
+                visibility: hidden !important;
+            }
+
+            main {
+                display: block !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                overflow: visible !important;
+                background: transparent !important;
+            }
+
+            main > div.w-full {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+
+            /* 3. Official Print Header & Summary Strip */
+            .print-only {
+                display: block !important;
+            }
+
+            /* 4. Table Print Layout & Anti-Clipping */
+            .print-table-container {
+                border: none !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                overflow: visible !important;
+                width: 100% !important;
+            }
+
+            .print-overflow-visible {
+                overflow: visible !important;
+                width: 100% !important;
+            }
+
+            table.print-table {
+                width: 100% !important;
+                min-width: 0 !important;
+                max-width: 100% !important;
+                table-layout: auto !important;
+                border-collapse: collapse !important;
+                border: 1px solid #94a3b8 !important;
+            }
+
+            table.print-table thead {
+                display: table-header-group !important;
+            }
+
+            table.print-table tbody tr,
+            table.print-table tfoot tr {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            table.print-table th,
+            table.print-table td {
+                font-size: 10.5px !important;
+                padding: 5px 6px !important;
+                border: 1px solid #cbd5e1 !important;
+                color: #1e293b !important;
+            }
+
+            table.print-table th {
+                background-color: #f1f5f9 !important;
+                font-weight: 600 !important;
+                color: #334155 !important;
+            }
+
+            table.print-table tfoot {
+                background-color: #f8fafc !important;
+                border-top: 2px solid #64748b !important;
+                font-weight: 600 !important;
+            }
+
+            table.print-table .sm-badge {
+                border: 1px solid #cbd5e1 !important;
+                background: #f8fafc !important;
+                padding: 1px 4px !important;
+                font-size: 9.5px !important;
+                border-radius: 4px !important;
+            }
+
+            /* 5. Print Signature Block */
+            .print-signatures {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                margin-top: 14px !important;
+                padding-top: 8px !important;
+            }
+
+            /* 6. Payslip Individual Print Mode */
+            body.printing-payslip {
+                font-size: 13px !important;
+            }
+            body.printing-payslip main {
+                display: none !important;
+            }
+            body.printing-payslip #payslipModalBackdrop {
+                display: block !important;
+                position: static !important;
+                background: transparent !important;
+                padding: 0 !important;
+                overflow: visible !important;
+            }
+            body.printing-payslip #payslipModalContent {
+                box-shadow: none !important;
+                border: none !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            body:not(.printing-payslip) #payslipModalBackdrop,
+            body:not(.printing-payslip) #timesheetModalBackdrop {
+                display: none !important;
+            }
+
+            /* 7. Timesheet Individual Print Mode */
+            body.printing-timesheet {
+                font-size: 12px !important;
+            }
+            body.printing-timesheet main {
+                display: none !important;
+            }
+            body.printing-timesheet #timesheetModalBackdrop {
+                display: block !important;
+                position: static !important;
+                background: transparent !important;
+                padding: 0 !important;
+                overflow: visible !important;
+            }
+            body.printing-timesheet #timesheetModalContent {
+                box-shadow: none !important;
+                border: none !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            body.printing-timesheet #timesheetModalContent .max-h-\[380px\] {
+                max-height: none !important;
+                overflow: visible !important;
+            }
         }
     </style>
 </head>
@@ -43,6 +215,46 @@
              data-subtitle="ស្រង់ម៉ោងធ្វើការ ថែមម៉ោង (OT) ម៉ោងយប់ និងបើកប្រាក់បៀវត្សរ៍ប្រចាំខែ · មើលឃើញតែម្ចាស់ហាង"></div>
         <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
 
+            <!-- ក្បាលឯកសារផ្លូវការសម្រាប់បោះពុម្ព (Print-Only Document Header) -->
+            <div id="payrollPrintHeader" class="print-only mb-3 pb-2.5 border-b-2 border-slate-800">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center p-1.5 flex-shrink-0">
+                            <img src="../../shared/assets/logo-mark-transparent.png" alt="DIGITECHKH" class="w-full h-full object-contain" onerror="this.remove()">
+                        </div>
+                        <div>
+                            <h1 class="text-base font-bold text-slate-900 tracking-wide leading-tight">DIGITECHKH POS</h1>
+                            <p class="text-[11px] text-slate-600">ប្រព័ន្ធគ្រប់គ្រងការលក់ និងអាជីវកម្មលក់រាយ · សាខាកណ្តាល</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wide">តារាងបើកប្រាក់បៀវត្សរ៍បុគ្គលិក</h2>
+                        <p class="text-[11px] text-slate-700 mt-0.5 font-medium">ចន្លោះកាលបរិច្ឆេទ៖ <span id="printPeriodRange" class="font-bold text-slate-900 sm-figure"></span></p>
+                        <p class="text-[10px] text-slate-500 mt-0.5 sm-figure">កាលបរិច្ឆេទទាញរបាយការណ៍៖ <span id="printGeneratedAt"></span> · អ្នកអនុម័ត៖ <span class="font-medium text-slate-700">ហេង ចាន់ថា (ម្ចាស់ហាង)</span></p>
+                    </div>
+                </div>
+
+                <!-- របារសង្ខេបប្រតិបត្តិសម្រាប់បោះពុម្ព (Compact Executive Summary Strip) -->
+                <div class="grid grid-cols-4 gap-2.5 mt-2.5 pt-2 border-t border-slate-200 text-xs">
+                    <div class="p-2 rounded-lg bg-slate-50 border border-slate-200">
+                        <span class="text-[10px] text-slate-500 block">បុគ្គលិកសរុប</span>
+                        <span id="printSumStaff" class="text-xs font-bold text-slate-800 sm-figure block mt-0.5">0 នាក់</span>
+                    </div>
+                    <div class="p-2 rounded-lg bg-slate-50 border border-slate-200">
+                        <span class="text-[10px] text-slate-500 block">ម៉ោងការងារសរុប</span>
+                        <span id="printSumHours" class="text-xs font-bold text-slate-800 sm-figure block mt-0.5">0 ម៉ោង</span>
+                    </div>
+                    <div class="p-2 rounded-lg bg-slate-50 border border-slate-200">
+                        <span class="text-[10px] text-slate-500 block">ស្ថានភាពបើកប្រាក់</span>
+                        <span id="printSumStatus" class="text-xs font-bold text-slate-800 sm-figure block mt-0.5">—</span>
+                    </div>
+                    <div class="p-2 rounded-lg bg-emerald-50 border border-emerald-300">
+                        <span class="text-[10px] text-emerald-800 font-semibold block">ចំណាយប្រាក់ខែជាក់ស្តែងសរុប</span>
+                        <span id="printSumNet" class="text-sm font-bold text-emerald-800 sm-figure block mt-0.5">$0.00</span>
+                    </div>
+                </div>
+            </div>
+
             <div class="w-full space-y-5">
                 <!-- របារឧបករណ៍ និងតម្រង -->
                 <div class="bg-white rounded-2xl p-2 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-3 no-print">
@@ -52,7 +264,7 @@
                         <button onclick="disburseAll()" type="button" class="sm-badge h-9 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold inline-flex items-center gap-2 whitespace-nowrap shadow-sm">
                             <i class="fas fa-check-double"></i> បើកប្រាក់ខែទាំងអស់
                         </button>
-                        <button onclick="window.print()" type="button" class="sm-badge h-9 px-3.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center gap-2">
+                        <button onclick="printTable()" type="button" class="sm-badge h-9 px-3.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center gap-2">
                             <i class="fas fa-print"></i> បោះពុម្ពតារាង
                         </button>
                         <button onclick="resetSampleData()" type="button" title="កំណត់ទិន្នន័យគំរូឡើងវិញ" class="sm-badge h-9 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium inline-flex items-center gap-1.5 text-xs">
@@ -61,39 +273,40 @@
                     </div>
                 </div>
 
-                <!-- កាតសង្ខេបស្ថិតិ KPI -->
-                <div id="kpiRow" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
+                <!-- កាតសង្ខេបស្ថិតិ KPI (សម្រាប់តែបង្ហាញលើអេក្រង់ មិនបោះពុម្ពឡើយ) -->
+                <div id="kpiRow" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up no-print"></div>
 
                 <!-- តារាងសង្ខេបប្រាក់បៀវត្សរ៍ -->
-                <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-                    <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex flex-wrap items-start justify-between gap-3">
+                <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden print-table-container">
+                    <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex flex-wrap items-start justify-between gap-3 no-print">
                         <div>
                             <p id="tableTitle" class="sm-card-title text-slate-800">តារាងសង្ខេបម៉ោងធ្វើការ និងប្រាក់បៀវត្សរ៍</p>
                             <p id="tableSub" class="sm-card-sub text-slate-500"></p>
                         </div>
-                        <div class="flex items-center gap-2 no-print">
+                        <div class="flex items-center gap-2">
                             <span class="sm-badge inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs">
                                 <i class="fas fa-scale-balanced"></i> ស្តង់ដារច្បាប់ការងារ 48 ម៉ោង/សប្តាហ៍
                             </span>
                         </div>
                     </div>
 
-                    <div class="overflow-x-auto">
-                        <table class="w-full min-w-[960px]">
+                    <div class="overflow-x-auto print-overflow-visible">
+                        <table class="w-full min-w-[960px] print-table">
                             <thead>
                                 <tr class="border-b border-slate-100 bg-slate-50/60">
-                                    <th class="sm-th py-3 px-5 text-left text-slate-500">បុគ្គលិក</th>
-                                    <th class="sm-th py-3 px-3 text-left text-slate-500">តួនាទី</th>
-                                    <th class="sm-th py-3 px-3 text-right text-slate-500">ប្រាក់ខែគោល</th>
-                                    <th class="sm-th py-3 px-3 text-right text-slate-500">ម៉ោងធម្មតា</th>
-                                    <th class="sm-th py-3 px-3 text-right text-slate-500">ថែមម៉ោង (OT)</th>
-                                    <th class="sm-th py-3 px-3 text-right text-slate-500">ម៉ោងយប់</th>
-                                    <th class="sm-th py-3 px-3 text-right text-slate-500">ឧបត្ថម្ភ</th>
-                                    <th class="sm-th py-3 px-3 text-right text-slate-500">កាត់កង</th>
-                                    <th class="sm-th py-3 px-3 text-right text-slate-500">ប្រាក់ជាក់ស្តែង</th>
-                                    <th class="sm-th py-3 px-3 text-left text-slate-500">គណនីធនាគារ</th>
-                                    <th class="sm-th py-3 px-3 text-center text-slate-500">ស្ថានភាព</th>
-                                    <th class="sm-th py-3 px-5 text-right text-slate-500 no-print w-24"></th>
+                                    <th class="sm-th py-2.5 px-2 text-center text-slate-500 w-9">ល.រ</th>
+                                    <th class="sm-th py-2.5 px-3 text-left text-slate-500">បុគ្គលិក</th>
+                                    <th class="sm-th py-2.5 px-2 text-left text-slate-500">តួនាទី</th>
+                                    <th class="sm-th py-2.5 px-2 text-right text-slate-500">ប្រាក់ខែគោល</th>
+                                    <th class="sm-th py-2.5 px-2 text-right text-slate-500">ម៉ោងធម្មតា</th>
+                                    <th class="sm-th py-2.5 px-2 text-right text-slate-500">ថែមម៉ោង (OT)</th>
+                                    <th class="sm-th py-2.5 px-2 text-right text-slate-500">ម៉ោងយប់</th>
+                                    <th class="sm-th py-2.5 px-2 text-right text-slate-500">ឧបត្ថម្ភ</th>
+                                    <th class="sm-th py-2.5 px-2 text-right text-slate-500">កាត់កង</th>
+                                    <th class="sm-th py-2.5 px-2 text-right text-slate-500 font-semibold text-slate-700">ប្រាក់ជាក់ស្តែង</th>
+                                    <th class="sm-th py-2.5 px-2 text-left text-slate-500">គណនីធនាគារ</th>
+                                    <th class="sm-th py-2.5 px-2 text-center text-slate-500">ស្ថានភាព</th>
+                                    <th class="sm-th py-2.5 px-3 text-right text-slate-500 no-print w-24"></th>
                                 </tr>
                             </thead>
                             <tbody id="rows" class="divide-y divide-slate-100"></tbody>
@@ -102,6 +315,36 @@
                     </div>
                     <div id="empty" class="hidden p-8 text-center"></div>
                 </section>
+
+                <!-- ផ្នែកចុះហត្ថលេខាផ្លូវការ 3 ភាគីសម្រាប់បោះពុម្ព (Print-Only 3-Party Signature Block) -->
+                <div id="payrollPrintSignatures" class="print-only print-signatures mt-6 pt-4 border-t-2 border-slate-300">
+                    <div class="grid grid-cols-3 gap-6 text-center text-xs text-slate-800">
+                        <div class="space-y-12">
+                            <p class="font-semibold text-slate-900">អ្នករៀបចំតារាង</p>
+                            <div>
+                                <p class="border-t border-slate-400 pt-1 text-[11px] text-slate-500">ហត្ថលេខា និងកាលបរិច្ឆេទ</p>
+                            </div>
+                        </div>
+                        <div class="space-y-12">
+                            <p class="font-semibold text-slate-900">អ្នកត្រួតពិនិត្យ (អ្នកគ្រប់គ្រង)</p>
+                            <div>
+                                <p class="border-t border-slate-400 pt-1 text-slate-800 font-medium">សុខ វណ្ណា</p>
+                                <p class="text-[10px] text-slate-400">កាលបរិច្ឆេទ៖ ..... / ..... / 2026</p>
+                            </div>
+                        </div>
+                        <div class="space-y-12">
+                            <p class="font-semibold text-slate-900">អ្នកអនុម័ត (ម្ចាស់អាជីវកម្ម)</p>
+                            <div>
+                                <p class="border-t border-slate-400 pt-1 text-slate-800 font-medium">ហេង ចាន់ថា</p>
+                                <p class="text-[10px] text-slate-400">កាលបរិច្ឆេទ៖ ..... / ..... / 2026</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-5 pt-2 border-t border-slate-200 flex justify-between items-center text-[10px] text-slate-400">
+                        <span>ប្រព័ន្ធគ្រប់គ្រង DIGITECHKH POS · បោះពុម្ពជាឯកសារផ្លូវការ</span>
+                        <span>ទំព័រ 1 នៃ 1</span>
+                    </div>
+                </div>
 
                 <p class="sm-td-sub text-slate-500 px-1 no-print">
                     <i class="fas fa-circle-info mr-1 text-slate-400"></i>ប្រាក់ម៉ោងថែម (OT) គុណ 150% · ម៉ោងយប់ (22:00–05:00) និងថ្ងៃសម្រាកគុណ 200% · ការកាត់កងរួមបញ្ចូលទាំងការខ្វះសាច់ប្រាក់ថតលើសកម្រិតអនុញ្ញាត។
@@ -147,6 +390,9 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
+                    <button onclick="printCurrentTimesheet()" type="button" class="sm-badge h-8 px-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-medium inline-flex items-center gap-1.5">
+                        <i class="fas fa-print text-xs"></i> បោះពុម្ព
+                    </button>
                     <button onclick="closeTimesheetModal()" type="button" class="w-8 h-8 rounded-xl bg-slate-200/70 hover:bg-slate-200 text-slate-600 inline-flex items-center justify-center">
                         <i class="fas fa-xmark text-sm"></i>
                     </button>
@@ -297,73 +543,76 @@
                 cashier: 'bg-slate-50 text-slate-700 border-slate-200'
             };
 
-            tbody.innerHTML = list.map(item => {
+            tbody.innerHTML = list.map((item, idx) => {
                 const s = item.staff;
                 const statusChip = item.status === 'disbursed'
-                    ? '<span class="sm-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>បានបើករួច</span>'
-                    : '<span class="sm-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border bg-amber-50 text-amber-700 border-amber-200"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>រង់ចាំបើក</span>';
+                    ? '<span class="sm-badge inline-flex items-center gap-1 px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200 whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 no-print"></span>បានបើករួច</span>'
+                    : '<span class="sm-badge inline-flex items-center gap-1 px-2 py-0.5 rounded-full border bg-amber-50 text-amber-700 border-amber-200 whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 no-print"></span>រង់ចាំបើក</span>';
 
                 const allowancesTotal = +(item.foodAllowance + item.attendanceBonus).toFixed(2);
                 const otDisplay = item.otHours > 0
-                    ? `<span class="sm-figure text-amber-700 font-medium">${item.otHours} ម៉</span><span class="block sm-td-sub text-amber-600 sm-figure">+$${item.otPay.toFixed(2)}</span>`
-                    : '<span class="text-slate-400">0 ម៉</span>';
+                    ? `<span class="sm-figure text-amber-700 font-medium whitespace-nowrap">${item.otHours} ម៉</span><span class="block sm-td-sub text-amber-600 sm-figure whitespace-nowrap">+$${item.otPay.toFixed(2)}</span>`
+                    : '<span class="text-slate-400 whitespace-nowrap">0 ម៉</span>';
 
                 const nightDisplay = item.nightHours > 0
-                    ? `<span class="sm-figure text-indigo-700 font-medium">${item.nightHours} ម៉</span><span class="block sm-td-sub text-indigo-600 sm-figure">+$${item.nightPay.toFixed(2)}</span>`
-                    : '<span class="text-slate-400">0 ម៉</span>';
+                    ? `<span class="sm-figure text-indigo-700 font-medium whitespace-nowrap">${item.nightHours} ម៉</span><span class="block sm-td-sub text-indigo-600 sm-figure whitespace-nowrap">+$${item.nightPay.toFixed(2)}</span>`
+                    : '<span class="text-slate-400 whitespace-nowrap">0 ម៉</span>';
 
                 const deductionDisplay = item.deductionsUSD > 0
-                    ? `<span class="sm-figure text-rose-600 font-medium">-$${item.deductionsUSD.toFixed(2)}</span><span class="block sm-td-sub text-rose-400">${item.cashShortage > 0 ? 'ខ្វះថត' : 'ប.ស.ស'}</span>`
-                    : '<span class="text-slate-400">$0.00</span>';
+                    ? `<span class="sm-figure text-rose-600 font-medium whitespace-nowrap">-$${item.deductionsUSD.toFixed(2)}</span><span class="block sm-td-sub text-rose-400 whitespace-nowrap">${item.cashShortage > 0 ? 'ខ្វះថត' : 'ប.ស.ស'}</span>`
+                    : '<span class="text-slate-400 whitespace-nowrap">$0.00</span>';
 
                 return `
                     <tr class="hover:bg-slate-50/60 transition">
-                        <td class="py-3 px-5">
-                            <div class="flex items-center gap-3 min-w-0">
-                                ${avatarOf(s)}
+                        <td class="py-2.5 px-2 text-center sm-figure text-slate-400 font-medium text-xs">${idx + 1}</td>
+                        <td class="py-2.5 px-3">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <div class="no-print flex-shrink-0">
+                                    ${avatarOf(s, 'w-8 h-8')}
+                                </div>
                                 <div class="min-w-0">
-                                    <p class="font-medium text-slate-700 truncate">${s.name}</p>
-                                    <p class="sm-td-sub text-slate-400 sm-figure">${s.id}</p>
+                                    <p class="font-medium text-slate-800 truncate">${s.name}</p>
+                                    <p class="sm-td-sub text-slate-400 sm-figure">${item.employeeCode || s.id}</p>
                                 </div>
                             </div>
                         </td>
-                        <td class="py-3 px-3">
-                            <span class="sm-badge inline-flex px-2.5 py-0.5 rounded-full border ${ROLE_CHIP[item.role]}">${ROLE_NAME[item.role]}</span>
+                        <td class="py-2.5 px-2 whitespace-nowrap">
+                            <span class="sm-badge inline-flex px-2 py-0.5 rounded-full border ${ROLE_CHIP[item.role]}">${ROLE_NAME[item.role]}</span>
                         </td>
-                        <td class="py-3 px-3 text-right sm-td">
+                        <td class="py-2.5 px-2 text-right sm-td whitespace-nowrap">
                             <span class="sm-figure font-medium text-slate-700">$${item.baseSalaryUSD.toFixed(2)}</span>
                             <span class="block sm-td-sub text-slate-400 sm-figure">$${item.hourlyRateUSD}/ម៉</span>
                         </td>
-                        <td class="py-3 px-3 text-right sm-td">
+                        <td class="py-2.5 px-2 text-right sm-td whitespace-nowrap">
                             <span class="sm-figure font-medium text-slate-700">${item.regularHours} ម៉</span>
                             <span class="block sm-td-sub text-slate-400 sm-figure">$${item.regularPay.toFixed(2)}</span>
                         </td>
-                        <td class="py-3 px-3 text-right sm-td">${otDisplay}</td>
-                        <td class="py-3 px-3 text-right sm-td">${nightDisplay}</td>
-                        <td class="py-3 px-3 text-right sm-td">
+                        <td class="py-2.5 px-2 text-right sm-td whitespace-nowrap">${otDisplay}</td>
+                        <td class="py-2.5 px-2 text-right sm-td whitespace-nowrap">${nightDisplay}</td>
+                        <td class="py-2.5 px-2 text-right sm-td whitespace-nowrap">
                             <span class="sm-figure font-medium text-emerald-700">+$${allowancesTotal.toFixed(2)}</span>
                             <span class="block sm-td-sub text-slate-400">បាយ+រង្វាន់</span>
                         </td>
-                        <td class="py-3 px-3 text-right sm-td">${deductionDisplay}</td>
-                        <td class="py-3 px-3 text-right sm-td">
-                            <span class="sm-figure font-semibold text-emerald-700 text-base">$${item.netUSD.toFixed(2)}</span>
+                        <td class="py-2.5 px-2 text-right sm-td whitespace-nowrap">${deductionDisplay}</td>
+                        <td class="py-2.5 px-2 text-right sm-td whitespace-nowrap bg-emerald-50/40">
+                            <span class="sm-figure font-bold text-emerald-700 text-sm">$${item.netUSD.toFixed(2)}</span>
                         </td>
-                        <td class="py-3 px-3 sm-td">
-                            <span class="font-medium text-slate-700 block">${item.banking.bankName}</span>
-                            <span class="sm-td-sub text-slate-400 sm-figure block truncate max-w-[130px]">${item.banking.accountNumber}</span>
+                        <td class="py-2.5 px-2 sm-td">
+                            <span class="font-medium text-slate-700 block whitespace-nowrap text-xs">${item.banking.bankName}</span>
+                            <span class="sm-td-sub text-slate-400 sm-figure block truncate max-w-[110px] text-[11px]">${item.banking.accountNumber}</span>
                         </td>
-                        <td class="py-3 px-3 text-center">${statusChip}</td>
-                        <td class="py-3 px-5 text-right no-print">
-                            <div class="flex items-center justify-end gap-1.5">
-                                <button onclick="openTimesheet('${s.id}')" type="button" title="មើលម៉ោងការងារលម្អិត" class="w-8 h-8 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 inline-flex items-center justify-center">
-                                    <i class="fas fa-calendar-days text-xs"></i>
+                        <td class="py-2.5 px-2 text-center whitespace-nowrap">${statusChip}</td>
+                        <td class="py-2.5 px-3 text-right no-print whitespace-nowrap">
+                            <div class="flex items-center justify-end gap-1">
+                                <button onclick="openTimesheet('${s.id}')" type="button" title="មើលម៉ោងការងារលម្អិត" class="w-7 h-7 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 inline-flex items-center justify-center">
+                                    <i class="fas fa-calendar-days text-[11px]"></i>
                                 </button>
-                                <button onclick="openPayslip('${s.id}')" type="button" title="មើលប័ណ្ណបើកប្រាក់ខែ" class="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 inline-flex items-center justify-center">
-                                    <i class="fas fa-file-invoice text-xs"></i>
+                                <button onclick="openPayslip('${s.id}')" type="button" title="មើលប័ណ្ណបើកប្រាក់ខែ" class="w-7 h-7 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 inline-flex items-center justify-center">
+                                    <i class="fas fa-file-invoice text-[11px]"></i>
                                 </button>
                                 ${item.status === 'pending' ? `
-                                    <button onclick="disburseSingle('${s.id}')" type="button" title="បើកប្រាក់បៀវត្សរ៍" class="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 inline-flex items-center justify-center">
-                                        <i class="fas fa-check text-xs"></i>
+                                    <button onclick="disburseSingle('${s.id}')" type="button" title="បើកប្រាក់បៀវត្សរ៍" class="w-7 h-7 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 inline-flex items-center justify-center">
+                                        <i class="fas fa-check text-[11px]"></i>
                                     </button>
                                 ` : ''}
                             </div>
@@ -385,17 +634,35 @@
 
             tfoot.innerHTML = `
                 <tr>
-                    <td class="py-3 px-5 text-slate-700 font-semibold" colspan="2">សរុបរួម (${list.length} នាក់)</td>
-                    <td class="py-3 px-3 text-right sm-figure">$${sumBase.toFixed(2)}</td>
-                    <td class="py-3 px-3 text-right sm-figure">${sumReg} ម៉</td>
-                    <td class="py-3 px-3 text-right sm-figure text-amber-700">${sumOT} ម៉ (+$${sumOTPay.toFixed(2)})</td>
-                    <td class="py-3 px-3 text-right sm-figure text-indigo-700">${sumNight} ម៉ (+$${sumNightPay.toFixed(2)})</td>
-                    <td class="py-3 px-3 text-right sm-figure text-emerald-700">+$${sumAllowances.toFixed(2)}</td>
-                    <td class="py-3 px-3 text-right sm-figure text-rose-600">-$${sumDeductions.toFixed(2)}</td>
-                    <td class="py-3 px-3 text-right sm-figure text-emerald-700 text-lg">$${sumNet.toFixed(2)}</td>
-                    <td colspan="3" class="py-3 px-3"></td>
+                    <td class="py-2.5 px-2 text-center text-slate-500 sm-figure font-semibold text-xs">#</td>
+                    <td class="py-2.5 px-3 text-slate-800 font-semibold text-xs" colspan="2">សរុបរួម (${list.length} នាក់)</td>
+                    <td class="py-2.5 px-2 text-right sm-figure text-xs font-semibold">$${sumBase.toFixed(2)}</td>
+                    <td class="py-2.5 px-2 text-right sm-figure text-xs font-semibold">${sumReg} ម៉</td>
+                    <td class="py-2.5 px-2 text-right sm-figure text-xs font-semibold text-amber-700">${sumOT} ម៉ (+$${sumOTPay.toFixed(2)})</td>
+                    <td class="py-2.5 px-2 text-right sm-figure text-xs font-semibold text-indigo-700">${sumNight} ម៉ (+$${sumNightPay.toFixed(2)})</td>
+                    <td class="py-2.5 px-2 text-right sm-figure text-xs font-semibold text-emerald-700">+$${sumAllowances.toFixed(2)}</td>
+                    <td class="py-2.5 px-2 text-right sm-figure text-xs font-semibold text-rose-600">-$${sumDeductions.toFixed(2)}</td>
+                    <td class="py-2.5 px-2 text-right sm-figure text-emerald-800 font-bold text-sm bg-emerald-50/50">$${sumNet.toFixed(2)}</td>
+                    <td colspan="2" class="py-2.5 px-2"></td>
+                    <td class="py-2.5 px-3 no-print"></td>
                 </tr>
             `;
+        }
+
+        function updatePrintHeader(summary) {
+            const periodEl = document.getElementById('printPeriodRange');
+            const genEl = document.getElementById('printGeneratedAt');
+            const staffEl = document.getElementById('printSumStaff');
+            const hoursEl = document.getElementById('printSumHours');
+            const statusEl = document.getElementById('printSumStatus');
+            const netEl = document.getElementById('printSumNet');
+
+            if (periodEl) periodEl.textContent = summary.periodLabel;
+            if (genEl) genEl.textContent = `${fmtDate(isoDate(new Date()))} ${pad2(new Date().getHours())}:${pad2(new Date().getMinutes())}`;
+            if (staffEl) staffEl.textContent = `${summary.staffCount} នាក់`;
+            if (hoursEl) hoursEl.textContent = `${summary.totalHours.toLocaleString()} ម៉ោង (ថែមម៉ោង ${summary.totalOT} ម៉ · យប់ ${summary.totalNight} ម៉)`;
+            if (statusEl) statusEl.textContent = summary.pendingCount > 0 ? `បានបើក ${summary.disbursedCount} / ${summary.staffCount} នាក់ (នៅសល់ ${summary.pendingCount})` : `បានបើក ${summary.disbursedCount} / ${summary.staffCount} នាក់ (100%)`;
+            if (netEl) netEl.textContent = `$${summary.totalNet.toFixed(2)}`;
         }
 
         function renderAll() {
@@ -404,10 +671,34 @@
 
             document.getElementById('tableSub').textContent = `គិតចាប់ពីថ្ងៃទី ${currentPayrollData.summary.periodLabel}`;
 
+            updatePrintHeader(currentPayrollData.summary);
             renderKPIs(currentPayrollData.summary);
             renderTabs(currentPayrollData.summary);
             renderList();
         }
+
+        function printTable() {
+            document.body.classList.remove('printing-payslip');
+            document.body.classList.remove('printing-timesheet');
+            window.print();
+        }
+
+        function printCurrentPayslip() {
+            document.body.classList.remove('printing-timesheet');
+            document.body.classList.add('printing-payslip');
+            window.print();
+        }
+
+        function printCurrentTimesheet() {
+            document.body.classList.remove('printing-payslip');
+            document.body.classList.add('printing-timesheet');
+            window.print();
+        }
+
+        window.addEventListener('afterprint', () => {
+            document.body.classList.remove('printing-payslip');
+            document.body.classList.remove('printing-timesheet');
+        });
 
         /* ===== សកម្មភាពបើកប្រាក់បៀវត្សរ៍ ===== */
 
@@ -498,12 +789,12 @@
                 <!-- ព័ត៌មានបុគ្គលិក និងវេនការងារ -->
                 <div class="grid grid-cols-2 gap-4 p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 text-sm">
                     <div>
-                        <p class="sm-td-sub text-slate-400">ឈ្មោះបុគ្គលិក / Employee Name</p>
+                        <p class="sm-td-sub text-slate-400">ឈ្មោះបុគ្គលិក</p>
                         <p class="font-semibold text-slate-800 text-base mt-0.5">${s.name} <span class="text-xs text-slate-500 font-normal sm-figure">(${item.employeeCode || s.id})</span></p>
                         <p class="sm-td-sub text-slate-500 mt-1">តួនាទី៖ <strong class="text-slate-700">${ROLE_NAME[item.role]}</strong> · <span class="sm-figure text-slate-500">ទូរស័ព្ទ៖ ${item.phone || '012 345 678'}</span></p>
                     </div>
                     <div>
-                        <p class="sm-td-sub text-slate-400">ការទូទាត់ប្រាក់ / Payment Details</p>
+                        <p class="sm-td-sub text-slate-400">ព័ត៌មានទូទាត់ប្រាក់</p>
                         <p class="font-semibold text-slate-800 mt-0.5">${item.banking.bankName}</p>
                         <p class="sm-td-sub text-slate-600 sm-figure mt-0.5">គណនី៖ ${item.banking.accountNumber} (${item.banking.accountName || s.name})</p>
                         <p class="sm-td-sub text-slate-400 mt-0.5 sm-figure">ចូលបម្រើការ៖ ${fmtDate(item.joinedDate || '2026-01-15')} · ចន្លោះ៖ ${currentPayrollData.summary.periodLabel}</p>
@@ -512,19 +803,19 @@
 
                 <!-- តារាងបែងចែកចំណូល និងការកាត់កង (2 ជួរឈរ) -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <!-- ជួរខាងឆ្វេង៖ ចំណូល (Earnings) -->
+                    <!-- ជួរខាងឆ្វេង៖ ចំណូល -->
                     <div class="rounded-2xl border border-slate-200 p-4 space-y-3">
                         <p class="font-semibold text-slate-800 text-sm border-b border-slate-100 pb-2 flex items-center justify-between">
-                            <span>ប្រាក់ចំណូល (Earnings)</span>
+                            <span>ប្រាក់ចំណូល និងប្រាក់ខែ</span>
                             <span class="text-xs text-slate-400">ចំនួន</span>
                         </p>
                         <div class="space-y-2 text-sm text-slate-600">
                             <div class="flex justify-between">
-                                <span>ប្រាក់ខែគោល (Base Salary):</span>
+                                <span>ប្រាក់ខែគោល:</span>
                                 <span class="font-medium text-slate-800 sm-figure">$${item.regularPay.toFixed(2)}</span>
                             </div>
                             <div class="flex justify-between">
-                                <span>ថែមម៉ោង OT (${item.otHours} ម៉ោង):</span>
+                                <span>ថែមម៉ោង (${item.otHours} ម៉ោង):</span>
                                 <span class="font-medium text-slate-800 sm-figure">+$${item.otPay.toFixed(2)}</span>
                             </div>
                             <div class="flex justify-between">
@@ -532,37 +823,37 @@
                                 <span class="font-medium text-slate-800 sm-figure">+$${item.nightPay.toFixed(2)}</span>
                             </div>
                             <div class="flex justify-between">
-                                <span>ឧបត្ថម្ភថ្លៃបាយ (Food Allowance):</span>
+                                <span>ឧបត្ថម្ភថ្លៃអាហារ:</span>
                                 <span class="font-medium text-slate-800 sm-figure">+$${item.foodAllowance.toFixed(2)}</span>
                             </div>
                             <div class="flex justify-between">
-                                <span>រង្វាន់ឧស្សាហ៍ (Attendance):</span>
+                                <span>រង្វាន់ឧស្សាហ៍ព្យាយាម:</span>
                                 <span class="font-medium text-slate-800 sm-figure">+$${item.attendanceBonus.toFixed(2)}</span>
                             </div>
                         </div>
                         <div class="border-t border-slate-200/80 pt-2 flex justify-between font-semibold text-slate-800 text-sm">
-                            <span>សរុបចំណូលដុល (Gross):</span>
+                            <span>សរុបប្រាក់ចំណូលដុល:</span>
                             <span class="text-emerald-700 sm-figure">$${item.grossUSD.toFixed(2)}</span>
                         </div>
                     </div>
 
-                    <!-- ជួរខាងស្តាំ៖ ការកាត់កង (Deductions) -->
+                    <!-- ជួរខាងស្តាំ៖ ការកាត់កង -->
                     <div class="rounded-2xl border border-slate-200 p-4 space-y-3">
                         <p class="font-semibold text-slate-800 text-sm border-b border-slate-100 pb-2 flex items-center justify-between">
-                            <span>ការកាត់កង (Deductions)</span>
+                            <span>ការកាត់កងប្រាក់បៀវត្សរ៍</span>
                             <span class="text-xs text-slate-400">ចំនួន</span>
                         </p>
                         <div class="space-y-2 text-sm text-slate-600">
                             <div class="flex justify-between">
-                                <span>ខ្វះសាច់ប្រាក់ថត (Shortage):</span>
+                                <span>ខ្វះសាច់ប្រាក់ថត:</span>
                                 <span class="font-medium text-slate-800 sm-figure">-$${item.cashShortage.toFixed(2)}</span>
                             </div>
                             <div class="flex justify-between">
-                                <span>វិភាគទាន ប.ស.ស (NSSF 2%):</span>
+                                <span>ភាគទាន ប.ស.ស (2%):</span>
                                 <span class="font-medium text-slate-800 sm-figure">-$0.00</span>
                             </div>
                             <div class="flex justify-between">
-                                <span>ពន្ធលើប្រាក់បៀវត្សរ៍ (Tax):</span>
+                                <span>ពន្ធលើប្រាក់បៀវត្សរ៍:</span>
                                 <span class="font-medium text-slate-800 sm-figure">-$0.00</span>
                             </div>
                         </div>
@@ -576,7 +867,7 @@
                 <!-- ប្រអប់ប្រាក់បៀវត្សរ៍ជាក់ស្តែង (Net Pay Highlight) -->
                 <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
                     <div>
-                        <p class="text-xs text-emerald-800 font-semibold uppercase tracking-wider">ប្រាក់បៀវត្សរ៍ជាក់ស្តែង / Net Take-Home Pay</p>
+                        <p class="text-xs text-emerald-800 font-semibold uppercase tracking-wider">ប្រាក់បៀវត្សរ៍ជាក់ស្តែងទទួលបាន</p>
                         <p class="text-xs text-emerald-600 mt-0.5">បានទូទាត់ផ្ទេរតាមរយៈ ${item.banking.bankName}</p>
                     </div>
                     <div class="text-right">
@@ -609,10 +900,6 @@
             document.getElementById('payslipModalBackdrop').classList.add('hidden');
         }
 
-        function printCurrentPayslip() {
-            window.print();
-        }
-
         function openTimesheet(staffId) {
             const item = currentPayrollData.staffPayrolls.find(p => p.staff.id === staffId);
             if (!item) return;
@@ -634,7 +921,7 @@
                     <p class="font-semibold text-slate-800 sm-figure text-base">${item.regularHours} ម៉ោង</p>
                 </div>
                 <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700">
-                    <p class="text-[11px] text-amber-600">ថែមម៉ោង OT</p>
+                    <p class="text-[11px] text-amber-600">ថែមម៉ោង</p>
                     <p class="font-semibold sm-figure text-base">${item.otHours} ម៉ោង</p>
                 </div>
                 <div class="p-2.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700">
