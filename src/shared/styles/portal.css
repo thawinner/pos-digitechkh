@@ -185,7 +185,98 @@
    ធាតុ .sb-* ប្រើតែក្នុងរបារចំហៀងដែលបើក sidebarV2 ប៉ុណ្ណោះ */
 
 #portalSidebar {
-    transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    width: 272px;
+    min-width: 272px;
+    transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s ease;
+}
+
+#portalSidebar .sb-user {
+    height: auto !important;
+    padding: 8px 10px !important;
+    gap: 10px !important;
+    white-space: normal !important;
+}
+
+#portalSidebar .sb-user .user-meta {
+    min-width: 0;
+    flex: 1 1 0%;
+}
+
+#portalSidebar .sb-user .user-meta .sb-sub {
+    white-space: normal !important;
+    line-height: 1.35 !important;
+    word-break: break-word !important;
+}
+
+#portalSidebar.is-collapsed {
+    width: 72px !important;
+    min-width: 72px !important;
+}
+
+#portalSidebar.is-collapsed .sb-brand {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    justify-content: center !important;
+}
+
+#portalSidebar.is-collapsed .sb-switcher {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 44px !important;
+    height: 44px !important;
+    justify-content: center !important;
+}
+
+#portalSidebar.is-collapsed .sb-brand-text,
+#portalSidebar.is-collapsed .sb-label,
+#portalSidebar.is-collapsed .sb-sub,
+#portalSidebar.is-collapsed .sb-group,
+#portalSidebar.is-collapsed .sb-muted,
+#portalSidebar.is-collapsed #sbStatus,
+#portalSidebar.is-collapsed .user-meta {
+    display: none !important;
+}
+
+#portalSidebar.is-collapsed .sb-nav-item {
+    justify-content: center !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    width: 44px !important;
+    height: 44px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    border-radius: 12px !important;
+}
+
+#portalSidebar.is-collapsed .sb-icon {
+    font-size: 20px !important;
+    margin: 0 !important;
+}
+
+#portalSidebar.is-collapsed .sb-count {
+    position: absolute !important;
+    top: 6px !important;
+    right: 6px !important;
+    min-width: 8px !important;
+    width: 8px !important;
+    height: 8px !important;
+    padding: 0 !important;
+    border-radius: 9999px !important;
+    font-size: 0 !important;
+}
+
+#portalSidebar.is-collapsed .sb-user {
+    justify-content: center !important;
+    padding: 0 !important;
+    width: 44px !important;
+    height: 44px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+#portalSidebar.is-collapsed nav {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
 }
 
 /*

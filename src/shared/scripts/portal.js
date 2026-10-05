@@ -39,7 +39,7 @@ const PORTAL_CONFIGS = {
         roleIcon: 'mdi:cash-register',
         userInitials: 'ចម',
         userName: 'ចន្ទ មករា',
-        userRole: 'អ្នកគិតលុយលក់រាយ',
+        userRole: 'អ្នកគិតលុយ',
         policyNote: 'ជាប់សោរត្រឹមវេនបច្ចុប្បន្ន។ មិនអាចរុករកប្រតិបត្តិការ ឬចំណូលពីវេនមុនបានឡើយ។ ការលុបចោល ការប្រគល់ទំនិញវិញ និងការបញ្ចុះតម្លៃលើសកំណត់ ត្រូវការការអនុម័តពីអ្នកគ្រប់គ្រង។',
         nav: [
             { id: 'pos', label: 'ផ្ទាំងគិតលុយ', icon: 'mdi:point-of-sale', href: 'cashier/terminal/pos-terminal.html' },
@@ -56,7 +56,7 @@ const PORTAL_CONFIGS = {
         roleIcon: 'mdi:shield-account-outline',
         userInitials: 'សវ',
         userName: 'សុខ វណ្ណា',
-        userRole: 'អ្នកគ្រប់គ្រង · សាខាកណ្តាល',
+        userRole: 'អ្នកគ្រប់គ្រង',
         policyNote: 'មើលឃើញគ្រប់វេនក្នុងសាខា · មិនមើលឃើញថ្លៃដើម · មិនអាចអនុម័តសំណើរបស់ខ្លួនឯង · រាល់ការអនុម័តត្រូវបានកត់ត្រា ហើយមិនអាចត្រឡប់វិញបាន។',
         nav: [
             { group: 'ថ្ងៃនេះ', id: 'dashboard', label: 'ផ្ទាំងគ្រប់គ្រង', icon: 'mdi:view-dashboard-outline', href: 'manager/dashboard/dashboard.html' },
@@ -145,10 +145,10 @@ function sessionPortalConfig(cfg, portalId) {
         userId: person.id,
         userInitials: person.initials,
         userName: person.name,
-        userRole: role === 'admin' ? 'ម្ចាស់ហាង · សាខាកណ្តាល'
+        userRole: role === 'admin' ? 'ម្ចាស់ហាង'
             : role === 'manager'
-                ? (portalId === 'posPortal' ? `អ្នកគ្រប់គ្រង · លក់លើ ${MY_REGISTER}` : 'អ្នកគ្រប់គ្រង · សាខាកណ្តាល')
-                : `អ្នកគិតលុយលក់រាយ · ${MY_REGISTER}`
+                ? (portalId === 'posPortal' ? `អ្នកគ្រប់គ្រង · ${typeof MY_REGISTER !== 'undefined' ? MY_REGISTER : 'POS'}` : 'អ្នកគ្រប់គ្រង')
+                : (portalId === 'posPortal' && typeof MY_REGISTER !== 'undefined' ? `អ្នកគិតលុយ · ${MY_REGISTER}` : 'អ្នកគិតលុយ')
     });
     // ទិដ្ឋភាពដែលអ្នកប្រើម្នាក់ៗអាចប្តូរបាន៖ ម្ចាស់ហាង ↔ អ្នកគ្រប់គ្រង · អ្នកគ្រប់គ្រង ↔ ផ្ទាំងគិតលុយ
     const views = { admin: ['admin', 'manager'], manager: ['manager', 'cashier'], cashier: [] }[role];
@@ -239,6 +239,65 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebarMenus(); });
 
+/* ===== ការគ្រប់គ្រងការបង្រួម/ពង្រីករបារចំហៀង (Sidebar Collapse Controller) ===== */
+function isSidebarCollapsed() {
+    try {
+        return localStorage.getItem('bms_sidebar_collapsed') === '1';
+    } catch (e) {
+        return false;
+    }
+}
+
+function setSidebarCollapsed(collapsed) {
+    const sb = document.getElementById('portalSidebar');
+    if (sb) {
+        sb.classList.toggle('is-collapsed', !!collapsed);
+    }
+    const icon = document.getElementById('sidebarToggleIcon');
+    if (icon) {
+        icon.setAttribute('icon', collapsed ? 'mdi:menu-open' : 'mdi:menu');
+    }
+    const brandIcon = document.getElementById('sbBrandToggleIcon');
+    if (brandIcon) {
+        brandIcon.setAttribute('icon', collapsed ? 'mdi:chevron-double-right' : 'mdi:chevron-double-left');
+    }
+    try {
+        localStorage.setItem('bms_sidebar_collapsed', collapsed ? '1' : '0');
+    } catch (e) {}
+
+    window.dispatchEvent(new CustomEvent('bms-sidebar-toggle', { detail: { collapsed } }));
+    if (window.echarts) {
+        setTimeout(() => {
+            document.querySelectorAll('[_echarts_instance_]').forEach(el => {
+                const chart = echarts.getInstanceByDom(el);
+                if (chart) chart.resize();
+            });
+        }, 250);
+    }
+}
+
+function toggleSidebarCollapse() {
+    if (window.innerWidth < 1024) {
+        const aside = document.querySelector('aside');
+        if (aside && aside.classList.contains('mobile-open')) {
+            closePortalDrawer();
+        } else {
+            openPortalDrawer();
+        }
+        return;
+    }
+    const sb = document.getElementById('portalSidebar');
+    const currentlyCollapsed = sb ? sb.classList.contains('is-collapsed') : isSidebarCollapsed();
+    setSidebarCollapsed(!currentlyCollapsed);
+}
+
+document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && (e.key === 'b' || e.key === 'B')) {
+        e.preventDefault();
+        toggleSidebarCollapse();
+    }
+});
+
 function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
     const portalId = document.body.id;
 
@@ -256,7 +315,7 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
         if (item.alertBadge) badgeHtml += '<span id="navAlertBadge" class="sb-badge sb-count sb-count-warn hidden">0</span>';
         if (item.badgeFn) badgeHtml += `<span data-badge-fn="${item.badgeFn}" class="sb-badge sb-count ${item.badgeTone === 'amber' ? 'sb-count-warn' : ''} hidden">0</span>`;
         return `${groupHtml}
-            <a href="${roleRoot}/${item.href}" ${isActive ? 'aria-current="page"' : ''} class="sb-nav-item sb-row relative">
+            <a href="${roleRoot}/${item.href}" ${isActive ? 'aria-current="page"' : ''} title="${item.label}" class="sb-nav-item sb-row relative">
                 <span class="sb-icon w-5 flex items-center justify-center flex-shrink-0">${getIconHtml(item.icon)}</span>
                 <span class="sb-label flex-1 truncate">${item.label}</span>
                 ${badgeHtml}
@@ -273,18 +332,21 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
         <iconify-icon icon="${icon}" class="text-[18px] flex-shrink-0 opacity-80"></iconify-icon><span class="flex-1">${label}</span></button>`;
 
     host.outerHTML = `
-        <aside id="portalSidebar" class="w-64 text-white flex flex-col flex-shrink-0 select-none z-20 border-r border-white/[0.06]">
-            <div class="sb-brand h-[72px] px-6 flex items-center flex-shrink-0 border-b border-white/[0.06]">
-                <button type="button" data-sb-menu ${canSwitch ? `onclick="openSidebarMenu(this, 'sbRoleMenu', 'down')"` : 'tabindex="-1"'} aria-haspopup="${canSwitch ? 'menu' : 'false'}" aria-expanded="false"
-                    class="sb-switcher relative -mx-2 px-2 py-1.5 flex-1 min-w-0 flex items-center gap-3 rounded-lg ${canSwitch ? 'hover:bg-white/[0.06]' : 'cursor-default'} text-left transition-colors">
+        <aside id="portalSidebar" class="w-[272px] text-white flex flex-col flex-shrink-0 select-none z-20 border-r border-white/[0.06]">
+            <div class="sb-brand h-[72px] px-6 flex items-center justify-between flex-shrink-0 border-b border-white/[0.06]">
+                <button type="button" data-sb-menu onclick="if(isSidebarCollapsed()){toggleSidebarCollapse();}else if(${canSwitch}){openSidebarMenu(this, 'sbRoleMenu', 'down');}" aria-haspopup="${canSwitch ? 'menu' : 'false'}" aria-expanded="false"
+                    class="sb-switcher relative -mx-2 px-2 py-1.5 flex-1 min-w-0 flex items-center gap-3 rounded-lg hover:bg-white/[0.06] text-left transition-colors cursor-pointer" title="${roleLabel}">
                     <span class="w-8 h-8 rounded-lg bg-white/[0.08] flex items-center justify-center flex-shrink-0">
                         <img src="${sharedRoot}/assets/logo-mark-transparent.png" alt="DIGITECHKH" class="w-5 h-5 object-contain">
                     </span>
-                    <span class="min-w-0 flex-1">
+                    <span class="min-w-0 flex-1 sb-brand-text">
                         <span class="block text-[15px] font-semibold text-white leading-tight tracking-wide">DIGITECHKH</span>
                         <span class="block sb-sub truncate">${roleLabel}</span>
                     </span>
                     ${canSwitch ? '<iconify-icon icon="mdi:unfold-more-horizontal" class="text-lg sb-muted flex-shrink-0"></iconify-icon>' : ''}
+                </button>
+                <button type="button" onclick="toggleSidebarCollapse()" title="បង្រួម/ពង្រីករបារចំហៀង (Ctrl+B)" class="sb-brand-text w-7 h-7 rounded-lg text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center transition flex-shrink-0 cursor-pointer ml-1">
+                    <iconify-icon id="sbBrandToggleIcon" icon="mdi:chevron-double-left" class="text-base"></iconify-icon>
                 </button>
             </div>
             ${canSwitch ? `<div id="sbRoleMenu" role="menu" class="sb-menu hidden z-[70] p-1.5 rounded-lg bg-[#0b1020] border border-white/10 shadow-2xl text-white">
@@ -302,13 +364,16 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
                 ${navHtml}
             </nav>
 
-            <div class="p-3 border-t border-white/[0.06] space-y-0.5">
+            <div class="p-2.5 border-t border-white/[0.06]">
                 <button type="button" data-sb-menu onclick="openSidebarMenu(this, 'sbUserMenu', 'up')" aria-haspopup="menu" aria-expanded="false"
-                    class="sb-user sb-row relative w-full !h-auto !py-2 text-left">
-                    ${avatar}
-                    <span class="min-w-0 flex-1">
-                        <span class="block text-[14.5px] font-medium text-white truncate leading-tight">${cfg.userName}</span>
-                        <span class="block sb-sub truncate">${cfg.userRole}</span>
+                    class="sb-user sb-row relative w-full !h-auto text-left rounded-xl transition-colors cursor-pointer" title="${cfg.userName} (${cfg.userRole})">
+                    <div class="relative flex-shrink-0">
+                        ${avatar}
+                        <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#0b1020]"></span>
+                    </div>
+                    <span class="min-w-0 flex-1 user-meta">
+                        <span class="block text-[14.5px] font-medium text-white leading-tight truncate">${cfg.userName}</span>
+                        <span class="block sb-sub text-[12px] text-white/70 leading-snug mt-0.5" title="${cfg.userRole}">${cfg.userRole}</span>
                     </span>
                     <iconify-icon icon="mdi:dots-horizontal" class="text-lg sb-muted flex-shrink-0"></iconify-icon>
                 </button>
@@ -317,7 +382,7 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
             <div id="sbUserMenu" role="menu" class="sb-menu hidden z-[70] p-1.5 rounded-lg bg-[#0b1020] border border-white/10 shadow-2xl text-white">
                 <div class="flex items-center gap-3 px-3 py-2.5">
                     ${avatar}
-                    <span class="min-w-0"><span class="block text-[14.5px] font-medium truncate">${cfg.userName}</span><span class="block sb-sub truncate">${cfg.userRole}</span></span>
+                    <span class="min-w-0"><span class="block text-[14.5px] font-medium truncate">${cfg.userName}</span><span class="block sb-sub text-[12px] text-white/70 mt-0.5">${cfg.userRole}</span></span>
                 </div>
                 <div class="h-px bg-white/[0.08] my-1"></div>
                 ${(cfg.views || []).filter(v => !v.current).map(v => menuItem(v.icon, `ប្តូរទៅ${v.label}`, `onclick="location.href='${roleRoot}/${v.href}'"`)).join('')}
@@ -554,6 +619,9 @@ function renderPortalSidebar() {
 
     if (cfg.sidebarV2) {
         renderPortalSidebarV2(host, sessionPortalConfig(cfg, portalId), roleRoot, activeId, sharedRoot);
+        if (isSidebarCollapsed()) {
+            setSidebarCollapsed(true);
+        }
         refreshSidebarStatus();
         setInterval(refreshSidebarStatus, 60000);
         return;
