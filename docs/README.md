@@ -13,6 +13,7 @@ this project. Some links inside them still point at the eBMS repo layout. Refere
 ## Planning
 - [planning/cashier-improvements.md](planning/cashier-improvements.md) — gap list for the built cashier pages, prioritised backlog (C1–C22) and open decisions (D1–D7)
 - [planning/stock-management.md](planning/stock-management.md) — stock feature: agreed requirements and decisions, data model (built), phase 2 manager / phase 3 owner plan, handoff notes
+- [planning/shift-scheduling-ux.md](planning/shift-scheduling-ux.md) — making it easy to add shifts: roster gap-filling with suggestions, one-screen assign dialog, undo, smarter shift templates (S1–S16)
 - [planning/pos-enhancements.md](planning/pos-enhancements.md) — earlier POS improvement ideas (hold orders, search, receipts, open shift)
 
 ## Research
