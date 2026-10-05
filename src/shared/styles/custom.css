@@ -3179,22 +3179,6 @@ html.dark .pin-key:active {
     background-color: #25334d !important;
 }
 
-/* Respect Role-specific Sidebar Colors in Dark Mode */
-html.dark #posPortal aside#portalSidebar {
-    background-color: #0a1526 !important;
-    border-right-color: rgba(255, 255, 255, 0.08) !important;
-}
-
-html.dark #managerPortal aside#portalSidebar {
-    background-color: #16143a !important;
-    border-right-color: rgba(255, 255, 255, 0.08) !important;
-}
-
-html.dark #adminPortal aside#portalSidebar {
-    background-color: #0b231e !important;
-    border-right-color: rgba(255, 255, 255, 0.08) !important;
-}
-
 html.dark aside:not(#portalSidebar) {
     background-color: #0b1329 !important;
     border-right-color: #1e2d4d !important;

@@ -291,61 +291,6 @@
     }
 }
 
-/* បន្ទាត់សម្គាល់ធាតុសកម្ម */
-.sb-nav-item[aria-current="page"]::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 3px;
-    height: 60%;
-    border-radius: 0 3px 3px 0;
-    background: #86EFAC;
-}
-
-/*
- * ពណ៌របារចំហៀងតាមទម្រង់
- * ----------------------------------------------------------------------------
- * របារចំហៀងត្រូវបានរចនាជាពណ៌ខៀវដែន (#1e3a5f) ជាមួយរូបតំណាងពណ៌ខៀវមេឃ
- * ប៉ុន្តែ custom.css បង្ខំ <aside> ទាំងអស់ឱ្យទៅពណ៌បៃតង (#1b5223) ដោយ !important
- * ដូច្នេះក្នុងទម្រង់ភ្លឺ យើងឃើញពណ៌ខៀវមេឃលើពណ៌បៃតង ដែលប៉ះទង្គិចគ្នា។
- * ទម្រង់ភ្លឺ (បៃតង) ប្រើពណ៌ខៀវស្លឹកស្រាល — ទម្រង់ងងឹត (ខៀវដែន) រក្សាពណ៌ខៀវមេឃដដែល
- */
-#portalSidebar .sb-icon        { color: #A7F3D0; }
-#portalSidebar .sb-text        { color: rgba(255, 255, 255, .84); }
-#portalSidebar .sb-accent      { color: #BBF7D0; }
-#portalSidebar .sb-accent-soft { color: rgba(220, 252, 231, .82); }
-#portalSidebar .sb-avatar      { background: rgba(167, 243, 208, .14); border-color: rgba(167, 243, 208, .32); color: #DCFCE7; }
-#portalSidebar .sb-nav-item[aria-current="page"] .sb-icon { color: #FFFFFF; }
-
-html.dark #portalSidebar .sb-icon        { color: #7DD3FC; }
-html.dark #portalSidebar .sb-text        { color: #E0F2FE; }
-html.dark #portalSidebar .sb-accent      { color: #7DD3FC; }
-html.dark #portalSidebar .sb-accent-soft { color: #BAE6FD; }
-html.dark #portalSidebar .sb-avatar      { background: rgba(14, 165, 233, .2); border-color: rgba(56, 189, 248, .3); color: #E0F2FE; }
-html.dark .sb-nav-item[aria-current="page"]::before { background: #7DD3FC; }
-
-/* អ្នកគិតលុយ — របារចំហៀងពណ៌ខៀវងងឹត និងខៀវផ្ទៃមេឃ ដូចផ្ទាំងគិតលុយ
-   ដូច្នេះការចេញពីផ្ទាំងគិតលុយទៅទំព័រវិក្កយបត្រ ឬបិទវេន មិនប្តូរអត្តសញ្ញាណពណ៌ឡើយ */
-#posPortal aside { background-color: #0f172a !important; border-right-color: rgba(255, 255, 255, .08) !important; }
-#posPortal #portalSidebar .sb-icon        { color: #67E8F9; }
-#posPortal #portalSidebar .sb-accent      { color: #A5F3FC; }
-#posPortal #portalSidebar .sb-accent-soft { color: rgba(207, 250, 254, .8); }
-#posPortal #portalSidebar .sb-avatar      { background: rgba(34, 211, 238, .14); border-color: rgba(34, 211, 238, .3); color: #CFFAFE; }
-#posPortal .sb-nav-item[aria-current="page"]::before { background: #22D3EE; }
-#posPortal .sb-nav-item[aria-current="page"] { background: rgba(8, 145, 178, .2) !important; }
-
-/* អ្នកគ្រប់គ្រង — របារចំហៀងពណ៌ឆ្លុះ (indigo) ដើម្បីឱ្យរូបថតអេក្រង់ប្រាប់ភ្លាមថាជាតួនាទីណា
-   (ឯកសាររចនាលេខ 02 ផ្នែក 1) ។ custom.css បង្ខំ <aside> ឱ្យទៅពណ៌បៃតង ដូច្នេះត្រូវប្រើ !important */
-#managerPortal aside { background-color: #1e1b4b !important; }
-#managerPortal #portalSidebar .sb-icon        { color: #C7D2FE; }
-#managerPortal #portalSidebar .sb-accent      { color: #C7D2FE; }
-#managerPortal #portalSidebar .sb-accent-soft { color: rgba(224, 231, 255, .82); }
-#managerPortal #portalSidebar .sb-avatar      { background: rgba(165, 180, 252, .16); border-color: rgba(165, 180, 252, .35); color: #E0E7FF; }
-#managerPortal .sb-nav-item[aria-current="page"]::before { background: #A5B4FC; }
-html.dark #managerPortal aside { background-color: #0b1329 !important; }
-
 /* ===== ស្តង់ដារបោះពុម្ពឯកសារផ្លូវការ A4 (ស្តង់ដារលេខ 12) ===== */
 .print-footer {
     display: none;
@@ -412,47 +357,106 @@ html.dark #managerPortal aside { background-color: #0b1329 !important; }
     :is(#posPortal, #managerPortal, #adminPortal) .shadow-sm { box-shadow: 0 1px 2px rgba(15, 23, 42, .04) !important; }
 }
 
-/* ===== របារចំហៀងបែបវិជ្ជាជីវៈ =====
-   ផ្ទៃងងឹតអព្យាក្រឹត ជួរកម្ពស់ 36px ស្លាកក្រុមតូចៗ · ពណ៌តួនាទីបង្ហាញតែលើធាតុសកម្ម */
-#managerPortal aside#portalSidebar { background-color: #14162b !important; }
-#posPortal aside#portalSidebar { background-color: #0d1424 !important; }
-#portalSidebar { --sb-accent: #a5b4fc; }
-#posPortal #portalSidebar { --sb-accent: #67e8f9; }
+
+/* ===== របារចំហៀង៖ ពណ៌តាមតួនាទី និងរចនាសម្ព័ន្ធជួរ =====
+   តួនាទីនីមួយៗកំណត់តែអថេរ --sb-* ប៉ុណ្ណោះ ផ្នែកផ្សេងៗនៃរបារចំហៀងអានពីអថេរទាំងនោះ
+   អ្នកគិតលុយ = ខៀវដែន + ខៀវមេឃ · អ្នកគ្រប់គ្រង = ខៀវឆ្លុះ + ឆ្លុះ · ម្ចាស់ហាង = បៃតងស្រល់ + មរកត
+   ផ្ទៃស្ងប់ មិនឆ្អែតពណ៌ ពណ៌តួនាទីបង្ហាញលើធាតុសកម្ម ស្លាកស្ថានភាព និងម៉ឺនុយលេចចេញ */
+#portalSidebar {
+    --sb-bg: #0f1d32;
+    --sb-menu-bg: #0a1526;
+    --sb-line: rgba(255, 255, 255, .07);
+    --sb-accent: #38bdf8;
+    --sb-accent-icon: #7dd3fc;
+    --sb-accent-text: #bae6fd;
+    --sb-active-bg: rgba(56, 189, 248, .14);
+}
+#managerPortal #portalSidebar {
+    --sb-bg: #1a1e3a;
+    --sb-menu-bg: #12152b;
+    --sb-accent: #818cf8;
+    --sb-accent-icon: #a5b4fc;
+    --sb-accent-text: #c7d2fe;
+    --sb-active-bg: rgba(129, 140, 248, .17);
+}
+#adminPortal #portalSidebar {
+    --sb-bg: #10261f;
+    --sb-menu-bg: #0a1b16;
+    --sb-accent: #34d399;
+    --sb-accent-icon: #6ee7b7;
+    --sb-accent-text: #a7f3d0;
+    --sb-active-bg: rgba(52, 211, 153, .14);
+}
+/* ទម្រង់ងងឹត៖ ផ្ទៃជ្រៅជាងបន្តិច ហើយបន្ទាត់ព្រំដែនច្បាស់ជាង ដើម្បីបំបែកពីផ្ទៃទំព័រងងឹត */
+html.dark #portalSidebar { --sb-bg: #0b1626; --sb-menu-bg: #08111e; --sb-line: rgba(255, 255, 255, .09); }
+html.dark #managerPortal #portalSidebar { --sb-bg: #141831; --sb-menu-bg: #0e1124; }
+html.dark #adminPortal #portalSidebar { --sb-bg: #0b1e19; --sb-menu-bg: #071511; }
+
+/* custom.css បង្ខំ <aside> ទាំងអស់ទៅពណ៌បៃតង ដោយ !important */
+aside#portalSidebar,
+html.dark aside#portalSidebar {
+    background-color: var(--sb-bg) !important;
+    border-right-color: var(--sb-line) !important;
+}
+#portalSidebar .sb-brand,
+#portalSidebar .sb-foot { border-color: var(--sb-line) !important; }
+
+/* ពណ៌អត្ថបទ */
+#portalSidebar .sb-accent      { color: var(--sb-accent-text); }
+#portalSidebar .sb-accent-soft { color: rgba(255, 255, 255, .6); }
+#portalSidebar .sb-avatar      { background: var(--sb-active-bg); border-color: var(--sb-line); color: var(--sb-accent-text); }
+#portalSidebar .sb-presence    { border-color: var(--sb-bg) !important; }
+#portalSidebar .sb-progress    { background: var(--sb-accent); }
+
+/* ស្លាកស្ថានភាពផ្ទាល់ (វេន · បញ្ជរ · ការលក់) */
+#portalSidebar #sbStatus {
+    background: rgba(255, 255, 255, .035);
+    border: 1px solid var(--sb-line);
+}
+
+/* ជួររុករក៖ កម្ពស់ 36px · រូបតំណាងស្រាល · ធាតុសកម្មមានផ្ទៃពណ៌តួនាទី និងបន្ទាត់ខាងឆ្វេង */
 #portalSidebar .sb-row {
     display: flex; align-items: center; gap: 12px; height: 36px; padding: 0 12px; border-radius: 6px;
-    color: rgba(255, 255, 255, .68); transition: background-color .12s ease, color .12s ease; white-space: nowrap;
+    color: rgba(255, 255, 255, .74); transition: background-color .12s ease, color .12s ease; white-space: nowrap;
 }
-#portalSidebar .sb-row:hover { background: rgba(255, 255, 255, .05); color: #fff; }
-#portalSidebar .sb-row .sb-icon { color: rgba(255, 255, 255, .5); font-size: 18px; }
-#portalSidebar .sb-row:hover .sb-icon { color: rgba(255, 255, 255, .8); }
-#portalSidebar .sb-nav-item[aria-current="page"] { background: rgba(255, 255, 255, .08) !important; color: #fff; }
-#portalSidebar .sb-nav-item[aria-current="page"] .sb-icon { color: var(--sb-accent) !important; }
-#portalSidebar .sb-nav-item[aria-current="page"]::before { display: none; }
+#portalSidebar .sb-row:hover { background: rgba(255, 255, 255, .06); color: #fff; }
+#portalSidebar .sb-row .sb-icon { color: rgba(255, 255, 255, .52); font-size: 18px; transition: color .12s ease; }
+#portalSidebar .sb-row:hover .sb-icon { color: rgba(255, 255, 255, .85); }
+#portalSidebar .sb-nav-item[aria-current="page"],
+#portalSidebar .sb-nav-item[aria-current="page"]:hover { background: var(--sb-active-bg) !important; color: #fff; }
+#portalSidebar .sb-nav-item[aria-current="page"] .sb-label { font-weight: 600; }
+#portalSidebar .sb-nav-item[aria-current="page"] .sb-icon { color: var(--sb-accent-icon) !important; }
+#portalSidebar .sb-nav-item[aria-current="page"]::before {
+    content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+    width: 3px; height: 18px; border-radius: 0 3px 3px 0; background: var(--sb-accent);
+}
+#portalSidebar :is(a, button):focus-visible,
+.sb-menu button:focus-visible {
+    outline: 2px solid var(--sb-accent);
+    outline-offset: -2px;
+}
+
+/* ស្លាកក្រុម និងអត្ថបទរង (កម្រិតពន្លឺគ្រប់គ្រាន់សម្រាប់អានលើផ្ទៃងងឹត) */
 #portalSidebar .sb-label { font-size: 15px; font-weight: 500; }
-#portalSidebar .sb-group { font-size: 12.5px; font-weight: 500; color: rgba(255, 255, 255, .38); }
-#portalSidebar .sb-sub, .sb-menu .sb-sub { font-size: 12.5px; color: rgba(255, 255, 255, .5); line-height: 1.5; }
-#portalSidebar .sb-muted { color: rgba(255, 255, 255, .4); }
-.sb-menu .sb-group { font-size: 12.5px; font-weight: 500; color: rgba(255, 255, 255, .4); }
+#portalSidebar .sb-group { font-size: 12.5px; font-weight: 500; color: rgba(255, 255, 255, .5); }
+#portalSidebar .sb-sub, .sb-menu .sb-sub { font-size: 12.5px; color: rgba(255, 255, 255, .58); line-height: 1.5; }
+#portalSidebar .sb-muted { color: rgba(255, 255, 255, .45); }
+
+/* ផ្លាកលេខ */
 #portalSidebar .sb-count {
     min-width: 20px; height: 20px; padding: 0 6px; border-radius: 5px; font-size: 12px !important; font-weight: 600 !important;
-    display: inline-flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, .1); color: rgba(255, 255, 255, .85);
+    display: inline-flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, .12); color: rgba(255, 255, 255, .9);
 }
 #portalSidebar .sb-count.hidden { display: none; }
 #portalSidebar .sb-count-warn { background: #f59e0b; color: #1c1917; }
-.sb-menu .sb-menu-item { font-size: 14.5px; color: rgba(255, 255, 255, .82); }
-.sb-menu button.sb-menu-item:hover { background: rgba(255, 255, 255, .06); color: #fff; }
 
-/* ===== ពណ៌របារចំហៀងតាមតួនាទី — ស្គាល់ភ្លាមថាកំពុងនៅតួនាទីណា (ស្ងប់ មិនឆ្អែតពណ៌) =====
-   អ្នកគិតលុយ = ខៀវដែន + ខៀវផ្ទៃមេឃ · អ្នកគ្រប់គ្រង = ឆ្លុះ (indigo) · ម្ចាស់ហាង = បៃតងស្រអាប់ + មរកត */
-#posPortal aside#portalSidebar { background-color: #0c1a2e !important; }
-#managerPortal aside#portalSidebar { background-color: #1c1a42 !important; }
-#adminPortal aside#portalSidebar { background-color: #0f2b25 !important; }
-html.dark #posPortal aside#portalSidebar { background-color: #0a1526 !important; }
-html.dark #managerPortal aside#portalSidebar { background-color: #16143a !important; }
-html.dark #adminPortal aside#portalSidebar { background-color: #0b231e !important; }
-#adminPortal #portalSidebar { --sb-accent: #6ee7b7; }
-#adminPortal #portalSidebar .sb-accent { color: #A7F3D0; }
-#adminPortal #portalSidebar .sb-accent-soft { color: rgba(209, 250, 229, .75); }
-#managerPortal #portalSidebar .sb-nav-item[aria-current="page"] { background: rgba(165, 180, 252, .14) !important; }
-#posPortal #portalSidebar .sb-nav-item[aria-current="page"] { background: rgba(103, 232, 249, .12) !important; }
-#adminPortal #portalSidebar .sb-nav-item[aria-current="page"] { background: rgba(110, 231, 183, .12) !important; }
+/* ម៉ឺនុយលេចចេញ (ប្តូរទិដ្ឋភាព · គណនី) ប្រើពណ៌ផ្ទៃរបស់តួនាទីដដែល */
+.sb-menu { background: var(--sb-menu-bg); }
+.sb-menu .sb-group { font-size: 12.5px; font-weight: 500; color: rgba(255, 255, 255, .5); }
+.sb-menu .sb-menu-item { font-size: 14.5px; color: rgba(255, 255, 255, .84); }
+.sb-menu button.sb-menu-item:hover { background: rgba(255, 255, 255, .07); color: #fff; }
+
+/* ទូរស័ព្ទ និងថេប្លេត៖ ថតរបារចំហៀងមានប៊ូតុងបិទ (×) រួចហើយ ប៊ូតុងបង្រួមស្ទួនគ្នា ហើយច្របាច់ឈ្មោះម៉ាក */
+@media (max-width: 1023px) {
+    #portalSidebar .sb-collapse-btn { display: none !important; }
+}

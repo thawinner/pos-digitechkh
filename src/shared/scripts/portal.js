@@ -174,7 +174,7 @@ function sidebarStatusHtml() {
                 <span class="w-2 h-2 rounded-full ${left < 0 ? 'bg-rose-400' : 'bg-emerald-400'} flex-shrink-0"></span>
             </div>
             <p class="sm-nav-note sb-accent-soft mt-0.5 whitespace-nowrap">${left < 0 ? `ហួសម៉ោងបិទ ${fmtDuration(-left)}` : `បិទ ${sh.end} · នៅសល់ ${Math.floor(left / 3600000)}:${pad2(Math.floor(left / 60000) % 60)}`}</p>
-            <div class="h-1 rounded-full bg-white/10 mt-2 overflow-hidden"><div class="h-full ${left < 0 ? 'bg-rose-400' : 'bg-cyan-400'}" style="width:${pct}%"></div></div>`;
+            <div class="h-1 rounded-full bg-white/10 mt-2 overflow-hidden"><div class="h-full ${left < 0 ? 'bg-rose-400' : 'sb-progress'}" style="width:${pct}%"></div></div>`;
     }
     if (portal === 'adminPortal' && typeof profitOf === 'function') {
         const today = profitOf(salesInRange(mgrToday()));
@@ -345,11 +345,11 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
                     </span>
                     ${canSwitch ? '<iconify-icon icon="mdi:unfold-more-horizontal" class="text-lg sb-muted flex-shrink-0"></iconify-icon>' : ''}
                 </button>
-                <button type="button" onclick="toggleSidebarCollapse()" title="បង្រួម/ពង្រីករបារចំហៀង (Ctrl+B)" class="sb-brand-text w-7 h-7 rounded-lg text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center transition flex-shrink-0 cursor-pointer ml-1">
+                <button type="button" onclick="toggleSidebarCollapse()" title="បង្រួម/ពង្រីករបារចំហៀង (Ctrl+B)" class="sb-brand-text sb-collapse-btn w-7 h-7 rounded-lg text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center transition flex-shrink-0 cursor-pointer ml-1">
                     <iconify-icon id="sbBrandToggleIcon" icon="mdi:chevron-double-left" class="text-base"></iconify-icon>
                 </button>
             </div>
-            ${canSwitch ? `<div id="sbRoleMenu" role="menu" class="sb-menu hidden z-[70] p-1.5 rounded-lg bg-[#0b1020] border border-white/10 shadow-2xl text-white">
+            ${canSwitch ? `<div id="sbRoleMenu" role="menu" class="sb-menu hidden z-[70] p-1.5 rounded-lg border border-white/10 shadow-2xl text-white">
                 <p class="px-3 pt-1.5 pb-1 sb-group">ប្តូរទិដ្ឋភាព</p>
                 ${cfg.views.map(v => v.current
                     ? `<div class="sb-menu-item flex items-center gap-3 px-3 py-2 rounded-md bg-white/[0.06]">
@@ -364,12 +364,12 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
                 ${navHtml}
             </nav>
 
-            <div class="p-2.5 border-t border-white/[0.06]">
+            <div class="sb-foot p-2.5 border-t">
                 <button type="button" data-sb-menu onclick="openSidebarMenu(this, 'sbUserMenu', 'up')" aria-haspopup="menu" aria-expanded="false"
                     class="sb-user sb-row relative w-full !h-auto text-left rounded-xl transition-colors cursor-pointer" title="${cfg.userName} (${cfg.userRole})">
                     <div class="relative flex-shrink-0">
                         ${avatar}
-                        <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#0b1020]"></span>
+                        <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 sb-presence"></span>
                     </div>
                     <span class="min-w-0 flex-1 user-meta">
                         <span class="block text-[14.5px] font-medium text-white leading-tight truncate">${cfg.userName}</span>
@@ -379,7 +379,7 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
                 </button>
             </div>
 
-            <div id="sbUserMenu" role="menu" class="sb-menu hidden z-[70] p-1.5 rounded-lg bg-[#0b1020] border border-white/10 shadow-2xl text-white">
+            <div id="sbUserMenu" role="menu" class="sb-menu hidden z-[70] p-1.5 rounded-lg border border-white/10 shadow-2xl text-white">
                 <div class="flex items-center gap-3 px-3 py-2.5">
                     ${avatar}
                     <span class="min-w-0"><span class="block text-[14.5px] font-medium truncate">${cfg.userName}</span><span class="block sb-sub text-[12px] text-white/70 mt-0.5">${cfg.userRole}</span></span>
