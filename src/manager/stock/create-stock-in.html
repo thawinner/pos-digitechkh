@@ -174,6 +174,7 @@
             </div>
         </div>
         <div id="globalProductList" class="space-y-0.5 overflow-y-auto max-h-64 pr-0.5"></div>
+        <div id="globalProductEmpty" class="hidden p-4 text-center text-xs text-slate-400">មិនមានមុខទំនិញត្រូវនឹងការស្វែងរកឡើយ</div>
     </div>
 
     <script src="../../shared/scripts/ui-components.js"></script>
@@ -229,6 +230,7 @@
         });
 
         function addLine(sku = '', qty = 12) {
+            closeProductPicker();
             lines.push({ sku: sku || '', qty: Number(qty) || 1 });
             renderLines();
             renderSummary();
@@ -239,6 +241,7 @@
                 showToast('ត្រូវមានមុខទំនិញយ៉ាងហោចណាស់ 1 មុខ', 'warning');
                 return;
             }
+            closeProductPicker();
             lines.splice(idx, 1);
             renderLines();
             renderSummary();
@@ -262,27 +265,40 @@
 
         let activePickerLineIdx = null;
 
-        function openProductPickerForLine(btn, idx) {
-            activePickerLineIdx = idx;
+        function toggleProductPickerForLine(event, btn, idx) {
+            if (event && event.stopPropagation) {
+                event.stopPropagation();
+            }
             const popover = document.getElementById('globalProductPicker');
+            if (!popover) return;
+
+            // If already open for this exact line, toggle it closed
+            if (activePickerLineIdx === idx && !popover.classList.contains('hidden') && popover.dataset.floatingActive === 'true') {
+                closeProductPicker();
+                return;
+            }
+
+            // If open for a different line, close previous
+            if (activePickerLineIdx !== null && activePickerLineIdx !== idx) {
+                closeProductPicker();
+            }
+
+            activePickerLineIdx = idx;
             const searchInput = document.getElementById('globalProductSearch');
-            
+
             // Populate list
             renderGlobalProductPickerList(lines[idx] ? lines[idx].sku : '');
-            
+
             // Reset search input
             if (searchInput) searchInput.value = '';
+            filterGlobalProductPicker('');
 
             // Open using fixed positioning relative to trigger button
             if (typeof openFloatingDropdown === 'function') {
                 openFloatingDropdown(btn, popover);
-                // Also set specific min-width suited for product search
-                const rect = btn.getBoundingClientRect();
-                const targetW = Math.max(340, Math.min(rect.width, window.innerWidth - 32));
-                popover.style.setProperty('width', `${targetW}px`, 'important');
-                popover.style.setProperty('max-width', 'calc(100vw - 32px)', 'important');
             } else {
                 popover.classList.remove('hidden');
+                popover.dataset.floatingActive = 'true';
             }
 
             setTimeout(() => {
@@ -290,13 +306,25 @@
             }, 60);
         }
 
+        // Backward compatibility
+        function openProductPickerForLine(btn, idx) {
+            toggleProductPickerForLine(null, btn, idx);
+        }
+
         function filterGlobalProductPicker(query) {
             const q = query.trim().toLowerCase();
             const list = document.querySelectorAll('#globalProductList button');
+            let matchCount = 0;
             list.forEach(btn => {
                 const text = btn.innerText.toLowerCase();
-                btn.style.display = (!q || text.includes(q)) ? 'flex' : 'none';
+                const matched = !q || text.includes(q);
+                btn.style.display = matched ? 'flex' : 'none';
+                if (matched) matchCount++;
             });
+            const emptyEl = document.getElementById('globalProductEmpty');
+            if (emptyEl) {
+                emptyEl.classList.toggle('hidden', matchCount > 0);
+            }
         }
 
         function renderGlobalProductPickerList(selectedSku) {
@@ -328,10 +356,11 @@
         }
 
         function selectProductForActiveLine(sku) {
-            if (activePickerLineIdx !== null && activePickerLineIdx !== undefined) {
-                updateLineSku(activePickerLineIdx, sku);
-            }
+            const targetIdx = activePickerLineIdx;
             closeProductPicker();
+            if (targetIdx !== null && targetIdx !== undefined && lines[targetIdx]) {
+                updateLineSku(targetIdx, sku);
+            }
         }
 
         function closeProductPicker() {
@@ -341,10 +370,18 @@
                     closeFloatingDropdown(popover);
                 } else {
                     popover.classList.add('hidden');
+                    popover.removeAttribute('data-floating-active');
                 }
             }
+            document.querySelectorAll('#lineRows .fa-chevron-down').forEach(el => el.classList.remove('rotate-180'));
             activePickerLineIdx = null;
         }
+
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.product-select-container') && !e.target.closest('#globalProductPicker')) {
+                closeProductPicker();
+            }
+        });
 
         function renderLines() {
             const tbody = document.getElementById('lineRows');
@@ -360,8 +397,11 @@
                 return `
                 <tr class="hover:bg-slate-50/50">
                     <td class="py-3 px-3">
-                        <div class="relative">
-                            <button type="button" onclick="openProductPickerForLine(this, ${idx})" class="w-full h-11 px-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 sm-td text-left flex items-center justify-between gap-2 transition cursor-pointer">
+                        <div class="relative product-select-container bms-custom-select">
+                            <button type="button"
+                                data-floating-trigger="true"
+                                onclick="toggleProductPickerForLine(event, this, ${idx})"
+                                class="w-full h-11 px-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 sm-td text-left flex items-center justify-between gap-2 transition cursor-pointer">
                                 ${p ? `
                                     <span class="flex items-center gap-2 min-w-0">
                                         <span class="w-7 h-7 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 inline-flex items-center justify-center p-0.5 shadow-sm">
@@ -369,7 +409,7 @@
                                         </span>
                                         <span class="truncate font-medium text-slate-800">${p.name}</span>
                                     </span>` : `<span class="text-slate-400">ជ្រើសរើសមុខទំនិញ...</span>`}
-                                <i class="fas fa-chevron-down text-[10px] text-slate-400"></i>
+                                <i class="fas fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200"></i>
                             </button>
                         </div>
                     </td>

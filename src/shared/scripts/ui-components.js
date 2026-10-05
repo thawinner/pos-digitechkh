@@ -238,6 +238,11 @@ function openFloatingDropdown(btn, menu) {
     // Close any other open floating dropdowns first
     closeAllFloatingDropdowns();
 
+    // Store trigger element reference and timestamp on menu
+    menu._triggerBtn = btn;
+    menu._openedAt = Date.now();
+    btn.setAttribute('data-floating-trigger', 'true');
+
     // វាស់ទីតាំងប៊ូតុងមុនបង្ហាញម៉ឺនុយ ហើយដាក់ position: fixed មុនដោះ hidden —
     // បើមិនដូច្នេះទេ ម៉ឺនុយនៅក្នុងលំហូរធម្មតាមួយភ្លែត ពង្រីកជួរក្បាលទំព័រ (items-center)
     // រុញប៊ូតុងឡើងលើ ~85px ហើយម៉ឺនុយត្រូវដាក់ហួសគែមខាងលើអេក្រង់
@@ -257,6 +262,7 @@ function openFloatingDropdown(btn, menu) {
     const isHeaderMenu = menu.id === 'portalNotifMenu' || menu.id === 'portalProfileMenu' || !!btn.closest('header');
     const isNotif = menu.id === 'portalNotifMenu';
     const isProfile = menu.id === 'portalProfileMenu';
+    const isProductPicker = menu.id === 'globalProductPicker' || menu.classList.contains('product-picker');
 
     // Width calculation
     // ទទឹងអប្បបរមាមិនត្រូវលើសទទឹងអេក្រង់ឡើយ បើមិនដូច្នេះទេ
@@ -265,6 +271,7 @@ function openFloatingDropdown(btn, menu) {
     let minWidth = Math.min(280, roomy);
     if (isNotif) minWidth = Math.min(380, roomy);
     else if (isProfile) minWidth = Math.min(260, roomy);
+    else if (isProductPicker) minWidth = Math.min(340, roomy);
 
     const targetWidth = Math.min(Math.max(rect.width, minWidth), vWidth - 32);
 
@@ -277,7 +284,8 @@ function openFloatingDropdown(btn, menu) {
     menu.style.setProperty('margin-bottom', '0px', 'important');
 
     // Horizontal positioning: align right if on right side of screen or header menu
-    const shouldAlignRight = isHeaderMenu || (rect.right > vWidth / 2);
+    const isRightSided = (rect.left + rect.width / 2) > (vWidth / 2);
+    const shouldAlignRight = isHeaderMenu || isRightSided || (rect.left + targetWidth > vWidth - 16);
 
     if (shouldAlignRight) {
         let right = vWidth - rect.right;
@@ -290,11 +298,10 @@ function openFloatingDropdown(btn, menu) {
         menu.style.setProperty('right', `${right}px`, 'important');
         menu.style.setProperty('left', 'auto', 'important');
     } else {
-        let left = rect.left;
+        let left = Math.max(16, rect.left);
         if (left + targetWidth > vWidth - 16) {
             left = Math.max(16, vWidth - targetWidth - 16);
         }
-        if (left < 16) left = 16;
         menu.style.setProperty('left', `${left}px`, 'important');
         menu.style.setProperty('right', 'auto', 'important');
     }
@@ -351,22 +358,28 @@ function closeFloatingDropdown(menu) {
     menu.style.removeProperty('margin-bottom');
     menu.style.removeProperty('transform-origin');
 
-    const container = menu.closest('.bms-custom-select, .product-select-container') || menu.parentElement;
+    const trigger = menu._triggerBtn;
+    menu._triggerBtn = null;
+    const container = (trigger ? (trigger.closest('.bms-custom-select, .product-select-container') || trigger.parentElement) : null) || menu.closest('.bms-custom-select, .product-select-container') || menu.parentElement;
     if (container) {
         container.classList.remove('z-50');
-        const arrow = container.querySelector('.fa-chevron-down, .bms-custom-select-arrow, .bms-custom-arrow');
+        const arrow = (trigger ? trigger.querySelector('.fa-chevron-down, .bms-custom-select-arrow, .bms-custom-arrow') : null) || container.querySelector('.fa-chevron-down, .bms-custom-select-arrow, .bms-custom-arrow');
         if (arrow) arrow.classList.remove('rotate-180');
-        const tr = container.closest('tr');
+        const tr = (trigger || container).closest('tr');
         if (tr) tr.classList.remove('z-40', 'relative', 'bms-row-active');
-        const td = container.closest('td');
+        const td = (trigger || container).closest('td');
         if (td) td.classList.remove('z-40', 'relative', 'bms-cell-active');
     }
 }
 
-function closeAllFloatingDropdowns() {
+function closeAllFloatingDropdowns(excludeMenu = null) {
     // [data-floating-active] គ្របម៉ឺនុយគ្រប់ប្រភេទដែលបើកដោយ openFloatingDropdown()
     // រួមទាំងម៉ឺនុយសកម្មភាពជួរតារាង (⋮) ដែលមិនមានថ្នាក់ .bms-custom-select-menu
+    const now = Date.now();
     document.querySelectorAll('[data-floating-active="true"], .bms-custom-select-menu:not(.hidden)').forEach(menu => {
+        if (menu === excludeMenu) return;
+        // Do not auto-close if the menu was opened in this exact event cycle (within 80ms)
+        if (menu._openedAt && (now - menu._openedAt < 80)) return;
         closeFloatingDropdown(menu);
     });
     document.querySelectorAll('.bms-card-active').forEach(c => c.classList.remove('bms-card-active'));
@@ -768,7 +781,10 @@ document.addEventListener('click', (e) => {
     const isInsideDropdown = e.target.closest('.bms-custom-select') ||
                              e.target.closest('.bms-custom-select-menu') ||
                              e.target.closest('.product-select-container') ||
-                             e.target.closest('button[onclick*="Dropdown"]');
+                             e.target.closest('[data-floating-trigger]') ||
+                             e.target.closest('button[onclick*="Dropdown"]') ||
+                             e.target.closest('button[onclick*="Picker"]') ||
+                             e.target.closest('button[onclick*="Menu"]');
     if (!isInsideDropdown) {
         closeAllFloatingDropdowns();
     }
