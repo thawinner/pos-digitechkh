@@ -323,11 +323,11 @@ const POS_SETTINGS_DEFAULTS = {
        dayOff៖ 0 = អាទិត្យ … 6 = សៅរ៍ · ម្នាក់មួយវេន 8 ម៉ោង × 6 ថ្ងៃ = 48 ម៉ោង/សប្តាហ៍ (ត្រឹមកំណត់ច្បាប់)
        វេនយប់ (22:00–05:00 ជាម៉ោងយប់) ត្រូវបង់ប្រាក់ឈ្នួល 200% តាមច្បាប់ការងារ — ស្រាវជ្រាវ §11 */
     staffDefaults: {
-        'CAS-01': { template: 'A', register: 'POS-01', dayOff: 0 },
-        'CAS-02': { template: 'B', register: 'POS-02', dayOff: 1 },
-        'CAS-03': { template: 'C', register: 'POS-03', dayOff: 2 },
-        'MGR-01': { template: '', register: '', dayOff: 6 },
-        'MGR-02': { template: '', register: '', dayOff: 0 }
+        'CAS-01': { template: 'A', dayOff: 0 },
+        'CAS-02': { template: 'B', dayOff: 1 },
+        'CAS-03': { template: 'C', dayOff: 2 },
+        'MGR-01': { template: '', dayOff: 6 },
+        'MGR-02': { template: '', dayOff: 0 }
     }
 };
 
@@ -818,7 +818,18 @@ function shiftIdFor(dateStr, register, code) {
     return `${base}${n}`;
 }
 
+/* មួយបញ្ជរ មួយថតប្រាក់ក្នុងពេលតែមួយ · មួយអ្នក មួយថតប្រាក់ · ត្រឡប់មូលហេតុ ឬ '' */
+function openShiftBlocker(register, cashierId) {
+    const open = liveShifts().filter(s => s.status === 'open');
+    const onReg = open.find(s => s.register === register);
+    if (onReg) return `${register} កំពុងប្រើដោយ ${personName(onReg.cashierId)}`;
+    const mine = open.find(s => s.cashierId === cashierId);
+    if (mine) return `${personName(cashierId)} កំពុងបើកវេនលើ ${mine.register} រួចហើយ`;
+    return '';
+}
+
 function openShiftRecord(opts) {
+    if (openShiftBlocker(opts.register, opts.cashierId)) return null;
     const now = new Date();
     const tpl = opts.template;
     const dateStr = templateDateFor(tpl, now);
@@ -1957,7 +1968,8 @@ function ensurePosSeed() {
     const now = new Date();
     const tpl = templateAt(now) || lastStartedTemplate(now);
     const crew = tpl ? rosterFor(templateDateFor(tpl, now), tpl.code) : [];
-    const lead = crew.find(a => a.register === 'POS-01') || crew[0];
+    const seats = tpl ? rosterSeats(templateDateFor(tpl, now), tpl.code) : [];
+    const lead = seats.find(a => a.register === 'POS-01') || seats[0];
     if (tpl && lead) {
         const dateStr = templateDateFor(tpl, now);
         const rng = rngFor(`live|${dateStr}|${tpl.code}`);
@@ -2069,9 +2081,9 @@ const ROLE_HOME = {
 };
 
 /* ===== កាលវិភាគវេន =====
-   វេនមួយ (ឧ. វេនព្រឹក) អាចមានអ្នកគិតលុយច្រើននាក់ ម្នាក់មួយបញ្ជរ និងថតប្រាក់ផ្ទាល់ខ្លួន
-   (មួយថត មួយអ្នកទទួលខុសត្រូវ — ស្រាវជ្រាវ §11)។ អ្នកគ្រប់គ្រងចាត់តាំងនៅទំព័រ «កាលវិភាគវេន»។
-   បើមិនទាន់ចាត់តាំង ប្រើលំនាំដើម៖ អ្នកគិតលុយទី 1 → POS-01 ... */
+   កាលវិភាគកំណត់តែ «អ្នកណាធ្វើវេនណា» (អតិបរមា = ចំនួនបញ្ជរ)។ អ្នកគិតលុយជ្រើសបញ្ជរទំនេរណាមួយ
+   ពេលបើកវេន ហើយបញ្ជរនោះជាប់នឹងគាត់រហូតដល់បិទវេន (មួយថត មួយអ្នកទទួលខុសត្រូវ — ស្រាវជ្រាវ §11)។
+   អ្នកគ្រប់គ្រងអាចភ្ជាប់បុគ្គលិកម្នាក់ទៅបញ្ជរជាក់លាក់ (pin: true, register) ពេលចាំបាច់។ */
 
 const ROSTER_KEY = 'pos_roster';
 
@@ -2083,22 +2095,59 @@ function rosterKey(dateStr, code) {
 function defaultRoster(dateStr, code) {
     const dow = new Date(dateStr + 'T12:00').getDay();
     const defs = posSettings().staffDefaults || {};
-    const owners = CASHIERS.concat(MANAGERS).filter(p => defs[p.id] && defs[p.id].template === code && defs[p.id].register);
+    const owners = CASHIERS.concat(MANAGERS).filter(p => defs[p.id] && defs[p.id].template === code);
     const list = owners.filter(p => Number(defs[p.id].dayOff) !== dow)
-        .map(p => ({ cashierId: p.id, register: defs[p.id].register }));
+        .map(p => ({ cashierId: p.id }));
     // ថ្ងៃឈប់សម្រាករបស់អ្នកគិតលុយ៖ អ្នកគ្រប់គ្រងឈរបញ្ជរជំនួស (ហាងតូចមិនទុកវេនទទេ)
     // ឆ្លាស់គ្នារវាងអ្នកគ្រប់គ្រងទាំងពីរ · ថ្ងៃមួយមានតែម្នាក់ឈប់ ដូច្នេះមិនលើស 12 ម៉ោង
     if (!list.length && owners.length && MANAGERS.length) {
         const off = owners[0];
         const day = Math.floor(new Date(dateStr + 'T12:00').getTime() / 86400000);
-        list.push({ cashierId: MANAGERS[day % MANAGERS.length].id, register: defs[off.id].register, cover: true });
+        list.push({ cashierId: MANAGERS[day % MANAGERS.length].id, cover: true });
     }
     return list;
 }
 
+/* បញ្ជរដើមរបស់បុគ្គលិក (តាមលំដាប់បុគ្គលិក) · ថេរ ដើម្បីឱ្យប្រវត្តិគំរូមិនផ្លាស់ប្តូរ */
+function homeRegister(personId) {
+    const i = CASHIERS.concat(MANAGERS).findIndex(p => p.id === personId);
+    return REGISTERS[Math.max(0, i) % REGISTERS.length];
+}
+
+/* បញ្ជរដែលបុគ្គលិកប្រើជាធម្មតា៖ បញ្ជរចុងក្រោយដែលបានបើក បើគ្មាន បញ្ជរដើម */
+function usualRegister(personId) {
+    const last = posRead(POS_KEYS.shifts, []).filter(s => s.cashierId === personId)
+        .sort((a, b) => b.openedAt.localeCompare(a.openedAt))[0];
+    return last ? last.register : homeRegister(personId);
+}
+
+/* កន្លែងអង្គុយនៃវេនមួយ៖ ថតប្រាក់ដែលបើករួច → បញ្ជរដែលភ្ជាប់ → បញ្ជរធម្មតា → បញ្ជរទំនេរដំបូង
+   ប្រើសម្រាប់ប្រវត្តិគំរូ និងការបង្ហាញ · កាលវិភាគខ្លួនឯងមិនរក្សាបញ្ជរទេ លើកលែងតែភ្ជាប់ */
+function rosterSeats(dateStr, code) {
+    const list = rosterFor(dateStr, code);
+    const drawers = posRead(POS_KEYS.shifts, []).filter(s => s.date === dateStr && s.templateCode === code);
+    const used = new Set();
+    const seat = {};
+    list.forEach(a => {
+        const d = drawers.find(s => s.cashierId === a.cashierId);
+        if (d) { seat[a.cashierId] = d.register; used.add(d.register); }
+    });
+    list.forEach(a => {
+        if (!seat[a.cashierId] && a.pin && a.register && !used.has(a.register)) { seat[a.cashierId] = a.register; used.add(a.register); }
+    });
+    list.forEach(a => {
+        if (seat[a.cashierId]) return;
+        const u = homeRegister(a.cashierId);
+        const r = !used.has(u) ? u : REGISTERS.find(x => !used.has(x));
+        if (r) { seat[a.cashierId] = r; used.add(r); }
+    });
+    return list.filter(a => seat[a.cashierId]).map(a => Object.assign({}, a, { register: seat[a.cashierId] }));
+}
+
 /* ផ្លាស់បុគ្គលិកទៅវេនផ្សេងសម្រាប់ថ្ងៃមួយ (ជំនួសវេន)៖ ដកចេញពីវេនផ្សេងទៀតក្នុងថ្ងៃនោះ
-   ហើយបន្ថែមទៅវេនថ្មី ជាមួយសញ្ញា cover ដើម្បីបង្ហាញថាមិនមែនវេនប្រចាំ */
-function assignShift(dateStr, code, personId, register, meta) {
+   ហើយបន្ថែមទៅវេនថ្មី ជាមួយសញ្ញា cover ដើម្បីបង្ហាញថាមិនមែនវេនប្រចាំ
+   pin = បញ្ជរភ្ជាប់ (មិនចាំបាច់) · meta.replace = អ្នកដែលត្រូវដកចេញ ពេលវេនពេញ */
+function assignShift(dateStr, code, personId, pin, meta) {
     let movedFrom = '';
     shiftTemplates().forEach(t => {
         if (t.code === code) return;
@@ -2113,12 +2162,16 @@ function assignShift(dateStr, code, personId, register, meta) {
         }
     });
     const def = (posSettings().staffDefaults || {})[personId];
-    const isDefault = def && def.template === code && def.register === register;
+    const isDefault = def && def.template === code;
     const curList = rosterFor(dateStr, code);
-    const replacedEntry = curList.find(a => a.register === register && a.cashierId !== personId);
-    const replaced = replacedEntry ? replacedEntry.cashierId : '';
-    const list = curList.filter(a => a.cashierId !== personId && a.register !== register);
-    const entry = Object.assign({ cashierId: personId, register }, isDefault ? {} : { cover: true }, meta || {}, { at: isoLocal(new Date()) });
+    const replaced = meta && meta.replace && curList.some(a => a.cashierId === meta.replace && a.cashierId !== personId) ? meta.replace : '';
+    // មួយបញ្ជរ មួយអ្នកក្នុងវេន៖ មិនអាចភ្ជាប់បញ្ជរដែលអ្នកផ្សេងកំពុងប្រើ ឬបានភ្ជាប់រួច (លើកលែងអ្នកដែលត្រូវជំនួស)
+    const owner = pin ? rosterTakenRegisters(dateStr, code, personId)[pin] : '';
+    if (owner && owner !== replaced) return { error: `${pin} ជារបស់ ${personName(owner)} ក្នុងវេននេះ` };
+    const list = curList.filter(a => a.cashierId !== personId && a.cashierId !== replaced);
+    const extra = Object.assign({}, meta || {});
+    delete extra.replace;
+    const entry = Object.assign({ cashierId: personId }, pin ? { register: pin, pin: true } : {}, isDefault ? {} : { cover: true }, extra, { at: isoLocal(new Date()) });
     list.push(entry);
     saveRoster(dateStr, code, list);
     const actorId = (meta && meta.by) || currentActorId();
@@ -2128,7 +2181,7 @@ function assignShift(dateStr, code, personId, register, meta) {
         templateCode: code,
         templateName: tpl ? tpl.name : code,
         personId,
-        register,
+        register: pin || '',
         reason: (meta && meta.reason) || '',
         movedFrom,
         replaced,
@@ -2150,7 +2203,7 @@ function unassignShift(dateStr, code, personId, meta) {
         templateCode: code,
         templateName: tpl ? tpl.name : code,
         personId,
-        register: removed.register,
+        register: removed.pin ? removed.register : '',
         actorId
     });
     return { removed };
@@ -2173,13 +2226,13 @@ function undoRosterAction(action) {
     } else if (action.type === 'assign') {
         const list = rosterFor(action.date, action.code).filter(a => a.cashierId !== action.personId);
         if (action.replaced) {
-            list.push({ cashierId: action.replaced, register: action.register, cover: true });
+            list.push({ cashierId: action.replaced, cover: true });
         }
         saveRoster(action.date, action.code, list);
         if (action.movedFrom) {
             const prevList = rosterFor(action.date, action.movedFrom).slice();
             if (!prevList.some(a => a.cashierId === action.personId)) {
-                prevList.push({ cashierId: action.personId, register: action.prevRegister || action.register, cover: true });
+                prevList.push({ cashierId: action.personId, cover: true });
                 saveRoster(action.date, action.movedFrom, prevList);
             }
         }
@@ -2195,7 +2248,25 @@ function undoRosterAction(action) {
 function rosterFor(dateStr, code) {
     const all = posRead(ROSTER_KEY, {});
     const k = rosterKey(dateStr, code);
-    return Object.prototype.hasOwnProperty.call(all, k) ? all[k] : defaultRoster(dateStr, code);
+    if (!Object.prototype.hasOwnProperty.call(all, k)) return defaultRoster(dateStr, code);
+    // កាលវិភាគចាស់រក្សាបញ្ជរគ្រប់ធាតុ · ឥឡូវរក្សាតែបញ្ជរដែលភ្ជាប់
+    return all[k].map(a => (a.register && !a.pin) ? Object.assign({}, a, { register: undefined }) : a);
+}
+
+/* បញ្ជរដែលជាប់ក្នុងវេនមួយ៖ ថតប្រាក់កំពុងបើកក្នុងវេននោះ ឬអ្នកដែលភ្ជាប់ · { register: personId }
+   មួយបញ្ជរ មួយអ្នកក្នុងវេនមួយ */
+function rosterTakenRegisters(dateStr, code, exceptPersonId) {
+    const drawers = typeof mgrAllShifts === 'function' ? mgrAllShifts() : posRead(POS_KEYS.shifts, []);
+    const taken = {};
+    drawers.filter(s => s.status === 'open' && s.date === dateStr && s.templateCode === code && s.cashierId !== exceptPersonId)
+        .forEach(s => { taken[s.register] = s.cashierId; });
+    rosterFor(dateStr, code).filter(a => a.pin && a.register && a.cashierId !== exceptPersonId && !taken[a.register])
+        .forEach(a => { taken[a.register] = a.cashierId; });
+    return taken;
+}
+
+function isRosterFull(dateStr, code) {
+    return rosterFor(dateStr, code).length >= REGISTERS.length;
 }
 
 function isRosterCustom(dateStr, code) {
@@ -2222,17 +2293,31 @@ function assignmentFor(personId) {
     return a ? Object.assign({ date: slot.date, template: slot.template }, a) : null;
 }
 
-/* បញ្ជររបស់អ្នកចូលប្រើ៖ វេនដែលកំពុងបើកផ្ទាល់ខ្លួន → កាលវិភាគ → លំនាំដើម */
+/* បញ្ជររបស់អ្នកចូលប្រើ៖ ថតប្រាក់ដែលកំពុងបើកផ្ទាល់ខ្លួន → បញ្ជរដែលស្នើ (អ្នកគិតលុយអាចប្តូរនៅទំព័របើកវេន) */
 function resolveRegister(personId) {
     const open = posRead(POS_KEYS.shifts, []).find(s => s.status === 'open' && s.cashierId === personId);
     if (open) return open.register;
-    const a = assignmentFor(personId);
-    if (a) return a.register;
-    const slot = rosterSlotNow();
-    const taken = slot ? rosterFor(slot.date, slot.template.code).map(x => x.register) : [];
-    const busy = posRead(POS_KEYS.shifts, []).filter(s => s.status === 'open').map(s => s.register);
-    return REGISTERS.find(r => !taken.includes(r) && !busy.includes(r))
-        || REGISTERS.find(r => !busy.includes(r)) || REGISTERS[REGISTERS.length - 1];
+    return suggestRegister(personId);
+}
+
+/* បញ្ជរដែលអាចបើកបាន = គ្មានថតប្រាក់កំពុងបើក */
+function busyRegisters() {
+    return posRead(POS_KEYS.shifts, []).filter(s => s.status === 'open');
+}
+
+/* បញ្ជរដែលស្នើ៖ បញ្ជរភ្ជាប់ → បញ្ជរធម្មតា → បញ្ជរទំនេរដែលអ្នកផ្សេងក្នុងវេនមិនភ្ជាប់ → បញ្ជរទំនេរដំបូង */
+function suggestRegister(personId, dateStr, code) {
+    const slot = dateStr ? { date: dateStr, template: { code } } : rosterSlotNow();
+    const list = slot ? rosterFor(slot.date, slot.template.code) : [];
+    const busy = busyRegisters().map(s => s.register);
+    const free = r => r && !busy.includes(r);
+    const mine = list.find(a => a.cashierId === personId);
+    if (mine && mine.pin && free(mine.register)) return mine.register;
+    const pinnedByOthers = list.filter(a => a.pin && a.cashierId !== personId).map(a => a.register);
+    const u = usualRegister(personId);
+    if (free(u) && !pinnedByOthers.includes(u)) return u;
+    return REGISTERS.find(r => free(r) && !pinnedByOthers.includes(r))
+        || REGISTERS.find(free) || REGISTERS[REGISTERS.length - 1];
 }
 
 const SESSION = posSession();

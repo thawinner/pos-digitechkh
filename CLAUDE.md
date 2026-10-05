@@ -81,7 +81,10 @@ src/
   A `storage` event re-renders other tabs (`window.onStoreChanged`).
 - **Shift model** (see `docs/spec/02-manager-pos.md` §11): shift template (time window) → staff default shift →
   roster per date (covers marked `cover`; default templates morning / afternoon / night, the night one overnight) → drawer shift (one cashier, one register, one drawer: open → closed →
-  reviewed). A login resolves its register from the roster (`MY_REGISTER`).
+  reviewed). The roster holds people only (max = number of registers); the cashier picks any free register at
+  open-shift (`suggestRegister()`: pinned → last used → first free). A manager may pin someone (`pin: true` +
+  `register`). `openShiftBlocker()` enforces one open drawer per register and per person; `rosterSeats()` assigns
+  registers for display and generated history without overlaps.
 - **Stock** (`data.js`): quantity is never stored or edited, only derived — `onHandLevels()` = `p.opening` at
   `pos_stock_opening` + live sales since then (from the receipts) + `pos_stock_moves` (void, return, stock_in, adjust,
   count; each with `by`, `at`, `qty` ±, `reason`). Approvals write their moves in `applyApprovalToSale`; a return

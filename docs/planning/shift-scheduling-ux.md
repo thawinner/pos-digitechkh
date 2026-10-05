@@ -38,6 +38,11 @@ found and fixed:
 
 Still open: the sidebar became collapsible in `be4f02c`, which CLAUDE.md forbids («The sidebar is never collapsible»).
 
+**Follow-up (D-S6, same day): registers are no longer planned.** The roster says who works when (up to one person
+per register); each cashier picks a free register at open-shift, and the manager can optionally pin someone.
+This removes the cause of §2.4 (two people planned on one register). One open drawer per register and per person is
+enforced in `openShiftRecord()`, and generated demo history never puts two drawers on one register at once.
+
 ## 1. The goal in one sentence
 
 A manager should fix a gap in the roster with **one tap on the gap and one tap on the suggested person**, see the
@@ -591,6 +596,7 @@ The cashier role gains nothing: `rankCandidates()` reads weekly hours of other s
 | D-S3 | Minimum rest between two shifts for one person | **11 h**, flagged as «ធ្វើការជាប់គ្នា»; confirm against the research doc before building |
 | D-S4 | Does a one-day roster change need a PIN? | **No**, logged instead (3.4). The default-shift change keeps its PIN |
 | D-S5 | Allow short shifts and partial covers? Minimum length? | **Yes, at least 2 h**, approved by the same manager PIN as the open. Shorter leftovers go to the manager instead |
+| D-S6 | Plan registers in the roster, or let the cashier choose? | **Decided 2026-10-05: cashier chooses** a free register at open-shift; optional manager pin |
 
 ---
 

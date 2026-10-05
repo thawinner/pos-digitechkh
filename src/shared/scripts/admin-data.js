@@ -791,7 +791,7 @@ function attendanceRows(personId, start, end) {
             if (planEnd <= planStart) planEnd = addDays(planEnd, 1);
             const x = sessions.find(s => !used.has(s) && s.shift.date === date && s.shift.templateCode === t.code);
             if (x) used.add(x);
-            rows.push({ date, template: t, register: a.register, cover: !!a.cover, planStart, planEnd, session: x || null });
+            rows.push({ date, template: t, register: x ? x.shift.register : '', cover: !!a.cover, planStart, planEnd, session: x || null });
         });
     }
     sessions.filter(s => !used.has(s)).forEach(x => {

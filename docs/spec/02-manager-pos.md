@@ -404,8 +404,8 @@ The word "shift" covers several things, and the system keeps them apart:
 | Concept | Khmer | What it is | Who sets it |
 |---|---|---|---|
 | **Shift template** | វេន | A time window. Default: «វេនព្រឹក» 06:00–14:00, «វេនរសៀល» 14:00–22:00, «វេនយប់» 22:00–06:00 (24-hour shop). Shifts per day = opening hours ÷ about 8 h | Manager, in Settings → គំរូវេន |
-| **Default shift** | វេនប្រចាំ | Each person's regular template, register and weekly day off | Manager, in the roster page (or Settings → បុគ្គលិក) |
-| **Roster** | កាលវិភាគ | For each date and template: who works which register. Built from default shifts. The manager can change any date | Manager, in «កាលវិភាគវេន» |
+| **Default shift** | វេនប្រចាំ | Each person's regular template and weekly day off (no register) | Manager, in the roster page (or Settings → បុគ្គលិក) |
+| **Roster** | កាលវិភាគ | For each date and template: who works (up to one person per register). Built from default shifts. The manager can change any date and may pin a person to a register | | Manager, in «កាលវិភាគវេន» |
 | **Cover** | ជំនួសវេន | A roster entry that isn't the person's default. Marked «ជំនួស» | Manager (planned), or automatically when a cashier opens a shift they aren't rostered for, with manager PIN |
 | **Drawer shift** | វេនបញ្ជរ | One cashier + one register + one drawer: open (counted float, manager PIN) → closed (blind count) → reviewed (manager countersign) | Cashier opens/closes, manager reviews |
 
@@ -416,9 +416,14 @@ Rules:
 - **Breaks lock the terminal** with the cashier's own PIN. There is no count and no new shift.
 - **Labour law guards:** a template longer than 12 h can't be saved (8–12 h shows an overtime warning). Opening a shift
   that would take a person over 12 h in a day is blocked. The roster shows weekly hours and flags anything over 48.
-- **Login sends a person to their rostered register.** A manager with no roster entry gets the first free register.
-- **Default staffing:** one cashier per shift, each on their own register (morning POS-01, afternoon POS-02, night
-  POS-03): 8 h × 6 days = 48 h/week, exactly the legal limit. On each cashier's day off that shift is empty. The
+- **The cashier picks the register at open-shift.** Any free register can be chosen; registers in use are disabled
+  and show who has them. The suggestion is the pinned register, else the one they used last, else the first free.
+  Once open, the register belongs to that drawer until it is closed.
+- **One register, one open drawer; one person, one open drawer.** Enforced when the drawer is opened
+  (`openShiftBlocker()`), not only in the page.
+- **Pinning is optional.** A manager can pin someone to a register for a day (e.g. a trainee next to the
+  supervisor). Others see that register as «បម្រុងសម្រាប់ …» until that person opens.
+- **Default staffing:** one cashier per shift: 8 h × 6 days = 48 h/week, exactly the legal limit. On each cashier's day off that shift is empty. The
   roster shows it in amber («ត្រូវរកអ្នកជំនួស») so the manager assigns a cover.
 - **Night shift** crosses midnight. It belongs to the date it starts on, and the business day rolls over at the first
   template's start (06:00). Settings shows its night hours (22:00–05:00, paid at 200% under Cambodian labour law).

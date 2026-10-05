@@ -139,7 +139,7 @@
                             <i class="fas fa-cash-register text-[13px] text-slate-400 self-center"></i>
                             <p class="sm-td font-semibold text-slate-700">អ្នកគិតលុយ</p>
                             <span id="cashierTilesCount" class="sm-td-sub text-slate-400"></span>
-                            <span class="sm-td-sub text-slate-400 ml-auto max-sm:hidden">បញ្ជរតាមកាលវិភាគវេន</span>
+                            <span class="sm-td-sub text-slate-400 ml-auto max-sm:hidden">ជ្រើសបញ្ជរពេលបើកវេន</span>
                         </div>
                         <div id="cashierTiles" class="rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden"></div>
                     </div>
@@ -217,7 +217,7 @@
         function tile(p, role) {
             const sh = openShiftOf(p.id);
             const plan = sh ? null : todayPlan(p.id);
-            const reg = sh ? sh.register : plan ? plan.register : '';
+            const reg = sh ? sh.register : plan && plan.pin ? plan.register : '';
             const status = sh
                 ? '<span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-2 align-middle"></span><span class="text-emerald-700 font-semibold">កំពុងលក់</span>'
                 : plan
@@ -265,7 +265,7 @@
             const sh = openShiftOf(p.id);
             const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '⌫'];
             const asg = assignmentFor(p.id);
-            const dest = role === 'admin' ? 'ផ្ទាំងម្ចាស់ហាង' : manager ? 'ផ្ទាំងគ្រប់គ្រង' : sh ? `បន្ត${sh.templateName} លើ ${sh.register}` : `បើក${asg ? asg.template.name : 'វេន'}លើ ${resolveRegister(p.id)}`;
+            const dest = role === 'admin' ? 'ផ្ទាំងម្ចាស់ហាង' : manager ? 'ផ្ទាំងគ្រប់គ្រង' : sh ? `បន្ត${sh.templateName} លើ ${sh.register}` : `បើក${asg ? asg.template.name : 'វេន'}`;
             const accent = { admin: 'emerald', manager: 'indigo' }[role] || 'cyan';
             const tpl = sh ? null : asg && asg.template;
             const facts = [
@@ -442,11 +442,15 @@
                     const existing = list.find(a => a.cashierId === sh.cashierId);
                     if (existing) {
                         existing.open = true;
+                        existing.register = sh.register;
                     } else {
                         list.push({ cashierId: sh.cashierId, register: sh.register, unrostered: true, open: true });
                     }
                 });
-                list.sort((a, b) => a.register.localeCompare(b.register));
+                // អ្នកដែលបើករួចបង្ហាញបញ្ជរ · អ្នកមិនទាន់បើកជ្រើសបញ្ជរពេលបើកវេន
+                // បញ្ជរភ្ជាប់ដែលអ្នកផ្សេងកំពុងប្រើ មិនបង្ហាញទេ (បញ្ជរមួយ មួយថតប្រាក់)
+                list.forEach(a => { if (!a.open && (!a.pin || openShiftsForT.concat(allLiveOpen).some(s => s.register === a.register))) a.register = ''; });
+                list.sort((a, b) => (a.register || 'ZZ').localeCompare(b.register || 'ZZ'));
 
                 const tNow = new Date();
                 const start = dateAt(templateDateFor(t, tNow), t.start);
@@ -471,7 +475,7 @@
                         ${a.open ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" aria-label="កំពុងបើក"></span>' : ''}
                         ${a.unrostered ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-medium whitespace-nowrap">មិនមានក្នុងកាលវិភាគ</span>'
                             : a.cover ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-medium whitespace-nowrap">ជំនួស</span>' : ''}
-                        <span class="ml-auto ${now ? 'text-slate-300' : 'text-slate-500'}">${a.register}</span></p>`).join('')
+                        <span class="ml-auto ${now ? 'text-slate-300' : 'text-slate-500'}">${a.register || ''}</span></p>`).join('')
                         : '<p class="sm-td-sub text-slate-500">មិនមានអ្នកចាត់តាំង</p>'}</div>
                 </div>`;
             }).join('');

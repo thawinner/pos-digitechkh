@@ -54,7 +54,9 @@ function genShift(dateStr, register, tpl, cashierId, ctx) {
     const rate = fxForDate(dateStr);
     // ភាគច្រើនបើកវេនមុនម៉ោង 2 ទៅ 10 នាទី ម្តងម្កាលយឺត (អ្នកមានហានិភ័យយឺតញឹកជាង)
     const late = rng() < (risky ? 0.18 : 0.06);
-    const openOffset = late ? 8 + Math.floor(rng() * 20) : -2 - Math.floor(rng() * 9);
+    let openOffset = late ? 8 + Math.floor(rng() * 20) : -2 - Math.floor(rng() * 9);
+    // បញ្ជរដែលអ្នកវេនមុនទើបបិទ៖ បើកចាប់ពីម៉ោងចាប់ផ្តើម (0–4 នាទី)
+    if (ctx.notBefore && openOffset < 0) openOffset = Math.floor(rng() * 5);
     const shift = {
         id, date: dateStr, register, cashierId,
         templateCode: tpl.code, templateName: tpl.name, start: tpl.start, end: tpl.end,
@@ -67,7 +69,8 @@ function genShift(dateStr, register, tpl, cashierId, ctx) {
     // ចំនួនការលក់តាមម៉ោង (ចុងសប្តាហ៍មនុស្សច្រើនជាង) · ម៉ោងលក់ត្រូវគ្នានឹងទម្រង់ម៉ោងមមាញឹក
     const dow = start.getDay();
     const dayFactor = (dow === 6 ? 1.15 : dow === 0 ? 1.1 : 1) * (0.85 + rng() * 0.3);
-    const times = genSaleTimes(rng, new Date(shift.openedAt).getTime() + 2 * 60000, end.getTime() - 5 * 60000, dayFactor);
+    const lastSaleMs = Math.min(end.getTime() - 5 * 60000, ctx.closeBy ? ctx.closeBy - 2 * 60000 : Infinity);
+    const times = genSaleTimes(rng, new Date(shift.openedAt).getTime() + 2 * 60000, lastSaleMs, dayFactor);
     const prefix = receiptPrefix(register, start);
     const sales = [];
     const events = [];
@@ -180,7 +183,9 @@ function genShift(dateStr, register, tpl, cashierId, ctx) {
         const countedUSD = Math.round(s.expectedUSD) + dUSD;
         const countedKHR = Math.round(s.expectedKHR / 100) * 100 + dKHR;
         const v = varianceOf(countedUSD, countedKHR, s.expectedUSD, s.expectedKHR, rate);
-        const closedAt = new Date(end.getTime() + (3 + Math.floor(rng() * 15)) * 60000);
+        let closedAt = new Date(end.getTime() + (3 + Math.floor(rng() * 15)) * 60000);
+        // បិទមុនថតប្រាក់បន្ទាប់លើបញ្ជរដដែល ឬមុនអ្នកដដែលបើកវេនបន្ទាប់
+        if (ctx.closeBy && closedAt.getTime() > ctx.closeBy) closedAt = new Date(ctx.closeBy);
         Object.assign(shift, {
             status: 'closed', closedAt: isoLocal(closedAt), countedUSD, countedKHR,
             expectedUSD: s.expectedUSD, expectedKHR: s.expectedKHR, variance: v.diff,
@@ -207,28 +212,59 @@ function generateHistory() {
     if (MGR_CACHE) return MGR_CACHE;
     const out = { shifts: [], sales: [], events: [], approvals: [], movements: [] };
     const live = liveShifts();
-    const liveDays = new Set(live.map(s => `${s.date}|${s.register}`));
+    const liveKeys = new Set();
+    live.forEach(s => { liveKeys.add(`${s.date}|${s.templateCode}|${s.cashierId}`); liveKeys.add(`${s.date}|${s.templateCode}|${s.register}`); });
     const now = new Date();
     const bdate = businessDate();
     const tpls = shiftTemplates();
+    // ពេលដែលបញ្ជរនីមួយៗជាប់ថតប្រាក់ (ពិត + គំរូ) ដើម្បីកុំឱ្យបញ្ជរមួយមានថតប្រាក់ពីរក្នុងពេលតែមួយ
+    const spanEnd = s => s.closedAt ? new Date(s.closedAt).getTime() : Infinity;
+    const taken = live.map(s => ({ register: s.register, from: new Date(s.openedAt).getTime(), to: spanEnd(s), live: true }));
+    const regTaken = (r, from, to) => taken.some(x => x.register === r && x.from < to && from < x.to && !(x.live && x.from >= from + 60 * 60000));
+    // ថតប្រាក់ពិតដែលបើកលើបញ្ជរនេះក្រោយវេនគំរូចាប់ផ្តើម → វេនគំរូត្រូវបិទមុននោះ
+    const nextOnRegister = (r, from) => {
+        const nxt = taken.filter(x => x.live && x.register === r && x.from >= from + 60 * 60000).map(x => x.from - 60000);
+        return nxt.length ? Math.min(...nxt) : 0;
+    };
 
     for (let d = HISTORY_DAYS; d >= 0; d--) {
         const date = addDays(new Date(bdate + 'T12:00'), -d);
         const dateStr = isoDate(date);
         // ប្រវត្តិធ្វើតាមកាលវិភាគវេន ដូច្នេះម៉ោងធ្វើការ និងបញ្ជរត្រូវគ្នាជានិច្ច
         tpls.forEach(tpl => {
-            rosterFor(dateStr, tpl.code).forEach(a => {
-                const register = a.register;
-                if (liveDays.has(`${dateStr}|${register}`)) return;
+            rosterSeats(dateStr, tpl.code).forEach(a => {
+                if (liveKeys.has(`${dateStr}|${tpl.code}|${a.cashierId}`)) return;
                 const start = dateAt(dateStr, tpl.start);
                 let end = dateAt(dateStr, tpl.end);
                 if (end <= start) end = addDays(end, 1);
                 if (start > now) return;
-                const closed = now >= new Date(end.getTime() + 20 * 60000);
+                // ចាត់តាំងក្រោយវេនចាប់ផ្តើម = គេមិនទាន់មកបើកថតប្រាក់ · កុំបង្កើតថតប្រាក់គំរូ
+                if (a.at && new Date(a.at) > start) return;
+                const from = start.getTime();
+                // អ្នកដដែលបើកថតប្រាក់ពិតក្រោយវេននេះចាប់ផ្តើម → វេនគំរូបិទមុននោះ · បើកមុន → គ្មានវេនគំរូ
+                const own = live.filter(s => s.cashierId === a.cashierId && spanEnd(s) > from && new Date(s.openedAt).getTime() < end.getTime() + 20 * 60000);
+                if (own.some(s => new Date(s.openedAt).getTime() <= from)) return;
+                let closeBy = own.length ? Math.min(...own.map(s => new Date(s.openedAt).getTime() - 60000)) : 0;
+                if (closeBy && closeBy < from + 60 * 60000) return;
+                // ចប់ម៉ោងវេន = បិទថតប្រាក់ (ដើម្បីឱ្យអ្នកវេនបន្ទាប់បើកលើបញ្ជរដដែលបាន)
+                const closed = !!closeBy || now >= end;
+                const to = closed ? (closeBy || end.getTime()) : Infinity;
+                // មួយបញ្ជរ មួយថតប្រាក់ក្នុងពេលតែមួយ៖ បញ្ជរដែលស្នើជាប់ → បញ្ជរទំនេរផ្សេង → គ្មានវេនគំរូ
+                const register = [a.register].concat(REGISTERS).find(r => !regTaken(r, from, to));
+                if (!register) return;
+                if (!closeBy) closeBy = nextOnRegister(register, from);
+                const closedFinal = closed || (!!closeBy && now.getTime() >= closeBy);
+                // ប្តូរវេនលើបញ្ជរដដែល៖ អ្នកចេញបិទមុន អ្នកចូលបើកក្រោយ (មិនបើកមុនម៉ោង)
+                const prev = taken.filter(x => x.gen && x.register === register && x.to <= from + 60000 && x.to >= from - 60 * 60000).pop();
                 // ត្រួតពិនិត្យរួច លើកលែងតែវេនចុងក្រោយនៃថ្ងៃប្រតិបត្តិការ (អ្នកគ្រប់គ្រងពិនិត្យនៅព្រឹកបន្ទាប់)
                 // អ្នកគ្រប់គ្រងពិនិត្យវេននៅព្រឹកបន្ទាប់ · វេនដែលបិទក្នុង 14 ម៉ោងចុងក្រោយនៅរង់ចាំត្រួតពិនិត្យ
-                const reviewed = closed && end.getTime() < now.getTime() - 14 * 3600000;
-                const g = genShift(dateStr, register, tpl, a.cashierId, { closed, reviewed });
+                const reviewed = closedFinal && end.getTime() < now.getTime() - 14 * 3600000;
+                const g = genShift(dateStr, register, tpl, a.cashierId, { closed: closedFinal, reviewed, closeBy: closeBy || (closedFinal ? now.getTime() - 60000 : 0), notBefore: prev ? from : 0 });
+                if (prev) {
+                    const openMs = new Date(g.shift.openedAt).getTime();
+                    if (prev.shift.closedAt && new Date(prev.shift.closedAt).getTime() >= openMs) prev.shift.closedAt = isoLocal(new Date(openMs - 60000));
+                }
+                taken.push({ register, from, to: closedFinal ? end.getTime() : Infinity, gen: true, shift: g.shift });
                 out.shifts.push(g.shift);
                 out.sales.push(...g.sales);
                 out.events.push(...g.events);
@@ -1128,7 +1164,7 @@ function rosterCheck(personId, dateStr, code) {
     if (backToBack) reason = 'ទើបចេញពីវេនយប់ · សម្រាកមិនគ្រប់ 11 ម៉ោង';
     else if (over12 && !partialAllowed) reason = `${todayTotal} ម៉ោងថ្ងៃនេះ · លើស 12 ម៉ោង`;
     else if (partialAllowed) reason = `ធ្វើការ ${workedHrs} ម៉ោងរួច · ធ្វើបានត្រឹម ${capTime}`;
-    else if (openDrawerNow) reason = `កំពុងធ្វើការ${openDrawerNow.templateName} · ${openDrawerNow.register}`;
+    else if (openDrawerNow) reason = `កំពុងធ្វើការ${openDrawerNow.templateName} លើ ${openDrawerNow.register}`;
     else if (over48) reason = `${newWeekHrs} ម៉ោងក្នុងសប្តាហ៍ · លើស 48`;
 
     return {
@@ -1220,16 +1256,11 @@ function weekGaps(weekStart) {
             if (!list.length) {
                 const candidates = rankCandidates(dateStr, t.code);
                 const best = candidates.find(c => !c.blocked);
-                const freeRegs = REGISTERS.filter(r => !list.some(a => a.register === r));
-                const def = best ? (posSettings().staffDefaults || {})[best.id] || {} : {};
-                const register = (best && def.register && freeRegs.includes(def.register)) ? def.register : (freeRegs[0] || 'POS-01');
                 gaps.push({
                     date: dateStr,
                     dow: d.getDay(),
                     template: t,
-                    suggested: best || null,
-                    register,
-                    freeRegs
+                    suggested: best || null
                 });
             }
         });

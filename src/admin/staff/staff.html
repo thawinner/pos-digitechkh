@@ -113,7 +113,7 @@
             const d = (posSettings().staffDefaults || {})[p.id];
             const t = d && shiftTemplates().find(x => x.code === d.template);
             if (!t) return `<span class="text-slate-400">${{ cashier: 'មិនទាន់កំណត់', manager: 'ជំនួសពេលចាំបាច់', admin: 'មិនឈរបញ្ជរ' }[p.role]}</span>`;
-            return `<span class="text-slate-700">${t.name} · ${d.register}</span><span class="block sm-td-sub text-slate-400">ឈប់ថ្ងៃ${DOW_KH[Number(d.dayOff) || 0]}</span>`;
+            return `<span class="text-slate-700">${t.name} <span class="sm-figure">${t.start}–${t.end}</span></span><span class="block sm-td-sub text-slate-400">ឈប់ថ្ងៃ${DOW_KH[Number(d.dayOff) || 0]}</span>`;
         }
 
         function lastShift(p) {
@@ -419,7 +419,7 @@
             renderAll();
             const d = (posSettings().staffDefaults || {})[id];
             const t = d && shiftTemplates().find(x => x.code === d.template);
-            if (t) showToast(`បានផ្អាក · ${t.name} លើ ${d.register} គ្មានអ្នកប្រចាំទៀតហើយ · សូមចាត់តាំងនៅកាលវិភាគវេន`, 'warning', 6000);
+            if (t) showToast(`បានផ្អាក · ${t.name} ខ្វះអ្នកប្រចាំម្នាក់ · សូមចាត់តាំងនៅកាលវិភាគវេន`, 'warning', 6000);
             else showToast(`បានផ្អាកគណនី ${p.name}`);
         }
 

@@ -550,7 +550,7 @@
                 const roster = rosterFor(templateDateFor(t, new Date()), t.code);
                 const a = roster.find(x => x.cashierId === cashierId);
                 if (a) {
-                    return { template: t, register: a.register, from: a.from, until: a.until };
+                    return { template: t, register: a.pin ? a.register : '', from: a.from, until: a.until };
                 }
             }
             return null;
@@ -563,7 +563,8 @@
                 const t = templates[i];
                 if (currIdx >= 0 && i <= currIdx) continue;
                 const roster = rosterFor(templateDateFor(t, new Date()), t.code);
-                const a = roster.find(x => x.register === register);
+                // អ្នកដែលភ្ជាប់បញ្ជរនេះ បើគ្មាន អ្នកដំបូងក្នុងវេនបន្ទាប់ (អ្នកគិតលុយជ្រើសបញ្ជរពេលបើកវេន)
+                const a = roster.find(x => x.pin && x.register === register) || roster[0];
                 if (a) {
                     return a;
                 }
@@ -592,7 +593,7 @@
                                 <div>
                                     <h4 class="font-bold text-white text-base">វេនរបស់អ្នកថ្ងៃនេះ</h4>
                                     <p class="text-xs text-amber-200 mt-0.5">វេនបច្ចុប្បន្ន <strong class="font-semibold text-white">${sh.templateName}</strong> ត្រូវបញ្ចប់ម៉ោង ${sh.end}</p>
-                                    <p class="text-xs text-emerald-300 font-semibold mt-0.5">វេនបន្ទាប់ <strong class="text-white">${next.template.name}</strong> ម៉ោង ${next.from || next.template.start}–${next.until || next.template.end} · ${next.register}</p>
+                                    <p class="text-xs text-emerald-300 font-semibold mt-0.5">វេនបន្ទាប់ <strong class="text-white">${next.template.name}</strong> ម៉ោង ${next.from || next.template.start}–${next.until || next.template.end}${next.register ? ` · ${next.register}` : ''}</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 flex-shrink-0">

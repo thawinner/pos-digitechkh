@@ -89,16 +89,49 @@
         let shortShiftCap = '';
         let wasRegBusy = false;
 
-        /* បញ្ជរដែលត្រូវបើក៖ តាមកាលវិភាគនៃវេនដែលបានជ្រើស បើគ្មាន ប្រើបញ្ជរដែលប្រព័ន្ធកំណត់ពេលចូលប្រើ */
+        /* បញ្ជរដែលត្រូវបើក៖ បញ្ជរដែលអ្នកគិតលុយជ្រើស បើគ្មាន បញ្ជរដែលស្នើ (ភ្ជាប់ → ប្រើចុងក្រោយ → ទំនេរដំបូង) */
+        function regOwner(r) {
+            return liveShifts().find(x => x.status === 'open' && x.register === r && x.cashierId !== ME_CASHIER) || null;
+        }
+
         function reg() {
-            if (customRegister) return customRegister;
+            // ពេលរាប់ប្រាក់ បញ្ជរត្រូវបានកំណត់ហើយ · បើអ្នកផ្សេងយកមុន blocker() ប្រាប់
+            if (customRegister && (stage === 'count' || !blockedBy(customRegister))) return customRegister;
+            const t = chosenTemplate();
+            return t ? suggestRegister(ME_CASHIER, templateDateFor(t, new Date()), t.code) : MY_REGISTER;
+        }
+
+        /* បញ្ជរដែលអ្នកគ្រប់គ្រងភ្ជាប់ឱ្យអ្នកផ្សេងក្នុងវេននេះ ហើយគេមិនទាន់បើក */
+        function reservedFor(r) {
+            const t = chosenTemplate();
+            if (!t) return null;
+            const a = rosterFor(templateDateFor(t, new Date()), t.code).find(x => x.pin && x.register === r && x.cashierId !== ME_CASHIER);
+            return a && !liveShifts().some(x => x.status === 'open' && x.cashierId === a.cashierId) ? a : null;
+        }
+
+        function myPin() {
             const t = chosenTemplate();
             const a = t && rosterFor(templateDateFor(t, new Date()), t.code).find(x => x.cashierId === ME_CASHIER);
-            return a ? a.register : MY_REGISTER;
+            return a && a.pin ? a.register : '';
+        }
+
+        /* ឈ្មោះក្រុមការងារ ជាមួយបញ្ជរដែលគេបើករួច */
+        function crewLabel(a, t) {
+            const d = liveShifts().find(x => x.status === 'open' && x.cashierId === a.cashierId && x.templateCode === t.code);
+            return `${personName(a.cashierId)}${d ? ` ${d.register}` : ''}`;
+        }
+
+        /* មួយបញ្ជរ មួយអ្នកក្នុងវេន៖ អ្នកផ្សេងកំពុងប្រើ ឬអ្នកគ្រប់គ្រងភ្ជាប់ឱ្យអ្នកផ្សេង */
+        function blockedBy(r) {
+            return regOwner(r) || reservedFor(r);
         }
 
         function regBusy() {
-            return liveShifts().some(x => x.status === 'open' && x.register === reg() && x.cashierId !== ME_CASHIER);
+            return !!blockedBy(reg());
+        }
+
+        function busySig() {
+            return liveShifts().filter(x => x.status === 'open').map(x => x.register + x.cashierId).sort().join('|');
         }
 
         function regBusyShift() {
@@ -111,9 +144,38 @@
         }
 
         function switchRegister(newReg) {
+            const b = blockedBy(newReg);
+            if (b) return showToast(`${newReg} ជារបស់ ${personName(b.cashierId)}`, 'warning');
             customRegister = newReg;
-            showToast(`បានប្តូរទៅបញ្ជរ ${newReg}`, 'info');
             render();
+        }
+
+        /* ជ្រើសបញ្ជរ៖ ទំនេរ = ជ្រើសបាន · កំពុងប្រើ = បិទ · បម្រុងសម្រាប់អ្នកផ្សេង = ជ្រើសបាន ប៉ុន្តែព្រមាន */
+        function registerPicker() {
+            const cur = reg();
+            return `<div class="px-5 pt-4 pb-4 border-t border-white/[0.06]">
+                <p class="sm-eyebrow text-slate-400 mb-2">ជ្រើសរើសបញ្ជរ</p>
+                <div role="radiogroup" class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    ${REGISTERS.map(r => {
+                        const owner = regOwner(r);
+                        const res = reservedFor(r);
+                        const on = r === cur && !owner && !res;
+                        const last = lastShiftFor(r);
+                        const sub = owner ? `កំពុងប្រើ · ${personName(owner.cashierId)}`
+                            : res ? `បម្រុងសម្រាប់ ${personName(res.cashierId)}`
+                            : myPin() === r ? 'ទំនេរ · អ្នកគ្រប់គ្រងភ្ជាប់ឱ្យអ្នក'
+                            : last && last.cashierId === ME_CASHIER ? 'ទំនេរ · ប្រើចុងក្រោយ' : 'ទំនេរ';
+                        return `<button type="button" role="radio" aria-checked="${on}" ${owner || res ? 'disabled' : ''} onclick="switchRegister('${r}')"
+                            class="text-left rounded-lg border px-3.5 py-3 transition-colors flex items-center gap-3 ${owner || res ? 'border-white/[0.06] bg-white/[0.02] opacity-50 cursor-not-allowed' : on ? 'border-cyan-500/70 bg-cyan-500/10' : 'border-white/10 hover:bg-white/[0.04]'}">
+                            <span class="w-4 h-4 rounded-full border-2 ${on ? 'border-cyan-400' : 'border-slate-600'} inline-flex items-center justify-center flex-shrink-0">${on ? '<span class="w-2 h-2 rounded-full bg-cyan-400"></span>' : ''}</span>
+                            <span class="min-w-0">
+                                <span class="sm-value ${on ? 'text-white' : 'text-slate-200'} block">${r}</span>
+                                <span class="sm-td-sub ${owner || res ? 'text-slate-500' : 'text-slate-400'} block truncate">${sub}</span>
+                            </span>
+                        </button>`;
+                    }).join('')}
+                </div>
+            </div>`;
         }
 
         function issuedFloat() {
@@ -209,7 +271,7 @@
                     </span>
                     <span class="min-w-0">
                         <span class="sm-td-sub ${tm.tone} block">${tm.text}</span>
-                        <span class="sm-td-sub text-slate-500 block truncate">${crew.length ? crew.map(a => `${personName(a.cashierId)} ${a.register}`).join(' · ') : 'មិនមានអ្នកផ្សេងក្នុងវេននេះ'}</span>
+                        <span class="sm-td-sub text-slate-500 block truncate">${crew.length ? `ជាមួយ ${crew.map(a => crewLabel(a, t)).join(' · ')}` : 'មិនមានអ្នកផ្សេងក្នុងវេននេះ'}</span>
                     </span>
                 </span>
                 ${tag}
@@ -238,15 +300,13 @@
             const m = mine.find(x => x.template.code === templateCode);
             const cover = t && !m;
             const status = mine.length
-                ? `<p class="sm-td text-slate-300"><i class="fas fa-calendar-check text-slate-500 mr-2"></i>វេនរបស់អ្នកថ្ងៃនេះ៖ <span class="text-white font-semibold">${mine.map(x => `${x.template.name} ${x.template.start}–${x.template.end} · ${x.register}`).join(' · ')}</span></p>`
+                ? `<p class="sm-td text-slate-300"><i class="fas fa-calendar-check text-slate-500 mr-2"></i>វេនរបស់អ្នកថ្ងៃនេះ៖ <span class="text-white font-semibold">${mine.map(x => `${x.template.name} ${x.from || x.template.start}–${x.until || x.template.end}`).join(' · ')}</span></p>`
                 : `<p class="sm-td text-slate-300"><i class="fas fa-calendar-xmark text-amber-300 mr-2"></i><span class="text-white font-semibold">ថ្ងៃនេះអ្នកមិនមានវេនក្នុងកាលវិភាគទេ</span></p>
                    <p class="sm-td-sub text-slate-400 mt-1 ml-6">បើមកជំនួសវេនអ្នកណាម្នាក់ សូមជ្រើសរើសវេនខាងក្រោម។ អ្នកគ្រប់គ្រងត្រូវអនុម័ត ហើយកាលវិភាគនឹងកត់ត្រាថា «ជំនួស»។</p>`;
 
             const over = t && (workedToday() + templateHours(t) > 12);
             const cap = over ? capFor(ME_CASHIER, templateDateFor(t, new Date()), t.start) : null;
             const busy = regBusy();
-            const bShift = regBusyShift();
-            const bPast = bShift && bShift.end && new Date() > shiftEndDate({ date: bShift.date, start: bShift.start, end: bShift.end });
 
             return `<div class="os-panel rounded-xl overflow-hidden">
                 <div class="px-5 py-4 flex items-center gap-3 border-b border-white/[0.08]">
@@ -257,27 +317,11 @@
                     </div>
                 </div>
                 <div class="px-5 py-4 border-b border-white/[0.08]">${status}</div>
-                ${busy ? `<div class="px-5 py-3.5 bg-amber-500/10 border-b border-amber-500/20 space-y-2">
-                    <div class="flex items-center gap-2 text-amber-200">
-                        <i class="fas fa-triangle-exclamation text-amber-400"></i>
-                        <span class="sm-value text-white">បញ្ជរ ${reg()} កំពុងបើកវេន</span>
-                    </div>
-                    <p class="sm-td-sub text-amber-200/90">
-                        ${bPast
-                            ? `បញ្ជរ ${reg()} កំពុងប្រើដោយ ${personName(bShift.cashierId)} (វេនចប់ម៉ោង ${bShift.end})។ សូមរង់ចាំ ${personName(bShift.cashierId)} បិទវេន ឬប្តូរទៅបញ្ជរទំនេរ។`
-                            : `បញ្ជរ ${reg()} កំពុងប្រើដោយ ${personName(bShift ? bShift.cashierId : '')}។`}
-                    </p>
-                    <div class="flex flex-wrap items-center gap-2 pt-1">
-                        ${freeRegisters().map(r => `
-                            <button type="button" onclick="switchRegister('${r}')" class="h-8 px-2.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white sm-td-sub font-semibold transition">
-                                <i class="fas fa-arrow-right-arrow-left mr-1"></i> ប្តូរទៅបញ្ជរ ${r}
-                            </button>
-                        `).join('')}
-                        <button type="button" onclick="render()" class="h-8 px-2.5 rounded-lg bg-white/10 hover:bg-white/15 text-slate-200 sm-td-sub font-medium transition">
-                            <i class="fas fa-rotate mr-1"></i> រង់ចាំ / ពិនិត្យឡើងវិញ
-                        </button>
-                    </div>
-                </div>` : ''}
+                ${busy ? `<div class="px-5 py-3.5 bg-amber-500/10 border-b border-amber-500/20 flex flex-wrap items-center justify-between gap-2">
+                    <p class="sm-td text-amber-200"><i class="fas fa-triangle-exclamation text-amber-400 mr-1.5"></i>គ្មានបញ្ជរទំនេរ · សូមរង់ចាំអ្នកណាម្នាក់បិទវេន ឬសួរអ្នកគ្រប់គ្រង</p>
+                    <button type="button" onclick="render()" class="h-8 px-2.5 rounded-lg bg-white/10 hover:bg-white/15 text-slate-200 sm-td-sub font-medium transition">
+                        <i class="fas fa-rotate mr-1"></i> ពិនិត្យឡើងវិញ
+                    </button>                </div>` : ''}
                 ${over ? (cap && cap.partialAllowed ? `<div class="px-5 py-3.5 bg-amber-500/10 border-b border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                         <p class="sm-value text-amber-200"><i class="fas fa-clock text-amber-400 mr-1.5"></i>អ្នកបានធ្វើការ ${fmtHoursDuration(cap.workedHours)} ថ្ងៃនេះ</p>
@@ -304,6 +348,7 @@
                 <div role="radiogroup" class="divide-y divide-white/[0.06] border-y border-white/[0.06]">
                     ${shiftTemplates().map(x => templateRow(x, mine.some(y => y.template.code === x.code))).join('')}
                 </div>
+                ${t ? registerPicker() : ''}
                 <div class="px-5 py-4 flex flex-wrap items-center justify-between gap-3 bg-black/10">
                     <div class="min-w-0">
                         <p class="sm-td-sub text-slate-400">នឹងបើក</p>
@@ -344,7 +389,7 @@
                 + sec(slot ? `ក្រុមការងារ${slot.template.name}` : 'ក្រុមការងារ', team.length
                     ? `<div class="space-y-2">${team.map(a => `<div class="flex items-center gap-2.5">${avatarHtml(a.cashierId, 'w-7 h-7')}
                         <span class="sm-td text-slate-200 flex-1 truncate">${personName(a.cashierId)}${a.cashierId === ME_CASHIER ? ' <span class="text-slate-500">· ខ្ញុំ</span>' : ''}</span>
-                        <span class="sm-td-sub text-slate-400">${a.register}</span></div>`).join('')}</div>`
+                        <span class="sm-td-sub text-slate-400">${(liveShifts().find(x => x.status === 'open' && x.cashierId === a.cashierId) || {}).register || ''}</span></div>`).join('')}</div>`
                     : '<p class="sm-td text-amber-300">គ្មានអ្នកគិតលុយក្នុងកាលវិភាគ</p>')
                 + `<div class="px-5 py-4 sm-td-sub text-slate-400 space-y-1.5">
                     <p><i class="fas fa-user-lock w-5 text-slate-500"></i>មួយថតប្រាក់ មួយអ្នកទទួលខុសត្រូវ</p>
@@ -386,6 +431,7 @@
                 shortShiftCap = '';
             }
             if (regBusy()) return showToast(`បញ្ជរ ${reg()} កំពុងបើកវេនដោយអ្នកផ្សេង`, 'error');
+            customRegister = reg();
             stage = 'count';
             render();
             window.scrollTo(0, 0);
@@ -465,7 +511,7 @@
         function blocker() {
             if (!chosenTemplate()) return 'សូមជ្រើសរើសវេន';
             if (!isShortShift && workedToday() + templateHours(chosenTemplate()) > 12) return 'លើស 12 ម៉ោងក្នុងមួយថ្ងៃ ដែលជាកំណត់ច្បាប់';
-            if (regBusy()) return `បញ្ជរ ${reg()} កំពុងបើកវេនដោយអ្នកផ្សេង`;
+            if (regBusy()) return `${reg()} ជារបស់ ${personName(blockedBy(reg()).cashierId)} · សូមត្រឡប់ទៅជ្រើសបញ្ជរផ្សេង`;
             if (!(totalUSD() + totalKHR())) return 'សូមរាប់ប្រាក់បាតថតជាមុនសិន';
             const m = mismatch();
             const off = Math.abs(m.dUSD) >= 0.005 || Math.abs(m.dKHR) >= 0.5;
@@ -543,6 +589,8 @@
             });
             if (!ok) return;
 
+            const blocked = openShiftBlocker(reg(), ME_CASHIER);
+            if (blocked) { stage = 'overview'; customRegister = ''; render(); return showToast(`${blocked} · សូមជ្រើសបញ្ជរផ្សេង`, 'error', 6000); }
             const shift = openShiftRecord({
                 register: reg(),
                 cashierId: ME_CASHIER,
@@ -570,8 +618,8 @@
             const rosterList = rosterFor(shift.date, t.code);
             const myEntry = rosterList.find(a => a.cashierId === ME_CASHIER);
             if (!myEntry) {
-                const list = rosterList.filter(a => a.register !== reg());
-                list.push({ cashierId: ME_CASHIER, register: reg(), cover: true, by: ok.approverId, ...(isShortShift ? { until: shortShiftCap } : {}) });
+                const list = rosterList.slice();
+                list.push({ cashierId: ME_CASHIER, cover: true, by: ok.approverId, ...(isShortShift ? { until: shortShiftCap } : {}) });
                 saveRoster(shift.date, t.code, list);
             } else if (isShortShift) {
                 myEntry.until = shortShiftCap;
@@ -598,13 +646,11 @@
         function tick() {
             const now = new Date();
             document.getElementById('liveClock').textContent = `${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}`;
-            const busy = regBusy();
-            if (wasRegBusy && !busy) {
-                wasRegBusy = false;
-                showToast(`បញ្ជរ ${reg()} ទំនេរហើយ`, 'success');
-                render();
-            } else {
-                wasRegBusy = busy;
+            // អ្នកផ្សេងបើក ឬបិទបញ្ជរ (ផ្ទាំងផ្សេង) → គូរបញ្ជីបញ្ជរឡើងវិញ
+            const sig = busySig();
+            if (sig !== wasRegBusy) {
+                wasRegBusy = sig;
+                if (stage === 'overview') render();
             }
         }
 
@@ -636,7 +682,7 @@
                 pick = (myCurrent && myCurrent.template) || (myUpcoming && myUpcoming.template) || activeCurrent || upcomingT || shiftTemplates()[0];
             }
             templateCode = pick ? pick.code : (shiftTemplates()[0] ? shiftTemplates()[0].code : '');
-            wasRegBusy = regBusy();
+            wasRegBusy = busySig();
             const me = personById(ME_CASHIER);
             document.getElementById('regLabel').dataset.date = fmtKhDate(now);
             document.getElementById('meChip').innerHTML = `${avatarHtml(me.id, 'w-8 h-8')}<span class="sm-badge text-slate-200 hidden md:!inline">${me.name}</span>`;

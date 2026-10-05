@@ -745,7 +745,7 @@
                 const t = shiftTemplates().find(x => x.code === urlNext);
                 if (t) {
                     const a = rosterFor(templateDateFor(t, new Date()), t.code).find(x => x.cashierId === cashierId);
-                    return { template: t, register: a ? a.register : MY_REGISTER };
+                    return { template: t, register: a && a.pin ? a.register : '' };
                 }
             }
             const templates = shiftTemplates();
@@ -756,7 +756,7 @@
                 const roster = rosterFor(templateDateFor(t, new Date()), t.code);
                 const a = roster.find(x => x.cashierId === cashierId);
                 if (a) {
-                    return { template: t, register: a.register };
+                    return { template: t, register: a.pin ? a.register : '' };
                 }
             }
             return null;
@@ -786,7 +786,7 @@
                                 </div>
                                 <div>
                                     <h4 class="sm-card-title text-cyan-950">វេនបន្ទាប់របស់អ្នកថ្ងៃនេះ</h4>
-                                    <p class="sm-card-sub text-cyan-800 mt-0.5">បន្ទាប់៖ <strong class="font-semibold">${next.template.name}</strong> ${next.template.start}–${next.template.end} · ${next.register}</p>
+                                    <p class="sm-card-sub text-cyan-800 mt-0.5">បន្ទាប់៖ <strong class="font-semibold">${next.template.name}</strong> ${next.template.start}–${next.template.end}${next.register ? ` · ${next.register}` : ''}</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2">

@@ -1689,7 +1689,8 @@ function showNumberPad(opts = {}) {
 }
 
 /* ===== ប្រអប់ចាត់តាំងវេន (ផែនការកែលម្អ S5, S22) =====
-   បង្ហាញបញ្ជីបេក្ខជនតាមចំណាត់ថ្នាក់ ម៉ោងមុន→ក្រោយ របារម៉ោងថ្ងៃនេះ ជម្រើសវេនខ្លី បញ្ជរ មូលហេតុ និងការព្រមានចន្លោះ */
+   បង្ហាញបញ្ជីបេក្ខជនតាមចំណាត់ថ្នាក់ ម៉ោងមុន→ក្រោយ របារម៉ោងថ្ងៃនេះ ជម្រើសវេនខ្លី មូលហេតុ និងការព្រមានចន្លោះ
+   បញ្ជរមិនចាំបាច់ជ្រើសទេ (អ្នកគិតលុយជ្រើសពេលបើកវេន) · ភ្ជាប់បញ្ជរបានជាជម្រើស · វេនពេញ ត្រូវជ្រើសអ្នកដែលត្រូវជំនួស */
 function showAssignDialog(opts = {}) {
     return new Promise(resolve => {
         const date = opts.date || isoDate(new Date());
@@ -1713,12 +1714,9 @@ function showAssignDialog(opts = {}) {
 
         let selCand = candidates.find(c => c.id === selId) || candidates[0];
 
-        const defs = posSettings().staffDefaults || {};
-        const staffDef = defs[selId] || {};
-        const freeRegs = REGISTERS.filter(r => !currentRoster.some(a => a.register === r));
-        let selReg = (staffDef.register && freeRegs.includes(staffDef.register))
-            ? staffDef.register
-            : (freeRegs[0] || REGISTERS[0]);
+        const full = currentRoster.length >= REGISTERS.length;
+        let selReplace = opts.replace && currentRoster.some(a => a.cashierId === opts.replace) ? opts.replace : '';
+        let selReg = '';
 
         const reasonsList = (posSettings().reasons && posSettings().reasons.cover) || ['ឈប់សម្រាក', 'ឈឺ', 'ប្តូរវេនគ្នា', 'ពេលមមាញឹក', 'ផ្សេងៗ'];
         let selReason = '';
@@ -1728,8 +1726,7 @@ function showAssignDialog(opts = {}) {
             const prevList = host.querySelector('[data-list]');
             const listScroll = prevList ? prevList.scrollTop : 0;
             selCand = candidates.find(c => c.id === selId) || candidates[0];
-            const occupant = currentRoster.find(a => a.register === selReg && a.cashierId !== selId);
-            const isReplacing = !!occupant;
+            const isReplacing = !!selReplace;
 
             const recommended = candidates.filter(c => !c.blocked && c.rank <= 2);
             const others = candidates.filter(c => !c.blocked && c.rank > 2);
@@ -1801,11 +1798,16 @@ function showAssignDialog(opts = {}) {
             if (selCand && selCand.leavesGap) {
                 warningLines.push(`<p class="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2"><i class="fas fa-triangle-exclamation mr-1.5"></i>${selCand.leavesGap} ថ្ងៃនេះនឹងគ្មានអ្នកគិតលុយ</p>`);
             } else if (isReplacing) {
-                warningLines.push(`<p class="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2"><i class="fas fa-triangle-exclamation mr-1.5"></i>${personName(occupant.cashierId)} នឹងត្រូវដកចេញពី ${selReg}</p>`);
+                warningLines.push(`<p class="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2"><i class="fas fa-triangle-exclamation mr-1.5"></i>${personName(selReplace)} នឹងត្រូវដកចេញពី${tpl.name}</p>`);
             }
             const warningLine = warningLines.join('');
 
-            const canSubmit = selCand && !selCand.blocked && selReg;
+            const canSubmit = selCand && !selCand.blocked && (!full || selReplace);
+            // មួយបញ្ជរ មួយអ្នកក្នុងវេន៖ បញ្ជរដែលអ្នកផ្សេងកំពុងប្រើ ឬភ្ជាប់រួច មិនអាចជ្រើសបានទេ
+            const takenRegs = rosterTakenRegisters(date, code, selId);
+            const pinOwner = r => takenRegs[r] && takenRegs[r] !== selReplace ? takenRegs[r] : '';
+            if (selReg && pinOwner(selReg)) selReg = '';
+            const chipCls = on => `h-9 px-3 rounded-xl border text-xs font-semibold transition flex items-center gap-1.5 ${on ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'}`;
 
             host.innerHTML = `
                 <div class="w-full max-w-lg rounded-3xl shadow-2xl bg-white text-slate-800 p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
@@ -1835,19 +1837,29 @@ function showAssignDialog(opts = {}) {
 
                         ${dayBarHtml}
 
+                        ${full ? `
                         <div>
-                            <p class="text-[13px] font-semibold text-slate-600 mb-1.5">បញ្ជរគិតលុយ</p>
+                            <p class="text-[13px] font-semibold text-slate-600 mb-1.5">វេនពេញ ${REGISTERS.length}/${REGISTERS.length} នាក់ · ជំនួសអ្នកណា</p>
                             <div class="flex flex-wrap gap-2">
+                                ${currentRoster.map(a => `
+                                    <button type="button" data-replace="${a.cashierId}" class="${chipCls(selReplace === a.cashierId)}">
+                                        ${avatarHtml(a.cashierId, 'w-5 h-5')}<span>${personName(a.cashierId)}</span>
+                                    </button>`).join('')}
+                            </div>
+                        </div>` : ''}
+
+                        <div>
+                            <p class="text-[13px] font-semibold text-slate-600 mb-1.5">បញ្ជរ <span class="font-normal text-slate-400">· អ្នកគិតលុយជ្រើសពេលបើកវេន</span></p>
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" data-reg="" class="${chipCls(!selReg)}">ណាមួយក៏បាន</button>
                                 ${REGISTERS.map(r => {
-                                    const occ = currentRoster.find(a => a.register === r && a.cashierId !== selId);
-                                    const isCurrentSel = r === selReg;
-                                    return `
-                                        <button type="button" data-reg="${r}" class="h-9 px-3 rounded-xl border text-xs font-semibold transition flex items-center gap-1.5 ${isCurrentSel ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'}">
-                                            <span>${r}</span>
-                                            ${occ ? `<span class="text-[10px] opacity-75">(${personName(occ.cashierId)})</span>` : ''}
-                                            ${isCurrentSel ? '<i class="fas fa-check text-[10px]"></i>' : ''}
-                                        </button>
-                                    `;
+                                    const owner = pinOwner(r);
+                                    return owner
+                                        ? `<span class="h-9 px-3 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-400 flex items-center gap-1.5 cursor-not-allowed">
+                                            <i class="fas fa-lock text-[10px]"></i><span>${r}</span><span class="font-medium">· ${personName(owner)}</span></span>`
+                                        : `<button type="button" data-reg="${r}" class="${chipCls(r === selReg)}">
+                                            ${r === selReg ? '<i class="fas fa-thumbtack text-[10px]"></i>' : ''}<span>${r}</span>
+                                        </button>`;
                                 }).join('')}
                             </div>
                         </div>
@@ -1869,7 +1881,7 @@ function showAssignDialog(opts = {}) {
                     <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
                         <button type="button" data-act="cancel" class="sm-value h-11 px-5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition">បោះបង់</button>
                         <button type="button" data-act="ok" ${canSubmit ? '' : 'disabled'} class="sm-value h-11 px-6 rounded-2xl font-semibold transition ${canSubmit ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}">
-                            ${isReplacing ? `ជំនួស ${personName(occupant.cashierId)}` : 'ចាត់តាំង'}
+                            ${isReplacing ? `ជំនួស ${personName(selReplace)}` : 'ចាត់តាំង'}
                         </button>
                     </div>
                 </div>
@@ -1884,8 +1896,6 @@ function showAssignDialog(opts = {}) {
                     const c = candidates.find(x => x.id === cid);
                     if (c && !c.blocked) {
                         selId = cid;
-                        const sDef = defs[selId] || {};
-                        if (sDef.register && freeRegs.includes(sDef.register)) selReg = sDef.register;
                         isPartial = !!c.partialAllowed;
                         renderDialog();
                     }
@@ -1895,6 +1905,13 @@ function showAssignDialog(opts = {}) {
             host.querySelectorAll('[data-reg]').forEach(el => {
                 el.onclick = () => {
                     selReg = el.dataset.reg;
+                    renderDialog();
+                };
+            });
+
+            host.querySelectorAll('[data-replace]').forEach(el => {
+                el.onclick = () => {
+                    selReplace = el.dataset.replace;
                     renderDialog();
                 };
             });
@@ -1915,6 +1932,7 @@ function showAssignDialog(opts = {}) {
                     finish({
                         personId: selId,
                         register: selReg,
+                        replace: selReplace,
                         reason: selReason,
                         partial: isPartial,
                         until: isPartial && selCand.capTime ? selCand.capTime : null,

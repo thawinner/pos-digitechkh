@@ -133,7 +133,7 @@
                                 </div>
                             </div>
                         </div>
-                        <p class="sm-td-sub mt-2 ${t ? 'text-indigo-700' : 'text-slate-400'}"><i class="fas fa-calendar-day mr-1"></i>${t ? `${t.name} · ${d.register}` : 'គ្មានវេនប្រចាំ'}</p>
+                        <p class="sm-td-sub mt-2 ${t ? 'text-indigo-700' : 'text-slate-400'}"><i class="fas fa-calendar-day mr-1"></i>${t ? `${t.name} <span class="sm-figure">${t.start}–${t.end}</span>` : 'គ្មានវេនប្រចាំ'}</p>
                         <p class="sm-td-sub text-slate-400"><i class="fas fa-bed mr-1"></i>ឈប់ថ្ងៃ${DOW_KH[d.dayOff != null ? d.dayOff : 0]}</p>
                     </div>`;
                 }).join('')}</div>`;
@@ -156,7 +156,6 @@
         function editDefault(id) {
             const cur = (posSettings().staffDefaults || {})[id] || {};
             let selTpl = cur.template || '';
-            let selReg = cur.register || (REGISTERS[0]);
             let selDayOff = cur.dayOff != null ? Number(cur.dayOff) : 0;
 
             const host = posDialogHost('posDefaultShiftModal');
@@ -167,18 +166,15 @@
                 const nightH = t ? nightHours(t) * 6 : 0;
 
                 const defs = posSettings().staffDefaults || {};
-                let clashName = '';
-                if (selTpl && selReg) {
-                    const clashId = Object.keys(defs).find(k => k !== id && defs[k].template === selTpl && defs[k].register === selReg);
-                    if (clashId) clashName = personName(clashId);
-                }
+                const sameTpl = selTpl ? Object.keys(defs).filter(k => k !== id && defs[k].template === selTpl && personById(k) && personById(k).active) : [];
+                const tooMany = sameTpl.length + 1 > REGISTERS.length;
 
                 host.innerHTML = `
                     <div class="w-full max-w-md rounded-3xl shadow-2xl bg-white text-slate-800 p-5 sm:p-6 space-y-4" onclick="event.stopPropagation()">
                         <div class="flex items-start justify-between border-b border-slate-100 pb-3">
                             <div>
                                 <h3 class="sm-card-title text-slate-800 text-base font-semibold">វេនប្រចាំ · ${personName(id)}</h3>
-                                <p class="sm-td-sub text-slate-500 mt-0.5">កំណត់វេន បញ្ជរ និងថ្ងៃឈប់សម្រាកប្រចាំសប្តាហ៍</p>
+                                <p class="sm-td-sub text-slate-500 mt-0.5">កំណត់វេន និងថ្ងៃឈប់សម្រាកប្រចាំសប្តាហ៍ · បញ្ជរជ្រើសពេលបើកវេន</p>
                             </div>
                             <button type="button" data-act="cancel" class="text-slate-400 hover:text-slate-600 p-1"><i class="fas fa-xmark"></i></button>
                         </div>
@@ -198,19 +194,6 @@
                                 </div>
                             </div>
 
-                            ${selTpl ? `
-                                <div>
-                                    <label class="text-xs font-semibold text-slate-600 block mb-1.5">បញ្ជរ</label>
-                                    <div class="flex flex-wrap gap-2">
-                                        ${REGISTERS.map(r => `
-                                            <button type="button" data-reg="${r}" class="h-9 px-3 rounded-xl border text-xs font-semibold transition ${selReg === r ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'}">
-                                                ${r} ${selReg === r ? '✓' : ''}
-                                            </button>
-                                        `).join('')}
-                                    </div>
-                                </div>
-                            ` : ''}
-
                             <div>
                                 <label class="text-xs font-semibold text-slate-600 block mb-1.5">ថ្ងៃឈប់សម្រាកប្រចាំសប្តាហ៍</label>
                                 <div class="grid grid-cols-7 gap-1">
@@ -224,7 +207,8 @@
 
                             <div class="pt-2 border-t border-slate-100 space-y-1.5 text-xs text-slate-600">
                                 <p class="font-medium sm-figure">${weeklyH} ម៉ោង / សប្តាហ៍${nightH ? ` · ម៉ោងយប់ ${nightH} ម៉ោង` : ''}</p>
-                                ${clashName ? `<p class="text-amber-700 font-medium bg-amber-50 border border-amber-200 rounded-lg p-2"><i class="fas fa-triangle-exclamation mr-1"></i>${selReg} ${t ? t.name : ''} ជាវេនប្រចាំរបស់ ${clashName} រួចហើយ</p>` : ''}
+                                ${sameTpl.length ? `<p class="text-slate-500">${t ? t.name : ''}មាន ${sameTpl.map(personName).join(' · ')} រួចហើយ</p>` : ''}
+                                ${tooMany ? `<p class="text-amber-700 font-medium bg-amber-50 border border-amber-200 rounded-lg p-2"><i class="fas fa-triangle-exclamation mr-1"></i>លើសចំនួនបញ្ជរ ${REGISTERS.length}</p>` : ''}
                                 <p class="text-[11px] text-slate-400">ការផ្លាស់ប្តូរតាមថ្ងៃដែលបានកែរួច មិនប៉ះពាល់ឡើយ</p>
                             </div>
                         </div>
@@ -237,19 +221,18 @@
                 `;
 
                 host.querySelectorAll('[data-tpl]').forEach(b => b.onclick = () => { selTpl = b.dataset.tpl; renderModal(); });
-                host.querySelectorAll('[data-reg]').forEach(b => b.onclick = () => { selReg = b.dataset.reg; renderModal(); });
                 host.querySelectorAll('[data-dayoff]').forEach(b => b.onclick = () => { selDayOff = Number(b.dataset.dayoff); renderModal(); });
                 host.querySelector('[data-act="cancel"]').onclick = () => finish(false);
                 host.querySelector('[data-act="save"]').onclick = async () => {
                     const ok = await showPinConfirm({ title: 'រក្សាទុកវេនប្រចាំ', message: personName(id), userId: ME_MANAGER, confirmText: 'រក្សាទុក' });
                     if (!ok) return;
                     const defs = clone(posSettings().staffDefaults || {});
-                    defs[id] = { template: selTpl, register: selTpl ? selReg : '', dayOff: selDayOff };
+                    defs[id] = { template: selTpl, dayOff: selDayOff };
                     savePosSettings({ staffDefaults: defs }, ME_MANAGER);
                     logPosEvent('roster_default', {
                         personId: id,
                         actorId: ME_MANAGER,
-                        note: `${personName(id)} · ${selTpl ? `${selTpl} (${selReg})` : 'គ្មាន'} · ឈប់ថ្ងៃ${DOW_KH[selDayOff]}`
+                        note: `${personName(id)} · ${t ? t.name : 'គ្មានវេនប្រចាំ'} · ឈប់ថ្ងៃ${DOW_KH[selDayOff]}`
                     });
                     showToast(`បានកែវេនប្រចាំរបស់ ${personName(id)}`, 'success');
                     finish(true);
@@ -271,6 +254,13 @@
             });
         }
 
+        /* បញ្ជរក្នុងកាលវិភាគ៖ ថតប្រាក់ដែលបើករួច ឬបញ្ជរដែលភ្ជាប់ · បើគ្មាន មិនបង្ហាញ (ជ្រើសពេលបើកវេន) */
+        function seatLabel(a, actual) {
+            if (actual) return actual.status === 'open' ? `<span class="text-emerald-700 font-semibold">${actual.register}</span>` : actual.register;
+            if (a.pin && a.register) return `<i class="fas fa-thumbtack text-[9px] mr-0.5"></i>${a.register}`;
+            return '';
+        }
+
         /* ការរៀបចំប្លង់កោសិកាក្នុងតារាង (Desktop Grid) */
         function cell(d, t) {
             const date = isoDate(d);
@@ -285,17 +275,16 @@
             return `<td class="group/cell align-top p-2 border-l border-slate-100 ${past ? 'bg-slate-50/60' : date === isoDate(new Date()) ? 'bg-indigo-50/30' : ''}">
                 <div class="space-y-1.5">
                     ${list.map((a, i) => {
-                        const actual = shifts.find(s => s.register === a.register);
-                        const mismatch = actual && actual.cashierId !== a.cashierId;
-                        const isLiveOpen = actual && actual.status === 'open' && actual.cashierId === a.cashierId;
+                        const actual = shifts.find(s => s.cashierId === a.cashierId);
+                        const isLiveOpen = actual && actual.status === 'open';
 
-                        return `<div class="group/chip flex items-center gap-1.5 rounded-xl border ${mismatch || a.cover ? 'border-amber-300 bg-amber-50/60' : 'border-slate-200 bg-white'} pl-1.5 pr-1 py-1.5">
+                        return `<div class="group/chip flex items-center gap-1.5 rounded-xl border ${a.cover ? 'border-amber-300 bg-amber-50/60' : 'border-slate-200 bg-white'} pl-1.5 pr-1 py-1.5">
                             ${avatarHtml(a.cashierId, 'w-6 h-6')}
                             <div class="min-w-0 flex-1">
                                 <p class="text-[12px] font-semibold text-slate-700 truncate">
                                     ${personName(a.cashierId)}
                                 </p>
-                                <p class="text-[11px] text-slate-400 sm-figure truncate">${a.cover ? '<span class="text-amber-700 font-semibold">ជំនួស</span> · ' : ''}${a.until ? `<span class="text-amber-700 font-semibold">ដល់ ${a.until}</span> · ` : ''}${a.register}${actual ? ` · ${SHIFT_STATUS[actual.status].label}` : ''}${mismatch ? ` · ${personName(actual.cashierId)} ជំនួស` : ''}</p>
+                                <p class="text-[11px] text-slate-400 sm-figure truncate">${[a.cover ? '<span class="text-amber-700 font-semibold">ជំនួស</span>' : '', a.until ? `<span class="text-amber-700 font-semibold">ដល់ ${a.until}</span>` : '', seatLabel(a, actual)].filter(Boolean).join(' · ') || 'មិនទាន់បើក'}</p>
                             </div>
                             ${past ? '' : (isLiveOpen ? `
                                 <button onclick="showLockedDrawerTip('${personName(a.cashierId)}', '${actual.id}')" type="button" aria-label="កំពុងបើកថតប្រាក់" class="w-6 h-6 rounded-lg text-amber-600 hover:bg-amber-100 flex-shrink-0 flex items-center justify-center"><i class="fas fa-lock text-xs"></i></button>
@@ -320,7 +309,7 @@
                             </div>
                         ` : `<p class="text-[12px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-2 py-2"><i class="fas fa-triangle-exclamation mr-1"></i>គ្មានអ្នកគិតលុយ · ត្រូវរកអ្នកជំនួស</p>`))}
 
-                    ${past || !list.length ? '' : `<button onclick="addTo('${date}', '${t.code}')" type="button" class="w-full rounded-xl border border-dashed border-slate-300 hover:border-indigo-400 hover:bg-indigo-50 text-[12px] text-slate-500 hover:text-indigo-700 py-1 transition-opacity [@media(hover:hover)]:opacity-0 group-hover/cell:opacity-100 focus:opacity-100"><i class="fas fa-plus mr-1"></i>បន្ថែម</button>`}
+                    ${past || !list.length || list.length >= REGISTERS.length ? '' : `<button onclick="addTo('${date}', '${t.code}')" type="button" class="w-full rounded-xl border border-dashed border-slate-300 hover:border-indigo-400 hover:bg-indigo-50 text-[12px] text-slate-500 hover:text-indigo-700 py-1 transition-opacity [@media(hover:hover)]:opacity-0 group-hover/cell:opacity-100 focus:opacity-100"><i class="fas fa-plus mr-1"></i>បន្ថែម</button>`}
 
                     ${custom ? `
                         <div class="flex flex-wrap items-center gap-x-2 px-1 pt-0.5">
@@ -367,22 +356,23 @@
                             </div>
                             <div class="flex items-center gap-2">
                                 ${custom ? `<button onclick="resetCell('${selectedMobileDate}', '${t.code}')" type="button" class="text-xs text-indigo-600 font-semibold hover:underline">ត្រឡប់ទៅលំនាំដើម</button>` : ''}
-                                <button onclick="addTo('${selectedMobileDate}', '${t.code}')" type="button" class="h-8 px-2.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold inline-flex items-center gap-1">
+                                <span class="text-xs text-slate-400 sm-figure">${list.length}/${REGISTERS.length}</span>
+                                ${list.length >= REGISTERS.length ? '' : `<button onclick="addTo('${selectedMobileDate}', '${t.code}')" type="button" class="h-8 px-2.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold inline-flex items-center gap-1">
                                     <i class="fas fa-plus text-[10px]"></i>បន្ថែម
-                                </button>
+                                </button>`}
                             </div>
                         </div>
 
                         <div class="space-y-2">
                             ${list.map((a, i) => {
-                                const actual = shifts.find(s => s.register === a.register);
-                                const isLiveOpen = actual && actual.status === 'open' && actual.cashierId === a.cashierId;
+                                const actual = shifts.find(s => s.cashierId === a.cashierId && s.templateCode === t.code);
+                                const isLiveOpen = actual && actual.status === 'open';
                                 return `
                                     <div class="flex items-center gap-2.5 p-2 rounded-xl border border-slate-200 bg-slate-50/50">
                                         ${avatarHtml(a.cashierId, 'w-8 h-8')}
                                         <div class="min-w-0 flex-1">
                                             <p class="text-xs font-semibold text-slate-800 truncate">${personName(a.cashierId)} ${a.cover ? '<span class="text-[10px] text-amber-700 bg-amber-100 px-1 rounded font-normal">ជំនួស</span>' : ''}</p>
-                                            <p class="text-[11px] text-slate-500 sm-figure">${a.register}${a.until ? ` · ដល់ ${a.until}` : ''}</p>
+                                            <p class="text-[11px] text-slate-500 sm-figure">${[a.until ? `ដល់ ${a.until}` : '', seatLabel(a, actual)].filter(Boolean).join(' · ') || 'មិនទាន់បើក'}</p>
                                         </div>
                                         ${isLiveOpen ? `
                                             <button onclick="showLockedDrawerTip('${personName(a.cashierId)}', '${actual.id}')" type="button" class="w-8 h-8 rounded-lg text-amber-600 bg-amber-50 flex items-center justify-center"><i class="fas fa-lock text-xs"></i></button>
@@ -443,18 +433,13 @@
 
         /* ចាត់តាំងរហ័ស (S4) */
         function quickAssign(date, code, personId) {
-            const defs = posSettings().staffDefaults || {};
-            const staffDef = defs[personId] || {};
-            const curRoster = rosterFor(date, code);
-            const freeRegs = REGISTERS.filter(r => !curRoster.some(a => a.register === r));
-            const register = (staffDef.register && freeRegs.includes(staffDef.register)) ? staffDef.register : (freeRegs[0] || 'POS-01');
-
-            const res = assignShift(date, code, personId, register, { by: ME_MANAGER });
-            showToast(`បានចាត់ ${personName(personId)} ទៅ${register}`, 'success', 6000, {
+            const tpl = shiftTemplates().find(x => x.code === code);
+            const res = assignShift(date, code, personId, '', { by: ME_MANAGER });
+            showToast(`បានចាត់ ${personName(personId)} ទៅ${tpl ? tpl.name : 'វេន'}`, 'success', 6000, {
                 action: {
                     label: 'មិនធ្វើវិញ',
                     onClick: () => {
-                        undoRosterAction({ type: 'assign', date, code, personId, register, movedFrom: res.movedFrom, replaced: res.replaced });
+                        undoRosterAction({ type: 'assign', date, code, personId, movedFrom: res.movedFrom, replaced: res.replaced });
                         render();
                     }
                 }
@@ -470,13 +455,16 @@
             if (res.reason) meta.reason = res.reason;
             if (res.until) meta.until = res.until;
             if (res.from) meta.from = res.from;
+            if (res.replace) meta.replace = res.replace;
 
+            const tpl = shiftTemplates().find(x => x.code === code);
             const r = assignShift(date, code, res.personId, res.register, meta);
-            showToast(`បានចាត់ ${personName(res.personId)} ទៅ ${res.register}`, 'success', 6000, {
+            if (r.error) return showToast(r.error, 'error');
+            showToast(`បានចាត់ ${personName(res.personId)} ទៅ${tpl ? tpl.name : 'វេន'}${res.register ? ` · ភ្ជាប់ ${res.register}` : ''}${r.replaced ? ` · ជំនួស ${personName(r.replaced)}` : ''}`, 'success', 6000, {
                 action: {
                     label: 'មិនធ្វើវិញ',
                     onClick: () => {
-                        undoRosterAction({ type: 'assign', date, code, personId: res.personId, register: res.register, movedFrom: r.movedFrom, replaced: r.replaced });
+                        undoRosterAction({ type: 'assign', date, code, personId: res.personId, movedFrom: r.movedFrom, replaced: r.replaced });
                         render();
                     }
                 }
@@ -601,8 +589,8 @@
             if (pShift) unassignShift(date, pShift.code, personId);
             if (oShift) unassignShift(date, oShift.code, otherId);
 
-            if (pShift) assignShift(date, pShift.code, otherId, pShift.entry.register, { reason: 'ប្តូរវេនគ្នា', by: ME_MANAGER });
-            if (oShift) assignShift(date, oShift.code, personId, oShift.entry.register, { reason: 'ប្តូរវេនគ្នា', by: ME_MANAGER });
+            if (pShift) assignShift(date, pShift.code, otherId, pShift.entry.pin ? pShift.entry.register : '', { reason: 'ប្តូរវេនគ្នា', by: ME_MANAGER });
+            if (oShift) assignShift(date, oShift.code, personId, oShift.entry.pin ? oShift.entry.register : '', { reason: 'ប្តូរវេនគ្នា', by: ME_MANAGER });
 
             render();
             showToast('បានប្តូរវេនជោគជ័យ', 'success');
@@ -617,8 +605,7 @@
             let assignments = gaps.map(g => ({
                 date: g.date,
                 code: g.template.code,
-                personId: g.suggested ? g.suggested.id : '',
-                register: g.register
+                personId: g.suggested ? g.suggested.id : ''
             }));
 
             const renderModal = () => {
@@ -640,17 +627,12 @@
                                     <div class="p-3 rounded-2xl border border-slate-200 bg-slate-50/50 flex flex-wrap items-center justify-between gap-2">
                                         <div>
                                             <p class="text-xs font-semibold text-slate-800">${DOW_KH[g.dow]} ${fmtDate(g.date + 'T12:00')} · ${g.template.name}</p>
-                                            <p class="text-[11px] text-slate-500 sm-figure">${g.template.start}–${g.template.end} · បញ្ជរ ${g.register}</p>
+                                            <p class="text-[11px] text-slate-500 sm-figure">${g.template.start}–${g.template.end}</p>
                                         </div>
-                                        <div class="flex items-center gap-2">
-                                            <select data-idx="${idx}" class="text-xs h-9 px-2.5 rounded-xl border border-slate-200 bg-white font-medium focus:outline-none focus:border-indigo-500">
-                                                ${candList.map(c => `
-                                                    <option value="${c.id}" ${c.id === currentAssign.personId ? 'selected' : ''}>
-                                                        ${c.name} (${c.chip})
-                                                    </option>
-                                                `).join('')}
-                                            </select>
-                                        </div>
+                                        <button type="button" data-idx="${idx}" ${candList.length ? '' : 'disabled'} class="h-9 pl-1.5 pr-2.5 rounded-xl border border-slate-200 bg-white hover:border-indigo-300 text-xs font-semibold text-slate-700 inline-flex items-center gap-2">
+                                            ${currentAssign.personId ? `${avatarHtml(currentAssign.personId, 'w-6 h-6')}<span>${personName(currentAssign.personId)}</span>` : '<span class="pl-1 text-slate-400">គ្មានអ្នកទំនេរ</span>'}
+                                            <i class="fas fa-chevron-down text-[10px] text-slate-400"></i>
+                                        </button>
                                     </div>
                                 `;
                             }).join('')}
@@ -663,10 +645,16 @@
                     </div>
                 `;
 
-                host.querySelectorAll('select[data-idx]').forEach(sel => {
-                    sel.onchange = () => {
-                        const idx = Number(sel.dataset.idx);
-                        assignments[idx].personId = sel.value;
+                host.querySelectorAll('button[data-idx]').forEach(btn => {
+                    btn.onclick = async () => {
+                        const idx = Number(btn.dataset.idx);
+                        const g = gaps[idx];
+                        const pick = await showOptionDialog({
+                            title: `${g.template.name} · ${fmtDate(g.date + 'T12:00')}`,
+                            options: rankCandidates(g.date, g.template.code).filter(c => !c.blocked)
+                                .map(c => ({ value: c.id, label: c.name, desc: `${c.chip} · ${c.hoursBefore} → ${c.hoursAfter} ម៉ោង`, icon: 'fa-user' }))
+                        });
+                        if (pick) { assignments[idx].personId = pick; renderModal(); }
                     };
                 });
 
@@ -674,7 +662,7 @@
                 host.querySelector('[data-act="ok"]').onclick = () => {
                     assignments.forEach(a => {
                         if (a.personId) {
-                            assignShift(a.date, a.code, a.personId, a.register, { reason: 'បំពេញដោយស្វ័យប្រវត្តិ', by: ME_MANAGER });
+                            assignShift(a.date, a.code, a.personId, '', { reason: 'បំពេញដោយស្វ័យប្រវត្តិ', by: ME_MANAGER });
                         }
                     });
                     posDialogClose(host);

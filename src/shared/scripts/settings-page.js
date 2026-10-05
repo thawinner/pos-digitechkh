@@ -506,7 +506,7 @@ function renderReasons(s) {
 
 function fmtVal(v) {
     if (Array.isArray(v)) return v.length && typeof v[0] === 'object' ? v.map(t => `${t.name} ${t.start}–${t.end}`).join(' · ') : `${v.length} ធាតុ`;
-    if (v && typeof v === 'object') return Object.keys(v).map(k => `${personName(k) !== '—' ? personName(k) : k}: ${typeof v[k] === 'object' ? (Array.isArray(v[k]) ? v[k].length : (v[k].template || '—') + ' ' + (v[k].register || '')) : v[k]}`).join(' · ');
+    if (v && typeof v === 'object') return Object.keys(v).map(k => `${personName(k) !== '—' ? personName(k) : k}: ${typeof v[k] === 'object' ? (Array.isArray(v[k]) ? v[k].length : (v[k].template || '—')) : v[k]}`).join(' · ');
     return typeof v === 'number' ? fmtInt(v) : String(v);
 }
 
@@ -660,7 +660,7 @@ async function removeTemplate(i) {
     });
     if (!ok) return;
     draft.shiftTemplates.splice(i, 1);
-    Object.values(draft.staffDefaults || {}).forEach(d => { if (d.template === t.code) { d.template = ''; d.register = ''; } });
+    Object.values(draft.staffDefaults || {}).forEach(d => { if (d.template === t.code) { d.template = ''; } });
     renderSaveBar();
     render();
 }
