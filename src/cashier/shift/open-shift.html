@@ -15,7 +15,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#0891b2", 'primary-dark': "#0e7490", accent: "#22d3ee" },
+                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -33,6 +33,35 @@
         .os-num { -moz-appearance: textfield; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
         .fade-up { animation: fadeUp .22s ease; }
+
+        /* ===== ទម្រង់ភ្លឺ (លំនាំដើម) — ដូចផ្ទាំងគិតលុយ =====
+           ទំព័រនេះសរសេរជាពណ៌ងងឹត។ ពេល <html> មិនមានថ្នាក់ dark ស្រទាប់នេះបកទៅផ្ទៃភ្លឺ
+           ប៊ូតុងព្រះច័ន្ទនៅតែប្តូរទៅទម្រង់ងងឹតបាន។ ប៊ូតុងពណ៌ពេញរក្សាអក្សរពណ៌ស។ */
+        html:not(.dark) .os-shell { background: #f1f5f9 !important; color: #0f172a !important; }
+        html:not(.dark) .os-shell > header { background: #ffffff !important; border-color: #e2e8f0 !important; }
+        html:not(.dark) .os-shell .os-panel { background: #ffffff; border-color: #e2e8f0; box-shadow: 0 1px 2px rgba(15, 23, 42, .04); }
+        html:not(.dark) .os-shell :is(.bg-\[\#0b1220\], .bg-\[\#111a2b\], .bg-white\/5) { background-color: #ffffff !important; }
+        html:not(.dark) .os-shell :is(.bg-white\/10, .bg-white\/\[0\.04\], .bg-white\/\[0\.03\]) { background-color: #f1f5f9 !important; }
+        html:not(.dark) .os-shell :is(.hover\:bg-white\/5, .hover\:bg-white\/10, .hover\:bg-white\/\[0\.04\], .hover\:bg-white\/\[0\.03\]):hover { background-color: #f8fafc !important; }
+        html:not(.dark) .os-shell .hover\:bg-white\/15:hover { background-color: #e2e8f0 !important; }
+        html:not(.dark) .os-shell :is(.border-white\/10, .border-white\/\[0\.06\], .border-white\/\[0\.08\], .border-slate-600) { border-color: #e2e8f0 !important; }
+        html:not(.dark) .os-shell :is(.divide-white\/\[0\.06\], .divide-white\/\[0\.08\]) > * + * { border-color: #e2e8f0 !important; }
+        html:not(.dark) .os-shell :is(.text-white, .text-slate-100) { color: #0f172a !important; }
+        html:not(.dark) .os-shell .hover\:text-white:hover { color: #0f172a !important; }
+        html:not(.dark) .os-shell .text-slate-200 { color: #1e293b !important; }
+        html:not(.dark) .os-shell .text-slate-300 { color: #475569 !important; }
+        html:not(.dark) .os-shell :is(.text-slate-400, .text-slate-500) { color: #64748b !important; }
+        html:not(.dark) .os-shell .text-slate-600:not(.bg-slate-200) { color: #94a3b8 !important; }
+        html:not(.dark) .os-shell .placeholder-slate-500::placeholder { color: #94a3b8 !important; }
+        html:not(.dark) .os-shell :is(.text-blue-200, .text-blue-300, .text-blue-400) { color: #1d4ed8 !important; }
+        html:not(.dark) .os-shell :is(.text-amber-200, .text-amber-300, .text-amber-300\/80, .text-amber-400) { color: #b45309 !important; }
+        html:not(.dark) .os-shell :is(.text-emerald-300) { color: #047857 !important; }
+        html:not(.dark) .os-shell :is(.text-rose-200, .text-rose-300, .text-rose-300\/80, .text-rose-400) { color: #be123c !important; }
+        html:not(.dark) .os-shell .hover\:text-rose-200:hover { color: #be123c !important; }
+        html:not(.dark) .os-shell .bg-black\/10 { background-color: #f8fafc !important; border-top: 1px solid #e2e8f0; }
+        html:not(.dark) .os-shell .border-blue-500 { border-color: #3b82f6 !important; }
+        html:not(.dark) body.os-shell :is([class~="bg-blue-400"], [class~="bg-blue-500"], [class~="bg-blue-600"], [class~="bg-blue-700"], [class~="bg-emerald-500"], [class~="bg-emerald-600"], [class~="bg-rose-500"], [class~="bg-rose-600"], [class~="bg-amber-500"]),
+        html:not(.dark) body.os-shell :is([class~="bg-blue-400"], [class~="bg-blue-500"], [class~="bg-blue-600"], [class~="bg-blue-700"], [class~="bg-emerald-500"], [class~="bg-emerald-600"], [class~="bg-rose-500"], [class~="bg-rose-600"], [class~="bg-amber-500"]) :is(.text-white, .text-slate-100, .text-slate-950) { color: #ffffff !important; }
     </style>
 </head>
 <body id="posPortal" data-role-root="../.." data-active="pos" class="os-shell font-sans text-slate-100 text-[16px] flex flex-col">
@@ -47,7 +76,7 @@
             </div>
         </div>
         <span class="hidden sm:!inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10">
-            <i class="fas fa-clock text-cyan-400 text-xs"></i>
+            <i class="fas fa-clock text-blue-400 text-xs"></i>
             <span id="liveClock" class="sm-badge text-white font-semibold sm-figure"></span>
         </span>
         <div class="flex items-center gap-2 flex-shrink-0">
@@ -166,8 +195,8 @@
                             : myPin() === r ? 'ទំនេរ · អ្នកគ្រប់គ្រងភ្ជាប់ឱ្យអ្នក'
                             : last && last.cashierId === ME_CASHIER ? 'ទំនេរ · ប្រើចុងក្រោយ' : 'ទំនេរ';
                         return `<button type="button" role="radio" aria-checked="${on}" ${owner || res ? 'disabled' : ''} onclick="switchRegister('${r}')"
-                            class="text-left rounded-lg border px-3.5 py-3 transition-colors flex items-center gap-3 ${owner || res ? 'border-white/[0.06] bg-white/[0.02] opacity-50 cursor-not-allowed' : on ? 'border-cyan-500/70 bg-cyan-500/10' : 'border-white/10 hover:bg-white/[0.04]'}">
-                            <span class="w-4 h-4 rounded-full border-2 ${on ? 'border-cyan-400' : 'border-slate-600'} inline-flex items-center justify-center flex-shrink-0">${on ? '<span class="w-2 h-2 rounded-full bg-cyan-400"></span>' : ''}</span>
+                            class="text-left rounded-lg border px-3.5 py-3 transition-colors flex items-center gap-3 ${owner || res ? 'border-white/[0.06] bg-white/[0.02] opacity-50 cursor-not-allowed' : on ? 'border-blue-500/70 bg-blue-500/10' : 'border-white/10 hover:bg-white/[0.04]'}">
+                            <span class="w-4 h-4 rounded-full border-2 ${on ? 'border-blue-400' : 'border-slate-600'} inline-flex items-center justify-center flex-shrink-0">${on ? '<span class="w-2 h-2 rounded-full bg-blue-400"></span>' : ''}</span>
                             <span class="min-w-0">
                                 <span class="sm-value ${on ? 'text-white' : 'text-slate-200'} block">${r}</span>
                                 <span class="sm-td-sub ${owner || res ? 'text-slate-500' : 'text-slate-400'} block truncate">${sub}</span>
@@ -228,7 +257,7 @@
             const now = new Date();
             const start = dateAt(templateDateFor(t, now), t.start);
             const end = shiftEndDate({ date: templateDateFor(t, now), start: t.start, end: t.end });
-            if (now < start) return { state: 'soon', text: `ចាប់ផ្តើមក្នុង ${fmtDuration(start - now)}`, tone: 'text-sky-300' };
+            if (now < start) return { state: 'soon', text: `ចាប់ផ្តើមក្នុង ${fmtDuration(start - now)}`, tone: 'text-blue-300' };
             if (now > end) return { state: 'past', text: `បានបញ្ចប់ម៉ោង ${t.end}`, tone: 'text-slate-400' };
             const late = now - start;
             return late > 10 * 60000
@@ -240,11 +269,11 @@
 
         function renderSteps() {
             bmsStepper('steps', {
-                dark: true,
+                dark: document.documentElement.classList.contains('dark'),
                 variant: 'icon',
                 size: 'md',
-                tone: 'amber',
-                doneTone: 'brand',
+                tone: 'accent',
+                doneTone: 'accent',
                 current: stage === 'overview' ? 1 : 2,
                 steps: [{ icon: 'fa-calendar-day', label: 'ជ្រើសរើសវេន' }, { icon: 'fa-coins', label: 'រាប់ប្រាក់បាតថត' }, { icon: 'fa-user-shield', label: 'អ្នកគ្រប់គ្រងបញ្ជាក់' }],
                 onStep: n => { if (n === 1) { stage = 'overview'; render(); } }
@@ -258,12 +287,12 @@
             const on = t.code === templateCode;
             const tm = timing(t);
             const crew = rosterFor(templateDateFor(t, new Date()), t.code).filter(a => a.cashierId !== ME_CASHIER);
-            const tag = mine ? '<span class="sm-td-sub text-cyan-300 whitespace-nowrap">វេនរបស់ខ្ញុំ</span>'
+            const tag = mine ? '<span class="sm-td-sub text-blue-300 whitespace-nowrap">វេនរបស់ខ្ញុំ</span>'
                 : on ? '<span class="sm-td-sub text-amber-300 whitespace-nowrap">ជំនួសវេន</span>' : '';
             return `<button onclick="pickTemplate('${t.code}')" type="button" role="radio" aria-checked="${on}"
                 class="w-full text-left flex items-center gap-4 px-5 py-4 transition-colors ${on ? 'bg-white/[0.05]' : 'hover:bg-white/[0.03]'}">
-                <span class="w-5 h-5 rounded-full border-2 ${on ? 'border-cyan-400' : 'border-slate-600'} inline-flex items-center justify-center flex-shrink-0">
-                    ${on ? '<span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>' : ''}</span>
+                <span class="w-5 h-5 rounded-full border-2 ${on ? 'border-blue-400' : 'border-slate-600'} inline-flex items-center justify-center flex-shrink-0">
+                    ${on ? '<span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>' : ''}</span>
                 <span class="min-w-0 flex-1 grid grid-cols-1 md:grid-cols-[200px_minmax(0,1fr)] gap-x-6 gap-y-0.5 items-center">
                     <span>
                         <span class="sm-value ${on ? 'text-white' : 'text-slate-200'} block">${t.name}</span>
@@ -359,7 +388,7 @@
                         ${mine.length ? '' : `<button onclick="handleLogout()" type="button" class="sm-td h-12 px-4 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 font-medium inline-flex items-center gap-2 transition-colors">
                             មិនមែនទេ · ចាកចេញ</button>`}
                         <button onclick="goCount(false)" type="button" ${t && !over && !busy ? '' : 'disabled'}
-                            class="sm-value h-12 px-6 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold inline-flex items-center gap-2 transition-colors disabled:opacity-40">
+                            class="sm-value h-12 px-6 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold inline-flex items-center gap-2 transition-colors disabled:opacity-40">
                             រាប់ប្រាក់បាតថត <i class="fas fa-arrow-right text-[13px]"></i>
                         </button>
                     </div>
@@ -443,19 +472,19 @@
             const map = currency === 'usd' ? countUSD : countKHR;
             const q = map[note] || 0;
             const label = currency === 'usd' ? '$' + note : note.toLocaleString('en-US') + ' ៛';
-            return `<div class="rounded-xl border ${q ? 'border-cyan-600/50 bg-[#111a2b]' : 'border-white/10 bg-[#111a2b]'} p-3">
+            return `<div class="rounded-xl border ${q ? 'border-blue-600/50 bg-[#111a2b]' : 'border-white/10 bg-[#111a2b]'} p-3">
                 <div class="flex items-baseline justify-between gap-2">
                     <span class="sm-value text-white sm-figure">${label}</span>
-                    <span data-sub="${currency}-${note}" class="sm-td-sub sm-figure ${q ? 'text-cyan-200' : 'text-slate-600'}">${q ? (currency === 'usd' ? fmtUSD(note * q) : fmtKHR(note * q)) : '—'}</span>
+                    <span data-sub="${currency}-${note}" class="sm-td-sub sm-figure ${q ? 'text-blue-200' : 'text-slate-600'}">${q ? (currency === 'usd' ? fmtUSD(note * q) : fmtKHR(note * q)) : '—'}</span>
                 </div>
                 <div class="flex items-center gap-1.5 mt-2.5">
                     <button onclick="bump('${currency}', ${note}, -1)" type="button" aria-label="បន្ថយ ${label}"
                         class="w-11 h-11 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300"><i class="fas fa-minus text-xs"></i></button>
                     <input id="${currency}In-${note}" type="number" inputmode="numeric" min="0" value="${q || ''}" placeholder="0"
                         oninput="setCount('${currency}', ${note}, this.value)" onfocus="this.select()" aria-label="ចំនួនសន្លឹក ${label}"
-                        class="os-num sm-value flex-1 min-w-0 h-11 rounded-xl bg-[#0b1220] border border-white/10 text-white text-center focus:outline-none focus:border-cyan-500">
+                        class="os-num sm-value flex-1 min-w-0 h-11 rounded-xl bg-[#0b1220] border border-white/10 text-white text-center focus:outline-none focus:border-blue-500">
                     <button onclick="bump('${currency}', ${note}, 1)" type="button" aria-label="បន្ថែម ${label}"
-                        class="w-11 h-11 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white"><i class="fas fa-plus text-xs"></i></button>
+                        class="w-11 h-11 rounded-xl bg-blue-600 hover:bg-blue-500 text-white"><i class="fas fa-plus text-xs"></i></button>
                 </div>
             </div>`;
         }
@@ -498,7 +527,7 @@
             const q = map[note];
             if (el) {
                 el.textContent = q ? (currency === 'usd' ? fmtUSD(note * q) : fmtKHR(note * q)) : '—';
-                el.className = `sm-td-sub sm-figure ${q ? 'text-cyan-200' : 'text-slate-600'}`;
+                el.className = `sm-td-sub sm-figure ${q ? 'text-blue-200' : 'text-slate-600'}`;
             }
             renderSummary();
         }
@@ -546,7 +575,7 @@
                     <p class="sm-td-sub text-amber-300 mb-1.5"><i class="fas fa-triangle-exclamation mr-1"></i>ចំនួនមិនស្មើ · សូមពន្យល់</p>
                     <textarea id="mismatchNote" rows="2" oninput="mismatchNote = this.value; renderButton()"
                         placeholder="ឧ. ខ្វះក្រដាស 500 ៛ · អ្នកគ្រប់គ្រងនឹងបំពេញបន្ថែម..."
-                        class="sm-td w-full px-3 py-2.5 rounded-xl bg-[#0b1220] border border-white/10 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 resize-none">${escapeText(mismatchNote)}</textarea>
+                        class="sm-td w-full px-3 py-2.5 rounded-xl bg-[#0b1220] border border-white/10 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none">${escapeText(mismatchNote)}</textarea>
                 </div>` : ''}
                 <div id="startBtn"></div>`;
             renderButton();
@@ -585,7 +614,7 @@
                 reason: note || (isShortShift ? 'បើកវេនខ្លី ព្រោះជិតដល់កំណត់ 12 ម៉ោង' : 'ប្រាក់បាតថតត្រឹមត្រូវ'),
                 excludeIds: [ME_CASHIER],
                 confirmText: 'អនុម័ត និងបើកវេន',
-                dark: true
+                dark: document.documentElement.classList.contains('dark')
             });
             if (!ok) return;
 

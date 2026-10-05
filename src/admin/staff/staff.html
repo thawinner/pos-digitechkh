@@ -15,7 +15,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#059669", 'primary-dark': "#047857", accent: "#34d399" },
+                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -40,10 +40,10 @@
                         <label class="relative flex-1 sm:w-[220px]">
                             <i class="fas fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                             <input id="search" oninput="renderList()" type="text" placeholder="ស្វែងរកឈ្មោះ ឬលេខសម្គាល់"
-                                class="sm-td w-full h-9 pl-8 pr-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:outline-none">
+                                class="sm-td w-full h-9 pl-8 pr-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500 focus:outline-none">
                         </label>
                         <a href="../reports/payroll.html" class="sm-badge h-9 px-3.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center gap-2 whitespace-nowrap"><i class="fas fa-money-bill-wave text-emerald-600"></i> បើកប្រាក់បៀវត្សរ៍</a>
-                        <button onclick="addPerson()" type="button" class="sm-badge h-9 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold inline-flex items-center gap-2 whitespace-nowrap"><i class="fas fa-plus"></i> បន្ថែមបុគ្គលិក</button>
+                        <button onclick="addPerson()" type="button" class="sm-badge h-9 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2 whitespace-nowrap"><i class="fas fa-plus"></i> បន្ថែមបុគ្គលិក</button>
                     </div>
                 </div>
                 <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm">
@@ -63,7 +63,7 @@
                     <div id="cards" class="md:hidden divide-y divide-slate-100"></div>
                     <div id="empty" class="hidden"></div>
                 </section>
-                <p class="sm-td-sub text-slate-500 px-1"><i class="fas fa-circle-info mr-1 text-slate-400"></i>វេនប្រចាំ និងថ្ងៃឈប់សម្រាក កំណត់នៅទំព័រ <a href="../../manager/roster/roster.html" class="text-emerald-700 font-semibold hover:underline">កាលវិភាគវេន</a> · គណនីដែលផ្អាកមិនអាចចូលប្រើបាន តែឈ្មោះនៅតែមានក្នុងប្រវត្តិ</p>
+                <p class="sm-td-sub text-slate-500 px-1"><i class="fas fa-circle-info mr-1 text-slate-400"></i>វេនប្រចាំ និងថ្ងៃឈប់សម្រាក កំណត់នៅទំព័រ <a href="../../manager/roster/roster.html" class="text-blue-700 font-semibold hover:underline">កាលវិភាគវេន</a> · គណនីដែលផ្អាកមិនអាចចូលប្រើបាន តែឈ្មោះនៅតែមានក្នុងប្រវត្តិ</p>
             </div>
         </main>
     </div>
@@ -85,8 +85,8 @@
             { id: 'inactive', label: 'បានផ្អាក' }
         ];
         const ROLE_CHIP = {
-            admin: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-            manager: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+            admin: 'bg-slate-50 text-slate-700 border-slate-200',
+            manager: 'bg-slate-50 text-slate-700 border-slate-200',
             cashier: 'bg-slate-50 text-slate-700 border-slate-200'
         };
         const ROLE_DESC = {
@@ -150,7 +150,7 @@
         }
 
         function dotsBtn(mid) {
-            return `<button onclick="toggleRowActionMenu(event, '${mid}')" type="button" aria-label="សកម្មភាព" class="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200/70 inline-flex items-center justify-center"><i class="fas fa-ellipsis-vertical text-sm"></i></button>`;
+            return `<button onclick="toggleRowActionMenu(event, '${mid}')" type="button" aria-label="សកម្មភាព" class="w-9 h-9 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 inline-flex items-center justify-center"><i class="fas fa-ellipsis-vertical text-sm"></i></button>`;
         }
 
         function visible() {
@@ -164,8 +164,8 @@
             const all = staff();
             const count = id => id === 'inactive' ? all.filter(p => !p.active).length : all.filter(p => p.active && (id === 'all' || p.role === id)).length;
             document.getElementById('roleTabs').innerHTML = TABS.map(t => `<button type="button" onclick="tab='${t.id}'; renderAll()"
-                class="sm-badge h-9 px-3.5 rounded-xl transition inline-flex items-center gap-2 ${tab === t.id ? 'bg-emerald-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">${t.label}
-                <span class="text-[12px] sm-figure ${tab === t.id ? 'text-emerald-100' : 'text-slate-400'}">${count(t.id)}</span></button>`).join('');
+                class="sm-badge h-9 px-3.5 rounded-xl transition inline-flex items-center gap-2 ${tab === t.id ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">${t.label}
+                <span class="text-[12px] sm-figure ${tab === t.id ? 'text-blue-100' : 'text-slate-400'}">${count(t.id)}</span></button>`).join('');
         }
 
         function renderList() {
@@ -173,21 +173,21 @@
             const empty = document.getElementById('empty');
             empty.classList.toggle('hidden', !!list.length);
             empty.innerHTML = list.length ? '' : emptyState('fa-users', tab === 'inactive' ? 'គ្មានគណនីដែលបានផ្អាក' : 'រកមិនឃើញបុគ្គលិក', 'សូមសាកល្បងពាក្យស្វែងរកផ្សេង');
-            const me = id => id === ME_MANAGER ? '<span class="sm-badge ml-1.5 px-1.5 rounded bg-emerald-50 text-emerald-700">លោកអ្នក</span>' : '';
+            const me = id => id === ME_MANAGER ? '<span class="sm-badge ml-1.5 px-1.5 rounded bg-slate-100 text-slate-600">លោកអ្នក</span>' : '';
             document.getElementById('rows').innerHTML = list.map(p => {
                 const comp = typeof getStaffCompensation === 'function' ? getStaffCompensation(p.id) : { baseSalaryUSD: 250, hourlyRateUSD: 1.20 };
                 return `<tr class="${p.active ? '' : 'bg-slate-50/50'}">
-                    <td class="py-3 px-5"><div class="flex items-center gap-3 min-w-0">${avatarOf(p)}<div class="min-w-0"><p class="sm-td-strong text-slate-800 truncate">${p.name}${me(p.id)}</p><p class="sm-td-sub text-slate-400 sm-figure">${p.id}</p></div></div></td>
-                    <td class="py-3 px-3"><span class="sm-badge inline-flex px-2.5 py-0.5 rounded-full border ${ROLE_CHIP[p.role]}">${ROLE_NAME[p.role]}</span></td>
-                    <td class="py-3 px-3 sm-td text-right">
+                    <td class="py-2.5 px-5"><div class="flex items-center gap-3 min-w-0">${avatarOf(p)}<div class="min-w-0"><p class="sm-td-strong text-slate-800 truncate">${p.name}${me(p.id)}</p><p class="sm-td-sub text-slate-400 sm-figure">${p.id}</p></div></div></td>
+                    <td class="py-2.5 px-3"><span class="sm-badge inline-flex px-2.5 py-0.5 rounded-full border ${ROLE_CHIP[p.role]}">${ROLE_NAME[p.role]}</span></td>
+                    <td class="py-2.5 px-3 sm-td text-right">
                         <span class="sm-figure font-medium text-slate-800">$${Number(comp.baseSalaryUSD).toFixed(2)}</span>
                         <span class="block sm-td-sub text-slate-400 sm-figure">$${comp.hourlyRateUSD}/ម៉</span>
                     </td>
-                    <td class="py-3 px-3 sm-td">${shiftText(p)}</td>
-                    <td class="py-3 px-3 sm-td text-right">${limitText(p)}</td>
-                    <td class="py-3 px-3 sm-td">${lastShift(p)}</td>
-                    <td class="py-3 px-3">${statusChipOf(p)}</td>
-                    <td class="py-3 px-5 text-right">${dotsBtn('m-' + p.id)}${menu(p, 'm-' + p.id)}</td>
+                    <td class="py-2.5 px-3 sm-td">${shiftText(p)}</td>
+                    <td class="py-2.5 px-3 sm-td text-right">${limitText(p)}</td>
+                    <td class="py-2.5 px-3 sm-td">${lastShift(p)}</td>
+                    <td class="py-2.5 px-3">${statusChipOf(p)}</td>
+                    <td class="py-2.5 px-5 text-right">${dotsBtn('m-' + p.id)}${menu(p, 'm-' + p.id)}</td>
                 </tr>`;
             }).join('');
             document.getElementById('cards').innerHTML = list.map(p => {
@@ -381,7 +381,7 @@
                     return `<div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-xs space-y-1">
                         ${line('ម៉ោងធម្មតា', 1, 'text-slate-800')}
                         ${line('ម៉ោងបន្ថែម · 150%', PAY_RULES.otMult, 'text-emerald-600')}
-                        ${line('ម៉ោងយប់ និងថ្ងៃឈប់ · 200%', PAY_RULES.nightMult, 'text-indigo-600')}
+                        ${line('ម៉ោងយប់ និងថ្ងៃឈប់ · 200%', PAY_RULES.nightMult, 'text-blue-600')}
                         ${line('អវត្តមានមួយថ្ងៃ (កាត់)', PAY_RULES.monthHours / PAY_RULES.workDays, 'text-rose-600')}
                     </div>`;
                 },

@@ -769,7 +769,7 @@ function methodOf(sale) {
 const SHIFT_STATUS = {
     open: { label: 'កំពុងបើក', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
     closed: { label: 'រង់ចាំត្រួតពិនិត្យ', cls: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'bg-amber-500' },
-    reviewed: { label: 'បានត្រួតពិនិត្យ', cls: 'bg-indigo-50 text-indigo-700 border-indigo-200', dot: 'bg-indigo-500' }
+    reviewed: { label: 'បានត្រួតពិនិត្យ', cls: 'bg-slate-50 text-slate-600 border-slate-200', dot: 'bg-slate-400' }
 };
 
 function liveShifts() {
@@ -942,7 +942,7 @@ const APPROVAL_TYPE = {
 
 const APPROVAL_STATUS = {
     pending: { label: 'រង់ចាំអនុម័ត', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
-    approved: { label: 'បានអនុម័ត', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    approved: { label: 'បានអនុម័ត', cls: 'bg-slate-50 text-slate-600 border-slate-200' },
     rejected: { label: 'បានបដិសេធ', cls: 'bg-rose-50 text-rose-700 border-rose-200' }
 };
 
@@ -984,16 +984,16 @@ function applyApprovalToSale(req, approverId, updateFn) {
    payout / payin៖ ដក ឬបញ្ចូលប្រាក់ក្រៅការលក់ · bank៖ ដាក់ប្រាក់ពីទូដែកចូលធនាគារ */
 
 const MOVEMENT_TYPE = {
-    float: { label: 'ចេញប្រាក់បាតថត', icon: 'fa-hand-holding-dollar', tone: 'sky' },
-    drop: { label: 'ផ្ទេរចូលទូដែក', icon: 'fa-vault', tone: 'indigo' },
+    float: { label: 'ចេញប្រាក់បាតថត', icon: 'fa-hand-holding-dollar', tone: 'slate' },
+    drop: { label: 'ផ្ទេរចូលទូដែក', icon: 'fa-vault', tone: 'slate' },
     payout: { label: 'ដកប្រាក់ចំណាយ', icon: 'fa-money-bill-transfer', tone: 'rose' },
-    payin: { label: 'បញ្ចូលប្រាក់បន្ថែម', icon: 'fa-circle-plus', tone: 'emerald' },
+    payin: { label: 'បញ្ចូលប្រាក់បន្ថែម', icon: 'fa-circle-plus', tone: 'slate' },
     bank: { label: 'ដាក់ប្រាក់ចូលធនាគារ', icon: 'fa-building-columns', tone: 'slate' }
 };
 
 const MOVEMENT_STATUS = {
     pending: { label: 'រង់ចាំទទួល', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
-    confirmed: { label: 'បានបញ្ជាក់', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' }
+    confirmed: { label: 'បានបញ្ជាក់', cls: 'bg-slate-50 text-slate-600 border-slate-200' }
 };
 
 function liveMovements() {
@@ -1244,9 +1244,9 @@ const STOCK_MOVE_TYPE = {
     sale: { label: 'លក់', icon: 'fa-cart-shopping', tone: 'slate' },
     void: { label: 'លុបចោលវិក្កយបត្រ', icon: 'fa-ban', tone: 'rose' },
     return: { label: 'ប្រគល់ទំនិញវិញ', icon: 'fa-rotate-left', tone: 'amber' },
-    stock_in: { label: 'ទទួលស្តុក', icon: 'fa-truck-ramp-box', tone: 'emerald' },
-    adjust: { label: 'កែតម្រូវស្តុក', icon: 'fa-sliders', tone: 'indigo' },
-    count: { label: 'រាប់ស្តុក', icon: 'fa-clipboard-check', tone: 'sky' }
+    stock_in: { label: 'ទទួលស្តុក', icon: 'fa-truck-ramp-box', tone: 'slate' },
+    adjust: { label: 'កែតម្រូវស្តុក', icon: 'fa-sliders', tone: 'slate' },
+    count: { label: 'រាប់ស្តុក', icon: 'fa-clipboard-check', tone: 'slate' }
 };
 
 /* មូលហេតុកែតម្រូវ — sign = ទិសដៅនៃចលនា · shrink = រាប់ជាការបាត់បង់ */
@@ -1261,7 +1261,7 @@ const STOCK_ADJUST_REASONS = {
 const STOCK_STATUS = {
     out: { label: 'អស់', cls: 'bg-rose-50 text-rose-700 border-rose-200' },
     low: { label: 'ជិតអស់', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
-    ok: { label: 'គ្រប់គ្រាន់', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' }
+    ok: { label: 'គ្រប់គ្រាន់', cls: 'bg-transparent text-slate-400 border-transparent' }
 };
 
 /* ពេលចាប់ផ្តើមកត់ត្រាស្តុក — បង្កើតម្តងគត់ ការលក់មុនពេលនេះរួមក្នុងស្តុកបើករួចហើយ */
@@ -1722,9 +1722,9 @@ function zReportHtml(shift, s, opts) {
                 <p class="sm-td text-slate-700 mt-1">${escapeText(shift.reason)}</p>
             </div>` : ''}
             ${shift.reviewNote ? `
-            <div class="mt-3 p-3 rounded-xl bg-indigo-50 border border-indigo-200">
-                <p class="sm-td-sub text-indigo-700">កំណត់ចំណាំរបស់អ្នកគ្រប់គ្រង</p>
-                <p class="sm-td text-indigo-900 mt-1">${escapeText(shift.reviewNote)}</p>
+            <div class="mt-3 p-3 rounded-xl bg-blue-50 border border-blue-200">
+                <p class="sm-td-sub text-blue-700">កំណត់ចំណាំរបស់អ្នកគ្រប់គ្រង</p>
+                <p class="sm-td text-blue-900 mt-1">${escapeText(shift.reviewNote)}</p>
             </div>` : ''}
         </div>
 

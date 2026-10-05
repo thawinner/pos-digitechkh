@@ -15,7 +15,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -47,17 +47,17 @@
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <label class="block"><span class="sm-label text-slate-700 font-semibold">ដុល្លារ</span>
-                            <input id="amtUSD" type="number" min="0" step="1" placeholder="0" oninput="renderSummary()" class="sm-value w-full h-12 mt-1.5 px-3 rounded-xl bg-slate-50 border border-slate-200 text-right focus:outline-none focus:border-indigo-500"></label>
+                            <input id="amtUSD" type="number" min="0" step="1" placeholder="0" oninput="renderSummary()" class="sm-value w-full h-12 mt-1.5 px-3 rounded-xl bg-slate-50 border border-slate-200 text-right focus:outline-none focus:border-blue-500"></label>
                         <label class="block"><span class="sm-label text-slate-700 font-semibold">រៀល</span>
-                            <input id="amtKHR" type="number" min="0" step="1000" placeholder="0" oninput="renderSummary()" class="sm-value w-full h-12 mt-1.5 px-3 rounded-xl bg-slate-50 border border-slate-200 text-right focus:outline-none focus:border-indigo-500"></label>
+                            <input id="amtKHR" type="number" min="0" step="1000" placeholder="0" oninput="renderSummary()" class="sm-value w-full h-12 mt-1.5 px-3 rounded-xl bg-slate-50 border border-slate-200 text-right focus:outline-none focus:border-blue-500"></label>
                     </div>
                     <div>
                         <p class="sm-label text-slate-700 font-semibold mb-2">មូលហេតុ <span id="reasonStar" class="text-rose-500">*</span></p>
                         <div id="reasonChips" class="flex flex-wrap gap-2 mb-2"></div>
-                        <input id="reasonText" type="text" oninput="renderSummary()" placeholder="ឬវាយមូលហេតុ..." class="sm-td w-full h-12 px-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-indigo-500">
+                        <input id="reasonText" type="text" oninput="renderSummary()" placeholder="ឬវាយមូលហេតុ..." class="sm-td w-full h-12 px-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-blue-500">
                     </div>
                     <label class="block"><span class="sm-label text-slate-700 font-semibold">លេខយោង · បង្កាន់ដៃ</span>
-                        <input id="refText" type="text" placeholder="ឧទាហរណ៍៖ លេខបង្កាន់ដៃទិញ ឬលេខប្រតិបត្តិការធនាគារ" class="sm-td w-full h-12 mt-1.5 px-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-indigo-500"></label>
+                        <input id="refText" type="text" placeholder="ឧទាហរណ៍៖ លេខបង្កាន់ដៃទិញ ឬលេខប្រតិបត្តិការធនាគារ" class="sm-td w-full h-12 mt-1.5 px-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-blue-500"></label>
                 </section>
                 <div class="space-y-4 self-start">
                     <div id="summary" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5"></div>
@@ -96,22 +96,22 @@
 
         function render() {
             document.getElementById('typeChips').innerHTML = ['float', 'payout', 'payin', 'bank'].map(t => `
-                <button onclick="type='${t}'; reason=''; render()" type="button" class="p-3 rounded-xl border-2 text-left transition ${type === t ? 'border-indigo-600 bg-indigo-50' : 'border-slate-200 hover:border-indigo-300'}">
+                <button onclick="type='${t}'; reason=''; render()" type="button" class="p-3 rounded-xl border-2 text-left transition ${type === t ? 'border-blue-600 bg-blue-50' : 'border-slate-200 hover:border-blue-300'}">
                     <i class="fas ${MOVEMENT_TYPE[t].icon} text-${MOVEMENT_TYPE[t].tone}-600"></i>
-                    <span class="sm-value ${type === t ? 'text-indigo-800' : 'text-slate-700'} block mt-1">${MOVEMENT_TYPE[t].label}</span>
+                    <span class="sm-value ${type === t ? 'text-blue-800' : 'text-slate-700'} block mt-1">${MOVEMENT_TYPE[t].label}</span>
                 </button>`).join('');
             document.getElementById('typeHelp').textContent = HELP[type];
             document.getElementById('registerRow').classList.toggle('hidden', type === 'bank');
             document.getElementById('registerChips').innerHTML = REGISTERS.map(r => {
                 const open = openShiftOn(r);
                 const allowed = type === 'float' ? !open : !!open;
-                return `<button onclick="${allowed ? `register='${r}'; render()` : ''}" type="button" ${allowed ? '' : 'disabled'} class="px-4 py-2.5 rounded-xl border-2 text-left transition ${!allowed ? 'border-slate-100 text-slate-300 cursor-not-allowed' : register === r ? 'border-indigo-600 bg-indigo-50 text-indigo-800' : 'border-slate-200 hover:border-indigo-300 text-slate-700'}">
+                return `<button onclick="${allowed ? `register='${r}'; render()` : ''}" type="button" ${allowed ? '' : 'disabled'} class="px-4 py-2.5 rounded-xl border-2 text-left transition ${!allowed ? 'border-slate-100 text-slate-300 cursor-not-allowed' : register === r ? 'border-blue-600 bg-blue-50 text-blue-800' : 'border-slate-200 hover:border-blue-300 text-slate-700'}">
                     <span class="sm-value block">${r}</span>
                     <span class="sm-td-sub block">${open ? `${personName(open.cashierId)} · ${open.templateName}` : 'មិនមានវេនបើក'}</span>
                 </button>`;
             }).join('');
             const reasons = type === 'payout' ? posSettings().reasons.payout : type === 'bank' ? ['ដាក់ប្រាក់ប្រចាំថ្ងៃ'] : type === 'payin' ? ['ក្រដាសប្រាក់តូចសម្រាប់អាប់'] : [];
-            document.getElementById('reasonChips').innerHTML = reasons.map((r, i) => `<button onclick="reason=${JSON.stringify(r).replace(/"/g, '&quot;')}; document.getElementById('reasonText').value=''; render()" type="button" class="sm-badge px-3 py-2 rounded-xl border transition ${reason === r ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-400'}">${r}</button>`).join('');
+            document.getElementById('reasonChips').innerHTML = reasons.map((r, i) => `<button onclick="reason=${JSON.stringify(r).replace(/"/g, '&quot;')}; document.getElementById('reasonText').value=''; render()" type="button" class="sm-badge px-3 py-2 rounded-xl border transition ${reason === r ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-blue-400'}">${r}</button>`).join('');
             document.getElementById('reasonStar').classList.toggle('hidden', type === 'float');
             if (type === 'float' && !document.getElementById('amtUSD').value && !document.getElementById('amtKHR').value) {
                 document.getElementById('amtUSD').value = posSettings().defaultFloatUSD;
@@ -163,7 +163,7 @@
                 <p class="sm-td-sub mt-3 ${why ? 'text-amber-700' : 'text-emerald-700'}">${why || 'រួចរាល់ · ត្រូវបញ្ជាក់ដោយលេខសម្ងាត់'}</p>`;
             const btn = document.getElementById('saveBtn');
             btn.disabled = !!why;
-            btn.className = `sm-value h-12 rounded-xl font-semibold transition inline-flex items-center justify-center gap-2 ${why ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white'}`;
+            btn.className = `sm-value h-12 rounded-xl font-semibold transition inline-flex items-center justify-center gap-2 ${why ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'}`;
             btn.innerHTML = '<i class="fas fa-check"></i> រក្សាទុក';
         }
 

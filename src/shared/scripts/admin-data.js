@@ -292,13 +292,13 @@ function shrinkageStats(range) {
 /* ===== កំណត់ហេតុសវនកម្ម — រួមបញ្ចូលការអនុម័ត ការកំណត់ បុគ្គលិក ទំនិញ ស្តុក និងព្រឹត្តិការណ៍សំខាន់ៗ ===== */
 
 const AUDIT_KINDS = {
-    approval: { label: 'ការអនុម័ត', icon: 'fa-shield-halved', tone: 'indigo' },
+    approval: { label: 'ការអនុម័ត', icon: 'fa-shield-halved', tone: 'slate' },
     settings: { label: 'ការកំណត់', icon: 'fa-sliders', tone: 'slate' },
-    staff: { label: 'បុគ្គលិក', icon: 'fa-user-gear', tone: 'emerald' },
-    catalog: { label: 'ទំនិញ និងតម្លៃ', icon: 'fa-tag', tone: 'amber' },
-    stock: { label: 'ស្តុកទំនិញ', icon: 'fa-boxes-stacked', tone: 'blue' },
-    shift: { label: 'វេន', icon: 'fa-cash-register', tone: 'cyan' },
-    roster: { label: 'កាលវិភាគ', icon: 'fa-calendar-days', tone: 'indigo' },
+    staff: { label: 'បុគ្គលិក', icon: 'fa-user-gear', tone: 'slate' },
+    catalog: { label: 'ទំនិញ និងតម្លៃ', icon: 'fa-tag', tone: 'slate' },
+    stock: { label: 'ស្តុកទំនិញ', icon: 'fa-boxes-stacked', tone: 'slate' },
+    shift: { label: 'វេន', icon: 'fa-cash-register', tone: 'slate' },
+    roster: { label: 'កាលវិភាគ', icon: 'fa-calendar-days', tone: 'slate' },
     security: { label: 'សុវត្ថិភាព', icon: 'fa-key', tone: 'rose' }
 };
 
@@ -935,7 +935,7 @@ function getStaffTimesheet(staffId, range) {
         const b = s ? (work.perShift[s.shift.id] || {}) : {};
         const parts = [];
         if (b.regular) parts.push({ label: `ធម្មតា ${h1(b.regular)}`, tone: 'slate' });
-        if (b.night) parts.push({ label: `យប់ ${h1(b.night)}`, tone: 'indigo' });
+        if (b.night) parts.push({ label: `យប់ ${h1(b.night)}`, tone: 'slate' });
         if (b.ot || b.otNight) parts.push({ label: `បន្ថែម ${h1((b.ot || 0) + (b.otNight || 0))}`, tone: 'amber' });
         if (b.dayOff) parts.push({ label: `ថ្ងៃឈប់ ${h1(b.dayOff)}`, tone: 'emerald' });
         const flags = [];

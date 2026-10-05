@@ -15,7 +15,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#059669", 'primary-dark': "#047857", accent: "#34d399" },
+                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -261,7 +261,7 @@
                     <div id="viewTabs" class="flex flex-wrap gap-1"></div>
                     <div class="flex items-center gap-2">
                         <div id="dateRange" class="flex items-center"></div>
-                        <button onclick="disburseAll()" type="button" class="sm-badge h-9 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold inline-flex items-center gap-2 whitespace-nowrap shadow-sm">
+                        <button onclick="disburseAll()" type="button" class="sm-badge h-9 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2 whitespace-nowrap shadow-sm">
                             <i class="fas fa-check-double"></i> បើកប្រាក់ខែទាំងអស់
                         </button>
                         <button onclick="printTable()" type="button" class="sm-badge h-9 px-3.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center gap-2">
@@ -358,7 +358,7 @@
                     <span>ប័ណ្ណបើកប្រាក់បៀវត្សរ៍ផ្លូវការ</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="printCurrentPayslip()" type="button" class="sm-badge h-8 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium inline-flex items-center gap-1.5">
+                    <button onclick="printCurrentPayslip()" type="button" class="sm-badge h-8 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium inline-flex items-center gap-1.5">
                         <i class="fas fa-print text-xs"></i> បោះពុម្ពប័ណ្ណ
                     </button>
                     <button onclick="closePayslipModal()" type="button" class="w-8 h-8 rounded-xl bg-slate-200/70 hover:bg-slate-200 text-slate-600 inline-flex items-center justify-center">
@@ -385,7 +385,7 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="printCurrentTimesheet()" type="button" class="sm-badge h-8 px-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-medium inline-flex items-center gap-1.5">
+                    <button onclick="printCurrentTimesheet()" type="button" class="sm-badge h-8 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium inline-flex items-center gap-1.5">
                         <i class="fas fa-print text-xs"></i> បោះពុម្ព
                     </button>
                     <button onclick="closeTimesheetModal()" type="button" class="w-8 h-8 rounded-xl bg-slate-200/70 hover:bg-slate-200 text-slate-600 inline-flex items-center justify-center">
@@ -449,9 +449,9 @@
             };
             document.getElementById('viewTabs').innerHTML = TABS.map(t => `
                 <button type="button" onclick="currentTab='${t.id}'; renderList()"
-                    class="sm-badge h-9 px-3.5 rounded-xl transition inline-flex items-center gap-2 ${currentTab === t.id ? 'bg-emerald-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">
+                    class="sm-badge h-9 px-3.5 rounded-xl transition inline-flex items-center gap-2 ${currentTab === t.id ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">
                     ${t.label}
-                    <span class="text-[12px] sm-figure ${currentTab === t.id ? 'text-emerald-100' : 'text-slate-400'}">${counts[t.id] || 0}</span>
+                    <span class="text-[12px] sm-figure ${currentTab === t.id ? 'text-blue-100' : 'text-slate-400'}">${counts[t.id] || 0}</span>
                 </button>
             `).join('');
         }
@@ -478,7 +478,7 @@
         const TONE_CHIP = {
             slate: 'bg-slate-100 text-slate-700 border-slate-200',
             amber: 'bg-amber-50 text-amber-700 border-amber-200',
-            indigo: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+            indigo: 'bg-blue-50 text-blue-700 border-blue-200',
             emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200',
             rose: 'bg-rose-50 text-rose-700 border-rose-200'
         };
@@ -492,7 +492,7 @@
         function rowMenu(item) {
             const id = item.staff.id;
             const mi = (icon, label, fn) => `<button type="button" onclick="${fn}('${id}')" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-50 text-left sm-td text-slate-700"><i class="fas ${icon} w-4 text-slate-400"></i>${label}</button>`;
-            return `<button onclick="toggleRowActionMenu(event, 'pm-${id}')" type="button" aria-label="សកម្មភាព" class="w-9 h-9 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200/70 inline-flex items-center justify-center"><i class="fas fa-ellipsis-vertical text-sm"></i></button>
+            return `<button onclick="toggleRowActionMenu(event, 'pm-${id}')" type="button" aria-label="សកម្មភាព" class="w-9 h-9 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 inline-flex items-center justify-center"><i class="fas fa-ellipsis-vertical text-sm"></i></button>
                 <div id="pm-${id}" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 text-left min-w-[220px]">
                     ${item.tracked ? mi('fa-calendar-days', 'ម៉ោងធ្វើការលម្អិត', 'openTimesheet') : ''}
                     ${mi('fa-file-invoice', 'ប័ណ្ណបើកប្រាក់ខែ', 'openPayslip')}
@@ -521,7 +521,7 @@
                 const breakdown = item.tracked
                     ? [chip(`ធម្មតា ${item.regularHours}`, 'slate'),
                         item.otHours ? chip(`បន្ថែម ${item.otHours}`, 'amber') : '',
-                        item.nightHours ? chip(`យប់ ${item.nightHours}`, 'indigo') : '',
+                        item.nightHours ? chip(`យប់ ${item.nightHours}`, 'slate') : '',
                         item.dayOffHours ? chip(`ថ្ងៃឈប់ ${item.dayOffHours}`, 'emerald') : ''].join(' ')
                     : '<span class="sm-td-sub text-slate-400">ប្រាក់ខែថេរ · មិនគិតម៉ោង</span>';
                 const attendance = !item.tracked ? '<span class="sm-td-sub text-slate-400">—</span>'
@@ -529,12 +529,12 @@
                         ? [item.absentDays ? chip(`អវត្តមាន ${item.absentDays} ថ្ងៃ`, 'rose') : '',
                             item.lateCount ? chip(`យឺត ${item.lateCount} ដង`, 'amber') : '',
                             item.earlyCount ? chip(`ចេញមុន ${item.earlyCount} ដង`, 'amber') : ''].join(' ')
-                        : chip('ទៀងទាត់', 'emerald');
+                        : chip('ទៀងទាត់', 'slate');
                 const premium = premiumOf(item);
                 return `
                     <tr class="hover:bg-slate-50/60 transition align-top">
-                        <td class="py-3 px-2 text-center sm-figure text-slate-400 font-medium text-xs">${idx + 1}</td>
-                        <td class="py-3 px-3">
+                        <td class="py-2.5 px-2 text-center sm-figure text-slate-400 font-medium text-xs">${idx + 1}</td>
+                        <td class="py-2.5 px-3">
                             <div class="flex items-center gap-2.5 min-w-0">
                                 <div class="no-print flex-shrink-0">${avatarOf(s, 'w-9 h-9')}</div>
                                 <div class="min-w-0">
@@ -543,32 +543,32 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="py-3 px-2 text-right whitespace-nowrap">
+                        <td class="py-2.5 px-2 text-right whitespace-nowrap">
                             ${item.tracked
                                 ? `<span class="sm-figure font-semibold text-slate-800">${item.realHours} ម៉ោង</span>
                                    <span class="block sm-td-sub text-slate-400">${item.shiftsWorked} វេន${item.live ? ' · <span class="text-emerald-600">កំពុងធ្វើ</span>' : ''}</span>`
                                 : '<span class="text-slate-400">—</span>'}
                         </td>
-                        <td class="py-3 px-2"><div class="flex flex-wrap gap-1 max-w-[220px]">${breakdown}</div></td>
-                        <td class="py-3 px-2"><div class="flex flex-wrap gap-1 max-w-[180px]">${attendance}</div></td>
-                        <td class="py-3 px-2 text-right whitespace-nowrap">
+                        <td class="py-2.5 px-2"><div class="flex flex-wrap gap-1 max-w-[220px]">${breakdown}</div></td>
+                        <td class="py-2.5 px-2"><div class="flex flex-wrap gap-1 max-w-[180px]">${attendance}</div></td>
+                        <td class="py-2.5 px-2 text-right whitespace-nowrap">
                             <span class="sm-figure font-medium text-slate-700">${usd(item.regularPay)}</span>
                             <span class="block sm-td-sub text-slate-400 sm-figure">${item.share < 1 ? `ពី ${usd(item.baseSalaryUSD)}` : `${usd(item.hourlyRateUSD)}/ម៉ោង`}</span>
                         </td>
-                        <td class="py-3 px-2 text-right whitespace-nowrap">
+                        <td class="py-2.5 px-2 text-right whitespace-nowrap">
                             <span class="sm-figure font-medium ${premium ? 'text-emerald-700' : 'text-slate-400'}">+${usd(premium)}</span>
                             ${item.bonusLost ? '<span class="block sm-td-sub text-amber-600">គ្មានរង្វាន់វត្តមាន</span>' : ''}
                         </td>
-                        <td class="py-3 px-2 text-right whitespace-nowrap">
+                        <td class="py-2.5 px-2 text-right whitespace-nowrap">
                             <span class="sm-figure font-medium ${item.deductionsUSD ? 'text-rose-600' : 'text-slate-400'}">${item.deductionsUSD ? '-' : ''}${usd(item.deductionsUSD)}</span>
                             ${item.cashShortage ? `<span class="block sm-td-sub text-amber-600">ខ្វះថត ${usd(item.cashShortage)} · មិនកាត់</span>` : ''}
                         </td>
-                        <td class="py-3 px-2 text-right whitespace-nowrap bg-emerald-50/40">
+                        <td class="py-2.5 px-2 text-right whitespace-nowrap bg-emerald-50/40">
                             <span class="sm-figure font-bold text-emerald-700">${usd(item.disbursement ? item.disbursement.netUSD : item.netUSD)}</span>
                             ${item.disbursement && Math.abs(item.disbursement.netUSD - item.netUSD) >= 0.01 ? `<span class="block sm-td-sub text-amber-600">គណនាថ្មី ${usd(item.netUSD)}</span>` : ''}
                         </td>
-                        <td class="py-3 px-2 text-center whitespace-nowrap">${statusChip}</td>
-                        <td class="py-3 px-3 text-right no-print">${rowMenu(item)}</td>
+                        <td class="py-2.5 px-2 text-center whitespace-nowrap">${statusChip}</td>
+                        <td class="py-2.5 px-3 text-right no-print">${rowMenu(item)}</td>
                     </tr>`;
             }).join('');
 
@@ -840,7 +840,7 @@
                 pill('ម៉ោងពិត', `${item.realHours} ម៉ោង`, 'slate')
                 + pill('វេនបានធ្វើ', `${item.shiftsWorked} វេន`, 'slate')
                 + pill('ម៉ោងបន្ថែម', `${item.otHours} ម៉ោង`, item.otHours ? 'amber' : 'slate')
-                + pill('ម៉ោងយប់', `${item.nightHours} ម៉ោង`, item.nightHours ? 'indigo' : 'slate')
+                + pill('ម៉ោងយប់', `${item.nightHours} ម៉ោង`, 'slate')
                 + pill('វត្តមាន', item.absentDays ? `អវត្តមាន ${item.absentDays}` : `យឺត ${item.lateCount}`, item.absentDays ? 'rose' : item.lateCount ? 'amber' : 'emerald');
 
             document.getElementById('timesheetRows').innerHTML = shifts.length ? shifts.map(r => `

@@ -15,7 +15,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -81,13 +81,13 @@
                         <table class="w-full text-left" id="stockExceptionsTable">
                             <thead class="bg-slate-50 text-slate-500 border-b border-slate-100">
                                 <tr>
-                                    <th class="sm-th py-3 px-4">ពេលវេលា</th>
-                                    <th class="sm-th py-3 px-4">ប្រភេទករណី</th>
-                                    <th class="sm-th py-3 px-4">ទំនិញ</th>
-                                    <th class="sm-th py-3 px-4 text-right">ចំនួន</th>
-                                    <th class="sm-th py-3 px-4 text-right">តម្លៃលក់រាយ</th>
-                                    <th class="sm-th py-3 px-4">អ្នកទទួលខុសត្រូវ</th>
-                                    <th class="sm-th py-3 px-4">មូលហេតុ · សេចក្តីលម្អិត</th>
+                                    <th class="sm-th py-2.5 px-4">ពេលវេលា</th>
+                                    <th class="sm-th py-2.5 px-4">ប្រភេទករណី</th>
+                                    <th class="sm-th py-2.5 px-4">ទំនិញ</th>
+                                    <th class="sm-th py-2.5 px-4 text-right">ចំនួន</th>
+                                    <th class="sm-th py-2.5 px-4 text-right">តម្លៃលក់រាយ</th>
+                                    <th class="sm-th py-2.5 px-4">អ្នកទទួលខុសត្រូវ</th>
+                                    <th class="sm-th py-2.5 px-4">មូលហេតុ · សេចក្តីលម្អិត</th>
                                 </tr>
                             </thead>
                             <tbody id="stockExceptionsRows" class="divide-y divide-slate-100 text-slate-700"></tbody>
@@ -123,28 +123,28 @@
         function renderCashiers() {
             const st = exceptionStats(range());
             const head = `<thead class="bg-slate-50 text-slate-500 border-b border-slate-100"><tr>
-                <th class="sm-th py-3 px-4">អ្នកគិតលុយ</th>
-                <th class="sm-th py-3 px-3 text-right">វេន</th>
-                <th class="sm-th py-3 px-3 text-right">វិក្កយបត្រ</th>
-                ${EXCEPTION_COLS.map(c => `<th class="sm-th py-3 px-3 text-right">${c.label}</th>`).join('')}
-                <th class="sm-th py-3 px-3 text-right">ភាពខុសគ្នាសរុប</th>
-                <th class="sm-th py-3 px-3 text-right">ក្រៅម៉ោងវេន</th>
+                <th class="sm-th py-2.5 px-4">អ្នកគិតលុយ</th>
+                <th class="sm-th py-2.5 px-3 text-right">វេន</th>
+                <th class="sm-th py-2.5 px-3 text-right">វិក្កយបត្រ</th>
+                ${EXCEPTION_COLS.map(c => `<th class="sm-th py-2.5 px-3 text-right">${c.label}</th>`).join('')}
+                <th class="sm-th py-2.5 px-3 text-right">ភាពខុសគ្នាសរុប</th>
+                <th class="sm-th py-2.5 px-3 text-right">ក្រៅម៉ោងវេន</th>
             </tr></thead>`;
             const body = st.rows.map(r => `<tr class="border-b border-slate-100">
-                <td class="py-3 px-4 sm-td">${personChip(r.cashierId)}</td>
-                <td class="py-3 px-3 text-right sm-td sm-figure">${r.shifts}</td>
-                <td class="py-3 px-3 text-right sm-td sm-figure">${r.tx}</td>
+                <td class="py-2.5 px-4 sm-td">${personChip(r.cashierId)}</td>
+                <td class="py-2.5 px-3 text-right sm-td sm-figure">${r.shifts}</td>
+                <td class="py-2.5 px-3 text-right sm-td sm-figure">${r.tx}</td>
                 ${EXCEPTION_COLS.map(c => `<td class="py-1.5 px-1.5 text-right">
-                    <button onclick="openDrill('${r.cashierId}', '${c.key}')" type="button" class="w-full rounded-lg px-2 py-1.5 text-right hover:ring-2 hover:ring-indigo-200 ${cellTone(r.ratios[c.key], r[c.key])} ${drill && drill.cashierId === r.cashierId && drill.key === c.key ? 'ring-2 ring-indigo-500' : ''}">
+                    <button onclick="openDrill('${r.cashierId}', '${c.key}')" type="button" class="w-full rounded-lg px-2 py-1.5 text-right hover:ring-2 hover:ring-blue-200 ${cellTone(r.ratios[c.key], r[c.key])} ${drill && drill.cashierId === r.cashierId && drill.key === c.key ? 'ring-2 ring-blue-500' : ''}">
                         <span class="sm-td sm-figure block">${r[c.key]}</span>
                         <span class="text-[11px] sm-figure opacity-80 block">${r.rates[c.key].toFixed(1)}${r.ratios[c.key] >= 2 ? ` · ×${r.ratios[c.key].toFixed(1)}` : ''}</span>
                     </button></td>`).join('')}
-                <td class="py-3 px-3 text-right sm-td sm-figure ${r.variance < -posSettings().varianceTolerance ? 'text-rose-600 font-semibold' : 'text-slate-700'}">${fmtSigned(r.variance, fmtUSD)}<span class="block text-[11px] text-slate-400">${r.largeVariances} ធំ</span></td>
-                <td class="py-3 px-3 text-right sm-td sm-figure ${r.afterHours ? 'text-amber-700' : 'text-slate-300'}">${r.afterHours}</td>
+                <td class="py-2.5 px-3 text-right sm-td sm-figure ${r.variance < -posSettings().varianceTolerance ? 'text-rose-600 font-semibold' : 'text-slate-700'}">${fmtSigned(r.variance, fmtUSD)}<span class="block text-[11px] text-slate-400">${r.largeVariances} ធំ</span></td>
+                <td class="py-2.5 px-3 text-right sm-td sm-figure ${r.afterHours ? 'text-amber-700' : 'text-slate-300'}">${r.afterHours}</td>
             </tr>`).join('');
             const avg = `<tr class="bg-slate-50">
-                <td class="py-3 px-4 sm-value text-slate-600">មធ្យមក្រុម</td><td></td><td></td>
-                ${EXCEPTION_COLS.map(c => `<td class="py-3 px-3 text-right sm-td-sub sm-figure text-slate-500">${st.avg[c.key].toFixed(1)}</td>`).join('')}
+                <td class="py-2.5 px-4 sm-value text-slate-600">មធ្យមក្រុម</td><td></td><td></td>
+                ${EXCEPTION_COLS.map(c => `<td class="py-2.5 px-3 text-right sm-td-sub sm-figure text-slate-500">${st.avg[c.key].toFixed(1)}</td>`).join('')}
                 <td></td><td></td></tr>`;
             document.getElementById('cashierTable').innerHTML = head + `<tbody>${body || `<tr><td colspan="12">${emptyState('fa-chart-simple', 'គ្មានទិន្នន័យក្នុងជួរនេះ', '')}</td></tr>`}${body ? avg : ''}</tbody>`;
         }
@@ -192,14 +192,15 @@
                 .map(e => ({ at: e.at, saleId: e.saleId, amount: e.amount, reason: e.reason || e.note, by: e.approverId, register: e.register, shiftId: e.shiftId }));
             items.sort((a, b) => b.at.localeCompare(a.at));
             document.getElementById('drillSub').textContent = `${items.length} ករណី`;
-            host.innerHTML = items.length ? items.slice(0, 120).map(i => `
+            const pg = pagerSlice('exceptionDrill', items, { size: 15, render: 'renderDrill', sig: [drill.key, drill.cashierId].join('|') });
+            host.innerHTML = items.length ? pg.rows.map(i => `
                 <div class="px-5 py-3 flex flex-wrap items-center gap-3">
                     <span class="sm-td-sub sm-figure text-slate-400 w-28">${fmtDate(i.at)} ${fmtTime(i.at)}</span>
                     <span class="sm-td text-slate-600">${i.register}</span>
-                    <span class="sm-td text-slate-700 flex-1 min-w-0 truncate">${i.saleId ? `<span class="text-indigo-700">${i.saleId}</span> · ` : ''}${escapeText(i.reason || '')}</span>
+                    <span class="sm-td text-slate-700 flex-1 min-w-0 truncate">${i.saleId ? `<span class="text-blue-700">${i.saleId}</span> · ` : ''}${escapeText(i.reason || '')}</span>
                     ${i.by ? `<span class="sm-td-sub text-slate-500">${personName(i.by)}</span>` : ''}
                     <span class="sm-td sm-figure text-slate-800 w-20 text-right">${i.amount ? fmtUSD(i.amount) : ''}</span>
-                </div>`).join('') : emptyState('fa-circle-check', 'គ្មានករណី', '');
+                </div>`).join('') + `<div data-pager="exceptionDrill">${pg.html}</div>` : emptyState('fa-circle-check', 'គ្មានករណី', '');
         }
 
         let stockTab = 'all';
@@ -236,7 +237,7 @@
                 </div>
                 <div class="bg-white rounded-xl p-3.5 border border-slate-200/70">
                     <p class="sm-td-sub text-slate-500">ភាពខុសគ្នានៃការរាប់ស្តុក</p>
-                    <p class="sm-value text-indigo-600 font-bold mt-0.5 sm-figure">${totalDiff} ករណី <span class="text-xs text-slate-400 font-normal">(${fmtUSD(diffVal)})</span></p>
+                    <p class="sm-value text-blue-600 font-bold mt-0.5 sm-figure">${totalDiff} ករណី <span class="text-xs text-slate-400 font-normal">(${fmtUSD(diffVal)})</span></p>
                 </div>
             `;
 
@@ -248,7 +249,7 @@
                 { id: 'count', label: `ភាពខុសគ្នារាប់ស្តុក (${totalDiff})` }
             ];
             document.getElementById('stockTabs').innerHTML = tabs.map(t => `
-                <button onclick="stockTab='${t.id}'; renderStockExceptions()" type="button" class="sm-badge px-3 py-1.5 rounded-xl transition ${stockTab === t.id ? 'bg-indigo-600 text-white font-semibold shadow-sm' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium'}">${t.label}</button>
+                <button onclick="stockTab='${t.id}'; renderStockExceptions()" type="button" class="sm-badge px-3 py-1.5 rounded-xl transition ${stockTab === t.id ? 'bg-blue-600 text-white font-semibold shadow-sm' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium'}">${t.label}</button>
             `).join('');
 
             // 4. Rows
@@ -293,7 +294,7 @@
                         at: m.at,
                         kind: 'count',
                         kindLabel: 'ភាពខុសគ្នារាប់ស្តុក',
-                        tone: 'indigo',
+                        tone: 'slate',
                         product: m.productName,
                         sku: m.sku,
                         qty: m.qty,
@@ -319,13 +320,13 @@
                 empty.classList.add('hidden');
                 tbody.innerHTML = list.map(item => `
                     <tr class="hover:bg-slate-50">
-                        <td class="py-3 px-4 sm-td sm-figure"><span class="block font-medium">${fmtDate(item.at)}</span><span class="text-xs text-slate-400">${fmtTime(item.at)}</span></td>
-                        <td class="py-3 px-4"><span class="sm-badge px-2.5 py-0.5 rounded-full bg-${item.tone}-50 text-${item.tone}-700 border border-${item.tone}-200 font-medium">${item.kindLabel}</span></td>
-                        <td class="py-3 px-4 sm-td"><p class="font-medium text-slate-800">${item.product}</p><p class="text-xs text-slate-400 font-mono">${item.sku || '—'}</p></td>
-                        <td class="py-3 px-4 text-right sm-td sm-figure font-semibold ${item.qty < 0 ? 'text-rose-600' : 'text-emerald-600'}">${item.qty > 0 ? '+' : ''}${item.qty}</td>
-                        <td class="py-3 px-4 text-right sm-td sm-figure font-semibold text-slate-800">${fmtUSD(item.amount)}</td>
-                        <td class="py-3 px-4 sm-td">${personChip(item.actor)}</td>
-                        <td class="py-3 px-4 sm-td text-slate-600">${item.note}</td>
+                        <td class="py-2.5 px-4 sm-td sm-figure"><span class="block font-medium">${fmtDate(item.at)}</span><span class="text-xs text-slate-400">${fmtTime(item.at)}</span></td>
+                        <td class="py-2.5 px-4"><span class="sm-badge px-2.5 py-0.5 rounded-full bg-${item.tone}-50 text-${item.tone}-700 border border-${item.tone}-200 font-medium">${item.kindLabel}</span></td>
+                        <td class="py-2.5 px-4 sm-td"><p class="font-medium text-slate-800">${item.product}</p><p class="text-xs text-slate-400 font-mono">${item.sku || '—'}</p></td>
+                        <td class="py-2.5 px-4 text-right sm-td sm-figure font-semibold ${item.qty < 0 ? 'text-rose-600' : 'text-emerald-600'}">${item.qty > 0 ? '+' : ''}${item.qty}</td>
+                        <td class="py-2.5 px-4 text-right sm-td sm-figure font-semibold text-slate-800">${fmtUSD(item.amount)}</td>
+                        <td class="py-2.5 px-4 sm-td">${personChip(item.actor)}</td>
+                        <td class="py-2.5 px-4 sm-td text-slate-600">${item.note}</td>
                     </tr>
                 `).join('');
             }

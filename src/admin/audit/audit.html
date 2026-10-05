@@ -15,7 +15,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#059669", 'primary-dark': "#047857", accent: "#34d399" },
+                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -41,7 +41,7 @@
                         <label class="relative flex-1 lg:w-[220px]">
                             <i class="fas fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                             <input id="search" oninput="reset()" type="text" placeholder="ស្វែងរក"
-                                class="sm-td w-full h-9 pl-8 pr-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:outline-none">
+                                class="sm-td w-full h-9 pl-8 pr-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500 focus:outline-none">
                         </label>
                     </div>
                 </div>
@@ -54,8 +54,7 @@
                         <span class="sm-td-sub text-slate-400 max-sm:hidden inline-flex items-center gap-1.5"><i class="fas fa-lock text-[11px]"></i>មិនអាចកែ ឬលុបបាន</span>
                     </div>
                     <div id="feed"></div>
-                    <div id="more" class="hidden px-5 py-4 border-t border-slate-100 text-center">
-                        <button onclick="limit += 60; render()" type="button" class="sm-badge h-9 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold">បង្ហាញបន្ថែម</button>
+                    <div id="more" data-pager="audit">
                     </div>
                 </section>
             </div>
@@ -72,16 +71,13 @@
         /* កំណត់ហេតុសវនកម្ម (ឯកសាររចនាលេខ 03 ផ្នែក 8) — អ្នកណា ធ្វើអ្វី ពេលណា · អានបានតែប៉ុណ្ណោះ */
 
         const TONE = {
-            indigo: 'bg-indigo-50 text-indigo-600', slate: 'bg-slate-100 text-slate-600', emerald: 'bg-emerald-50 text-emerald-600',
-            amber: 'bg-amber-50 text-amber-700', cyan: 'bg-cyan-50 text-cyan-700', rose: 'bg-rose-50 text-rose-600',
+            indigo: 'bg-blue-50 text-blue-600', slate: 'bg-slate-100 text-slate-600', emerald: 'bg-emerald-50 text-emerald-600',
+            amber: 'bg-amber-50 text-amber-700', cyan: 'bg-blue-50 text-blue-700', rose: 'bg-rose-50 text-rose-600',
             blue: 'bg-blue-50 text-blue-600'
         };
         const ALL = auditTrail();
         let kind = 'all';
-        let limit = 60;
-
         function reset() {
-            limit = 60;
             render();
         }
 
@@ -104,15 +100,16 @@
             ALL.forEach(x => { counts[x.kind] = (counts[x.kind] || 0) + 1; });
             const tabs = [{ id: 'all', label: 'ទាំងអស់', n: ALL.length }].concat(Object.keys(AUDIT_KINDS).map(k => ({ id: k, label: AUDIT_KINDS[k].label, n: counts[k] || 0 })));
             document.getElementById('kindTabs').innerHTML = tabs.map(t => `<button type="button" onclick="kind='${t.id}'; renderTabs(); reset()"
-                class="sm-badge h-9 px-3.5 rounded-xl transition inline-flex items-center gap-2 ${kind === t.id ? 'bg-emerald-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">${t.label}
-                <span class="text-[12px] sm-figure ${kind === t.id ? 'text-emerald-100' : 'text-slate-400'}">${t.n}</span></button>`).join('');
+                class="sm-badge h-9 px-3.5 rounded-xl transition inline-flex items-center gap-2 ${kind === t.id ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">${t.label}
+                <span class="text-[12px] sm-figure ${kind === t.id ? 'text-blue-100' : 'text-slate-400'}">${t.n}</span></button>`).join('');
         }
 
         function render() {
             const list = filtered();
-            const shown = list.slice(0, limit);
-            document.getElementById('countNote').textContent = `${list.length} កំណត់ត្រា${list.length > shown.length ? ` · បង្ហាញ ${shown.length}` : ''}`;
-            document.getElementById('more').classList.toggle('hidden', list.length <= shown.length);
+            const pg = pagerSlice('audit', list, { size: 50, render: 'render', sig: [kind, bmsGetSelect('personFilter'), document.getElementById('search').value.trim()].join('|') });
+            const shown = pg.rows;
+            document.getElementById('countNote').textContent = `${list.length} កំណត់ត្រា`;
+            document.getElementById('more').innerHTML = pg.html;
             if (!shown.length) {
                 document.getElementById('feed').innerHTML = emptyState('fa-clipboard-list', 'គ្មានកំណត់ត្រា', 'សូមប្តូរតម្រង');
                 return;

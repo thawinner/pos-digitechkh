@@ -15,7 +15,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -33,8 +33,7 @@
              data-subtitle="កំណត់ត្រាចលនាស្តុកគ្រប់ប្រភេទក្នុងរយៈពេល 14 ថ្ងៃ"></div>
         <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
             <div class="w-full space-y-5">
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                    <p class="sm-card-sub text-slate-500">រាល់ការលក់ លុបចោល ប្រគល់វិញ ទទួលស្តុក កែតម្រូវ និងការរាប់ស្តុក ត្រូវបានកត់ត្រាត្រឹមត្រូវតាមពេលវេលាជាក់ស្តែង</p>
+                <div class="flex flex-wrap items-center justify-end gap-3">
                 </div>
 
                 <div id="kpiRow" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
@@ -53,7 +52,7 @@
                             </button>
                             <div id="prodDropdown" class="hidden absolute left-0 top-full mt-1.5 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 z-50 max-h-64 overflow-y-auto">
                                 <div class="p-1 border-b border-slate-100 mb-1 sticky top-0 bg-white">
-                                    <input type="text" placeholder="ស្វែងរកទំនិញ..." oninput="filterProdDropdownList(this.value)" class="w-full h-8 px-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:border-indigo-500">
+                                    <input type="text" placeholder="ស្វែងរកទំនិញ..." oninput="filterProdDropdownList(this.value)" class="w-full h-8 px-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:border-blue-500">
                                 </div>
                                 <div id="prodDropdownList" class="space-y-0.5"></div>
                             </div>
@@ -81,13 +80,13 @@
                         <table class="w-full text-left">
                             <thead class="bg-slate-50 text-slate-500 border-b border-slate-100">
                                 <tr>
-                                    <th class="sm-th py-3.5 px-4">ពេលវេលា</th>
-                                    <th class="sm-th py-3.5 px-4">ប្រភេទចលនា</th>
-                                    <th class="sm-th py-3.5 px-4">ទំនិញ</th>
-                                    <th class="sm-th py-3.5 px-4 text-right">ចំនួនចលនា</th>
-                                    <th class="sm-th py-3.5 px-4 text-right">ស្តុកនៅសល់</th>
-                                    <th class="sm-th py-3.5 px-4">អ្នកធ្វើ</th>
-                                    <th class="sm-th py-3.5 px-4">មូលហេតុ · លេខយោង</th>
+                                    <th class="sm-th py-2.5 px-4">ពេលវេលា</th>
+                                    <th class="sm-th py-2.5 px-4">ប្រភេទចលនា</th>
+                                    <th class="sm-th py-2.5 px-4">ទំនិញ</th>
+                                    <th class="sm-th py-2.5 px-4 text-right">ចំនួនចលនា</th>
+                                    <th class="sm-th py-2.5 px-4 text-right">ស្តុកនៅសល់</th>
+                                    <th class="sm-th py-2.5 px-4">អ្នកធ្វើ</th>
+                                    <th class="sm-th py-2.5 px-4">មូលហេតុ · លេខយោង</th>
                                 </tr>
                             </thead>
                             <tbody id="rows" class="divide-y divide-slate-100 text-slate-700"></tbody>
@@ -95,6 +94,7 @@
                     </div>
                     <div id="cards" class="md:hidden divide-y divide-slate-100"></div>
                     <div id="empty" class="hidden"></div>
+                    <div id="pager" data-pager="stockHistory"></div>
                 </div>
             </div>
         </main>
@@ -132,7 +132,7 @@
                 const meta = t === 'all' ? { label: 'ទាំងអស់' } : STOCK_MOVE_TYPE[t];
                 return `
                 <button type="button" onclick="selectedType='${t}'; renderTypeTabs(); renderList()" class="sm-badge px-3 py-1.5 rounded-xl transition ${isSel
-                    ? 'bg-indigo-600 text-white font-semibold shadow-sm'
+                    ? 'bg-blue-600 text-white font-semibold shadow-sm'
                     : 'text-slate-600 hover:bg-slate-100 font-medium'}">
                     ${t !== 'all' ? `<i class="fas ${meta.icon} text-[10px] mr-1"></i>` : ''}${meta.label}
                 </button>`;
@@ -144,12 +144,12 @@
             const prods = sellableProducts();
 
             const allBtn = `
-                <button type="button" onclick="selectProductFilter('all')" class="w-full px-3 py-2 rounded-xl text-left sm-td hover:bg-slate-50 transition ${selectedSku === 'all' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-700'}">
+                <button type="button" onclick="selectProductFilter('all')" class="w-full px-3 py-2 rounded-xl text-left sm-td hover:bg-slate-50 transition ${selectedSku === 'all' ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700'}">
                     មុខទំនិញទាំងអស់
                 </button>`;
 
             const items = prods.map(p => `
-                <button type="button" onclick="selectProductFilter('${p.sku}')" class="w-full flex items-center justify-between p-2 rounded-xl text-left sm-td hover:bg-slate-50 transition ${selectedSku === p.sku ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-700'}">
+                <button type="button" onclick="selectProductFilter('${p.sku}')" class="w-full flex items-center justify-between p-2 rounded-xl text-left sm-td hover:bg-slate-50 transition ${selectedSku === p.sku ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700'}">
                     <div class="flex items-center gap-2 min-w-0 pr-2">
                         <span class="w-7 h-7 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 inline-flex items-center justify-center p-0.5 shadow-sm">
                             ${productImgHtml(p)}
@@ -189,12 +189,12 @@
             const staffList = ALL_STAFF;
 
             const allBtn = `
-                <button type="button" onclick="selectStaffFilter('all')" class="w-full px-3 py-2 rounded-xl text-left sm-td hover:bg-slate-50 transition ${selectedStaff === 'all' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-700'}">
+                <button type="button" onclick="selectStaffFilter('all')" class="w-full px-3 py-2 rounded-xl text-left sm-td hover:bg-slate-50 transition ${selectedStaff === 'all' ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700'}">
                     បុគ្គលិកទាំងអស់
                 </button>`;
 
             const items = staffList.map(s => `
-                <button type="button" onclick="selectStaffFilter('${s.id}')" class="w-full flex items-center gap-2.5 p-2 rounded-xl text-left sm-td hover:bg-slate-50 transition ${selectedStaff === s.id ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-700'}">
+                <button type="button" onclick="selectStaffFilter('${s.id}')" class="w-full flex items-center gap-2.5 p-2 rounded-xl text-left sm-td hover:bg-slate-50 transition ${selectedStaff === s.id ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700'}">
                     ${avatarHtml(s.id, 'w-6 h-6')}
                     <span class="truncate">${s.name} (${s.id})</span>
                 </button>
@@ -255,6 +255,11 @@
 
             renderKpis(all);
 
+            // KPI គណនាលើបញ្ជីទាំងមូល · តារាងបង្ហាញម្តងមួយទំព័រ
+            const pg = pagerSlice('stockHistory', all, { render: 'renderList', sig: [selectedType, selectedSku, selectedStaff, dateRangeKey()].join('|') });
+            document.getElementById('pager').innerHTML = pg.html;
+            const pageRows = pg.rows;
+
             const empty = document.getElementById('empty');
             if (!all.length) {
                 document.getElementById('rows').innerHTML = '';
@@ -285,7 +290,7 @@
                 return parts.join(' · ') || '<span class="text-slate-400">—</span>';
             };
 
-            document.getElementById('rows').innerHTML = all.slice(0, 200).map(m => {
+            document.getElementById('rows').innerHTML = pageRows.map(m => {
                 const p = getProduct(m.sku);
                 const unit = p ? p.unit : 'ឯកតា';
                 const sign = m.qty > 0 ? '+' : '';
@@ -293,12 +298,12 @@
 
                 return `
                 <tr class="hover:bg-slate-50 transition">
-                    <td class="py-3 px-4 sm-td sm-figure">
+                    <td class="py-2.5 px-4 sm-td sm-figure">
                         <span class="block font-medium text-slate-800">${fmtDate(m.at)}</span>
                         <span class="text-xs text-slate-400">${fmtTime(m.at)}</span>
                     </td>
-                    <td class="py-3 px-4">${typeChip(m)}</td>
-                    <td class="py-3 px-4 sm-td">
+                    <td class="py-2.5 px-4">${typeChip(m)}</td>
+                    <td class="py-2.5 px-4 sm-td">
                         <div class="flex items-center gap-3">
                             <span class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 inline-flex items-center justify-center p-0.5 shadow-sm">
                                 ${p ? productImgHtml(p) : '<i class="fas fa-box text-slate-400 text-sm"></i>'}
@@ -309,18 +314,18 @@
                             </div>
                         </div>
                     </td>
-                    <td class="py-3 px-4 text-right sm-td sm-figure font-bold ${qtyTone}">
+                    <td class="py-2.5 px-4 text-right sm-td sm-figure font-bold ${qtyTone}">
                         ${sign}${m.qty} ${unit}
                     </td>
-                    <td class="py-3 px-4 text-right sm-td sm-figure font-bold text-slate-800">
+                    <td class="py-2.5 px-4 text-right sm-td sm-figure font-bold text-slate-800">
                         ${m.balanceAfter != null ? `${m.balanceAfter} ${unit}` : '—'}
                     </td>
-                    <td class="py-3 px-4 sm-td">${personChip(m.by)}</td>
-                    <td class="py-3 px-4 sm-td text-xs leading-relaxed max-w-xs">${reasonText(m)}</td>
+                    <td class="py-2.5 px-4 sm-td">${personChip(m.by)}</td>
+                    <td class="py-2.5 px-4 sm-td text-xs leading-relaxed max-w-xs">${reasonText(m)}</td>
                 </tr>`;
             }).join('');
 
-            document.getElementById('cards').innerHTML = all.slice(0, 100).map(m => {
+            document.getElementById('cards').innerHTML = pageRows.map(m => {
                 const p = getProduct(m.sku);
                 const unit = p ? p.unit : 'ឯកតា';
                 const sign = m.qty > 0 ? '+' : '';

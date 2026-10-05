@@ -15,7 +15,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#0891b2", 'primary-dark': "#0e7490", accent: "#22d3ee" },
+                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -87,7 +87,7 @@
         }
     </style>
 </head>
-<body id="posPortal" data-role-root="../.." data-active="receipts" class="bg-teal-50/40 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+<body id="posPortal" data-role-root="../.." data-active="receipts" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
 
     <div id="sidebarHost"></div>
 
@@ -98,16 +98,16 @@
         <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-4">
             <div class="w-full space-y-4">
 
-                <div class="bg-teal-50 border border-teal-200 rounded-2xl p-4 flex items-start gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center text-lg flex-shrink-0">
+                <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-lg flex-shrink-0">
                         <i class="fas fa-lock"></i>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <h4 class="sm-card-title text-teal-900">ទិន្នន័យជាប់សោរត្រឹមវេនបច្ចុប្បន្ន</h4>
-                        <p id="lockNote" class="sm-card-sub text-teal-800 mt-0.5"></p>
+                        <h4 class="sm-card-title text-blue-900">ទិន្នន័យជាប់សោរត្រឹមវេនបច្ចុប្បន្ន</h4>
+                        <p id="lockNote" class="sm-card-sub text-blue-800 mt-0.5"></p>
                     </div>
                     <a href="../terminal/pos-terminal.html"
-                       class="sm-badge inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-teal-100 text-teal-800 border border-teal-200 font-semibold transition flex-shrink-0">
+                       class="sm-badge inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-blue-100 text-blue-800 border border-blue-200 font-semibold transition flex-shrink-0">
                         <i class="fas fa-arrow-left"></i> <span class="hidden sm:!inline">ត្រឡប់ទៅផ្ទាំងគិតលុយ</span>
                     </a>
                 </div>
@@ -119,7 +119,7 @@
                     <div class="relative pr-1 w-full sm:w-auto">
                         <i class="fas fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                         <input id="searchInput" type="text" oninput="renderReceipts()" placeholder="ស្វែងរកលេខវិក្កយបត្រ ឬឈ្មោះទំនិញ..."
-                            class="sm-td h-9 pl-9 pr-3 w-full sm:w-[300px] max-w-full rounded-xl bg-slate-50 border border-slate-200 text-slate-700 focus:outline-none focus:border-teal-600 transition">
+                            class="sm-td h-9 pl-9 pr-3 w-full sm:w-[300px] max-w-full rounded-xl bg-slate-50 border border-slate-200 text-slate-700 focus:outline-none focus:border-blue-600 transition">
                     </div>
                 </div>
 
@@ -129,12 +129,12 @@
                         <table class="w-full text-left">
                             <thead class="bg-slate-50 text-slate-500 border-b border-slate-100">
                                 <tr>
-                                    <th class="sm-th py-3.5 px-4">ម៉ោង</th>
-                                    <th class="sm-th py-3.5 px-4">លេខវិក្កយបត្រ</th>
-                                    <th class="sm-th py-3.5 px-4">មុខទំនិញ</th>
-                                    <th class="sm-th py-3.5 px-4">របៀបទូទាត់</th>
-                                    <th class="sm-th py-3.5 px-4 text-right">ទឹកប្រាក់សរុប</th>
-                                    <th class="sm-th py-3.5 px-4 text-right">សកម្មភាព</th>
+                                    <th class="sm-th py-2.5 px-4">ម៉ោង</th>
+                                    <th class="sm-th py-2.5 px-4">លេខវិក្កយបត្រ</th>
+                                    <th class="sm-th py-2.5 px-4">មុខទំនិញ</th>
+                                    <th class="sm-th py-2.5 px-4">របៀបទូទាត់</th>
+                                    <th class="sm-th py-2.5 px-4 text-right">ទឹកប្រាក់សរុប</th>
+                                    <th class="sm-th py-2.5 px-4 text-right">សកម្មភាព</th>
                                 </tr>
                             </thead>
                             <tbody id="receiptBody" class="divide-y divide-slate-100 text-slate-700"></tbody>
@@ -142,6 +142,7 @@
                     </div>
                     <!-- កាតសម្រាប់ទូរស័ព្ទ (ផែនការកែលម្អ C14) -->
                     <div id="receiptCards" class="sm:hidden divide-y divide-slate-100"></div>
+                    <div id="receiptPager" data-pager="receipts"></div>
                     <div id="receiptEmpty" class="hidden py-14 px-6 text-center">
                         <div class="w-14 h-14 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
                             <i class="fas fa-receipt text-2xl"></i>
@@ -231,7 +232,7 @@
                 </div>`;
             document.getElementById('summaryRow').innerHTML =
                 card('វិក្កយបត្រក្នុងវេន', live.length, 'text-slate-700', `${qty} ឯកតាទំនិញ`) +
-                card('ទូទាត់តាមបាគង', khqr, 'text-cyan-600', 'វិក្កយបត្រ') +
+                card('ទូទាត់តាមបាគង', khqr, 'text-slate-700', 'វិក្កយបត្រ') +
                 card('លុបចោល · ប្រគល់វិញ', `${voided} · ${returned}`, voided + returned ? 'text-rose-600' : 'text-slate-700', 'ត្រូវបានអនុម័តដោយអ្នកគ្រប់គ្រង') +
                 card('សំណើរង់ចាំអនុម័ត', pending, pending ? 'text-amber-600' : 'text-slate-700', pending ? 'រង់ចាំអ្នកគ្រប់គ្រង' : 'គ្មានសំណើរង់ចាំ');
         }
@@ -246,7 +247,7 @@
                 }).length;
                 const active = filterMethod === t.id;
                 return `<button onclick="pickMethod('${t.id}')" class="sm-badge px-4 py-2 rounded-xl transition ${active
-                    ? 'bg-teal-600 text-white font-semibold shadow-sm'
+                    ? 'bg-blue-600 text-white font-semibold shadow-sm'
                     : 'text-slate-600 hover:bg-slate-100 font-medium'}">${t.label} (${count})</button>`;
             }).join('');
         }
@@ -289,27 +290,25 @@
             return '';
         }
 
+        // វិធីទូទាត់ជាប្រភេទ មិនមែនស្ថានភាព ដូច្នេះបង្ហាញជាអត្ថបទធម្មតា គ្មានពណ៌
         function methodBadge(s) {
-            const m = methodOf(s);
-            return `<span class="sm-badge px-2 py-0.5 rounded-full border ${m === 'khqr'
-                ? 'bg-cyan-50 text-cyan-700 border-cyan-200'
-                : m === 'split' ? 'bg-purple-50 text-purple-700 border-purple-200'
-                : 'bg-emerald-50 text-emerald-700 border-emerald-200'}">${payMethodLabel(s.pay)}</span>`;
+            return `<span class="sm-td text-slate-600">${payMethodLabel(s.pay)}</span>`;
         }
 
         function menuHtml(s, menuId) {
             const isOpen = expanded[s.id];
-            const item = (onclick, icon, tone, label) => `
-                <button onclick="${onclick}" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition text-left">
-                    <span class="w-7 h-7 rounded-lg ${tone} flex items-center justify-center flex-shrink-0"><i class="fas ${icon} text-[11px]"></i></span>${label}
+            // រូបតំណាងប្រផេះ · ក្រហមតែសកម្មភាពបំផ្លាញ (លុបចោល) ប៉ុណ្ណោះ
+            const item = (onclick, icon, tone, label) => {
+                const danger = tone.includes('rose');
+                return `
+                <button onclick="${onclick}" class="sm-row-menu-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg ${danger ? 'text-rose-600 hover:bg-rose-50' : 'text-slate-700 hover:bg-slate-50'} transition text-left">
+                    <i class="fas ${icon} w-4 text-center text-[13px] ${danger ? '' : 'text-slate-400'}"></i>${label}
                 </button>`;
+            };
             const can = canRequest(s);
             return `
                 <div id="${menuId}" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 text-left">
-                    <div class="px-3 py-2 mb-1 rounded-xl bg-slate-50 border border-slate-100">
-                        <p class="sm-td-sub text-slate-400">សកម្មភាពលើវិក្កយបត្រ</p>
-                        <p class="sm-value text-slate-700">${s.id}</p>
-                    </div>
+                    <p class="px-3 pt-1.5 pb-2 mb-1 border-b border-slate-100 sm-td-sub text-slate-500 sm-figure">${s.id}</p>
                     ${item(`toggleDetail('${s.id}')`, isOpen ? 'fa-eye-slash' : 'fa-eye', 'bg-slate-100 text-slate-600', isOpen ? 'បិទព័ត៌មានលម្អិត' : 'មើលមុខទំនិញលម្អិត')}
                     ${item(`reprint('${s.id}')`, 'fa-print', 'bg-blue-100 text-blue-700', 'បោះពុម្ពវិក្កយបត្រឡើងវិញ')}
                     ${can && returnableLines(s).length ? item(`openReturn('${s.id}')`, 'fa-rotate-left', 'bg-amber-100 text-amber-700', 'ស្នើប្រគល់ទំនិញវិញ') : ''}
@@ -352,7 +351,7 @@
                     </div>
                     <div class="md:col-span-2 pt-3 border-t border-slate-200/80 flex items-center justify-between">
                         <span class="sm-td-sub text-slate-400">ទំហំក្រដាស៖ ម៉ាស៊ីនបោះពុម្ពកម្តៅ 80mm</span>
-                        <button onclick="reprint('${s.id}')" type="button" class="sm-badge h-9 px-3.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white font-medium inline-flex items-center gap-2 text-xs shadow-sm">
+                        <button onclick="reprint('${s.id}')" type="button" class="sm-badge h-9 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium inline-flex items-center gap-2 text-xs shadow-sm">
                             <i class="fas fa-print"></i> បោះពុម្ពវិក្កយបត្រ (ក្រដាសតូច 80mm)
                         </button>
                     </div>
@@ -361,10 +360,13 @@
 
         function renderReceipts() {
             const q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
-            const rows = shiftSales()
+            const matched = shiftSales()
                 .filter(matchesTab)
                 .filter(s => !q || s.id.toLowerCase().includes(q)
                     || s.items.some(l => (getProduct(l.sku) || {}).name.toLowerCase().includes(q)));
+            const pg = pagerSlice('receipts', matched, { size: 20, render: 'renderReceipts', sig: [filterMethod, q].join('|') });
+            document.getElementById('receiptPager').innerHTML = pg.html;
+            const rows = pg.rows;
 
             const body = document.getElementById('receiptBody');
             const cards = document.getElementById('receiptCards');
@@ -382,18 +384,18 @@
                 const menuId = 'rcpMenu-' + s.id;
                 const v = isVoided(s);
                 return `
-                    <tr onclick="if (!event.target.closest('button, a, [id^=rcpMenu]')) toggleDetail('${s.id}')" class="cursor-pointer hover:bg-teal-50/40 transition ${expanded[s.id] ? 'bg-teal-50/60' : ''} ${v ? 'opacity-70' : ''}">
-                        <td class="sm-td-strong py-3.5 px-4">${fmtTime(s.time)}</td>
-                        <td class="sm-td py-3.5 px-4">${s.id}</td>
-                        <td class="py-3.5 px-4">
+                    <tr onclick="if (!event.target.closest('button, a, [id^=rcpMenu]')) toggleDetail('${s.id}')" class="cursor-pointer hover:bg-slate-50 transition ${expanded[s.id] ? 'bg-blue-50/60' : ''} ${v ? 'opacity-70' : ''}">
+                        <td class="sm-td-strong py-2.5 px-4">${fmtTime(s.time)}</td>
+                        <td class="sm-td py-2.5 px-4">${s.id}</td>
+                        <td class="py-2.5 px-4">
                             <p class="sm-td text-slate-700">${s.items.length} មុខ</p>
                             <p class="sm-td-sub text-slate-400">${t.qty} ឯកតា</p>
                         </td>
-                        <td class="py-3.5 px-4"><div class="flex flex-wrap gap-1.5">${methodBadge(s)}${statusBadge(s)}</div></td>
-                        <td class="sm-td-strong py-3.5 px-4 text-right ${v ? 'line-through text-slate-400' : ''}">${fmtUSD(t.gross)}</td>
-                        <td class="py-3.5 px-4 text-right">
+                        <td class="py-2.5 px-4"><div class="flex flex-wrap gap-1.5">${methodBadge(s)}${statusBadge(s)}</div></td>
+                        <td class="sm-td-strong py-2.5 px-4 text-right ${v ? 'line-through text-slate-400' : ''}">${fmtUSD(t.gross)}</td>
+                        <td class="py-2.5 px-4 text-right">
                             <button onclick="toggleRowActionMenu(event, '${menuId}')" type="button" aria-label="សកម្មភាព"
-                                class="w-12 h-12 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 border border-slate-200/70 inline-flex items-center justify-center transition">
+                                class="w-12 h-12 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 inline-flex items-center justify-center transition">
                                 <i class="fas fa-ellipsis-vertical text-sm"></i>
                             </button>
                             ${menuHtml(s, menuId)}
@@ -416,7 +418,7 @@
                             <div class="flex items-center gap-2 flex-shrink-0">
                                 <span class="sm-value ${v ? 'line-through text-slate-400' : 'text-slate-800'}">${fmtUSD(t.gross)}</span>
                                 <button onclick="toggleRowActionMenu(event, '${menuId}')" type="button" aria-label="សកម្មភាព"
-                                    class="w-11 h-11 rounded-xl bg-slate-50 border border-slate-200/70 text-slate-500 inline-flex items-center justify-center">
+                                    class="w-9 h-9 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 inline-flex items-center justify-center">
                                     <i class="fas fa-ellipsis-vertical text-sm"></i>
                                 </button>
                                 ${menuHtml(s, menuId)}

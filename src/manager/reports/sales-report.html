@@ -15,7 +15,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -119,12 +119,12 @@
                 tooltip: {
                     formatter: ps => {
                         const r = (horizontal ? list.slice().reverse() : list)[ps[0].dataIndex];
-                        return chartTipTitle(r.label) + chartTipRow(CHART_TONE.indigo, valueLabel, fmt(r.value)) +
+                        return chartTipTitle(r.label) + chartTipRow(CHART_TONE.accent, valueLabel, fmt(r.value)) +
                             (r.extra || []).map(x => chartTipRow('#94a3b8', x[0], x[1])).join('');
                     }
                 },
                 series: [{ type: 'bar', barMaxWidth: horizontal ? 18 : 30, data,
-                    itemStyle: { color: CHART_TONE.indigo, borderRadius: horizontal ? [0, 4, 4, 0] : [4, 4, 0, 0] } }]
+                    itemStyle: { color: CHART_TONE.accent, borderRadius: horizontal ? [0, 4, 4, 0] : [4, 4, 0, 0] } }]
             });
         }
 
@@ -213,7 +213,7 @@
 
         function renderTabs() {
             document.getElementById('viewTabs').innerHTML = VIEWS.map(v => `<button onclick="view='${v.id}'; renderAll()" class="sm-badge px-3.5 py-2 rounded-xl transition ${view === v.id
-                ? 'bg-indigo-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">${v.label}</button>`).join('');
+                ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">${v.label}</button>`).join('');
         }
 
         function renderAll() {

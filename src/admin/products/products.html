@@ -15,7 +15,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#059669", 'primary-dark': "#047857", accent: "#34d399" },
+                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -40,7 +40,7 @@
                     <label class="relative w-full sm:w-[240px]">
                         <i class="fas fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                         <input id="search" oninput="renderList()" type="text" placeholder="ស្វែងរកឈ្មោះ ឬលេខកូដ"
-                            class="sm-td w-full h-9 pl-8 pr-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:outline-none">
+                            class="sm-td w-full h-9 pl-8 pr-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500 focus:outline-none">
                     </label>
                 </div>
                 <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm">
@@ -61,6 +61,7 @@
                     </table></div>
                     <div id="cards" class="md:hidden divide-y divide-slate-100"></div>
                     <div id="empty" class="hidden"></div>
+                    <div id="pager" data-pager="products"></div>
                 </section>
                 <p class="sm-td-sub text-slate-500 px-1"><i class="fas fa-circle-info mr-1 text-slate-400"></i>តម្លៃលក់រួមអាករ 10% · ថ្លៃដើមមិនរួមអាករ · ការប្តូរតម្លៃមានប្រសិទ្ធភាពលើការលក់បន្ទាប់ វិក្កយបត្រចាស់រក្សាតម្លៃដើមរបស់វា</p>
             </div>
@@ -98,12 +99,12 @@
         }
 
         function marginTone(m) {
-            return m < LOW ? 'text-rose-600' : m < 25 ? 'text-amber-700' : 'text-emerald-700';
+            return m < LOW ? 'text-rose-600' : m < 25 ? 'text-amber-700' : 'text-slate-700';
         }
 
         function marginCell(p) {
             const m = marginOf(p);
-            const bar = m < LOW ? 'bg-rose-500' : m < 25 ? 'bg-amber-500' : 'bg-emerald-600';
+            const bar = m < LOW ? 'bg-rose-500' : m < 25 ? 'bg-amber-500' : 'bg-slate-300';
             return `<div class="flex items-center gap-2.5"><div class="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden"><div class="h-full ${bar}" style="width:${Math.min(Math.max(m, 0), 60) / 60 * 100}%"></div></div>
                 <span class="sm-td-strong sm-figure w-12 text-right ${marginTone(m)}">${m.toFixed(0)}%</span></div>`;
         }
@@ -129,7 +130,7 @@
         }
 
         function dotsBtn(mid) {
-            return `<button onclick="toggleRowActionMenu(event, '${mid}')" type="button" aria-label="សកម្មភាព" class="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200/70 inline-flex items-center justify-center"><i class="fas fa-ellipsis-vertical text-sm"></i></button>`;
+            return `<button onclick="toggleRowActionMenu(event, '${mid}')" type="button" aria-label="សកម្មភាព" class="w-9 h-9 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 inline-flex items-center justify-center"><i class="fas fa-ellipsis-vertical text-sm"></i></button>`;
         }
 
         function visible() {
@@ -154,14 +155,17 @@
             const tabs = CATEGORIES.map(c => ({ id: c.id, label: c.label }))
                 .concat([{ id: 'low', label: 'ចំណេញទាប' }, { id: 'paused', label: 'បានផ្អាក' }]);
             document.getElementById('catTabs').innerHTML = tabs.map(t => `<button type="button" onclick="cat='${t.id}'; renderAll()"
-                class="sm-badge h-9 px-3.5 rounded-xl transition ${cat === t.id ? 'bg-emerald-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">${t.label}</button>`).join('');
+                class="sm-badge h-9 px-3.5 rounded-xl transition ${cat === t.id ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">${t.label}</button>`).join('');
         }
 
         function renderList() {
-            const list = visible();
+            const all = visible();
+            const pg = pagerSlice('products', all, { render: 'renderList', sig: [cat, document.getElementById('search').value.trim()].join('|') });
+            document.getElementById('pager').innerHTML = pg.html;
+            const list = pg.rows;
             const empty = document.getElementById('empty');
-            empty.classList.toggle('hidden', !!list.length);
-            empty.innerHTML = list.length ? '' : emptyState('fa-box-open', 'គ្មានទំនិញក្នុងបញ្ជីនេះ', cat === 'low' ? 'ទំនិញទាំងអស់មានអត្រាចំណេញល្អ' : 'សូមសាកល្បងពាក្យស្វែងរកផ្សេង');
+            empty.classList.toggle('hidden', !!all.length);
+            empty.innerHTML = all.length ? '' : emptyState('fa-box-open', 'គ្មានទំនិញក្នុងបញ្ជីនេះ', cat === 'low' ? 'ទំនិញទាំងអស់មានអត្រាចំណេញល្អ' : 'សូមសាកល្បងពាក្យស្វែងរកផ្សេង');
             const paused = p => p.active === false ? '<span class="sm-badge ml-1.5 px-1.5 rounded bg-slate-100 text-slate-500">ផ្អាក</span>' : '';
             const thumb = (p, c) => `<span class="${c} rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 ${p.active === false ? 'grayscale opacity-60' : ''}">${productImgHtml(p)}</span>`;
             document.getElementById('rows').innerHTML = list.map(p => {
@@ -175,7 +179,7 @@
                     <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-600">${fmtUSD(costOf(p.sku))}</td>
                     <td class="py-2.5 px-3 text-right sm-td-strong sm-figure ${marginTone(marginOf(p))}">${fmtUSD(profitPer(p))}</td>
                     <td class="py-2.5 px-3">${marginCell(p)}</td>
-                    <td class="py-2.5 px-3 text-right"><span class="sm-td-strong sm-figure text-slate-800">${oh}</span> <span class="text-slate-400 text-xs">${p.unit}</span><span class="block sm-td-sub text-[11px] font-semibold ${st === 'out' ? 'text-rose-600' : st === 'low' ? 'text-amber-600' : 'text-emerald-700'}">${stInfo.label}</span></td>
+                    <td class="py-2.5 px-3 text-right"><span class="sm-td-strong sm-figure text-slate-800">${oh}</span> <span class="text-slate-400 text-xs">${p.unit}</span><span class="block sm-td-sub text-[11px] font-semibold ${st === 'out' ? 'text-rose-600' : st === 'low' ? 'text-amber-600' : 'text-slate-400'}">${stInfo.label}</span></td>
                     <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-600">${p.minStock || 5}</td>
                     <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-600">${p.reorderQty || 12}</td>
                     <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-600">${s.qty} <span class="text-slate-400">${p.unit}</span></td>

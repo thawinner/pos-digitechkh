@@ -15,7 +15,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#059669", 'primary-dark': "#047857", accent: "#34d399" },
+                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -48,7 +48,7 @@
                                 <p class="sm-card-sub text-slate-500">តម្លៃមិនរួមអាករ · ចុចលើថ្ងៃណាមួយដើម្បីមើលលម្អិត</p>
                             </div>
                             <div class="flex items-center gap-4 sm-td-sub text-slate-500">
-                                <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-600"></span>ប្រាក់ចំណេញដុល</span>
+                                <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-blue-600"></span>ប្រាក់ចំណេញដុល</span>
                                 <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-slate-300"></span>ថ្លៃដើម</span>
                             </div>
                         </div>
@@ -91,7 +91,7 @@
                                 <p class="sm-card-title text-slate-800">ទំនិញរកប្រាក់ចំណេញបានច្រើន</p>
                                 <p class="sm-card-sub text-slate-500">តាមប្រាក់ចំណេញដុល មិនមែនតាមចំនួនលក់</p>
                             </div>
-                            <a href="../reports/profit-report.html" class="sm-badge px-3 py-1.5 rounded-lg text-emerald-700 hover:bg-emerald-50 font-semibold whitespace-nowrap">របាយការណ៍ពេញ</a>
+                            <a href="../reports/profit-report.html" class="sm-badge px-3 py-1.5 rounded-lg text-blue-700 hover:bg-blue-50 font-semibold whitespace-nowrap">របាយការណ៍ពេញ</a>
                         </div>
                         <div id="topProducts" class="divide-y divide-slate-100"></div>
                     </section>
@@ -163,13 +163,14 @@
                 <i class="fas ${up ? 'fa-arrow-up' : 'fa-arrow-down'} text-[10px]"></i>${Math.abs(pct).toFixed(1)}%</span>`;
         }
 
-        function kpi(label, value, sub, extra) {
-            return `<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm min-w-0">
-                <span class="sm-kpi-label text-slate-500">${label}</span>
+        function kpi(label, value, sub, extra, href) {
+            const tag = href ? `a href="${href}"` : 'div';
+            return `<${tag} class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm min-w-0 ${href ? 'block group hover:border-slate-300 transition' : ''}">
+                <span class="sm-kpi-label text-slate-500 flex items-center justify-between gap-2">${label}${href ? '<i class="fas fa-arrow-right text-[10px] text-slate-300 group-hover:text-slate-600 transition"></i>' : ''}</span>
                 <h3 class="sm-kpi-value text-slate-800 mt-1 sm-figure">${value}</h3>
                 <p class="sm-kpi-sub text-slate-500 mt-1 flex flex-wrap items-center gap-x-2">${sub}</p>
                 ${extra || ''}
-            </div>`;
+            </${href ? 'a' : 'div'}>`;
         }
 
         function renderKpis(c) {
@@ -178,12 +179,12 @@
             const tol = Number(posSettings().varianceTolerance) || 5;
             const v = a.variance;
             document.getElementById('kpiRow').innerHTML =
-                kpi('ចំណូលលក់', fmtUSD(a.gross), `${delta(a.gross, b.gross)}<span>${a.tx} វិក្កយបត្រ</span>`) +
+                kpi('ចំណូលលក់', fmtUSD(a.gross), `${delta(a.gross, b.gross)}<span>${a.tx} វិក្កយបត្រ</span>`, '', '../reports/profit-report.html') +
                 kpi('ប្រាក់ចំណេញដុល', fmtUSD(a.profit), `${delta(a.profit, b.profit)}<span>អត្រា ${a.margin.toFixed(1)}%</span>`,
-                    `<div class="h-1.5 rounded-full bg-slate-100 mt-3 overflow-hidden"><div class="h-full bg-emerald-600" style="width:${Math.min(Math.max(a.margin, 0), 100)}%"></div></div>`) +
-                kpi('មធ្យមក្នុងមួយវិក្កយបត្រ', fmtUSD(a.avg), `${delta(a.avg, b.avg)}<span>លុបចោល ${a.voids}</span>`) +
+                    `<div class="h-1.5 rounded-full bg-slate-100 mt-3 overflow-hidden"><div class="h-full bg-blue-600" style="width:${Math.min(Math.max(a.margin, 0), 100)}%"></div></div>`, '../reports/profit-report.html') +
+                kpi('មធ្យមក្នុងមួយវិក្កយបត្រ', fmtUSD(a.avg), `${delta(a.avg, b.avg)}<span>លុបចោល ${a.voids}</span>`, '', '../reports/profit-report.html') +
                 (a.counted ? kpi('ខុសគ្នាសាច់ប្រាក់', `<span class="${Math.abs(v) > tol ? (v < 0 ? 'text-rose-600' : 'text-amber-600') : 'text-slate-800'}">${v > 0.005 ? '+' : ''}${fmtUSD(v)}</span>`,
-                    `<span>${v < -0.005 ? 'ខ្វះ' : v > 0.005 ? 'លើស' : 'ត្រូវគ្នា'} · ${a.counted} វេនដែលបានរាប់</span>`)
+                    `<span>${v < -0.005 ? 'ខ្វះ' : v > 0.005 ? 'លើស' : 'ត្រូវគ្នា'} · ${a.counted} វេនដែលបានរាប់</span>`, '', '../../manager/shifts/shifts.html')
                     : kpi('ខុសគ្នាសាច់ប្រាក់', '<span class="text-slate-400">—</span>', '<span>មិនទាន់មានវេនបិទ និងរាប់ប្រាក់</span>'));
         }
 
@@ -198,7 +199,7 @@
                 xAxis: chartCategoryAxis(DAYS.map(label), {
                     axisLabel: { color: isDark ? '#94a3b8' : '#64748b', fontSize: 12, fontFamily: CHART_FONT,
                         formatter: (v, i) => DAYS[i] && DAYS[i].date === picked ? `{on|${v}}` : v,
-                        rich: { on: { color: CHART_TONE.emerald, fontWeight: 700, fontFamily: CHART_FONT } } }
+                        rich: { on: { color: CHART_TONE.accent, fontWeight: 700, fontFamily: CHART_FONT } } }
                 }),
                 yAxis: chartValueAxis(v => '$' + v),
                 tooltip: {
@@ -207,8 +208,8 @@
                         return chartTipTitle(d.date === today ? 'ថ្ងៃនេះ (កំពុងលក់)' : fmtDate(d.date + 'T12:00')) +
                             chartTipRow(CHART_TONE.slate, 'ចំណូលមិនរួមអាករ', fmtUSD(d.net)) +
                             chartTipRow(CHART_TONE.slate, 'ថ្លៃដើម', fmtUSD(d.cost)) +
-                            chartTipRow(CHART_TONE.emerald, 'ប្រាក់ចំណេញដុល', fmtUSD(d.profit)) +
-                            chartTipRow(CHART_TONE.emerald, 'អត្រាចំណេញ', d.margin.toFixed(1) + '%') +
+                            chartTipRow(CHART_TONE.accent, 'ប្រាក់ចំណេញដុល', fmtUSD(d.profit)) +
+                            chartTipRow(CHART_TONE.accent, 'អត្រាចំណេញ', d.margin.toFixed(1) + '%') +
                             chartTipRow('#94a3b8', 'វិក្កយបត្រ', d.tx);
                     }
                 },
@@ -217,7 +218,7 @@
                       data: DAYS.map(d => ({ value: +d.cost.toFixed(2), itemStyle: { color: d.date === picked ? (isDark ? '#cbd5e1' : '#94a3b8') : (isDark ? '#475569' : CHART_TONE.slate), opacity: d.date === today ? .6 : 1 } })) },
                     { name: 'ប្រាក់ចំណេញដុល', type: 'bar', stack: 'net', barMaxWidth: 34, cursor: 'pointer',
                       itemStyle: { borderRadius: [4, 4, 0, 0] },
-                      data: DAYS.map(d => ({ value: +Math.max(d.profit, 0).toFixed(2), itemStyle: { color: d.date === picked ? '#047857' : CHART_TONE.emerald, opacity: d.date === today ? .6 : 1 } })) }
+                      data: DAYS.map(d => ({ value: +Math.max(d.profit, 0).toFixed(2), itemStyle: { color: d.date === picked ? CHART_TONE.accentStrong : CHART_TONE.accent, opacity: d.date === today ? .6 : 1 } })) }
                 ]
             });
             if (chart) {
@@ -243,12 +244,14 @@
             renderChart();
         }
 
+        // ជួរធម្មតា៖ គ្មានប្រអប់រូបតំណាងពណ៌ · ចំនួនជាលេខប្រផេះ · ក្រហមតែលើការងារបន្ទាន់ (tone rose)
         function attentionRow(icon, tone, title, note, href, count) {
-            return `<a href="${href}" class="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50 transition">
-                <span class="w-9 h-9 rounded-lg bg-${tone}-50 text-${tone}-600 flex items-center justify-center flex-shrink-0"><i class="fas ${icon} text-sm"></i></span>
+            const urgent = tone === 'rose';
+            return `<a href="${href}" class="group flex items-center gap-3 px-5 py-3 hover:bg-slate-50 transition">
+                <i class="fas ${icon} w-4 text-center text-sm ${urgent ? 'text-rose-600' : 'text-slate-400'} flex-shrink-0"></i>
                 <span class="min-w-0 flex-1"><span class="sm-value text-slate-800 block">${title}</span><span class="sm-td-sub text-slate-500 block truncate">${note}</span></span>
-                ${count != null ? `<span class="sm-count min-w-[26px] h-[26px] px-2 rounded-full bg-${tone}-600 text-white text-[12px] font-semibold inline-flex items-center justify-center">${count}</span>` : ''}
-                <i class="fas fa-chevron-right text-[11px] text-slate-300"></i>
+                ${count != null ? `<span class="sm-badge sm-figure min-w-[26px] h-[24px] px-2 rounded-md ${urgent ? 'bg-rose-50 text-rose-700' : 'bg-slate-100 text-slate-700'} font-semibold inline-flex items-center justify-center">${count}</span>` : ''}
+                <i class="fas fa-chevron-right text-[11px] text-slate-300 group-hover:text-slate-500"></i>
             </a>`;
         }
 
@@ -257,9 +260,9 @@
             const pend = pendingApprovals().length;
             if (pend) rows.push(attentionRow('fa-shield-halved', 'amber', 'សំណើរង់ចាំអនុម័ត', 'លុបចោល និងប្រគល់វិញពីបញ្ជរ', '../../manager/approvals/approvals.html', pend));
             const review = mgrAwaitingReviewCount();
-            if (review) rows.push(attentionRow('fa-file-signature', 'indigo', 'វេនរង់ចាំត្រួតពិនិត្យ', 'បិទរួច តែមិនទាន់ចុះហត្ថលេខា', '../../manager/shifts/shifts.html', review));
+            if (review) rows.push(attentionRow('fa-file-signature', 'slate', 'វេនរង់ចាំត្រួតពិនិត្យ', 'បិទរួច តែមិនទាន់ចុះហត្ថលេខា', '../../manager/shifts/shifts.html', review));
             const drops = mgrPendingDropCount();
-            if (drops) rows.push(attentionRow('fa-vault', 'cyan', 'ប្រាក់ដាក់ទូដែកមិនទាន់ទទួល', 'ត្រូវរាប់ និងបញ្ជាក់', '../../manager/cash/cash.html', drops));
+            if (drops) rows.push(attentionRow('fa-vault', 'slate', 'ប្រាក់ដាក់ទូដែកមិនទាន់ទទួល', 'ត្រូវរាប់ និងបញ្ជាក់', '../../manager/cash/cash.html', drops));
             const unconfirmedIns = typeof unconfirmedStockInCount === 'function' ? unconfirmedStockInCount() : 0;
             if (unconfirmedIns) rows.push(attentionRow('fa-truck-ramp-box', 'amber', 'ស្តុកចូលរង់ចាំបញ្ជាក់ថ្លៃដើម', 'បញ្ចូលថ្លៃដើមជាក់ស្តែងពីអ្នកផ្គត់ផ្គង់', '../stock/stock-in.html', unconfirmedIns));
             const tol = Number(posSettings().varianceTolerance) || 5;
@@ -273,8 +276,7 @@
                 rows.push(attentionRow('fa-money-bill-transfer', 'slate', 'អត្រាប្ដូរប្រាក់មិនទាន់ធ្វើបច្ចុប្បន្នភាពថ្ងៃនេះ', `កំពុងប្រើ ${fxRate()} រៀល · ${fx ? 'កែចុងក្រោយ ' + fmtDate(fx.at) : 'មិនដែលកែ'}`, '../settings/settings.html', null));
             }
             document.getElementById('attention').innerHTML = rows.length ? rows.join('') :
-                `<div class="px-5 py-10 text-center"><span class="w-11 h-11 rounded-full bg-emerald-50 text-emerald-600 inline-flex items-center justify-center"><i class="fas fa-check"></i></span>
-                    <p class="sm-value text-slate-700 mt-2">គ្មានអ្វីរង់ចាំទេ</p><p class="sm-td-sub text-slate-500">ហាងដំណើរការធម្មតា</p></div>`;
+                `<div class="px-5 py-10 text-center"><p class="sm-value text-slate-700">គ្មានអ្វីរង់ចាំទេ</p><p class="sm-td-sub text-slate-500">ហាងដំណើរការធម្មតា</p></div>`;
         }
 
         function renderStaff(c) {
@@ -292,12 +294,12 @@
             const list = Object.values(rows).map(r => Object.assign(r, profitOf(r.sales))).sort((a, b) => b.gross - a.gross);
             document.getElementById('staffSub').textContent = `${PERIODS.find(p => p.id === period).label} · តម្លៃលក់រួមអាករ`;
             document.getElementById('staffRows').innerHTML = list.length ? list.map(r => `<tr>
-                <td class="py-3 px-5 sm-td">${personChip(r.id)}<span class="sm-td-sub text-slate-400 ml-9 block -mt-1">${ROLE_NAME[roleOf(r.id)] || ''}</span></td>
-                <td class="py-3 px-3 text-right sm-td sm-figure">${r.shifts}</td>
-                <td class="py-3 px-3 text-right sm-td-strong sm-figure">${fmtUSD(r.gross)}</td>
-                <td class="py-3 px-3 text-right sm-td sm-figure">${fmtUSD(r.avg)}</td>
-                <td class="py-3 px-3 text-right sm-td sm-figure ${r.voids ? 'text-amber-700' : ''}">${r.voids}</td>
-                <td class="py-3 px-5 text-right sm-td-strong sm-figure ${!r.counted ? 'text-slate-400' : Math.abs(r.variance) > tol ? 'text-rose-600' : 'text-slate-700'}">${r.counted ? (r.variance > 0.005 ? '+' : '') + fmtUSD(r.variance) : 'មិនទាន់រាប់'}</td>
+                <td class="py-2.5 px-5 sm-td">${personChip(r.id)}<span class="sm-td-sub text-slate-400 ml-9 block -mt-1">${ROLE_NAME[roleOf(r.id)] || ''}</span></td>
+                <td class="py-2.5 px-3 text-right sm-td sm-figure">${r.shifts}</td>
+                <td class="py-2.5 px-3 text-right sm-td-strong sm-figure">${fmtUSD(r.gross)}</td>
+                <td class="py-2.5 px-3 text-right sm-td sm-figure">${fmtUSD(r.avg)}</td>
+                <td class="py-2.5 px-3 text-right sm-td sm-figure ${r.voids ? 'text-amber-700' : ''}">${r.voids}</td>
+                <td class="py-2.5 px-5 text-right sm-td-strong sm-figure ${!r.counted ? 'text-slate-400' : Math.abs(r.variance) > tol ? 'text-rose-600' : 'text-slate-700'}">${r.counted ? (r.variance > 0.005 ? '+' : '') + fmtUSD(r.variance) : 'មិនទាន់រាប់'}</td>
             </tr>`).join('') : `<tr><td colspan="6">${emptyState('fa-users', 'គ្មានការលក់ក្នុងរយៈពេលនេះ', '')}</td></tr>`;
         }
 
@@ -324,7 +326,7 @@
                     <span class="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0">${productImgHtml(p)}</span>
                     <span class="min-w-0 flex-1">
                         <span class="sm-td-strong text-slate-800 block truncate">${p.name}</span>
-                        <span class="block h-1.5 rounded-full bg-slate-100 mt-1.5 overflow-hidden"><span class="block h-full bg-emerald-600" style="width:${x.profit / max * 100}%"></span></span>
+                        <span class="block h-1.5 rounded-full bg-slate-100 mt-1.5 overflow-hidden"><span class="block h-full bg-blue-600" style="width:${x.profit / max * 100}%"></span></span>
                     </span>
                     <span class="text-right flex-shrink-0">
                         <span class="sm-td-strong sm-figure text-slate-800 block">${fmtUSD(x.profit)}</span>
@@ -362,7 +364,7 @@
 
         function renderTabs() {
             document.getElementById('periodTabs').innerHTML = PERIODS.map(p => `<button type="button" onclick="period='${p.id}'; renderAll()"
-                class="sm-badge h-9 px-4 rounded-lg transition ${period === p.id ? 'bg-emerald-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">${p.label}</button>`).join('');
+                class="sm-badge h-9 px-4 rounded-lg transition ${period === p.id ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">${p.label}</button>`).join('');
         }
 
         function renderAll() {

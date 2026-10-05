@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         tailwind.config = {
-            theme: { extend: { colors: { primary: "#0891b2", 'primary-dark': "#0e7490" }, fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] } } }
+            theme: { extend: { colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8" }, fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] } } }
         }
     </script>
     <link rel="stylesheet" href="shared/styles/custom.css">
@@ -26,10 +26,36 @@
         .shake { animation: shake .35s ease; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
         .fade-up { animation: fadeUp .22s ease; }
+
+        /* ===== ទម្រង់ភ្លឺ (លំនាំដើម) — ដូចផ្ទាំងគិតលុយ និងទំព័របើកវេន =====
+           ផ្ទៃទំព័រ ផ្ទាំងចាប់ផ្តើម និងផ្ទាំងឆ្វេងសរសេរជាពណ៌ងងឹត (.login-dark)។ ពេល <html> មិនមានថ្នាក់ dark
+           ស្រទាប់នេះបកទៅផ្ទៃភ្លឺ · ផ្ទាំងស្តាំពណ៌សស្រាប់ · ប៊ូតុងព្រះច័ន្ទនៅតែប្តូរទៅទម្រង់ងងឹតបាន */
+        html:not(.dark) .login-bg { background: #f1f5f9; color: #0f172a; }
+        html:not(.dark) #splash { background: #f8fafc; }
+        html:not(.dark) #splash .text-\[\#22c55e\] { color: #15803d !important; }
+        html:not(.dark) #loginPortal main > div > section.bg-white { border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(15, 23, 42, .04); }
+        html:not(.dark) .login-dark.bg-\[\#111a2b\] { background-color: #ffffff !important; border-color: #e2e8f0 !important; box-shadow: 0 1px 2px rgba(15, 23, 42, .04); }
+        html:not(.dark) .login-dark :is(.bg-white\/5, .bg-white\/\[0\.04\], .bg-black\/30, .bg-slate-900\/60, .bg-slate-900\/80) { background-color: #f8fafc !important; }
+        html:not(.dark) .login-dark .bg-slate-700\/80 { background-color: #f1f5f9 !important; }
+        html:not(.dark) .login-dark .bg-white\/10 { background-color: #ffffff !important; }
+        html:not(.dark) .login-dark .hover\:bg-white\/5:hover, html:not(.dark) .login-dark .hover\:bg-white\/20:hover { background-color: #f1f5f9 !important; }
+        html:not(.dark) .login-dark :is(.border-white\/10, .border-white\/15, .border-slate-700) { border-color: #e2e8f0 !important; }
+        html:not(.dark) .login-dark .divide-white\/10 > * + * { border-color: #e2e8f0 !important; }
+        html:not(.dark) .login-dark :is(.text-white, .text-slate-100, .text-slate-200) { color: #0f172a !important; }
+        html:not(.dark) .login-dark .hover\:text-white:hover { color: #0f172a !important; }
+        html:not(.dark) .login-dark .text-slate-300 { color: #475569 !important; }
+        html:not(.dark) .login-dark :is(.text-slate-400, .text-slate-500) { color: #64748b !important; }
+        html:not(.dark) .login-dark :is(.text-blue-200\/80, .text-blue-300) { color: #1d4ed8 !important; }
+        html:not(.dark) .login-dark .text-amber-300 { color: #b45309 !important; }
+        html:not(.dark) .login-dark :is(.text-emerald-300, .text-emerald-400) { color: #047857 !important; }
+        html:not(.dark) .login-dark .bg-amber-500\/20 { background-color: #fef3c7 !important; }
+        html:not(.dark) .login-dark .bg-rose-950\/20 { background-color: #fff1f2 !important; }
+        html:not(.dark) body.login-bg .login-dark :is([class~="bg-blue-400"], [class~="bg-blue-500"], [class~="bg-blue-600"], [class~="bg-emerald-400"], [class~="bg-emerald-500"], [class~="bg-rose-500"], [class~="bg-slate-900"], [class~="bg-slate-600"]),
+        html:not(.dark) body.login-bg .login-dark :is([class~="bg-blue-400"], [class~="bg-blue-500"], [class~="bg-blue-600"], [class~="bg-emerald-400"], [class~="bg-emerald-500"], [class~="bg-rose-500"], [class~="bg-slate-900"], [class~="bg-slate-600"]) :is(.text-white, .text-slate-100) { color: #ffffff !important; }
         @keyframes dotPop { 0% { transform: scale(.4); } 70% { transform: scale(1.2); } 100% { transform: scale(1); } }
         .dot-pop { animation: dotPop .16s ease-out; }
         .tile-live { box-shadow: inset 3px 0 0 #10b981; }
-        .tile:focus-visible, .pin-key:focus-visible { outline: 3px solid #22d3ee; outline-offset: 2px; }
+        .tile:focus-visible, .pin-key:focus-visible { outline: 3px solid #60a5fa; outline-offset: 2px; }
         /* ផ្ទាំងចាប់ផ្តើម៖ ឡូហ្គោ និងចំណុចលោតបី */
         #splash { position: fixed; inset: 0; z-index: 100; background: #0b1220; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity .4s ease, visibility .4s ease; }
         #splash.splash-out { opacity: 0; visibility: hidden; }
@@ -54,14 +80,14 @@
 <body id="loginPortal" data-role-root="." class="login-bg min-h-screen font-sans text-slate-100 text-[16px]">
 
     <!-- Dark Mode Toggle Button -->
-    <div class="fixed top-4 right-4 z-40">
+    <div class="login-dark fixed top-4 right-4 z-40">
         <button onclick="toggleDarkMode()" type="button" aria-label="ប្តូររវាងទម្រង់ភ្លឺ និងទម្រង់ងងឹត" id="darkModeToggleBtn"
             class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center transition border border-white/10 cursor-pointer shadow-lg backdrop-blur-sm">
             <iconify-icon id="darkModeIcon" icon="mdi:weather-night" class="text-xl"></iconify-icon>
         </button>
     </div>
 
-    <div id="splash" role="status" aria-label="កំពុងផ្ទុក">
+    <div id="splash" class="login-dark" role="status" aria-label="កំពុងផ្ទុក">
         <div class="splash-center">
             <div class="flex items-center gap-4">
                 <img src="shared/assets/logo-mark-transparent.png" alt="" class="splash-mark w-[72px] h-[72px] object-contain">
@@ -79,19 +105,19 @@
         <div class="w-full max-w-[1120px] grid grid-cols-1 lg:grid-cols-12 gap-4">
 
             <!-- ===== ផ្ទាំងឆ្វេង៖ ម៉ាក នាឡិកា និងស្ថានភាពបញ្ជរ ===== -->
-            <section class="lg:col-span-4 max-lg:order-2 rounded-xl bg-[#111a2b] border border-white/10 p-6 flex flex-col gap-5">
+            <section class="login-dark lg:col-span-4 max-lg:order-2 rounded-xl bg-[#111a2b] border border-white/10 p-6 flex flex-col gap-5">
                 <div class="flex items-center gap-3">
                     <img src="shared/assets/logo-mark-transparent.png" alt="DIGITECHKH" class="w-11 h-11 object-contain">
                     <div>
                         <p class="sm-card-title text-white text-[19px] tracking-wide">DIGITECHKH</p>
-                        <p class="sm-td-sub text-cyan-200/80">ប្រព័ន្ធគិតលុយលក់រាយ</p>
+                        <p class="sm-td-sub text-blue-200/80">ប្រព័ន្ធគិតលុយលក់រាយ</p>
                     </div>
                 </div>
 
                 <div>
                     <p id="clockBig" class="clock-big text-white"></p>
                     <p id="dateBig" class="sm-td-sub text-slate-300 mt-2"></p>
-                    <p class="sm-td-sub text-slate-400 mt-1"><i class="fas fa-location-dot mr-1.5 text-cyan-300"></i><span id="branchLabel"></span></p>
+                    <p class="sm-td-sub text-slate-400 mt-1"><i class="fas fa-location-dot mr-1.5 text-blue-300"></i><span id="branchLabel"></span></p>
                 </div>
 
                 <div>
@@ -188,8 +214,8 @@
                 current,
                 variant: 'icon',
                 size: 'md',
-                tone: 'amber',
-                doneTone: 'brand',
+                tone: 'accent',
+                doneTone: 'accent',
                 onStep: n => { if (n === 1 && current === 2) backToPick(); }
             });
         }
@@ -221,7 +247,7 @@
             const status = sh
                 ? '<span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-2 align-middle"></span><span class="text-emerald-700 font-semibold">កំពុងលក់</span>'
                 : plan
-                    ? `<i class="${plan.now ? 'fas fa-calendar-check text-cyan-600' : 'far fa-clock text-slate-400'} text-[12px] mr-2"></i><span class="${plan.now ? 'text-slate-700' : 'text-slate-500'}">${plan.template.name}<span class="max-md:hidden"> ${plan.template.start}–${plan.template.end}</span></span>`
+                    ? `<i class="${plan.now ? 'fas fa-calendar-check text-blue-600' : 'far fa-clock text-slate-400'} text-[12px] mr-2"></i><span class="${plan.now ? 'text-slate-700' : 'text-slate-500'}">${plan.template.name}<span class="max-md:hidden"> ${plan.template.start}–${plan.template.end}</span></span>`
                     : (role === 'cashier' ? '<span class="text-slate-400">ឈប់សម្រាកថ្ងៃនេះ</span>' : '');
             return `<button onclick="pickUser('${p.id}')" type="button"
                 class="tile ${sh ? 'tile-live' : ''} group w-full text-left px-4 py-2.5 bg-white hover:bg-slate-50 transition-colors flex items-center gap-3">
@@ -266,7 +292,7 @@
             const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '⌫'];
             const asg = assignmentFor(p.id);
             const dest = role === 'admin' ? 'ផ្ទាំងម្ចាស់ហាង' : manager ? 'ផ្ទាំងគ្រប់គ្រង' : sh ? `បន្ត${sh.templateName} លើ ${sh.register}` : `បើក${asg ? asg.template.name : 'វេន'}`;
-            const accent = { admin: 'emerald', manager: 'indigo' }[role] || 'cyan';
+            const accent = 'blue';
             const tpl = sh ? null : asg && asg.template;
             const facts = [
                 sh ? [ 'fa-circle-play', 'វេនបើកតាំងពី', fmtTime(sh.openedAt), 'text-emerald-700' ] : null,
@@ -334,13 +360,13 @@
             const n = Math.max(4, pin.length);
             const err = locked || !!pinMsg;
             const ready = pin.length >= 4 && !locked;
-            const dotActive = pinMsg ? 'bg-rose-500' : (dark ? 'bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.6)]' : 'bg-slate-900');
+            const dotActive = pinMsg ? 'bg-rose-500' : (dark ? 'bg-blue-400 shadow-[0_0_8px_rgba(34,211,238,0.6)]' : 'bg-slate-900');
             const dotInactive = dark ? 'bg-slate-700/80' : 'bg-slate-200';
             dots.innerHTML = Array.from({ length: n }, (_, i) => `<span class="w-3.5 h-3.5 rounded-full ${i < pin.length
                 ? dotActive + (i === pin.length - 1 && !pinMsg ? ' dot-pop' : '') : dotInactive}"></span>`).join('');
 
             const boxClass = dark
-                ? (err ? 'border-rose-400 bg-rose-950/20' : pin.length ? 'border-cyan-400 ring-2 ring-cyan-400/20 bg-slate-900/80' : 'border-slate-700 bg-slate-900/60')
+                ? (err ? 'border-rose-400 bg-rose-950/20' : pin.length ? 'border-blue-400 ring-2 ring-blue-400/20 bg-slate-900/80' : 'border-slate-700 bg-slate-900/60')
                 : (err ? 'border-rose-400 bg-rose-50/40' : pin.length ? 'border-slate-900 ring-2 ring-slate-900/5 bg-white' : 'border-slate-300 bg-white');
             document.getElementById('pinBox').className = `mt-1.5 h-14 rounded-lg border flex items-center justify-center transition-colors ${boxClass}`;
 
@@ -358,7 +384,7 @@
             const btn = document.getElementById('pinSubmit');
             btn.disabled = !ready;
             const submitClass = ready
-                ? (dark ? 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold border border-cyan-400 shadow-md' : 'bg-slate-900 border border-slate-900 hover:bg-slate-800 text-white')
+                ? (dark ? 'bg-blue-500 hover:bg-blue-400 text-slate-950 font-bold border border-blue-400 shadow-md' : 'bg-slate-900 border border-slate-900 hover:bg-slate-800 text-white')
                 : (dark ? 'bg-white/5 border border-white/10 text-slate-500 cursor-not-allowed' : 'bg-white border border-slate-200 text-slate-400 cursor-not-allowed');
             btn.className = `mt-3 w-full h-12 rounded-lg sm-value font-semibold transition-colors inline-flex items-center justify-center gap-2 ${submitClass}`;
             btn.setAttribute('aria-disabled', String(!ready));
@@ -458,13 +484,13 @@
                 const isPast = tNow > end;
 
                 const statusBadge = now
-                    ? `<span class="ml-auto text-[11px] font-semibold text-cyan-300 flex items-center gap-1.5 whitespace-nowrap">
-                        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>ឥឡូវនេះ</span>`
+                    ? `<span class="ml-auto text-[11px] font-semibold text-blue-300 flex items-center gap-1.5 whitespace-nowrap">
+                        <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>ឥឡូវនេះ</span>`
                     : isPast
                         ? `<span class="ml-auto text-[11px] font-medium text-slate-500 whitespace-nowrap">បានបញ្ចប់</span>`
                         : `<span class="ml-auto text-[11px] font-medium text-slate-400 whitespace-nowrap">មិនទាន់ដល់</span>`;
 
-                return `<div class="pl-3 border-l-2 ${now ? 'border-cyan-400' : 'border-white/10'}">
+                return `<div class="pl-3 border-l-2 ${now ? 'border-blue-400' : 'border-white/10'}">
                     <p class="sm-td-sub flex items-center gap-2 ${now ? 'text-white font-semibold' : 'text-slate-400'}">
                         <span class="whitespace-nowrap">${t.name}</span><span class="${now ? 'text-slate-300' : 'text-slate-500'} font-normal sm-figure whitespace-nowrap">${t.start}–${t.end}</span>
                         ${statusBadge}
@@ -528,7 +554,7 @@
             if (s) {
                 const p = personById(s.userId);
                 document.getElementById('lastUser').innerHTML = `<button onclick="pickUser('${p.id}')" type="button"
-                    class="sm-td-sub pl-1.5 pr-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 hover:border-cyan-400 text-slate-600 inline-flex items-center gap-2">
+                    class="sm-td-sub pl-1.5 pr-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 hover:border-blue-400 text-slate-600 inline-flex items-center gap-2">
                     ${avatarHtml(p.id, 'w-7 h-7')} ចុងក្រោយ៖ <span class="text-slate-800 font-semibold">${p.name}</span></button>`;
             }
             [['cashierTiles', CASHIERS], ['managerTiles', MANAGERS], ['adminTiles', ADMINS]].forEach(([id, list]) => {

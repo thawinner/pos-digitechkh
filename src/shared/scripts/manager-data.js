@@ -1017,12 +1017,17 @@ function personChip(id) {
     return `<span class="inline-flex items-center gap-2 min-w-0">${avatarHtml(id, 'w-7 h-7')}<span class="truncate">${p.name}</span></span>`;
 }
 
-function kpiCard(label, value, sub, tone) {
-    return `<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm min-w-0">
-        <span class="sm-kpi-label text-slate-500">${label}</span>
+/* tone លើតួលេខ៖ យកតែពណ៌ព្រមាន (លឿង · ក្រហម) ពេលត្រូវការការយកចិត្តទុកដាក់ប៉ុណ្ណោះ
+   ពណ៌បៃតង ឬខៀវលើតួលេខធម្មតាត្រូវបានមិនអើពើ ដូច្នេះផ្ទាំងស្ងប់ ហើយការព្រមានលេចធ្លោ */
+function kpiCard(label, value, sub, tone, href) {
+    if (!/rose|red|amber/.test(tone || '')) tone = '';
+    // href៖ កាតក្លាយជាតំណទៅបញ្ជី ឬរបាយការណ៍នៅពីក្រោយតួលេខ
+    const tag = href ? `a href="${href}"` : 'div';
+    return `<${tag} class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm min-w-0 ${href ? 'block group hover:border-slate-300 transition' : ''}">
+        <span class="sm-kpi-label text-slate-500 flex items-center justify-between gap-2">${label}${href ? '<i class="fas fa-arrow-right text-[10px] text-slate-300 group-hover:text-slate-600 transition"></i>' : ''}</span>
         <h3 class="sm-kpi-value ${tone || 'text-slate-800'} mt-1 sm-figure">${value}</h3>
         <p class="sm-kpi-sub text-slate-500 mt-1">${sub || ''}</p>
-    </div>`;
+    </${href ? 'a' : 'div'}>`;
 }
 
 function emptyState(icon, title, note, action) {
@@ -1223,7 +1228,7 @@ function rankCandidates(dateStr, code) {
         } else if (check.isManager) {
             rank = 2;
             chip = 'អ្នកគ្រប់គ្រង';
-            tone = 'indigo';
+            tone = 'slate';
         } else {
             rank = 1;
             chip = 'ទំនេរ';

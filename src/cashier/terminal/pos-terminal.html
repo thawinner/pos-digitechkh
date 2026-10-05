@@ -16,7 +16,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#0891b2", 'primary-dark': "#0e7490", accent: "#22d3ee" },
+                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -37,6 +37,8 @@
         /* គោលដៅប៉ះអប្បបរមា 48 ភិចសែល (ឯកសាររចនាលេខ 01 ច្បាប់លេខ 3) */
         .pos-shell button, .pos-shell a.pos-tap, .pos-shell input { min-height: 48px; }
         .pos-tap-sm { min-width: 48px; min-height: 48px; }
+        /* កន្លែងសារជូនដំណឹងដែលទទេ មិនត្រូវទុកចន្លោះ (gap) ពីលើប្រអប់ស្កេនទេ */
+        #handoverAlertBanner:empty, #precloseBlockerBanner:empty, #drawerBanner:empty { display: none; }
 
         .pos-pills { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
         .pos-pills::-webkit-scrollbar { display: none; }
@@ -56,8 +58,62 @@
         .pos-name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
                     overflow: hidden; min-height: 3.1em; min-height: 2lh; }
 
-        @keyframes posFlash { 0% { transform: scale(1); } 45% { transform: scale(0.96); box-shadow: 0 0 0 3px #22d3ee; } 100% { transform: scale(1); } }
+        @keyframes posFlash { 0% { transform: scale(1); } 45% { transform: scale(0.96); box-shadow: 0 0 0 3px #3b82f6; } 100% { transform: scale(1); } }
         .pos-flash { animation: posFlash .32s ease; }
+
+        /* ស្លាកគ្រាប់ចុចផ្លូវកាត់ — បង្ហាញតែលើឧបករណ៍មានក្តារចុច និងកណ្តុរ (មិនបង្ហាញលើអេក្រង់ប៉ះសុទ្ធ) */
+        .pos-kbd { display: none; font: 600 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace; padding: 3px 5px; border-radius: 4px;
+                   border: 1px solid currentColor; opacity: .55; letter-spacing: 0; }
+        @media (hover: hover) and (pointer: fine) { .pos-kbd { display: inline-block; } }
+
+        /* ===== ទម្រង់ភ្លឺ (លំនាំដើម) =====
+           ផ្ទាំងនេះសរសេរជាពណ៌ងងឹត។ ពេល <html> មិនមានថ្នាក់ dark ស្រទាប់នេះបកពណ៌ទៅផ្ទៃភ្លឺ
+           ដូច្នេះប៊ូតុងព្រះច័ន្ទនៅតែប្តូរទៅទម្រង់ងងឹតបានដដែល។ ប៊ូតុងពណ៌ពេញរក្សាអក្សរពណ៌ស។ */
+        html:not(.dark) .pos-shell { background: #f1f5f9 !important; color: #0f172a !important; }
+        html:not(.dark) .pos-shell > header { background: #ffffff !important; border-color: #e2e8f0 !important; }
+        html:not(.dark) .pos-left { background: #f1f5f9; }
+        html:not(.dark) .pos-right { background: #ffffff; }
+        html:not(.dark) .pos-shell .bg-\[\#0f172a\],
+        html:not(.dark) .pos-shell .bg-\[\#1e293b\],
+        html:not(.dark) .pos-shell .bg-\[\#0b1220\],
+        html:not(.dark) .pos-shell .bg-white\/5 { background-color: #ffffff !important; }
+        html:not(.dark) .pos-shell .bg-\[\#223047\],
+        html:not(.dark) .pos-shell .bg-\[\#374151\],
+        html:not(.dark) .pos-shell .bg-white\/10,
+        html:not(.dark) .pos-shell .bg-white\/\[0\.07\],
+        html:not(.dark) .pos-shell .bg-white\/\[0\.03\] { background-color: #f1f5f9 !important; }
+        html:not(.dark) .pos-shell .focus\:bg-\[\#223047\]:focus { background-color: #ffffff !important; }
+        html:not(.dark) .pos-shell .hover\:bg-white\/10:hover,
+        html:not(.dark) .pos-shell .hover\:bg-white\/15:hover { background-color: #f1f5f9 !important; }
+        html:not(.dark) .pos-shell .hover\:bg-white\/20:hover { background-color: #e2e8f0 !important; }
+        html:not(.dark) .pos-shell :is(.border-white\/5, .border-white\/10, .border-white\/15, .border-\[\#0f172a\]) { border-color: #e2e8f0 !important; }
+        html:not(.dark) .pos-shell .hover\:border-white\/25:hover { border-color: #cbd5e1 !important; }
+        html:not(.dark) .pos-shell .divide-white\/5 > * + * { border-color: #f1f5f9 !important; }
+        html:not(.dark) .pos-shell :is(.text-white, .text-slate-100) { color: #0f172a !important; }
+        html:not(.dark) .pos-shell .hover\:text-white:hover { color: #0f172a !important; }
+        html:not(.dark) .pos-shell .text-slate-200 { color: #1e293b !important; }
+        html:not(.dark) .pos-shell .text-slate-300 { color: #475569 !important; }
+        html:not(.dark) .pos-shell .text-slate-400 { color: #64748b !important; }
+        html:not(.dark) .pos-shell :is(.text-blue-200, .text-blue-300) { color: #1d4ed8 !important; }
+        html:not(.dark) .pos-shell .text-blue-400 { color: #2563eb !important; }
+        html:not(.dark) .pos-shell :is(.text-emerald-100, .text-emerald-200, .text-emerald-300, .text-emerald-400) { color: #047857 !important; }
+        html:not(.dark) .pos-shell :is(.text-amber-100, .text-amber-200, .text-amber-300) { color: #b45309 !important; }
+        html:not(.dark) .pos-shell .hover\:text-amber-200:hover { color: #b45309 !important; }
+        html:not(.dark) .pos-shell :is(.text-rose-200, .text-rose-300) { color: #be123c !important; }
+        html:not(.dark) .pos-shell :is(.hover\:text-rose-200, .hover\:text-rose-300):hover { color: #be123c !important; }
+        html:not(.dark) .pos-shell .pos-total { color: #0f172a; }
+        /* ផ្ទៃភ្លឺ៖ ក្រឡាទំនិញពណ៌ស រូបភាពលើផ្ទៃប្រផេះស្រាល តម្លៃពណ៌ខ្មៅដិត ស្រមោលស្រាលពេលដាក់កណ្តុរ */
+        html:not(.dark) .pos-shell .pos-card { box-shadow: 0 1px 2px rgba(15, 23, 42, .04); }
+        html:not(.dark) .pos-shell .pos-card:not(:disabled):hover { box-shadow: 0 4px 12px rgba(15, 23, 42, .08); }
+        html:not(.dark) .pos-shell .pos-card .pos-thumb,
+        html:not(.dark) .pos-shell .pos-quick-thumb { background-color: #f8fafc !important; }
+        html:not(.dark) .pos-shell .pos-price { color: #0f172a !important; font-weight: 700; }
+        html:not(.dark) .pos-shell #categoryPills button:not(.bg-blue-600) { background-color: #ffffff; color: #475569 !important; }
+        html:not(.dark) .pos-shell #categoryPills button:not(.bg-blue-600):hover { border-color: #cbd5e1 !important; color: #0f172a !important; }
+        html:not(.dark) .pos-shell #paymentPanel button:disabled { background-color: #e2e8f0 !important; color: #94a3b8 !important; }
+        /* ប៊ូតុង និងស្លាកពណ៌ពេញ៖ អក្សរពណ៌សដដែល */
+        html:not(.dark) body.pos-shell :is([class~="bg-blue-500"], [class~="bg-blue-600"], [class~="bg-blue-700"], [class~="bg-emerald-500"], [class~="bg-emerald-600"], [class~="bg-rose-500"], [class~="bg-rose-600"], [class~="bg-amber-500"], [class~="bg-[#e11d2a]"]),
+        html:not(.dark) body.pos-shell :is([class~="bg-blue-500"], [class~="bg-blue-600"], [class~="bg-blue-700"], [class~="bg-emerald-500"], [class~="bg-emerald-600"], [class~="bg-rose-500"], [class~="bg-rose-600"], [class~="bg-amber-500"], [class~="bg-[#e11d2a]"]) :is(.text-white, .text-slate-100, .text-blue-100, .text-emerald-100) { color: #ffffff !important; }
 
         @media (min-width: 1024px) { .pos-right { width: 400px; flex-shrink: 0; } }
         @media (min-width: 1536px) { .pos-right { width: 440px; } }
@@ -67,7 +123,7 @@
             .pos-right.is-open { transform: translateX(0); }
         }
 
-        .pos-total { font-size: 34px; font-weight: 800; line-height: 1.1; color: #22d3ee; font-variant-numeric: tabular-nums; }
+        .pos-total { font-size: 34px; font-weight: 800; line-height: 1.1; color: #f8fafc; font-variant-numeric: tabular-nums; }
 
         .pos-num::-webkit-outer-spin-button, .pos-num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .pos-num { -moz-appearance: textfield; }
@@ -153,11 +209,11 @@
         <!-- វេន ម៉ោងបិទ និងនាឡិការស់ -->
         <div class="flex items-center gap-2 md:gap-3 min-w-0 flex-1 justify-center">
             <span id="shiftChipWrap" class="hidden md:!inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10">
-                <i id="shiftChipIcon" class="fas fa-cash-register text-cyan-400 text-xs"></i>
+                <i id="shiftChipIcon" class="fas fa-cash-register text-blue-400 text-xs"></i>
                 <span id="shiftChip" class="sm-badge text-slate-200 whitespace-nowrap"></span>
             </span>
             <span class="hidden sm:!inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10">
-                <i class="fas fa-clock text-cyan-400 text-xs"></i>
+                <i class="fas fa-clock text-blue-400 text-xs"></i>
                 <span id="liveClock" class="sm-badge text-white font-semibold sm-figure"></span>
             </span>
         </div>
@@ -170,7 +226,7 @@
                     class="pos-tap px-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 inline-flex items-center justify-center gap-2 transition">
                     <i class="fas fa-pause"></i>
                     <span class="sm-badge hidden lg:!inline">ព្យួរ</span>
-                    <span id="heldCount" class="hidden min-w-[20px] h-5 px-1 rounded-full bg-amber-500 text-white sm-badge font-bold inline-flex items-center justify-center">0</span>
+                    <span id="heldCount" class="hidden min-w-[20px] h-5 px-1 rounded-full bg-amber-400 text-amber-950 sm-badge font-bold inline-flex items-center justify-center">0</span>
                 </button>
                 <div id="heldMenu" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 text-left"></div>
             </div>
@@ -179,7 +235,7 @@
                class="pos-tap relative px-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 inline-flex items-center justify-center gap-2 transition">
                 <i class="fas fa-receipt"></i>
                 <span class="sm-badge hidden lg:!inline">វិក្កយបត្រ</span>
-                <span id="receiptCount" class="min-w-[20px] h-5 px-1 rounded-full bg-cyan-600 text-white sm-badge font-bold inline-flex items-center justify-center">0</span>
+                <span id="receiptCount" class="min-w-[20px] h-5 px-1 rounded-full bg-blue-600 text-white sm-badge font-bold inline-flex items-center justify-center">0</span>
             </a>
 
             <!-- ចាក់សោរពេលសម្រាក — មិនបិទវេន មិនរាប់ប្រាក់ (ផែនការកែលម្អ C22) -->
@@ -213,15 +269,15 @@
                         <span id="fsLabel">ពេញអេក្រង់</span>
                     </button>
                     <button onclick="closeAllFloatingDropdowns(); toggleDarkMode()" type="button" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition text-left">
-                        <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0"><iconify-icon icon="mdi:theme-light-dark" class="text-sm"></iconify-icon></span>
+                        <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0"><iconify-icon icon="mdi:theme-light-dark" class="text-sm"></iconify-icon></span>
                         <span>ប្តូរទម្រង់ភ្លឺ / ងងឹត</span>
                     </button>
                     <button onclick="closeAllFloatingDropdowns(); openDropDialog()" type="button" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition text-left">
-                        <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center flex-shrink-0"><i class="fas fa-vault text-[11px]"></i></span>
+                        <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0"><i class="fas fa-vault text-[11px]"></i></span>
                         ផ្ទេរប្រាក់ចូលទូដែក
                     </button>
                     <a id="switchToManager" href="../../manager/dashboard/dashboard.html" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition text-left border-t border-slate-100 mt-1">
-                        <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center flex-shrink-0"><i class="fas fa-user-shield text-[11px]"></i></span>
+                        <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0"><i class="fas fa-user-shield text-[11px]"></i></span>
                         ប្តូរទៅតួនាទីអ្នកគ្រប់គ្រង
                     </a>
                     <button onclick="closeAllFloatingDropdowns(); handleLogout()" type="button" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-rose-700 hover:bg-rose-50 transition text-left border-t border-slate-100 mt-1">
@@ -243,7 +299,7 @@
                             <span class="text-[14px] font-bold text-slate-800">ការជូនដំណឹង</span>
                             <span id="portalNotifCount" class="text-[11px] font-bold min-w-[22px] h-[22px] px-1.5 rounded-full bg-rose-500 text-white inline-flex items-center justify-center">0</span>
                         </span>
-                        <button id="portalNotifReadBtn" onclick="markPortalNotificationsRead()" type="button" class="hidden text-[11px] font-medium text-sky-700 hover:text-sky-900">សម្គាល់ថាបានអានទាំងអស់</button>
+                        <button id="portalNotifReadBtn" onclick="markPortalNotificationsRead()" type="button" class="hidden text-[11px] font-medium text-blue-700 hover:text-blue-900">សម្គាល់ថាបានអានទាំងអស់</button>
                     </div>
                     <div id="portalNotifRows" class="max-h-[380px] overflow-y-auto scrollbar-hide space-y-0.5"></div>
                 </div>
@@ -264,12 +320,13 @@
                 <div id="precloseBlockerBanner"></div>
                 <div id="drawerBanner"></div>
                 <div class="relative w-full">
-                    <i class="fas fa-barcode absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400 text-lg"></i>
+                    <i class="fas fa-barcode absolute left-4 top-1/2 -translate-y-1/2 text-blue-400 text-lg"></i>
                     <input id="barcodeInput" type="text" autocomplete="off" autofocus
                            onkeydown="if(event.key==='Enter'){event.preventDefault();scanBarcode();}"
                            oninput="debouncedSearch()"
                            placeholder="ស្កេនបាកូដ ឬវាយឈ្មោះទំនិញ..."
-                           class="sm-td w-full h-14 pl-12 pr-4 rounded-2xl bg-[#1e293b] border-2 border-white/10 text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:bg-[#223047] transition">
+                           class="sm-td w-full h-14 pl-12 pr-14 rounded-2xl bg-[#1e293b] border-2 border-white/10 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-[#223047] transition">
+                    <kbd class="pos-kbd absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">F2</kbd>
                 </div>
                 <div id="lastAdded" class="hidden"></div>
                 <div id="categoryPills" class="pos-pills w-full min-w-0" onscroll="updatePillFade()"></div>
@@ -311,7 +368,7 @@
                 <div class="flex items-center gap-1.5 flex-shrink-0">
                     <button id="cartHoldBtn" onclick="holdSale()" type="button" aria-label="ព្យួរការលក់"
                             class="pos-tap-sm px-3 rounded-xl bg-white/5 hover:bg-amber-500/20 text-slate-300 hover:text-amber-200 inline-flex items-center justify-center gap-1.5 transition">
-                        <i class="fas fa-pause text-sm"></i><span class="sm-badge">ព្យួរ</span>
+                        <i class="fas fa-pause text-sm"></i><span class="sm-badge">ព្យួរ</span><kbd class="pos-kbd">F4</kbd>
                     </button>
                     <button id="cartClearBtn" onclick="askClearCart()" type="button" aria-label="សម្អាតកន្ត្រក"
                             class="pos-tap-sm rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 inline-flex items-center justify-center transition">
@@ -326,7 +383,7 @@
 
             <div id="cartLines" class="pos-scroll divide-y divide-white/5"></div>
 
-            <div class="flex-shrink-0 border-t-2 border-cyan-600 bg-[#1e293b]">
+            <div class="flex-shrink-0 border-t-2 border-blue-600 bg-[#1e293b]">
                 <div id="saleOptions" class="px-4 pt-3 space-y-2"></div>
                 <div id="cartTotals" class="px-4 py-3 space-y-1.5"></div>
                 <div id="paymentPanel" class="px-4 pb-4 space-y-3"></div>
@@ -334,7 +391,7 @@
         </div>
 
         <button id="cartFab" onclick="openCartPanel()" type="button"
-                class="lg:hidden fixed bottom-5 right-5 z-20 px-5 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white shadow-xl transition inline-flex items-center gap-3">
+                class="lg:hidden fixed bottom-5 right-5 z-20 px-5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white shadow-xl transition inline-flex items-center gap-3">
             <span class="relative">
                 <i class="fas fa-cart-shopping text-lg"></i>
                 <span id="fabCount" class="absolute -top-2 -right-2 min-w-[20px] h-5 px-1 rounded-full bg-rose-500 text-white sm-badge font-bold flex items-center justify-center">0</span>
@@ -365,7 +422,7 @@
                 </div>
                 <div>
                     <p class="sm-td-sub text-slate-400">ទឹកប្រាក់ត្រូវស្កេន</p>
-                    <p id="khqrAmount" class="text-[46px] leading-tight font-extrabold text-[#22d3ee] sm-figure"></p>
+                    <p id="khqrAmount" class="text-[46px] leading-tight font-extrabold text-blue-300 sm-figure"></p>
                     <p id="khqrAmountKHR" class="sm-card-title text-slate-300 sm-figure"></p>
                     <p id="khqrReceipt" class="sm-td-sub text-slate-500 mt-1 sm-figure"></p>
 
@@ -374,7 +431,7 @@
                             <span>សុពលភាពកូដ</span><span id="khqrTimer" class="sm-figure font-semibold text-white"></span>
                         </div>
                         <div class="h-2.5 rounded-full bg-white/10 overflow-hidden">
-                            <div id="khqrBar" class="h-full rounded-full bg-cyan-500 transition-all duration-1000"></div>
+                            <div id="khqrBar" class="h-full rounded-full bg-blue-500 transition-all duration-1000"></div>
                         </div>
                     </div>
 
@@ -386,7 +443,7 @@
                             <i class="fas fa-xmark"></i> បោះបង់
                         </button>
                         <button id="khqrMainBtn" onclick="khqrMainAction()" type="button"
-                            class="sm-value px-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-white font-semibold transition inline-flex items-center justify-center gap-2"></button>
+                            class="sm-value px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition inline-flex items-center justify-center gap-2"></button>
                     </div>
                     <p class="sm-td-sub text-slate-500 mt-3">
                         ប្រព័ន្ធពិតទទួលការជូនដំណឹងពីបាគងដោយស្វ័យប្រវត្តិ។ នៅក្នុងគំរូសាកល្បងនេះ សូមចុចបញ្ជាក់ពេលឃើញការជូនដំណឹងទទួលប្រាក់។
@@ -412,7 +469,7 @@
                     <i class="fas fa-print"></i> បោះពុម្ពបង្កាន់ដៃ
                 </button>
                 <button onclick="dismissSuccess()" type="button"
-                        class="sm-value px-4 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold transition inline-flex items-center justify-center gap-2">
+                        class="sm-value px-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition inline-flex items-center justify-center gap-2">
                     <i class="fas fa-forward"></i> បន្តលក់
                 </button>
             </div>
@@ -423,7 +480,7 @@
     <!-- ===== បញ្ជរចាក់សោរពេលសម្រាក ===== -->
     <div id="lockOverlay" class="hidden fixed inset-0 z-[60] bg-[#0f172a] flex items-center justify-center p-6">
         <div class="w-full max-w-md text-center">
-            <div class="w-20 h-20 rounded-2xl bg-cyan-500/15 text-cyan-300 flex items-center justify-center mx-auto mb-5 text-4xl">
+            <div class="w-20 h-20 rounded-2xl bg-blue-500/15 text-blue-300 flex items-center justify-center mx-auto mb-5 text-4xl">
                 <i class="fas fa-user-lock"></i>
             </div>
             <p class="sm-card-title text-white text-[20px]">បញ្ជរត្រូវបានចាក់សោរ</p>
@@ -435,7 +492,7 @@
                 </p>
             </div>
             <button onclick="unlockTerminal()" type="button"
-                class="mt-5 w-full sm-value px-4 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold transition inline-flex items-center justify-center gap-2">
+                class="mt-5 w-full sm-value px-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition inline-flex items-center justify-center gap-2">
                 <i class="fas fa-unlock"></i> ដោះសោរដោយលេខសម្ងាត់
             </button>
         </div>
@@ -456,7 +513,7 @@
                 <a id="foreignManagerLink" href="../../manager/dashboard/dashboard.html" class="pos-tap sm-value px-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold transition inline-flex items-center justify-center gap-2">
                     <i class="fas fa-user-shield"></i> អ្នកគ្រប់គ្រង
                 </a>
-                <button onclick="posLogout(); location.href='../../index.html'" type="button" class="sm-value px-4 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold transition inline-flex items-center justify-center gap-2">
+                <button onclick="posLogout(); location.href='../../index.html'" type="button" class="sm-value px-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition inline-flex items-center justify-center gap-2">
                     <i class="fas fa-right-from-bracket"></i> ចាកចេញ
                 </button>
             </div>
@@ -467,7 +524,7 @@
     <div id="dropModal" class="hidden fixed inset-0 z-[55] bg-slate-950/75 backdrop-blur-sm items-center justify-center p-4">
         <div class="w-full max-w-md rounded-3xl bg-[#0f172a] border border-white/10 p-5 sm:p-6" onclick="event.stopPropagation()">
             <div class="flex items-start gap-3">
-                <div class="w-12 h-12 rounded-2xl bg-indigo-500/15 text-indigo-300 flex items-center justify-center text-xl flex-shrink-0"><i class="fas fa-vault"></i></div>
+                <div class="w-12 h-12 rounded-2xl bg-blue-500/15 text-blue-300 flex items-center justify-center text-xl flex-shrink-0"><i class="fas fa-vault"></i></div>
                 <div>
                     <p class="sm-card-title text-white">ផ្ទេរប្រាក់ចូលទូដែក</p>
                     <p class="sm-td-sub text-slate-400 mt-0.5">រាប់ប្រាក់ដែលដកចេញពីថត ដាក់ក្នុងស្រោមសំបុត្រ ហើយកត់ចំនួននៅទីនេះ</p>
@@ -477,18 +534,18 @@
                 <label class="block">
                     <span class="sm-td-sub text-slate-400">ដុល្លារ</span>
                     <input id="dropUSD" type="number" inputmode="decimal" min="0" step="1" placeholder="0"
-                        class="pos-num sm-value w-full mt-1 px-3 rounded-xl bg-[#1e293b] border border-white/10 text-white text-right focus:outline-none focus:border-cyan-500">
+                        class="pos-num sm-value w-full mt-1 px-3 rounded-xl bg-[#1e293b] border border-white/10 text-white text-right focus:outline-none focus:border-blue-500">
                 </label>
                 <label class="block">
                     <span class="sm-td-sub text-slate-400">រៀល</span>
                     <input id="dropKHR" type="number" inputmode="numeric" min="0" step="1000" placeholder="0"
-                        class="pos-num sm-value w-full mt-1 px-3 rounded-xl bg-[#1e293b] border border-white/10 text-white text-right focus:outline-none focus:border-cyan-500">
+                        class="pos-num sm-value w-full mt-1 px-3 rounded-xl bg-[#1e293b] border border-white/10 text-white text-right focus:outline-none focus:border-blue-500">
                 </label>
             </div>
             <p id="dropErr" class="hidden sm-td-sub text-rose-400 mt-2">សូមបញ្ចូលចំនួនប្រាក់ដែលផ្ទេរ</p>
             <div class="space-y-2.5 mt-5">
                 <button onclick="submitDrop(true)" type="button"
-                    class="w-full sm-value px-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-white font-semibold transition inline-flex items-center justify-center gap-2">
+                    class="w-full sm-value px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition inline-flex items-center justify-center gap-2">
                     <i class="fas fa-user-shield"></i> អ្នកគ្រប់គ្រងទទួលនៅទីនេះ
                 </button>
                 <button onclick="submitDrop(false)" type="button"
@@ -597,7 +654,7 @@
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 flex-shrink-0">
-                                <a href="../shift/close-shift.html?next=${next.template.code}" class="h-10 px-4 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold inline-flex items-center gap-1.5 transition shadow">
+                                <a href="../shift/close-shift.html?next=${next.template.code}" class="h-10 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold inline-flex items-center gap-1.5 transition shadow">
                                     <i class="fas fa-lock"></i> បិទវេន... ហើយបន្តវេន${next.template.name}
                                 </a>
                                 <button type="button" onclick="dismissHandoverNotice()" class="h-10 px-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 text-xs font-medium transition">
@@ -647,7 +704,7 @@
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                         ${held ? `<button onclick="toggleRowActionMenu(event, 'heldMenu')" type="button" class="sm-badge px-3 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold transition">មើលការលក់ព្យួរ</button>` : ''}
-                        ${drops ? `<button onclick="openDropDialog()" type="button" class="sm-badge px-3 py-1 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-semibold transition">ពិនិត្យទូដែក</button>` : ''}
+                        ${drops ? `<button onclick="openDropDialog()" type="button" class="sm-badge px-3 py-1 rounded-xl bg-blue-500 hover:bg-blue-400 text-white font-semibold transition">ពិនិត្យទូដែក</button>` : ''}
                     </div>
                 </div>`;
         }
@@ -665,7 +722,7 @@
             const msToEnd = endDate - now;
             const opened = now - new Date(sh.openedAt);
             let tone = 'bg-white/5 border-white/10';
-            let iconCls = 'fas fa-cash-register text-cyan-400 text-xs';
+            let iconCls = 'fas fa-cash-register text-blue-400 text-xs';
             let text = `${sh.templateName} · បិទម៉ោង ${sh.end}<span class="hidden xl:!inline"> · បើកបាន ${fmtDuration(opened)}</span>`;
 
             const next = nextShiftForCashier(sh.cashierId, sh.templateCode);
@@ -757,10 +814,10 @@
             const st = posSettings();
             const over = s.expectedUSD > st.drawerLimitUSD || s.expectedKHR > st.drawerLimitKHR;
             host.innerHTML = over ? `
-                <div class="flex items-center gap-3 p-2.5 pl-3.5 rounded-2xl bg-indigo-500/15 border border-indigo-400/40">
-                    <i class="fas fa-vault text-indigo-300"></i>
-                    <p class="sm-td text-indigo-100 flex-1 min-w-0">សាច់ប្រាក់ក្នុងថតលើសកំណត់ · សូមផ្ទេរប្រាក់ខ្លះចូលទូដែក</p>
-                    <button onclick="openDropDialog()" type="button" class="sm-badge px-3.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-semibold transition flex-shrink-0">ផ្ទេរចូលទូដែក</button>
+                <div class="flex items-center gap-3 p-2.5 pl-3.5 rounded-2xl bg-blue-500/15 border border-blue-400/40">
+                    <i class="fas fa-vault text-blue-300"></i>
+                    <p class="sm-td text-blue-100 flex-1 min-w-0">សាច់ប្រាក់ក្នុងថតលើសកំណត់ · សូមផ្ទេរប្រាក់ខ្លះចូលទូដែក</p>
+                    <button onclick="openDropDialog()" type="button" class="sm-badge px-3.5 rounded-xl bg-blue-500 hover:bg-blue-400 text-white font-semibold transition flex-shrink-0">ផ្ទេរចូលទូដែក</button>
                 </div>` : '';
         }
 
@@ -771,7 +828,7 @@
                 const active = c.id === activeCategory;
                 return `<button onclick="pickCategory('${c.id}')" type="button"
                     class="sm-badge px-3.5 rounded-xl inline-flex items-center gap-2 whitespace-nowrap flex-shrink-0 border transition ${active
-                        ? 'bg-cyan-600 border-cyan-600 text-white font-semibold'
+                        ? 'bg-blue-600 border-blue-600 text-white font-semibold'
                         : 'bg-transparent border-white/10 text-slate-400 hover:text-slate-200 hover:border-white/25 font-medium'}">
                     <i class="fas ${c.icon} text-xs ${active ? '' : 'opacity-60'}"></i> ${c.label}
                 </button>`;
@@ -821,17 +878,17 @@
             if (q || activeCategory !== 'all' || !keys.length) { host.innerHTML = ''; return; }
             const levels = onHandLevels();
             host.innerHTML = `
-                <p class="sm-td-sub text-slate-400 mb-1.5 flex items-center gap-1.5"><i class="fas fa-bolt text-amber-300 text-[11px]"></i> ទំនិញញឹកញាប់</p>
+                <p class="sm-td-sub text-slate-400 mb-1.5 flex items-center gap-1.5"><i class="fas fa-bolt text-slate-500 text-[11px]"></i> ទំនិញញឹកញាប់</p>
                 <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2">
                     ${keys.map(p => {
                         const out = stockBlocked(p.sku, 1, levels);
                         return `<button onclick="addToCart('${p.sku}')" type="button" ${out ? 'disabled' : ''}
                             class="flex items-center gap-2 p-1.5 pr-2.5 rounded-xl border text-left transition ${out
-                                ? 'border-white/5 opacity-40 cursor-not-allowed' : 'border-amber-400/25 bg-amber-400/5 hover:border-amber-300'}">
-                            <span class="w-10 h-10 rounded-lg bg-[#0f172a] p-0.5 flex items-center justify-center overflow-hidden flex-shrink-0">${productImgHtml(p, 'text-sm')}</span>
+                                ? 'border-white/5 opacity-40 cursor-not-allowed' : 'pos-quick border-white/10 bg-white/5 hover:border-blue-500'}">
+                            <span class="pos-quick-thumb w-10 h-10 rounded-lg bg-[#0f172a] p-0.5 flex items-center justify-center overflow-hidden flex-shrink-0">${productImgHtml(p, 'text-sm')}</span>
                             <span class="min-w-0">
                                 <span class="sm-td-sub text-slate-100 block truncate">${p.name}</span>
-                                <span class="sm-td-sub text-[#22d3ee] sm-figure block">${fmtUSD(p.price)}</span>
+                                <span class="pos-price sm-td-sub text-blue-300 sm-figure block">${fmtUSD(p.price)}</span>
                             </span>
                         </button>`;
                     }).join('')}
@@ -875,19 +932,19 @@
                 const stockChip = status === 'out'
                     ? '<span class="sm-badge px-2 py-0.5 rounded-lg bg-rose-500 text-white font-bold">អស់</span>'
                     : status === 'low'
-                        ? '<span class="sm-badge px-2 py-0.5 rounded-lg bg-amber-500 text-white font-bold">ជិតអស់</span>'
+                        ? '<span class="sm-badge px-2 py-0.5 rounded-lg bg-amber-400 text-amber-950 font-bold">ជិតអស់</span>'
                         : '';
                 const cartChip = inCart
-                    ? `<span class="absolute top-1.5 left-1.5 min-w-[22px] h-[22px] px-1 rounded-lg bg-cyan-500 text-white sm-badge font-bold inline-flex items-center justify-center">${inCart}</span>`
+                    ? `<span class="absolute top-1.5 left-1.5 min-w-[22px] h-[22px] px-1 rounded-lg bg-blue-500 text-white sm-badge font-bold inline-flex items-center justify-center">${inCart}</span>`
                     : '';
 
                 return `
                 <button id="card-${p.sku}" onclick="addToCart('${p.sku}')" type="button" ${out ? 'disabled' : ''}
-                    class="rounded-xl border overflow-hidden text-left flex flex-col transition ${out
+                    class="pos-card rounded-xl border overflow-hidden text-left flex flex-col transition ${out
                         ? 'bg-[#1e293b] border-white/5 opacity-45 cursor-not-allowed'
                         : inCart
-                            ? 'bg-[#1e293b] border-cyan-500/60 hover:border-cyan-400'
-                            : 'bg-[#1e293b] border-white/10 hover:border-cyan-500 active:border-cyan-400'}">
+                            ? 'bg-[#1e293b] border-blue-500/60 hover:border-blue-400'
+                            : 'bg-[#1e293b] border-white/10 hover:border-blue-500 active:border-blue-400'}">
                     <div class="pos-thumb relative w-full bg-[#0f172a] p-2 flex items-center justify-center overflow-hidden">
                         ${productImgHtml(p, 'text-4xl')}
                         ${cartChip}
@@ -895,7 +952,7 @@
                     </div>
                     <div class="px-2.5 py-2 flex flex-col gap-0.5 flex-1 border-t border-white/5">
                         <p class="pos-name sm-td text-slate-100 leading-snug">${p.name}</p>
-                        <span class="sm-value text-[#22d3ee] sm-figure">${fmtUSD(p.price)}</span>
+                        <span class="pos-price sm-value text-blue-300 sm-figure">${fmtUSD(p.price)}</span>
                     </div>
                 </button>`;
             }).join('');
@@ -987,7 +1044,7 @@
             const line = cart.find(l => l.sku === sku);
             if (!line) return;
             const p = getProduct(sku);
-            const n = await showNumberPad({ title: p.name, subtitle: `${fmtUSD(p.price)} · ${p.unit}`, value: line.qty, min: 0, max: 999, unit: p.unit, dark: true });
+            const n = await showNumberPad({ title: p.name, subtitle: `${fmtUSD(p.price)} · ${p.unit}`, value: line.qty, min: 0, max: 999, unit: p.unit, dark: document.documentElement.classList.contains('dark') });
             if (n == null || n === line.qty) return;
             if (n > line.qty && stockBlocked(sku, n - line.qty)) {
                 showToast(`ស្តុក ${p.name} ក្នុងប្រព័ន្ធមិនគ្រប់ចំនួននេះទេ`, 'error');
@@ -1056,7 +1113,7 @@
                             <p class="sm-value text-slate-700">${h.label} · <span class="sm-figure">${fmtUSD(t.gross)}</span></p>
                             <p class="sm-td-sub text-slate-400">${fmtTime(h.at)} · ${h.items.length} មុខ · ${t.qty} ឯកតា</p>
                         </div>
-                        <button onclick="resumeHeld('${h.id}')" type="button" class="sm-badge !min-h-[40px] px-3 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white font-semibold">បន្ត</button>
+                        <button onclick="resumeHeld('${h.id}')" type="button" class="sm-badge !min-h-[40px] px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold">បន្ត</button>
                         <button onclick="discardHeld('${h.id}')" type="button" aria-label="បោះបង់" class="!min-h-[40px] w-10 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-500 hover:text-rose-600"><i class="fas fa-trash-can text-xs"></i></button>
                     </div>`;
                 }).join('') : '<p class="px-3 py-6 text-center sm-td-sub text-slate-400">មិនមានការលក់ព្យួរទេ</p>'}`;
@@ -1116,7 +1173,7 @@
                 reasons: posSettings().reasons.holdDiscard,
                 confirmText: 'បោះបង់ការលក់',
                 danger: true,
-                dark: true
+                dark: document.documentElement.classList.contains('dark')
             });
             if (!reason) return;
             removeHeld(id);
@@ -1158,7 +1215,7 @@
                 // មិនបង្ហាញទឹកប្រាក់សាច់ប្រាក់សរុបទេ — ការរាប់បិទវេនត្រូវតែបិទភ្នែក (C1)
                 lines.innerHTML = `
                     <div class="h-full flex flex-col items-center justify-center px-5 py-8 text-center">
-                        <div class="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center mb-3">
+                        <div class="w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center mb-3">
                             <i class="fas fa-barcode text-2xl"></i>
                         </div>
                         <p class="sm-card-title text-slate-200">ត្រៀមរួចរាល់</p>
@@ -1194,7 +1251,7 @@
                                         <button onclick="editQty('${l.sku}')" type="button" aria-label="កំណត់ចំនួន"
                                             class="pos-tap-sm min-w-[48px] px-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 sm-value text-white sm-figure">${l.qty}</button>
                                         <button onclick="changeQty('${l.sku}', 1)" type="button" aria-label="បន្ថែមចំនួន"
-                                            class="pos-tap-sm rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white inline-flex items-center justify-center transition">
+                                            class="pos-tap-sm rounded-xl bg-blue-600 hover:bg-blue-500 text-white inline-flex items-center justify-center transition">
                                             <i class="fas fa-plus text-xs"></i>
                                         </button>
                                     </div>
@@ -1235,10 +1292,10 @@
             document.getElementById('paymentPanel').innerHTML = `
                 <button onclick="enterCheckout()" type="button" ${ready ? '' : 'disabled'}
                     class="sm-card-title w-full !min-h-[64px] px-5 rounded-2xl font-bold transition inline-flex items-center justify-between gap-3 ${ready
-                        ? 'bg-cyan-600 hover:bg-cyan-500 text-white'
+                        ? 'bg-blue-600 hover:bg-blue-500 text-white'
                         : 'bg-white/5 text-slate-600 cursor-not-allowed'}">
                     <span class="inline-flex items-center gap-2.5"><i class="fas fa-cash-register"></i> គិតលុយ</span>
-                    <i class="fas fa-arrow-right"></i>
+                    <span class="inline-flex items-center gap-3"><kbd class="pos-kbd">F8</kbd><i class="fas fa-arrow-right"></i></span>
                 </button>`;
         }
 
@@ -1263,7 +1320,7 @@
                     <div>
                         <label class="sm-td-sub text-slate-400 block mb-1">អតិថិជន</label>
                         <button onclick="toggleRowActionMenu(event, 'customerMenu')" type="button"
-                            class="w-full px-3 rounded-xl bg-[#0f172a] border border-white/10 hover:border-cyan-600 text-left inline-flex items-center justify-between gap-2 transition">
+                            class="w-full px-3 rounded-xl bg-[#0f172a] border border-white/10 hover:border-blue-600 text-left inline-flex items-center justify-between gap-2 transition">
                             <span class="sm-td ${c ? 'text-slate-100' : 'text-slate-400'} truncate">${c ? c.name : 'អតិថិជនដើរចូល'}</span>
                             <i class="fas fa-chevron-down text-[10px] text-slate-500 flex-shrink-0"></i>
                         </button>
@@ -1291,7 +1348,7 @@
                             <input id="discountInput" type="number" inputmode="decimal" min="0" max="100" step="0.5"
                                 value="${discountPercent || ''}" placeholder="0"
                                 onchange="setDiscount(this.value)"
-                                class="pos-num sm-td w-full px-3 pr-8 rounded-xl bg-[#0f172a] border ${discountPercent > limit ? 'border-emerald-500/50' : 'border-white/10'} text-white text-right focus:outline-none focus:border-cyan-600 transition">
+                                class="pos-num sm-td w-full px-3 pr-8 rounded-xl bg-[#0f172a] border ${discountPercent > limit ? 'border-emerald-500/50' : 'border-white/10'} text-white text-right focus:outline-none focus:border-blue-600 transition">
                             <span class="absolute right-3 top-1/2 -translate-y-1/2 sm-td text-slate-400">%</span>
                         </div>
                     </div>
@@ -1311,7 +1368,7 @@
                 title: 'មូលហេតុនៃការបញ្ចុះតម្លៃ',
                 message: 'មូលហេតុត្រូវបានបោះពុម្ពក្នុងរបាយការណ៍ករណីមិនប្រក្រតីរបស់អ្នកគ្រប់គ្រង',
                 reasons: posSettings().reasons.discount,
-                dark: true
+                dark: document.documentElement.classList.contains('dark')
             });
             if (!reason) return false;
             discountReason = reason;
@@ -1355,7 +1412,7 @@
                     ],
                     reason: discountReason,
                     excludeIds: [ME_CASHIER],
-                    dark: true
+                    dark: document.documentElement.classList.contains('dark')
                 });
                 if (!ok) {
                     discountPercent = prev.discountPercent;
@@ -1498,8 +1555,8 @@
             const tabs = TENDERS.map(x => `
                 <button onclick="setTender('${x.id}')" type="button"
                     class="!min-h-[50px] h-[50px] rounded-xl border flex flex-col items-center justify-center gap-0.5 transition ${tenderMode === x.id
-                        ? 'bg-cyan-600 border-cyan-500 text-white'
-                        : 'bg-[#0f172a] border-white/10 text-slate-300 hover:border-cyan-600'}">
+                        ? 'bg-blue-600 border-blue-500 text-white'
+                        : 'bg-[#0f172a] border-white/10 text-slate-300 hover:border-blue-600'}">
                     <i class="fas ${x.icon} text-sm"></i><span class="sm-td-sub font-semibold">${x.label}</span>
                 </button>`).join('');
 
@@ -1507,7 +1564,7 @@
                 <button onclick="${onclick}" type="button"
                     class="sm-badge !min-h-[40px] h-10 px-3 rounded-xl border font-semibold sm-figure transition ${on
                         ? 'bg-emerald-500 border-emerald-500 text-white'
-                        : 'bg-white/5 border-white/10 text-slate-100 hover:border-cyan-500'}">${label}</button>`;
+                        : 'bg-white/5 border-white/10 text-slate-100 hover:border-blue-500'}">${label}</button>`;
 
             let body = '';
             if (tenderMode === 'usd' || tenderMode === 'khr') {
@@ -1519,7 +1576,7 @@
                     : rielSuggestions(due).map(v => chip(`pickAmount(${v})`, fmtKHR(v), Math.abs(amount - v) < 0.5));
                 const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', usd ? '.' : '000', '0', 'back'];
                 body = `
-                    <div class="rounded-2xl bg-[#0f172a] border ${amount > 0 ? 'border-cyan-500/60' : 'border-white/10'} px-4 py-2 flex items-center justify-between gap-3">
+                    <div class="rounded-2xl bg-[#0f172a] border ${amount > 0 ? 'border-blue-500/60' : 'border-white/10'} px-4 py-2 flex items-center justify-between gap-3">
                         <span class="sm-td-sub text-slate-400">ទទួលបាន${usd ? 'ជាដុល្លារ' : 'ជារៀល'}</span>
                         <span class="text-[28px] font-bold leading-none sm-figure ${amount > 0 ? 'text-white' : 'text-slate-600'}">${usd
                             ? '$' + (entry || (amount ? amount.toFixed(2) : '0.00'))
@@ -1533,14 +1590,14 @@
                     </div>`;
             } else if (tenderMode === 'khqr') {
                 body = `
-                    <div class="rounded-2xl bg-cyan-500/10 border border-cyan-500/25 p-5 text-center">
+                    <div class="rounded-2xl bg-blue-500/10 border border-blue-500/25 p-5 text-center">
                         <div class="w-14 h-14 rounded-2xl bg-white text-slate-900 flex items-center justify-center mx-auto"><i class="fas fa-qrcode text-2xl"></i></div>
                         <p class="sm-card-title text-white mt-3">ទូទាត់ពេញចំនួនតាមកូដស្កេនបាគង</p>
                         <p class="sm-td-sub text-slate-400 mt-1">ចុច «បង្ហាញកូដស្កេនបាគង» ខាងក្រោម ហើយបង្វែរអេក្រង់ទៅអតិថិជន</p>
                     </div>`;
             } else {
                 const tender = (key, label, icon, step, placeholder) => `
-                    <label class="flex items-center gap-3 rounded-xl bg-[#0f172a] border ${pay[key] > 0.005 ? 'border-cyan-600' : 'border-white/10'} px-3">
+                    <label class="flex items-center gap-3 rounded-xl bg-[#0f172a] border ${pay[key] > 0.005 ? 'border-blue-600' : 'border-white/10'} px-3">
                         <i class="fas ${icon} text-slate-400 w-4"></i>
                         <span class="sm-td-sub text-slate-300 w-14">${label}</span>
                         <input type="number" inputmode="decimal" min="0" step="${step}" value="${pay[key] || ''}" placeholder="${placeholder}"
@@ -1554,15 +1611,15 @@
                         ${tender('khrCash', 'រៀល', 'fa-money-bill-1', '100', '0')}
                         ${tender('khqr', 'បាគង', 'fa-qrcode', '0.01', '0.00')}
                     </div>
-                    ${remaining > 0.005 && paid > 0.005 ? `<button onclick="fillRemainder()" type="button" class="sm-badge w-full !min-h-[44px] rounded-xl bg-white/5 border border-white/10 hover:border-cyan-500 text-slate-200">
+                    ${remaining > 0.005 && paid > 0.005 ? `<button onclick="fillRemainder()" type="button" class="sm-badge w-full !min-h-[44px] rounded-xl bg-white/5 border border-white/10 hover:border-blue-500 text-slate-200">
                         បំពេញនៅខ្វះ ${fmtUSD(remaining)} តាមបាគង</button>` : ''}`;
             }
 
             document.getElementById('cartLines').innerHTML = `
                 <div class="p-3 space-y-2.5">
-                    <div class="rounded-2xl bg-cyan-500/10 border border-cyan-500/25 px-4 py-2.5 flex items-end justify-between gap-3">
+                    <div class="rounded-2xl bg-blue-500/10 border border-blue-500/25 px-4 py-2.5 flex items-end justify-between gap-3">
                         <div>
-                            <p class="sm-td-sub text-cyan-200">ទឹកប្រាក់ត្រូវទូទាត់</p>
+                            <p class="sm-td-sub text-blue-200">ទឹកប្រាក់ត្រូវទូទាត់</p>
                             <p class="pos-total mt-0.5">${fmtUSD(due)}</p>
                         </div>
                         <div class="text-right">
@@ -1615,10 +1672,10 @@
             document.getElementById('paymentPanel').innerHTML = `
                 <button onclick="finishSale()" type="button" ${canFinish ? '' : 'disabled'}
                     class="sm-card-title w-full !min-h-[64px] rounded-2xl font-bold transition inline-flex items-center justify-center gap-2 ${canFinish
-                        ? 'bg-emerald-500 hover:bg-emerald-400 text-white'
+                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
                         : 'bg-[#374151] text-slate-500 cursor-not-allowed'}">
                     <i class="fas ${canFinish && pay.khqr > 0.005 ? 'fa-qrcode' : 'fa-circle-check'}"></i> ${canFinish && pay.khqr > 0.005 ? 'បង្ហាញកូដស្កេនបាគង' : 'បញ្ចប់ការទូទាត់'}
-                    <span class="hidden xl:!inline sm-td-sub font-medium opacity-70 ml-1">Enter</span>
+                    <kbd class="pos-kbd ml-1">Enter</kbd>
                 </button>`;
         }
 
@@ -1803,14 +1860,14 @@
             const expired = left <= 0;
             const bar = document.getElementById('khqrBar');
             bar.style.width = `${(left / total) * 100}%`;
-            bar.className = `h-full rounded-full transition-all duration-1000 ${secs <= 15 ? 'bg-rose-500' : secs <= 60 ? 'bg-amber-400' : 'bg-cyan-500'}`;
+            bar.className = `h-full rounded-full transition-all duration-1000 ${secs <= 15 ? 'bg-rose-500' : secs <= 60 ? 'bg-amber-400' : 'bg-blue-500'}`;
             document.getElementById('khqrTimer').textContent = `${Math.floor(secs / 60)}:${pad2(secs % 60)}`;
             document.getElementById('khqrExpiredMask').classList.toggle('hidden', !expired);
             document.getElementById('khqrStatus').innerHTML = expired
                 ? `<div class="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-rose-500/15 border border-rose-500/30">
                        <i class="fas fa-clock-rotate-left text-rose-300"></i><span class="sm-value text-rose-200">កូដផុតសុពលភាព · សូមបង្កើតកូដថ្មី</span></div>`
-                : `<div class="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-cyan-500/10 border border-cyan-500/25">
-                       <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span><span class="sm-value text-cyan-100">កំពុងរង់ចាំការទូទាត់ពីអតិថិជន...</span></div>`;
+                : `<div class="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-blue-500/10 border border-blue-500/25">
+                       <span class="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse"></span><span class="sm-value text-blue-100">កំពុងរង់ចាំការទូទាត់ពីអតិថិជន...</span></div>`;
             document.getElementById('khqrMainBtn').innerHTML = expired
                 ? '<i class="fas fa-rotate-right"></i> បង្កើតកូដថ្មី'
                 : '<i class="fas fa-circle-check"></i> បានទទួលប្រាក់';
@@ -1889,7 +1946,7 @@
                     reason: 'រាប់ ហើយទទួលប្រាក់ត្រឹមត្រូវ',
                     excludeIds: [ME_CASHIER],
                     confirmText: 'បានទទួលប្រាក់',
-                    dark: true
+                    dark: document.documentElement.classList.contains('dark')
                 });
                 if (!ok) return;
                 Object.assign(rec, { status: 'confirmed', confirmedBy: ok.approverId, confirmedAt: now, receivedUSD: usd, receivedKHR: khr });
@@ -1949,7 +2006,7 @@
                 message: 'វាយលេខសម្ងាត់របស់អ្នកគិតលុយដែលបើកវេននេះ',
                 userId: sh.cashierId,
                 confirmText: 'ដោះសោរ',
-                dark: true
+                dark: document.documentElement.classList.contains('dark')
             });
             if (!ok) return;
             setTerminalLock(false);
@@ -1970,7 +2027,7 @@
             const me = personById(ME_CASHIER);
             document.getElementById('switchToManager').style.display = isManagerId(ME_CASHIER) ? '' : 'none';
             if (foreignShift()) {
-                document.getElementById('meInitials').innerHTML = avatarHtml(me.id, 'w-9 h-9 ring-2 ring-cyan-500/40');
+                document.getElementById('meInitials').innerHTML = avatarHtml(me.id, 'w-9 h-9 ring-2 ring-blue-500/40');
                 showForeign();
                 return;
             }
@@ -1978,7 +2035,7 @@
                 location.replace('../shift/open-shift.html');
                 return;
             }
-            document.getElementById('meInitials').innerHTML = avatarHtml(me.id, 'w-9 h-9 ring-2 ring-cyan-500/40');
+            document.getElementById('meInitials').innerHTML = avatarHtml(me.id, 'w-9 h-9 ring-2 ring-blue-500/40');
             document.getElementById('meName').textContent = me.name;
 
             const saved = loadCart();
@@ -2039,6 +2096,20 @@
 
             if (terminalLock()) showLockOverlay();
             else document.getElementById('barcodeInput').focus();
+
+            /* ពេលផ្ទាំងសន្ទនាបិទ ឬចុចលើផ្ទៃទទេ ការផ្តោតត្រឡប់ទៅប្រអប់ស្កេនវិញ
+               ដូច្នេះម៉ាស៊ីនស្កេនបាកូដមិនវាយចូលកន្លែងខុស (មិនប៉ះពាល់ពេលកំពុងទូទាត់ ឬចាក់សោរ) */
+            const refocusScan = () => setTimeout(() => {
+                const el = document.activeElement;
+                if (el && el !== document.body) return;
+                if (checkout || !document.getElementById('lockOverlay').classList.contains('hidden')) return;
+                if (document.querySelector('#posOverrideModal[style*="flex"], #posPinModal[style*="flex"], #posNumberPadModal[style*="flex"], #posReasonPickerModal[style*="flex"], #bmsCustomConfirmModal.flex, [data-floating-active="true"]')) return;
+                document.getElementById('barcodeInput').focus({ preventScroll: true });
+            }, 120);
+            document.addEventListener('focusout', refocusScan);
+            document.addEventListener('click', refocusScan);
+            // ផ្ទាំងសន្ទនាដែលត្រូវដកចេញពីទំព័រមិនបញ្ចេញព្រឹត្តិការណ៍ focusout ទេ ដូច្នេះពិនិត្យស្រាលៗរៀងរាល់វិនាទី
+            setInterval(refocusScan, 1000);
         });
     </script>
 </body>

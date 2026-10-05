@@ -36,12 +36,12 @@ function showToast(message, type = 'success', duration = 3200, options = null) {
         iconHtml = '<div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0 text-base"><i class="fas fa-triangle-exclamation"></i></div>';
         borderClass = 'border-amber-100';
     } else {
-        iconHtml = '<div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0 text-base"><i class="fas fa-circle-info"></i></div>';
-        borderClass = 'border-indigo-100';
+        iconHtml = '<div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 text-base"><i class="fas fa-circle-info"></i></div>';
+        borderClass = 'border-blue-100';
     }
 
     const actionHtml = (options && options.action && options.action.label)
-        ? `<button type="button" data-toast-action class="px-2.5 py-1 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg ml-2 transition flex-shrink-0 cursor-pointer">${options.action.label}</button>`
+        ? `<button type="button" data-toast-action class="px-2.5 py-1 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg ml-2 transition flex-shrink-0 cursor-pointer">${options.action.label}</button>`
         : '';
 
     toast.classList.add(borderClass);
@@ -279,7 +279,8 @@ function openFloatingDropdown(btn, menu) {
     menu.style.setProperty('position', 'fixed', 'important');
     menu.style.setProperty('z-index', '999999', 'important');
     menu.style.setProperty('width', `${targetWidth}px`, 'important');
-    menu.style.setProperty('background-color', '#ffffff', 'important');
+    // រចនាប័ទ្មក្នុងបន្ទាត់ !important ឈ្នះ CSS ទាំងអស់ ដូច្នេះត្រូវជ្រើសពណ៌តាមទម្រង់ (ភ្លឺ · ងងឹត) នៅទីនេះ
+    menu.style.setProperty('background-color', document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff', 'important');
     menu.style.setProperty('margin-top', '0px', 'important');
     menu.style.setProperty('margin-bottom', '0px', 'important');
 
@@ -576,7 +577,7 @@ function initSingleDatePicker(id) {
             </div>
             <div id="${id}-days-grid" class="grid grid-cols-7 text-center text-xs gap-y-1"></div>
             <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between">
-                <button type="button" onclick="setSinglePickerToday('${id}')" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700 px-2.5 py-1 rounded-lg hover:bg-indigo-50 transition">
+                <button type="button" onclick="setSinglePickerToday('${id}')" class="text-xs font-semibold text-blue-600 hover:text-blue-700 px-2.5 py-1 rounded-lg hover:bg-blue-50 transition">
                     ថ្ងៃនេះ
                 </button>
                 <button type="button" onclick="closeSingleDatePicker('${id}')" class="text-xs text-slate-500 hover:text-slate-700 px-2.5 py-1 rounded-lg hover:bg-slate-100 transition">
@@ -755,7 +756,7 @@ function renderSingleDatePickerGrid(id) {
         if (isSelected) {
             cell.innerHTML = `<span class="w-7 h-7 rounded-full bg-[#0f2b5c] text-white flex items-center justify-center font-bold text-xs shadow-xs">${d}</span>`;
         } else if (isToday) {
-            cell.innerHTML = `<span class="w-7 h-7 rounded-full border border-indigo-500 text-indigo-600 flex items-center justify-center font-bold text-xs hover:bg-indigo-50">${d}</span>`;
+            cell.innerHTML = `<span class="w-7 h-7 rounded-full border border-blue-500 text-blue-600 flex items-center justify-center font-bold text-xs hover:bg-blue-50">${d}</span>`;
         } else {
             cell.innerHTML = `<span class="w-7 h-7 rounded-full hover:bg-slate-100 text-slate-700 flex items-center justify-center transition text-xs">${d}</span>`;
         }
@@ -853,9 +854,9 @@ if (document.readyState === 'loading') {
             detail: 'ម៉ាស៊ីនបម្រើ និងមូលដ្ឋានទិន្នន័យដំណើរការធម្មតា',
             time: '08:30',
             badge: 'ប្រព័ន្ធ',
-            badgeClass: 'bg-indigo-50 text-indigo-700 border border-indigo-200/60',
+            badgeClass: 'bg-blue-50 text-blue-700 border border-blue-200/60',
             icon: 'fa-server',
-            iconBg: 'bg-indigo-50 text-indigo-600'
+            iconBg: 'bg-blue-50 text-blue-600'
         }
     ];
 
@@ -1168,13 +1169,13 @@ const POS_DIALOG_THEME = {
         title: 'text-white',
         sub: 'text-slate-400',
         box: 'bg-white/5 border border-white/10',
-        chip: 'bg-white/5 border-white/15 text-slate-200 hover:border-cyan-500',
-        chipOn: 'bg-cyan-600 border-cyan-600 text-white',
+        chip: 'bg-white/5 border-white/15 text-slate-200 hover:border-blue-500',
+        chipOn: 'bg-blue-600 border-blue-600 text-white',
         key: 'bg-white/5 hover:bg-white/10 text-white border border-white/10',
-        input: 'bg-[#1e293b] border-white/10 text-white placeholder-slate-500 focus:border-cyan-500',
+        input: 'bg-[#1e293b] border-white/10 text-white placeholder-slate-500 focus:border-blue-500',
         ghost: 'bg-white/10 hover:bg-white/20 text-white',
-        primary: 'bg-emerald-500 hover:bg-emerald-400 text-white',
-        dot: 'bg-cyan-400',
+        primary: 'bg-blue-600 hover:bg-blue-500 text-white',
+        dot: 'bg-blue-400',
         dotOff: 'bg-white/15'
     },
     light: {
@@ -1182,13 +1183,13 @@ const POS_DIALOG_THEME = {
         title: 'text-slate-900',
         sub: 'text-slate-500',
         box: 'bg-slate-50 border border-slate-200',
-        chip: 'bg-white border-slate-200 text-slate-700 hover:border-indigo-400',
-        chipOn: 'bg-indigo-600 border-indigo-600 text-white',
+        chip: 'bg-white border-slate-200 text-slate-700 hover:border-blue-400',
+        chipOn: 'bg-blue-600 border-blue-600 text-white',
         key: 'bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200',
-        input: 'bg-slate-50 border-slate-200 text-slate-700 placeholder-slate-400 focus:border-indigo-500',
+        input: 'bg-slate-50 border-slate-200 text-slate-700 placeholder-slate-400 focus:border-blue-500',
         ghost: 'bg-slate-100 hover:bg-slate-200 text-slate-700',
-        primary: 'bg-emerald-600 hover:bg-emerald-700 text-white',
-        dot: 'bg-indigo-600',
+        primary: 'bg-blue-600 hover:bg-blue-700 text-white',
+        dot: 'bg-blue-600',
         dotOff: 'bg-slate-200'
     }
 };
@@ -1408,7 +1409,7 @@ function showPinConfirm(opts = {}) {
             host.innerHTML = `
                 <div class="w-full max-w-sm rounded-3xl shadow-2xl ${th.panel} p-5 sm:p-6" onclick="event.stopPropagation()">
                     <div class="text-center">
-                        <div class="w-12 h-12 rounded-2xl ${opts.danger ? 'bg-rose-500/15 text-rose-500' : 'bg-indigo-500/15 text-indigo-500'} flex items-center justify-center text-xl mx-auto mb-3"><i class="fas fa-key"></i></div>
+                        <div class="w-12 h-12 rounded-2xl ${opts.danger ? 'bg-rose-500/15 text-rose-500' : 'bg-blue-500/15 text-blue-500'} flex items-center justify-center text-xl mx-auto mb-3"><i class="fas fa-key"></i></div>
                         <p class="sm-card-title ${th.title}">${posEsc(opts.title || 'បញ្ជាក់ដោយលេខសម្ងាត់')}</p>
                         ${opts.message ? `<p class="sm-td-sub ${th.sub} mt-1">${opts.message}</p>` : ''}
                         ${person ? `<p class="sm-td ${th.title} mt-3 inline-flex items-center gap-2">${avatarHtml(person.id, 'w-9 h-9')}${person.name}</p>` : ''}
@@ -1734,7 +1735,7 @@ function showAssignDialog(opts = {}) {
 
             const toneMap = {
                 emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                indigo: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+                indigo: 'bg-blue-50 text-blue-700 border-blue-200',
                 amber: 'bg-amber-50 text-amber-700 border-amber-200',
                 rose: 'bg-rose-50 text-rose-700 border-rose-200'
             };
@@ -1743,9 +1744,9 @@ function showAssignDialog(opts = {}) {
                 const isSelected = c.id === selId;
                 const isBlocked = c.blocked;
                 return `
-                    <div data-cand="${c.id}" class="flex items-center gap-3 p-2.5 rounded-2xl border transition cursor-pointer ${isBlocked ? 'opacity-50 cursor-not-allowed border-slate-100 bg-slate-50/50' : (isSelected ? 'border-indigo-600 bg-indigo-50/40 ring-1 ring-indigo-500' : 'border-slate-200 hover:border-slate-300 bg-white')}">
+                    <div data-cand="${c.id}" class="flex items-center gap-3 p-2.5 rounded-2xl border transition cursor-pointer ${isBlocked ? 'opacity-50 cursor-not-allowed border-slate-100 bg-slate-50/50' : (isSelected ? 'border-blue-600 bg-blue-50/40 ring-1 ring-blue-500' : 'border-slate-200 hover:border-slate-300 bg-white')}">
                         <div class="flex items-center justify-center w-5 flex-shrink-0">
-                            ${isBlocked ? '<span class="text-rose-400 text-xs font-bold">⊘</span>' : `<span class="w-4 h-4 rounded-full border flex items-center justify-center ${isSelected ? 'border-indigo-600 bg-indigo-600' : 'border-slate-300'}">${isSelected ? '<span class="w-1.5 h-1.5 rounded-full bg-white"></span>' : ''}</span>`}
+                            ${isBlocked ? '<span class="text-rose-400 text-xs font-bold">⊘</span>' : `<span class="w-4 h-4 rounded-full border flex items-center justify-center ${isSelected ? 'border-blue-600 bg-blue-600' : 'border-slate-300'}">${isSelected ? '<span class="w-1.5 h-1.5 rounded-full bg-white"></span>' : ''}</span>`}
                         </div>
                         ${avatarHtml(c.id, 'w-8 h-8')}
                         <div class="min-w-0 flex-1">
@@ -1777,11 +1778,11 @@ function showAssignDialog(opts = {}) {
                         </div>
                         <div class="h-2.5 w-full bg-slate-200 rounded-full overflow-hidden flex">
                             <div style="width: ${workedPct}%" class="bg-slate-500 h-full"></div>
-                            <div style="width: ${shiftPct}%" class="bg-indigo-500 h-full"></div>
+                            <div style="width: ${shiftPct}%" class="bg-blue-500 h-full"></div>
                         </div>
                         <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-slate-500">
                             <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-slate-500"></span>${selCand.openDrawerNow ? `${selCand.openDrawerNow.templateName} ${worked} ម៉ោង` : `បានធ្វើ ${worked} ម៉ោង`}</span>
-                            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-indigo-500"></span>វេននេះ ${Math.round(shiftH * 10) / 10} ម៉ោង</span>
+                            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-blue-500"></span>វេននេះ ${Math.round(shiftH * 10) / 10} ម៉ោង</span>
                         </div>
                         ${isPartial ? `
                             <p class="text-[13px] font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
@@ -1807,7 +1808,7 @@ function showAssignDialog(opts = {}) {
             const takenRegs = rosterTakenRegisters(date, code, selId);
             const pinOwner = r => takenRegs[r] && takenRegs[r] !== selReplace ? takenRegs[r] : '';
             if (selReg && pinOwner(selReg)) selReg = '';
-            const chipCls = on => `h-9 px-3 rounded-xl border text-xs font-semibold transition flex items-center gap-1.5 ${on ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'}`;
+            const chipCls = on => `h-9 px-3 rounded-xl border text-xs font-semibold transition flex items-center gap-1.5 ${on ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'}`;
 
             host.innerHTML = `
                 <div class="w-full max-w-lg rounded-3xl shadow-2xl bg-white text-slate-800 p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
@@ -1868,7 +1869,7 @@ function showAssignDialog(opts = {}) {
                             <p class="text-[13px] font-semibold text-slate-600 mb-1.5">មូលហេតុ <span class="font-normal text-slate-400">· មិនចាំបាច់</span></p>
                             <div class="flex flex-wrap gap-1.5">
                                 ${reasonsList.map(re => `
-                                    <button type="button" data-reason="${re}" class="h-8 px-2.5 rounded-lg border text-xs transition ${selReason === re ? 'bg-indigo-100 text-indigo-700 border-indigo-300 font-semibold' : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border-slate-200'}">
+                                    <button type="button" data-reason="${re}" class="h-8 px-2.5 rounded-lg border text-xs transition ${selReason === re ? 'bg-blue-100 text-blue-700 border-blue-300 font-semibold' : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border-slate-200'}">
                                         ${re}
                                     </button>
                                 `).join('')}
@@ -1880,7 +1881,7 @@ function showAssignDialog(opts = {}) {
 
                     <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
                         <button type="button" data-act="cancel" class="sm-value h-11 px-5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition">បោះបង់</button>
-                        <button type="button" data-act="ok" ${canSubmit ? '' : 'disabled'} class="sm-value h-11 px-6 rounded-2xl font-semibold transition ${canSubmit ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}">
+                        <button type="button" data-act="ok" ${canSubmit ? '' : 'disabled'} class="sm-value h-11 px-6 rounded-2xl font-semibold transition ${canSubmit ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}">
                             ${isReplacing ? `ជំនួស ${personName(selReplace)}` : 'ចាត់តាំង'}
                         </button>
                     </div>
@@ -1955,4 +1956,103 @@ function showAssignDialog(opts = {}) {
 
         renderDialog();
     });
+}
+
+/* ===== ចងចាំស្ថានភាពបញ្ជី =====
+   ពេលបើកមើលកំណត់ត្រាមួយ រួចចុចត្រឡប់ក្រោយ បញ្ជីត្រឡប់មកផ្ទាំង តម្រង ពាក្យស្វែងរក និងជួរកាលបរិច្ឆេទដដែល
+   ហើយជួរដែលទើបមើលត្រូវរំកិលមកកណ្តាល និងបន្លិចមួយភ្លែត ដូច្នេះអ្នកប្រើមិនបាត់កន្លែងដែលកំពុងធ្វើ។
+   រក្សាក្នុង sessionStorage (ផ្ទាំងកម្មវិធីរុករកនេះតែប៉ុណ្ណោះ ហើយសម្អាតពេលចាកចេញ)។
+   ជួរនីមួយៗត្រូវមាន data-row-id="<លេខសម្គាល់>"។ */
+function loadListState(key) {
+    try { return JSON.parse(sessionStorage.getItem('pos_list_' + key)) || null; } catch (e) { return null; }
+}
+
+function saveListState(key, state) {
+    try { sessionStorage.setItem('pos_list_' + key, JSON.stringify(state)); } catch (e) { /* មិនអាចរក្សាទុក */ }
+}
+
+/* ហៅពីទំព័រមើលលម្អិត ដើម្បីឱ្យបញ្ជីបន្លិចកំណត់ត្រានេះពេលត្រឡប់ទៅវិញ */
+function markRecordViewed(id) {
+    try { sessionStorage.setItem('pos_list_viewed', String(id)); } catch (e) { /* មិនអាចរក្សាទុក */ }
+}
+
+/* ហៅបន្ទាប់ពីគូរបញ្ជីរួច · ជួរដែលទើបមើលបន្លិចម្តង រួចភ្លេចវិញ */
+function flashViewedRow() {
+    let id = null;
+    try { id = sessionStorage.getItem('pos_list_viewed'); sessionStorage.removeItem('pos_list_viewed'); } catch (e) { return; }
+    if (!id) return;
+    const row = [...document.querySelectorAll('[data-row-id]')].find(el => el.dataset.rowId === id && el.offsetParent !== null);
+    if (!row) return;
+    row.scrollIntoView({ block: 'center' });
+    row.classList.add('row-flash');
+    setTimeout(() => row.classList.remove('row-flash'), 2200);
+}
+
+
+/* ===== បែងចែកទំព័រ (Pagination) =====
+   ប្រើ៖ const pg = pagerSlice('approvals', rows, { size: 25, render: 'renderList', sig: filterKey });
+         គូរ pg.rows ហើយដាក់ pg.html ក្នុងប្រអប់ខាងក្រោមតារាង (ឧ. <div id="pager"></div>)។
+   • sig៖ ខ្សែអក្សរតំណាងតម្រង — ពេលវាប្តូរ ត្រឡប់ទៅទំព័រទី 1 វិញ
+   • ទំព័របច្ចុប្បន្នរក្សាក្នុង sessionStorage ដូច្នេះពេលត្រឡប់ពីទំព័រលម្អិត នៅទំព័រដដែល
+   • render៖ ឈ្មោះអនុគមន៍សកលដែលត្រូវហៅពេលប្តូរទំព័រ
+   • បើទិន្នន័យមិនលើសមួយទំព័រ pg.html ទទេ */
+function pagerState() {
+    try { return JSON.parse(sessionStorage.getItem('pos_pager')) || {}; } catch (e) { return {}; }
+}
+
+function pagerSave(st) {
+    try { sessionStorage.setItem('pos_pager', JSON.stringify(st)); } catch (e) { /* មិនអាចរក្សាទុក */ }
+}
+
+function pagerSlice(key, list, opts = {}) {
+    const size = opts.size || 25;
+    const total = list.length;
+    const pages = Math.max(1, Math.ceil(total / size));
+    const st = pagerState();
+    // ទំព័រដែលបានចងចាំភ្ជាប់នឹងតម្រង (sig)៖ តម្រងផ្សេង → ទំព័រទី 1 · ទិន្នន័យថ្មីចូល មិនធ្វើឱ្យលោតទំព័រទេ
+    // មិនសរសេរជាន់ទំព័រដែលបានចងចាំនៅទីនេះទេ ព្រោះការគូរដំបូង (មុនស្តារតម្រង) នឹងលុបវាចោល
+    // ទំព័រត្រូវរក្សាទុកតែពេលអ្នកប្រើចុចប្តូរទំព័រ (pagerGo)
+    const sig = String(opts.sig || '');
+    const saved = st[key] || {};
+    let cur = saved.sig === sig ? saved.page : 1;
+    cur = Math.min(Math.max(cur || 1, 1), pages);
+    st[key] = Object.assign({}, saved, { render: opts.render || '', curSig: sig });
+    pagerSave(st);
+    const from = (cur - 1) * size;
+    const rows = list.slice(from, from + size);
+    if (total <= size) return { rows, html: '', page: cur, pages };
+
+    // ប៊ូតុងលេខទំព័រ៖ ទី 1 · ជុំវិញទំព័របច្ចុប្បន្ន · ចុងក្រោយ (ចន្លោះជា «…»)
+    const nums = [];
+    for (let n = 1; n <= pages; n++) {
+        if (n === 1 || n === pages || Math.abs(n - cur) <= 1) nums.push(n);
+        else if (nums[nums.length - 1] !== '…') nums.push('…');
+    }
+    const btn = (label, n, on, disabled) => `<button type="button" ${disabled ? 'disabled' : `onclick="pagerGo('${key}', ${n})"`}
+        class="sm-badge min-w-[36px] h-9 px-2.5 rounded-lg inline-flex items-center justify-center transition ${on
+            ? 'bg-blue-600 text-white font-semibold'
+            : disabled ? 'text-slate-300 cursor-not-allowed' : 'text-slate-600 hover:bg-slate-100 font-medium'}" ${on ? 'aria-current="page"' : ''}>${label}</button>`;
+    const html = `<div class="pager flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-slate-100">
+        <p class="sm-td-sub text-slate-500 sm-figure">បង្ហាញ ${from + 1}–${Math.min(from + size, total)} នៃ ${total}</p>
+        <nav class="flex items-center gap-1" aria-label="ទំព័រ">
+            ${btn('<i class="fas fa-chevron-left text-[11px]"></i>', cur - 1, false, cur === 1)}
+            ${nums.map(n => n === '…' ? '<span class="sm-badge px-1 text-slate-400">…</span>' : btn(n, n, n === cur, false)).join('')}
+            ${btn('<i class="fas fa-chevron-right text-[11px]"></i>', cur + 1, false, cur === pages)}
+        </nav>
+    </div>`;
+    return { rows, html, page: cur, pages };
+}
+
+function pagerGo(key, page) {
+    const st = pagerState();
+    if (!st[key]) return;
+    st[key].page = page;
+    st[key].sig = st[key].curSig;
+    pagerSave(st);
+    const fn = window[st[key].render];
+    if (typeof fn === 'function') fn();
+    // ត្រឡប់ទៅក្បាលតារាងវិញ ដើម្បីអានទំព័រថ្មីពីដើម
+    const pager = document.querySelector(`[data-pager="${key}"]`);
+    const box = pager && (pager.closest('section, .bg-white') || pager);
+    if (box) box.scrollIntoView({ block: 'start', behavior: 'smooth' });
 }

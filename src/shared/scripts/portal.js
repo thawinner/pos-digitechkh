@@ -99,7 +99,7 @@ const PORTAL_CONFIGS = {
 };
 
 const NAV_ACTIVE_CLASS = 'flex items-center justify-between p-3 bg-white/15 text-white rounded-xl shadow-sm transition-all whitespace-nowrap border border-white/10';
-const NAV_IDLE_CLASS = 'flex items-center justify-between p-3 text-sky-100 hover:bg-white/10 hover:text-white rounded-xl transition-all whitespace-nowrap';
+const NAV_IDLE_CLASS = 'flex items-center justify-between p-3 text-blue-100 hover:bg-white/10 hover:text-white rounded-xl transition-all whitespace-nowrap';
 
 function getRoleRoot() {
     if (document.body.dataset.roleRoot) {
@@ -156,7 +156,8 @@ function sessionPortalConfig(cfg, portalId) {
     return out;
 }
 
-/* ស្ថានភាពផ្ទាល់ក្រោមឈ្មោះម៉ាក៖ អ្នកគិតលុយឃើញវេន និងពេលនៅសល់ · អ្នកគ្រប់គ្រងឃើញបញ្ជរបើក និងការលក់ថ្ងៃនេះ */
+/* ស្ថានភាពផ្ទាល់ក្រោមឈ្មោះម៉ាក៖ មានតែអ្នកគិតលុយទេ (វេន និងពេលនៅសល់)
+   អ្នកគ្រប់គ្រង និងម្ចាស់ហាងឃើញតួលេខទាំងនេះនៅលើផ្ទាំងគ្រប់គ្រងរួចហើយ */
 function sidebarStatusHtml() {
     const portal = document.body.id;
     if (portal === 'posPortal' && typeof currentShift === 'function') {
@@ -175,30 +176,6 @@ function sidebarStatusHtml() {
             </div>
             <p class="sm-nav-note sb-accent-soft mt-0.5 whitespace-nowrap">${left < 0 ? `ហួសម៉ោងបិទ ${fmtDuration(-left)}` : `បិទ ${sh.end} · នៅសល់ ${Math.floor(left / 3600000)}:${pad2(Math.floor(left / 60000) % 60)}`}</p>
             <div class="h-1 rounded-full bg-white/10 mt-2 overflow-hidden"><div class="h-full ${left < 0 ? 'bg-rose-400' : 'sb-progress'}" style="width:${pct}%"></div></div>`;
-    }
-    if (portal === 'adminPortal' && typeof profitOf === 'function') {
-        const today = profitOf(salesInRange(mgrToday()));
-        return `<div class="flex items-center justify-between gap-2">
-                <span class="sm-nav-note sb-accent-soft">លក់សុទ្ធថ្ងៃនេះ</span>
-                <span class="sm-nav-label text-white sm-figure">${fmtUSD(today.gross)}</span>
-            </div>
-            <div class="flex items-center justify-between gap-2 mt-1">
-                <span class="sm-nav-note sb-accent-soft">ប្រាក់ចំណេញដុល</span>
-                <span class="sm-nav-label text-emerald-300 sm-figure">${fmtUSD(today.profit)} · ${today.margin.toFixed(0)}%</span>
-            </div>`;
-    }
-    if (portal === 'managerPortal' && typeof mgrAllShifts === 'function') {
-        const open = mgrAllShifts().filter(x => x.status === 'open').map(x => x.register);
-        const net = typeof aggregateSales === 'function' ? aggregateSales(salesInRange(mgrToday())).netSales : 0;
-        return `<div class="flex items-center justify-between gap-2">
-                <span class="sm-nav-note sb-accent-soft">បញ្ជរកំពុងបើក</span>
-                <span class="flex items-center gap-1">${REGISTERS.map(r => `<span class="w-2 h-2 rounded-full ${open.includes(r) ? 'bg-emerald-400' : 'bg-white/20'}"></span>`).join('')}
-                    <span class="sm-nav-note text-white sm-figure ml-1">${open.length}/${REGISTERS.length}</span></span>
-            </div>
-            <div class="flex items-center justify-between gap-2 mt-1">
-                <span class="sm-nav-note sb-accent-soft">លក់សុទ្ធថ្ងៃនេះ</span>
-                <span class="sm-nav-label text-white sm-figure">${fmtUSD(net || 0)}</span>
-            </div>`;
     }
     return '';
 }
@@ -239,64 +216,7 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebarMenus(); });
 
-/* ===== ការគ្រប់គ្រងការបង្រួម/ពង្រីករបារចំហៀង (Sidebar Collapse Controller) ===== */
-function isSidebarCollapsed() {
-    try {
-        return localStorage.getItem('bms_sidebar_collapsed') === '1';
-    } catch (e) {
-        return false;
-    }
-}
-
-function setSidebarCollapsed(collapsed) {
-    const sb = document.getElementById('portalSidebar');
-    if (sb) {
-        sb.classList.toggle('is-collapsed', !!collapsed);
-    }
-    const icon = document.getElementById('sidebarToggleIcon');
-    if (icon) {
-        icon.setAttribute('icon', collapsed ? 'mdi:menu-open' : 'mdi:menu');
-    }
-    const brandIcon = document.getElementById('sbBrandToggleIcon');
-    if (brandIcon) {
-        brandIcon.setAttribute('icon', collapsed ? 'mdi:chevron-double-right' : 'mdi:chevron-double-left');
-    }
-    try {
-        localStorage.setItem('bms_sidebar_collapsed', collapsed ? '1' : '0');
-    } catch (e) {}
-
-    window.dispatchEvent(new CustomEvent('bms-sidebar-toggle', { detail: { collapsed } }));
-    if (window.echarts) {
-        setTimeout(() => {
-            document.querySelectorAll('[_echarts_instance_]').forEach(el => {
-                const chart = echarts.getInstanceByDom(el);
-                if (chart) chart.resize();
-            });
-        }, 250);
-    }
-}
-
-function toggleSidebarCollapse() {
-    if (window.innerWidth < 1024) {
-        const aside = document.querySelector('aside');
-        if (aside && aside.classList.contains('mobile-open')) {
-            closePortalDrawer();
-        } else {
-            openPortalDrawer();
-        }
-        return;
-    }
-    const sb = document.getElementById('portalSidebar');
-    const currentlyCollapsed = sb ? sb.classList.contains('is-collapsed') : isSidebarCollapsed();
-    setSidebarCollapsed(!currentlyCollapsed);
-}
-
-document.addEventListener('keydown', e => {
-    if ((e.metaKey || e.ctrlKey) && (e.key === 'b' || e.key === 'B')) {
-        e.preventDefault();
-        toggleSidebarCollapse();
-    }
-});
+/* របារចំហៀងមិនអាចបង្រួមបានទេ (សម្រេចដោយម្ចាស់ផលិតផល) · លើទូរស័ព្ទប្រើថតចល័តជំនួសវិញ */
 
 function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
     const portalId = document.body.id;
@@ -334,7 +254,7 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
     host.outerHTML = `
         <aside id="portalSidebar" class="w-[272px] text-white flex flex-col flex-shrink-0 select-none z-20 border-r border-white/[0.06]">
             <div class="sb-brand h-[72px] px-6 flex items-center justify-between flex-shrink-0 border-b border-white/[0.06]">
-                <button type="button" data-sb-menu onclick="if(isSidebarCollapsed()){toggleSidebarCollapse();}else if(${canSwitch}){openSidebarMenu(this, 'sbRoleMenu', 'down');}" aria-haspopup="${canSwitch ? 'menu' : 'false'}" aria-expanded="false"
+                <button type="button" data-sb-menu onclick="if(${canSwitch}){openSidebarMenu(this, 'sbRoleMenu', 'down');}" aria-haspopup="${canSwitch ? 'menu' : 'false'}" aria-expanded="false"
                     class="sb-switcher relative -mx-2 px-2 py-1.5 flex-1 min-w-0 flex items-center gap-3 rounded-lg hover:bg-white/[0.06] text-left transition-colors cursor-pointer" title="${roleLabel}">
                     <span class="w-8 h-8 rounded-lg bg-white/[0.08] flex items-center justify-center flex-shrink-0">
                         <img src="${sharedRoot}/assets/logo-mark-transparent.png" alt="DIGITECHKH" class="w-5 h-5 object-contain">
@@ -344,9 +264,6 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
                         <span class="block sb-sub truncate">${roleLabel}</span>
                     </span>
                     ${canSwitch ? '<iconify-icon icon="mdi:unfold-more-horizontal" class="text-lg sb-muted flex-shrink-0"></iconify-icon>' : ''}
-                </button>
-                <button type="button" onclick="toggleSidebarCollapse()" title="បង្រួម/ពង្រីករបារចំហៀង (Ctrl+B)" class="sb-brand-text sb-collapse-btn w-7 h-7 rounded-lg text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center transition flex-shrink-0 cursor-pointer ml-1">
-                    <iconify-icon id="sbBrandToggleIcon" icon="mdi:chevron-double-left" class="text-base"></iconify-icon>
                 </button>
             </div>
             ${canSwitch ? `<div id="sbRoleMenu" role="menu" class="sb-menu hidden z-[70] p-1.5 rounded-lg border border-white/10 shadow-2xl text-white">
@@ -492,7 +409,7 @@ function initDarkMode() {
 }
 
 const NOTE_TONE_MAP = {
-    info: 'bg-sky-100 text-sky-700',
+    info: 'bg-blue-100 text-blue-700',
     success: 'bg-emerald-100 text-emerald-700',
     warning: 'bg-amber-100 text-amber-700',
     danger: 'bg-rose-100 text-rose-700'
@@ -594,7 +511,7 @@ function renderPortalHeader() {
                                 <span class="text-[14px] font-bold text-slate-800">ការជូនដំណឹង</span>
                                 <span id="portalNotifCount" class="text-[11px] font-bold min-w-[22px] h-[22px] px-1.5 rounded-full bg-rose-500 text-white inline-flex items-center justify-center">0</span>
                             </span>
-                            <button id="portalNotifReadBtn" onclick="markPortalNotificationsRead()" type="button" class="hidden text-[11px] font-medium text-sky-700 hover:text-sky-900">សម្គាល់ថាបានអានទាំងអស់</button>
+                            <button id="portalNotifReadBtn" onclick="markPortalNotificationsRead()" type="button" class="hidden text-[11px] font-medium text-blue-700 hover:text-blue-900">សម្គាល់ថាបានអានទាំងអស់</button>
                         </div>
                         <div id="portalNotifRows" class="max-h-[380px] overflow-y-auto scrollbar-hide space-y-0.5"></div>
                     </div>
@@ -619,9 +536,6 @@ function renderPortalSidebar() {
 
     if (cfg.sidebarV2) {
         renderPortalSidebarV2(host, sessionPortalConfig(cfg, portalId), roleRoot, activeId, sharedRoot);
-        if (isSidebarCollapsed()) {
-            setSidebarCollapsed(true);
-        }
         refreshSidebarStatus();
         setInterval(refreshSidebarStatus, 60000);
         return;
@@ -634,13 +548,13 @@ function renderPortalSidebar() {
             badgeHtml += '<span id="navQueueBadge" class="sm-badge bg-rose-500 text-white px-2 py-0.5 rounded-full flex-shrink-0">0</span>';
         }
         if (item.alertBadge) {
-            badgeHtml += '<span id="navAlertBadge" class="sm-badge bg-amber-500 text-white px-2 py-0.5 rounded-full flex-shrink-0">0</span>';
+            badgeHtml += '<span id="navAlertBadge" class="sm-badge bg-amber-400 text-amber-950 px-2 py-0.5 rounded-full flex-shrink-0">0</span>';
         }
         if (badgeHtml) badgeHtml = `<span class="flex items-center gap-1 flex-shrink-0">${badgeHtml}</span>`;
         return `
             <a href="${roleRoot}/${item.href}" class="${isActive ? NAV_ACTIVE_CLASS : NAV_IDLE_CLASS}">
                 <span class="flex items-center min-w-0">
-                    <span class="w-6 flex items-center justify-center text-sky-300 flex-shrink-0">
+                    <span class="w-6 flex items-center justify-center text-blue-300 flex-shrink-0">
                         ${getIconHtml(item.icon)}
                     </span>
                     <span class="ml-3 sm-nav-label truncate">${item.label}</span>
@@ -657,14 +571,14 @@ function renderPortalSidebar() {
                 </div>
                 <div class="min-w-0">
                     <h1 class="text-lg font-semibold tracking-wider whitespace-nowrap text-white">DIGITECHKH</h1>
-                    <span class="sm-nav-note font-medium text-sky-300 uppercase tracking-wider block">${cfg.title}</span>
+                    <span class="sm-nav-note font-medium text-blue-300 uppercase tracking-wider block">${cfg.title}</span>
                 </div>
             </div>
 
             <div class="px-5 py-3 border-b border-white/5 bg-black/15">
                 <div class="flex items-center justify-between">
-                    <span class="sm-nav-note text-sky-200">តួនាទី:</span>
-                    <span class="sm-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-200 border border-sky-400/30">
+                    <span class="sm-nav-note text-blue-200">តួនាទី:</span>
+                    <span class="sm-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-200 border border-blue-400/30">
                         ${getIconHtml(cfg.roleIcon, 'text-[13px]')} ${cfg.roleName}
                     </span>
                 </div>
@@ -672,15 +586,15 @@ function renderPortalSidebar() {
 
             <nav class="flex-1 overflow-y-auto px-4 py-4 space-y-1.5 scrollbar-hide">
                 ${navHtml}
-                <div class="p-3 rounded-xl bg-white/5 border border-white/10 sm-nav-note text-sky-200 mt-6 flex items-start gap-2">
-                    <iconify-icon icon="mdi:information-outline" class="text-sky-300 text-base mt-0.5 flex-shrink-0"></iconify-icon>
+                <div class="p-3 rounded-xl bg-white/5 border border-white/10 sm-nav-note text-blue-200 mt-6 flex items-start gap-2">
+                    <iconify-icon icon="mdi:information-outline" class="text-blue-300 text-base mt-0.5 flex-shrink-0"></iconify-icon>
                     <span>${cfg.policyNote}</span>
                 </div>
             </nav>
 
             <div class="p-3.5 border-t border-white/10 bg-black/20">
                 <button onclick="handleLogout()" type="button"
-                    class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-white/10 hover:bg-rose-600 text-sky-100 hover:text-white text-sm font-semibold transition border border-white/10 shadow-sm cursor-pointer group">
+                    class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-white/10 hover:bg-rose-600 text-blue-100 hover:text-white text-sm font-semibold transition border border-white/10 shadow-sm cursor-pointer group">
                     <iconify-icon icon="mdi:logout" class="text-lg text-rose-300 group-hover:text-white group-hover:translate-x-0.5 transition-transform"></iconify-icon>
                     <span>ចាកចេញ</span>
                 </button>
@@ -1042,6 +956,34 @@ function applyDateRange() {
     notifyRangeChanged();
 }
 
+/* រូបថតជួរកាលបរិច្ឆេទ សម្រាប់ចងចាំតម្រងបញ្ជី (saveListState) · ឈ្មោះជម្រើសរហ័សត្រូវបានគណនាឡើងវិញតាមថ្ងៃនេះ */
+function dateRangeSnapshot() {
+    return {
+        preset: currentPresetName,
+        start: rangeStartDate ? rangeStartDate.toISOString() : null,
+        end: rangeEndDate ? rangeEndDate.toISOString() : null
+    };
+}
+
+/* ខ្សែអក្សរតំណាងជួរកាលបរិច្ឆេទ សម្រាប់ sig របស់ pagerSlice — ឈ្មោះជម្រើសរហ័សមិនប្រែប្រួលពេលផ្ទុកទំព័រឡើងវិញ */
+function dateRangeKey() {
+    if (currentPresetName && presetRange(currentPresetName)) return currentPresetName;
+    return `${rangeStartDate ? isoDate(rangeStartDate) : ''}~${rangeEndDate ? isoDate(rangeEndDate) : ''}`;
+}
+
+function restoreDateRange(snap) {
+    if (!snap) return;
+    if (snap.preset && presetRange(snap.preset)) { selectPreset(snap.preset); return; }
+    if (!snap.start) { clearRangeTag(); return; }
+    currentPresetName = null;
+    rangeStartDate = new Date(snap.start);
+    rangeEndDate = new Date(snap.end || snap.start);
+    const text = rangeLabel(null, rangeStartDate, rangeEndDate);
+    updateRangeLabels(text, text);
+    highlightPresetButton(null);
+    renderCalendarGrid();
+}
+
 function getSelectedRange() {
     return { start: rangeStartDate, end: rangeEndDate };
 }
@@ -1160,7 +1102,7 @@ function bmsRenderSelect(hostId) {
 
     host.innerHTML = `
         <button type="button" onclick="toggleRowActionMenu(event, '${menuId}')"
-            class="w-full h-full flex items-center justify-between gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 hover:bg-slate-100 focus:border-sky-500 outline-none transition text-left">
+            class="w-full h-full flex items-center justify-between gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 hover:bg-slate-100 focus:border-blue-500 outline-none transition text-left">
             <span class="text-xs font-medium ${muted} truncate">${label}</span>
             <i class="fas fa-chevron-down text-[10px] text-slate-400 flex-shrink-0 transition-transform"></i>
         </button>
@@ -1290,11 +1232,11 @@ const BMS_STEPPER_STATE = {};
  * ព្រោះពេលប្តូរទៅ Tailwind ប្រភេទចងក្រង ថ្នាក់ដែលផ្សំពេលដំណើរការនឹងបាត់
  */
 const BMS_STEPPER_TONES = {
-    teal: { fill: 'bg-teal-600', ring: 'ring-teal-100', bar: 'bg-teal-600', text: 'text-teal-700', rgb: '13,148,136' },
+    teal: { fill: 'bg-blue-600', ring: 'ring-blue-100', bar: 'bg-blue-600', text: 'text-blue-700', rgb: '13,148,136' },
     emerald: { fill: 'bg-emerald-600', ring: 'ring-emerald-100', bar: 'bg-emerald-600', text: 'text-emerald-700', rgb: '5,150,105' },
-    sky: { fill: 'bg-sky-600', ring: 'ring-sky-100', bar: 'bg-sky-600', text: 'text-sky-700', rgb: '2,132,199' },
-    purple: { fill: 'bg-purple-600', ring: 'ring-purple-100', bar: 'bg-purple-600', text: 'text-purple-700', rgb: '147,51,234' },
-    indigo: { fill: 'bg-indigo-600', ring: 'ring-indigo-100', bar: 'bg-indigo-600', text: 'text-indigo-700', rgb: '79,70,229' },
+    sky: { fill: 'bg-blue-600', ring: 'ring-blue-100', bar: 'bg-blue-600', text: 'text-blue-700', rgb: '2,132,199' },
+    purple: { fill: 'bg-blue-600', ring: 'ring-blue-100', bar: 'bg-blue-600', text: 'text-blue-700', rgb: '147,51,234' },
+    indigo: { fill: 'bg-blue-600', ring: 'ring-blue-100', bar: 'bg-blue-600', text: 'text-blue-700', rgb: '79,70,229' },
     rose: { fill: 'bg-rose-600', ring: 'ring-rose-100', bar: 'bg-rose-600', text: 'text-rose-700', rgb: '225,29,72' },
     /*
      * ពណ៌លឿងតាមរូបគំរូ #E9A23B — ប៉ុន្តែរូបតំណាងពណ៌សលើពណ៌នេះមានកម្រិតពន្លឺ
@@ -1304,7 +1246,7 @@ const BMS_STEPPER_TONES = {
      */
     amber: { fill: 'bg-[#C88016]', ring: 'ring-amber-100', bar: 'bg-[#E9A23B]', text: 'bms-amber-text', rgb: '233,162,59' },
     /* ពណ៌ខៀវដែនរបស់ម៉ាក (btn-navy #16255C) — រូបតំណាងពណ៌សមានកម្រិតពន្លឺ 14.5:1 */
-    navy: { fill: 'bms-navy-fill', ring: 'ring-indigo-100', bar: 'bms-navy-fill', text: 'bms-navy-text', rgb: '22,37,92' },
+    navy: { fill: 'bms-navy-fill', ring: 'ring-blue-100', bar: 'bms-navy-fill', text: 'bms-navy-text', rgb: '22,37,92' },
     /*
      * ពណ៌បៃតងរបស់ប្រព័ន្ធ (primary #24692D) — ដូចរបារចំហៀង និងប៊ូតុងចម្បង
      * ក្នុងភាសាពណ៌របស់ប្រព័ន្ធ បៃតង = បានបញ្ចប់ ឯលឿង = កំពុងរង់ចាំ ឬកំពុងដំណើរការ
@@ -1312,6 +1254,8 @@ const BMS_STEPPER_TONES = {
     brand: { fill: 'bms-brand-fill', ring: 'ring-emerald-100', bar: 'bms-brand-fill', text: 'bms-brand-text', rgb: '36,105,45' }
 };
 BMS_STEPPER_TONES.yellow = BMS_STEPPER_TONES.amber;
+/* ពណ៌ចម្បងរបស់ប្រព័ន្ធ (ខៀវ #2563EB) — ប្រើលើជំហាននៃទំព័រចូលប្រើ បើកវេន និងបិទវេន */
+BMS_STEPPER_TONES.accent = { fill: 'bg-blue-600', ring: 'ring-blue-100', bar: 'bg-blue-600', text: 'text-blue-700', textDark: 'text-blue-300', rgb: '37,99,235' };
 
 /**
  * ចលនាបន្ទាត់ «កំពុងដំណើរការ» — រត់ពីជំហានបច្ចុប្បន្នទៅជំហានបន្ទាប់ម្តងហើយម្តងទៀត
@@ -1454,7 +1398,7 @@ function bmsRenderStepper(hostId) {
         : (n < current ? '<i class="fas fa-check"></i>' : String(n));
 
     const labelTone = n => n === current
-        ? `${skin.text} font-semibold`
+        ? `${isDark && skin.textDark ? skin.textDark : skin.text} font-semibold`
         : (n < current ? (isDark ? 'text-slate-200 font-medium' : 'text-slate-700 font-medium') : (isDark ? 'text-slate-400 font-medium' : 'text-slate-500 font-medium'));
 
     const wrap = (n, inner, extra) => {

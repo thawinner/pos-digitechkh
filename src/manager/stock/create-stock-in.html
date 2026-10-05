@@ -15,7 +15,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -38,14 +38,14 @@
                     <!-- ព័ត៌មានវិក្កយបត្រ និងអ្នកផ្គត់ផ្គង់ -->
                     <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 sm:p-6 space-y-4">
                         <h3 class="sm-card-title text-slate-800 flex items-center gap-2">
-                            <i class="fas fa-file-invoice text-indigo-600"></i>
+                            <i class="fas fa-file-invoice text-blue-600"></i>
                             <span>ព័ត៌មានដឹកជញ្ជូន និងអ្នកផ្គត់ផ្គង់</span>
                         </h3>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div class="sm:col-span-2 relative">
                                 <label class="block">
                                     <span class="sm-label text-slate-700 font-semibold">អ្នកផ្គត់ផ្គង់ <span class="text-rose-500">*</span></span>
-                                    <input id="supplierInput" type="text" placeholder="ជ្រើសរើស ឬវាយឈ្មោះអ្នកផ្គត់ផ្គង់..." oninput="filterSupplierSuggestions()" onfocus="showSupplierSuggestions()" class="sm-td w-full h-12 mt-1.5 px-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-indigo-500">
+                                    <input id="supplierInput" type="text" placeholder="ជ្រើសរើស ឬវាយឈ្មោះអ្នកផ្គត់ផ្គង់..." oninput="filterSupplierSuggestions()" onfocus="showSupplierSuggestions()" class="sm-td w-full h-12 mt-1.5 px-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-blue-500">
                                 </label>
                                 <div id="supplierDropdown" class="hidden absolute left-0 right-0 top-full mt-1 bg-white rounded-xl shadow-xl border border-slate-200 p-1.5 z-50 max-h-48 overflow-y-auto"></div>
                             </div>
@@ -53,9 +53,9 @@
                                 <label class="block">
                                     <span class="sm-label text-slate-700 font-semibold">កាលបរិច្ឆេទទទួល <span class="text-rose-500">*</span></span>
                                     <div class="relative bms-date-picker mt-1.5">
-                                        <button type="button" onclick="toggleSingleDatePicker('deliveryDate')" class="w-full h-12 px-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 flex items-center justify-between transition focus:outline-none focus:border-indigo-500 cursor-pointer text-left">
+                                        <button type="button" onclick="toggleSingleDatePicker('deliveryDate')" class="w-full h-12 px-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 flex items-center justify-between transition focus:outline-none focus:border-blue-500 cursor-pointer text-left">
                                             <span id="deliveryDate-display" class="bms-date-label font-medium text-slate-800 text-sm"></span>
-                                            <i class="fas fa-calendar-days text-indigo-600 text-sm"></i>
+                                            <i class="fas fa-calendar-days text-blue-600 text-sm"></i>
                                         </button>
                                         <input type="hidden" id="deliveryDate" name="deliveryDate" value="" onchange="renderSummary()" oninput="renderSummary()">
                                     </div>
@@ -66,13 +66,13 @@
                             <div>
                                 <label class="block">
                                     <span class="sm-label text-slate-700 font-semibold">លេខវិក្កយបត្រអ្នកផ្គត់ផ្គង់ <span class="text-rose-500">*</span></span>
-                                    <input id="invoiceInput" type="text" placeholder="ឧ. INV-2026-0891" oninput="renderSummary()" class="sm-td w-full h-12 mt-1.5 px-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-indigo-500 font-mono">
+                                    <input id="invoiceInput" type="text" placeholder="ឧ. INV-2026-0891" oninput="renderSummary()" class="sm-td w-full h-12 mt-1.5 px-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-blue-500 font-mono">
                                 </label>
                             </div>
                             <div>
                                 <label class="block">
                                     <span class="sm-label text-slate-700 font-semibold">កំណត់សម្គាល់បន្ថែម</span>
-                                    <input id="noteInput" type="text" placeholder="ចំណាំលក្ខខណ្ឌដឹក ឬអ្នកបើកបរ..." class="sm-td w-full h-12 mt-1.5 px-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-indigo-500">
+                                    <input id="noteInput" type="text" placeholder="ចំណាំលក្ខខណ្ឌដឹក ឬអ្នកបើកបរ..." class="sm-td w-full h-12 mt-1.5 px-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-blue-500">
                                 </label>
                             </div>
                         </div>
@@ -83,12 +83,12 @@
                         <div class="flex items-center justify-between gap-3">
                             <div>
                                 <h3 class="sm-card-title text-slate-800 flex items-center gap-2">
-                                    <i class="fas fa-boxes-packing text-indigo-600"></i>
+                                    <i class="fas fa-boxes-packing text-blue-600"></i>
                                     <span>មុខទំនិញទទួលចូលស្តុក</span>
                                 </h3>
                                 <p class="sm-card-sub text-slate-500 mt-0.5">ជ្រើសរើសទំនិញ និងបញ្ចូលចំនួនឯកតាជាក់ស្តែង</p>
                             </div>
-                            <button onclick="addLine()" type="button" class="sm-badge h-10 px-4 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold inline-flex items-center gap-2 transition">
+                            <button onclick="addLine()" type="button" class="sm-badge h-10 px-4 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold inline-flex items-center gap-2 transition">
                                 <i class="fas fa-plus text-xs"></i> បន្ថែមជួរ
                             </button>
                         </div>
@@ -97,11 +97,11 @@
                             <table class="w-full text-left">
                                 <thead class="bg-slate-50 text-slate-500 border-b border-slate-100">
                                     <tr>
-                                        <th class="sm-th py-3 px-3">មុខទំនិញ <span class="text-rose-500">*</span></th>
-                                        <th class="sm-th py-3 px-3 text-right w-32">ស្តុកបច្ចុប្បន្ន</th>
-                                        <th class="sm-th py-3 px-3 text-right w-36">ចំនួនទទួលចូល <span class="text-rose-500">*</span></th>
-                                        <th class="sm-th py-3 px-3 text-right w-32">ស្តុកក្រោយទទួល</th>
-                                        <th class="sm-th py-3 px-2 text-center w-12"></th>
+                                        <th class="sm-th py-2.5 px-3">មុខទំនិញ <span class="text-rose-500">*</span></th>
+                                        <th class="sm-th py-2.5 px-3 text-right w-32">ស្តុកបច្ចុប្បន្ន</th>
+                                        <th class="sm-th py-2.5 px-3 text-right w-36">ចំនួនទទួលចូល <span class="text-rose-500">*</span></th>
+                                        <th class="sm-th py-2.5 px-3 text-right w-32">ស្តុកក្រោយទទួល</th>
+                                        <th class="sm-th py-2.5 px-2 text-center w-12"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="lineRows" class="divide-y divide-slate-100"></tbody>
@@ -114,7 +114,7 @@
                 <div class="xl:col-span-1 space-y-4 xl:sticky xl:top-0">
                     <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
                         <div class="flex items-center gap-2.5 pb-3 border-b border-slate-100">
-                            <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm flex-shrink-0">
+                            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm flex-shrink-0">
                                 <i class="fas fa-truck-ramp-box"></i>
                             </div>
                             <div>
@@ -142,7 +142,7 @@
                             </div>
                             <div class="flex items-center justify-between pt-3">
                                 <span class="text-slate-500">ចំនួនឯកតាសរុប</span>
-                                <span id="sumQty" class="font-bold text-indigo-700 sm-figure text-lg">0</span>
+                                <span id="sumQty" class="font-bold text-blue-700 sm-figure text-lg">0</span>
                             </div>
                         </div>
 
@@ -155,7 +155,7 @@
 
                         <div class="pt-2 grid grid-cols-2 gap-2.5">
                             <a href="stock.html" class="h-11 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-semibold inline-flex items-center justify-center transition text-sm cursor-pointer">បោះបង់</a>
-                            <button id="saveBtn" onclick="saveStockIn()" type="button" class="h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold inline-flex items-center justify-center gap-2 shadow-sm transition text-sm cursor-pointer">
+                            <button id="saveBtn" onclick="saveStockIn()" type="button" class="h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center justify-center gap-2 shadow-sm transition text-sm cursor-pointer">
                                 <i class="fas fa-check text-xs"></i> រក្សាទុក
                             </button>
                         </div>
@@ -170,7 +170,7 @@
         <div class="p-1 border-b border-slate-100 mb-1 sticky top-0 bg-white">
             <div class="relative">
                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                <input id="globalProductSearch" type="text" placeholder="ស្វែងរកតាមឈ្មោះ ឬបាកូដ..." oninput="filterGlobalProductPicker(this.value)" class="w-full h-9 pl-8 pr-3 rounded-xl bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:border-indigo-500 font-sans">
+                <input id="globalProductSearch" type="text" placeholder="ស្វែងរកតាមឈ្មោះ ឬបាកូដ..." oninput="filterGlobalProductPicker(this.value)" class="w-full h-9 pl-8 pr-3 rounded-xl bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:border-blue-500 font-sans">
             </div>
         </div>
         <div id="globalProductList" class="space-y-0.5 overflow-y-auto max-h-64 pr-0.5"></div>
@@ -337,19 +337,19 @@
                 const cur = levels[prod.sku] || 0;
                 const isSel = prod.sku === selectedSku;
                 return `
-                <button type="button" onclick="selectProductForActiveLine('${prod.sku}')" class="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 text-left transition ${isSel ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-700'}">
+                <button type="button" onclick="selectProductForActiveLine('${prod.sku}')" class="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 text-left transition ${isSel ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700'}">
                     <span class="flex items-center gap-2.5 min-w-0">
                         <span class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 inline-flex items-center justify-center p-0.5 shadow-sm">
                             ${productImgHtml(prod)}
                         </span>
                         <span class="min-w-0">
-                            <span class="block text-xs truncate ${isSel ? 'font-semibold text-indigo-700' : 'font-medium text-slate-800'}">${prod.name}</span>
+                            <span class="block text-xs truncate ${isSel ? 'font-semibold text-blue-700' : 'font-medium text-slate-800'}">${prod.name}</span>
                             <span class="block text-[11px] text-slate-400 font-mono">${prod.barcode || prod.sku} · ${prod.unit || 'ឯកតា'}</span>
                         </span>
                     </span>
                     <div class="flex items-center gap-2 flex-shrink-0 ml-2">
                         <span class="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">ស្តុក: ${cur}</span>
-                        ${isSel ? '<i class="fas fa-check text-xs text-indigo-600"></i>' : ''}
+                        ${isSel ? '<i class="fas fa-check text-xs text-blue-600"></i>' : ''}
                     </div>
                 </button>`;
             }).join('');
@@ -396,7 +396,7 @@
 
                 return `
                 <tr class="hover:bg-slate-50/50">
-                    <td class="py-3 px-3">
+                    <td class="py-2.5 px-3">
                         <div class="relative product-select-container bms-custom-select">
                             <button type="button"
                                 data-floating-trigger="true"
@@ -413,16 +413,16 @@
                             </button>
                         </div>
                     </td>
-                    <td class="py-3 px-3 text-right sm-td sm-figure font-medium text-slate-600">
+                    <td class="py-2.5 px-3 text-right sm-td sm-figure font-medium text-slate-600">
                         ${l.sku ? `${cur} ${unit}` : '—'}
                     </td>
-                    <td class="py-3 px-3 text-right">
-                        <input type="number" min="1" step="1" value="${l.qty || 1}" oninput="updateLineQty(${idx}, this.value)" class="w-full h-11 px-3 rounded-xl bg-slate-50 border border-slate-200 text-right sm-value font-semibold text-indigo-700 focus:outline-none focus:border-indigo-500 sm-figure">
+                    <td class="py-2.5 px-3 text-right">
+                        <input type="number" min="1" step="1" value="${l.qty || 1}" oninput="updateLineQty(${idx}, this.value)" class="w-full h-11 px-3 rounded-xl bg-slate-50 border border-slate-200 text-right sm-value font-semibold text-blue-700 focus:outline-none focus:border-blue-500 sm-figure">
                     </td>
-                    <td class="py-3 px-3 text-right sm-td sm-figure font-bold text-emerald-700">
+                    <td class="py-2.5 px-3 text-right sm-td sm-figure font-bold text-emerald-700">
                         ${l.sku ? `${after} ${unit}` : '—'}
                     </td>
-                    <td class="py-3 px-2 text-center">
+                    <td class="py-2.5 px-2 text-center">
                         <button onclick="removeLine(${idx})" type="button" class="w-8 h-8 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 flex items-center justify-center transition cursor-pointer" title="លុបជួរនេះ">
                             <i class="fas fa-trash-can text-sm"></i>
                         </button>

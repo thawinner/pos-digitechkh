@@ -15,7 +15,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -37,8 +37,8 @@
                 <div class="bg-white rounded-2xl p-2 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-3">
                     <div id="statusTabs" class="flex flex-wrap items-center gap-2"></div>
                     <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-                        <div id="registerFilter" data-bms-select data-onchange="renderList()" class="w-[46%] sm:w-[150px] h-9"></div>
-                        <div id="cashierFilter" data-bms-select data-onchange="renderList()" class="w-[50%] sm:w-[180px] h-9"></div>
+                        <div id="registerFilter" data-bms-select data-onchange="renderAll()" class="w-[46%] sm:w-[150px] h-9"></div>
+                        <div id="cashierFilter" data-bms-select data-onchange="renderAll()" class="w-[50%] sm:w-[180px] h-9"></div>
                         <div id="dateRange" class="flex items-center"></div>
                     </div>
                 </div>
@@ -47,14 +47,14 @@
                         <table class="w-full text-left">
                             <thead class="bg-slate-50 text-slate-500 border-b border-slate-100">
                                 <tr>
-                                    <th class="sm-th py-3.5 px-4">កាលបរិច្ឆេទ · វេន</th>
-                                    <th class="sm-th py-3.5 px-4">បញ្ជរ</th>
-                                    <th class="sm-th py-3.5 px-4">អ្នកគិតលុយ</th>
-                                    <th class="sm-th py-3.5 px-4">បើក – បិទ</th>
-                                    <th class="sm-th py-3.5 px-4 text-right">លក់សុទ្ធ</th>
-                                    <th class="sm-th py-3.5 px-4 text-right">ភាពខុសគ្នា</th>
-                                    <th class="sm-th py-3.5 px-4">ស្ថានភាព</th>
-                                    <th class="sm-th py-3.5 px-4 text-right">សកម្មភាព</th>
+                                    <th class="sm-th py-2.5 px-4">កាលបរិច្ឆេទ · វេន</th>
+                                    <th class="sm-th py-2.5 px-4">បញ្ជរ</th>
+                                    <th class="sm-th py-2.5 px-4">អ្នកគិតលុយ</th>
+                                    <th class="sm-th py-2.5 px-4">បើក – បិទ</th>
+                                    <th class="sm-th py-2.5 px-4 text-right">លក់សុទ្ធ</th>
+                                    <th class="sm-th py-2.5 px-4 text-right">ភាពខុសគ្នា</th>
+                                    <th class="sm-th py-2.5 px-4">ស្ថានភាព</th>
+                                    <th class="sm-th py-2.5 px-4 text-right">សកម្មភាព</th>
                                 </tr>
                             </thead>
                             <tbody id="rows" class="divide-y divide-slate-100 text-slate-700"></tbody>
@@ -62,6 +62,7 @@
                     </div>
                     <div id="cards" class="md:hidden divide-y divide-slate-100"></div>
                     <div id="empty" class="hidden"></div>
+                    <div id="pager" data-pager="shifts"></div>
                 </div>
             </div>
         </main>
@@ -75,6 +76,7 @@
         /* វេន និងបញ្ជរគិតលុយ (ឯកសាររចនាលេខ 02 ផ្នែក 5.3) — រង់ចាំត្រួតពិនិត្យមុនគេ ហើយថ្មីមុនគេ */
 
         let tab = 'all';
+        let listReady = false; // រក្សាទុកតម្រងបន្ទាប់ពីស្តារឡើងវិញរួចប៉ុណ្ណោះ (ធាតុជ្រើសរើសហៅ renderAll ពេលចាប់ផ្តើម)
         const TABS = [
             { id: 'all', label: 'ទាំងអស់' },
             { id: 'closed', label: 'រង់ចាំត្រួតពិនិត្យ' },
@@ -108,11 +110,11 @@
             document.getElementById('statusTabs').innerHTML = TABS.map(t => {
                 const n = t.id === 'all' ? list.length : list.filter(s => s.status === t.id).length;
                 return `<button onclick="pickTab('${t.id}')" class="sm-badge px-4 py-2 rounded-xl transition ${tab === t.id
-                    ? 'bg-indigo-600 text-white font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-100 font-medium'}">${t.label} (${n})</button>`;
+                    ? 'bg-blue-600 text-white font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-100 font-medium'}">${t.label} (${n})</button>`;
             }).join('');
         }
 
-        function pickTab(id) { tab = id; renderTabs(); renderList(); }
+        function pickTab(id) { tab = id; renderAll(); }
 
         function clearFilters() {
             tab = 'all';
@@ -131,7 +133,10 @@
 
         function renderList() {
             const order = { closed: 0, open: 1, reviewed: 2 };
-            const rows = filtered(false).sort((a, b) => order[a.status] - order[b.status] || b.openedAt.localeCompare(a.openedAt)).slice(0, 150);
+            const sorted = filtered(false).sort((a, b) => order[a.status] - order[b.status] || b.openedAt.localeCompare(a.openedAt));
+            const pg = pagerSlice('shifts', sorted, { render: 'renderList', sig: [tab, bmsGetSelect('registerFilter'), bmsGetSelect('cashierFilter'), dateRangeKey()].join('|') });
+            document.getElementById('pager').innerHTML = pg.html;
+            const rows = pg.rows;
             const empty = document.getElementById('empty');
             if (!rows.length) {
                 document.getElementById('rows').innerHTML = '';
@@ -147,23 +152,23 @@
             </div>`;
             document.getElementById('rows').innerHTML = rows.map(s => {
                 const sum = summaryOf(s);
-                return `<tr onclick="if (!event.target.closest('button, a, [id^=m-]')) location.href='view-shift.html?id=${s.id}'" class="cursor-pointer hover:bg-indigo-50/40 transition">
-                    <td class="py-3.5 px-4"><p class="sm-td-strong">${fmtDate(s.openedAt)}</p><p class="sm-td-sub text-slate-400">${s.templateName} ${s.start}–${s.end}</p></td>
-                    <td class="py-3.5 px-4 sm-td">${s.register}</td>
-                    <td class="py-3.5 px-4 sm-td">${personChip(s.cashierId)}</td>
-                    <td class="py-3.5 px-4 sm-td sm-figure">${fmtTime(s.openedAt)} – ${s.closedAt ? fmtTime(s.closedAt) : '…'}</td>
-                    <td class="py-3.5 px-4 text-right"><p class="sm-td-strong sm-figure">${fmtUSD(sum.netSales)}</p><p class="sm-td-sub text-slate-400">${sum.count} វិក្កយបត្រ</p></td>
-                    <td class="py-3.5 px-4 text-right">${varianceCell(s)}</td>
-                    <td class="py-3.5 px-4">${statusChip(SHIFT_STATUS[s.status])}</td>
-                    <td class="py-3.5 px-4 text-right">
-                        <button onclick="toggleRowActionMenu(event, 'm-${s.id}')" type="button" aria-label="សកម្មភាព" class="w-11 h-11 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200/70 inline-flex items-center justify-center"><i class="fas fa-ellipsis-vertical text-sm"></i></button>
+                return `<tr data-row-id="${s.id}" onclick="if (!event.target.closest('button, a, [id^=m-]')) location.href='view-shift.html?id=${s.id}'" class="cursor-pointer hover:bg-slate-50 transition">
+                    <td class="py-2.5 px-4"><p class="sm-td-strong">${fmtDate(s.openedAt)}</p><p class="sm-td-sub text-slate-400">${s.templateName} ${s.start}–${s.end}</p></td>
+                    <td class="py-2.5 px-4 sm-td">${s.register}</td>
+                    <td class="py-2.5 px-4 sm-td">${personChip(s.cashierId)}</td>
+                    <td class="py-2.5 px-4 sm-td sm-figure">${fmtTime(s.openedAt)} – ${s.closedAt ? fmtTime(s.closedAt) : '…'}</td>
+                    <td class="py-2.5 px-4 text-right"><p class="sm-td-strong sm-figure">${fmtUSD(sum.netSales)}</p><p class="sm-td-sub text-slate-400">${sum.count} វិក្កយបត្រ</p></td>
+                    <td class="py-2.5 px-4 text-right">${varianceCell(s)}</td>
+                    <td class="py-2.5 px-4">${statusChip(SHIFT_STATUS[s.status])}</td>
+                    <td class="py-2.5 px-4 text-right">
+                        <button onclick="toggleRowActionMenu(event, 'm-${s.id}')" type="button" aria-label="សកម្មភាព" class="w-9 h-9 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 inline-flex items-center justify-center"><i class="fas fa-ellipsis-vertical text-sm"></i></button>
                         ${menu(s, 'm-' + s.id)}
                     </td>
                 </tr>`;
             }).join('');
             document.getElementById('cards').innerHTML = rows.map(s => {
                 const sum = summaryOf(s);
-                return `<a href="view-shift.html?id=${s.id}" class="block p-4">
+                return `<a data-row-id="${s.id}" href="view-shift.html?id=${s.id}" class="block p-4">
                     <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0">
                             <p class="sm-value text-slate-800">${s.register} · ${s.templateName} · ${fmtDate(s.openedAt)}</p>
@@ -177,6 +182,7 @@
         }
 
         function renderAll() {
+            if (listReady) saveListState('shifts', { tab, reg: bmsGetSelect('registerFilter'), cas: bmsGetSelect('cashierFilter'), range: dateRangeSnapshot() });
             renderKpis();
             renderTabs();
             renderList();
@@ -187,15 +193,21 @@
         window.onStoreChanged = renderAll;
 
         document.addEventListener('DOMContentLoaded', () => {
-            bmsSetSelectOptions('registerFilter', [{ value: '', label: 'គ្រប់បញ្ជរ' }].concat(REGISTERS.map(r => ({ value: r, label: r }))));
-            bmsSetSelect('registerFilter', '');
-            bmsSetSelectOptions('cashierFilter', [{ value: '', label: 'អ្នកគិតលុយទាំងអស់' }].concat(CASHIERS.concat(MANAGERS).map(c => ({ value: c.id, label: c.name }))));
-            bmsSetSelect('cashierFilter', '');
-            renderDateRangePicker('dateRange');
-            selectPreset('14 ថ្ងៃចុងក្រោយ');
+            // អានតម្រងដែលបានចងចាំមុនគេ មុនពេលការគូរដំបូងរក្សាទុកតម្លៃលំនាំដើមជាន់ពីលើ
+            // តំណពីផ្ទាំងគ្រប់គ្រង (?status=) មានអាទិភាពលើតម្រងដែលបានចងចាំ
             const st = new URLSearchParams(location.search).get('status');
+            const saved = st ? {} : (loadListState('shifts') || {});
+            bmsSetSelectOptions('registerFilter', [{ value: '', label: 'គ្រប់បញ្ជរ' }].concat(REGISTERS.map(r => ({ value: r, label: r }))));
+            bmsSetSelectOptions('cashierFilter', [{ value: '', label: 'អ្នកគិតលុយទាំងអស់' }].concat(CASHIERS.concat(MANAGERS).map(c => ({ value: c.id, label: c.name }))));
+            renderDateRangePicker('dateRange');
+            bmsSetSelect('registerFilter', saved.reg || '');
+            bmsSetSelect('cashierFilter', saved.cas || '');
+            if (saved.range) restoreDateRange(saved.range); else selectPreset('14 ថ្ងៃចុងក្រោយ');
             if (st && TABS.some(t => t.id === st)) tab = st;
+            else if (TABS.some(t => t.id === saved.tab)) tab = saved.tab;
+            listReady = true;
             renderAll();
+            flashViewedRow();
         });
     </script>
 </body>

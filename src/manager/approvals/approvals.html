@@ -15,7 +15,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -40,7 +40,7 @@
                         <div class="relative w-full sm:w-[240px]">
                             <i class="fas fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                             <input id="searchInput" type="text" oninput="renderList()" placeholder="ស្វែងរកលេខវិក្កយបត្រ..."
-                                class="sm-td h-9 pl-9 pr-3 w-full rounded-xl bg-slate-50 border border-slate-200 text-slate-700 focus:outline-none focus:border-indigo-500 transition">
+                                class="sm-td h-9 pl-9 pr-3 w-full rounded-xl bg-slate-50 border border-slate-200 text-slate-700 focus:outline-none focus:border-blue-500 transition">
                         </div>
                     </div>
                 </div>
@@ -50,14 +50,14 @@
                         <table class="w-full text-left">
                             <thead class="bg-slate-50 text-slate-500 border-b border-slate-100">
                                 <tr>
-                                    <th class="sm-th py-3.5 px-4">ពេលស្នើ</th>
-                                    <th class="sm-th py-3.5 px-4">ប្រភេទ</th>
-                                    <th class="sm-th py-3.5 px-4">វិក្កយបត្រ</th>
-                                    <th class="sm-th py-3.5 px-4">អ្នកគិតលុយ</th>
-                                    <th class="sm-th py-3.5 px-4 text-right">ទឹកប្រាក់</th>
-                                    <th class="sm-th py-3.5 px-4">មូលហេតុ</th>
-                                    <th class="sm-th py-3.5 px-4" id="lastColHead">រង់ចាំ</th>
-                                    <th class="sm-th py-3.5 px-4 text-right">សកម្មភាព</th>
+                                    <th class="sm-th py-2.5 px-4">ពេលស្នើ</th>
+                                    <th class="sm-th py-2.5 px-4">ប្រភេទ</th>
+                                    <th class="sm-th py-2.5 px-4">វិក្កយបត្រ</th>
+                                    <th class="sm-th py-2.5 px-4">អ្នកគិតលុយ</th>
+                                    <th class="sm-th py-2.5 px-4 text-right">ទឹកប្រាក់</th>
+                                    <th class="sm-th py-2.5 px-4">មូលហេតុ</th>
+                                    <th class="sm-th py-2.5 px-4" id="lastColHead">រង់ចាំ</th>
+                                    <th class="sm-th py-2.5 px-4 text-right">សកម្មភាព</th>
                                 </tr>
                             </thead>
                             <tbody id="rows" class="divide-y divide-slate-100 text-slate-700"></tbody>
@@ -65,6 +65,7 @@
                     </div>
                     <div id="cards" class="md:hidden divide-y divide-slate-100"></div>
                     <div id="empty" class="hidden"></div>
+                    <div id="pager" data-pager="approvals"></div>
                 </div>
             </div>
         </main>
@@ -79,6 +80,7 @@
            បញ្ជីរួមបញ្ចូលទាំងសំណើពីអ្នកគិតលុយ (រង់ចាំ) និងប្រវត្តិការសម្រេច (នៅបញ្ជរ ឬពីបញ្ជីនេះ) */
 
         let tab = 'pending';
+        let listReady = false; // រក្សាទុកតម្រងបន្ទាប់ពីស្តារឡើងវិញរួចប៉ុណ្ណោះ
         const TABS = [
             { id: 'pending', label: 'រង់ចាំអនុម័ត' },
             { id: 'approved', label: 'បានអនុម័ត' },
@@ -94,7 +96,7 @@
             document.getElementById('statusTabs').innerHTML = TABS.map(t => {
                 const n = t.id === 'pending' ? pendingApprovals().length : list.filter(a => a.status === t.id).length;
                 return `<button onclick="pickTab('${t.id}')" class="sm-badge px-4 py-2 rounded-xl transition ${tab === t.id
-                    ? 'bg-indigo-600 text-white font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-100 font-medium'}">${t.label} (${n})</button>`;
+                    ? 'bg-blue-600 text-white font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-100 font-medium'}">${t.label} (${n})</button>`;
             }).join('');
             document.getElementById('lastColHead').textContent = tab === 'pending' ? 'រង់ចាំ' : 'សម្រេចដោយ';
         }
@@ -138,7 +140,11 @@
         function renderList() {
             const cashier = bmsGetSelect('cashierFilter');
             const q = document.getElementById('searchInput').value.trim().toLowerCase();
-            const rows = all().filter(a => (!cashier || a.cashierId === cashier) && (!q || a.saleId.toLowerCase().includes(q))).slice(0, 200);
+            if (listReady) saveListState('approvals', { tab, cashier, q: document.getElementById('searchInput').value });
+            const matched = all().filter(a => (!cashier || a.cashierId === cashier) && (!q || a.saleId.toLowerCase().includes(q)));
+            const pg = pagerSlice('approvals', matched, { render: 'renderList', sig: [tab, cashier, q].join('|') });
+            document.getElementById('pager').innerHTML = pg.html;
+            const rows = pg.rows;
             const empty = document.getElementById('empty');
             if (!rows.length) {
                 document.getElementById('rows').innerHTML = '';
@@ -156,22 +162,22 @@
                 return `<span class="sm-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border bg-${t.tone}-50 text-${t.tone}-700 border-${t.tone}-200"><i class="fas ${t.icon} text-[10px]"></i>${t.label}</span>`;
             };
             document.getElementById('rows').innerHTML = rows.map(a => `
-                <tr onclick="if (!event.target.closest('button, a, [id^=m-]')) location.href='view-request.html?id=${a.id}'" class="cursor-pointer hover:bg-indigo-50/40 transition">
-                    <td class="py-3.5 px-4"><p class="sm-td-strong">${fmtTime(a.raisedAt)}</p><p class="sm-td-sub text-slate-400">${fmtDate(a.raisedAt)}</p></td>
-                    <td class="py-3.5 px-4">${typeChip(a)}</td>
-                    <td class="py-3.5 px-4 sm-td">${a.saleId}</td>
-                    <td class="py-3.5 px-4"><div class="sm-td">${personChip(a.cashierId)}</div><p class="sm-td-sub text-slate-400 mt-0.5">${a.register}</p></td>
-                    <td class="py-3.5 px-4 text-right sm-td-strong sm-figure">${fmtUSD(a.amount)}</td>
-                    <td class="py-3.5 px-4 sm-td text-slate-600 max-w-[220px]"><p class="truncate">${escapeText(a.reason)}</p>${a.decisionNote ? `<p class="sm-td-sub text-rose-600 truncate">${escapeText(a.decisionNote)}</p>` : ''}</td>
-                    <td class="py-3.5 px-4 sm-td">${lastCol(a)}</td>
-                    <td class="py-3.5 px-4 text-right">
+                <tr data-row-id="${a.id}" onclick="if (!event.target.closest('button, a, [id^=m-]')) location.href='view-request.html?id=${a.id}'" class="cursor-pointer hover:bg-slate-50 transition">
+                    <td class="py-2.5 px-4"><p class="sm-td-strong">${fmtTime(a.raisedAt)}</p><p class="sm-td-sub text-slate-400">${fmtDate(a.raisedAt)}</p></td>
+                    <td class="py-2.5 px-4">${typeChip(a)}</td>
+                    <td class="py-2.5 px-4 sm-td">${a.saleId}</td>
+                    <td class="py-2.5 px-4"><div class="sm-td">${personChip(a.cashierId)}</div><p class="sm-td-sub text-slate-400 mt-0.5">${a.register}</p></td>
+                    <td class="py-2.5 px-4 text-right sm-td-strong sm-figure">${fmtUSD(a.amount)}</td>
+                    <td class="py-2.5 px-4 sm-td text-slate-600 max-w-[220px]"><p class="truncate">${escapeText(a.reason)}</p>${a.decisionNote ? `<p class="sm-td-sub text-rose-600 truncate">${escapeText(a.decisionNote)}</p>` : ''}</td>
+                    <td class="py-2.5 px-4 sm-td">${lastCol(a)}</td>
+                    <td class="py-2.5 px-4 text-right">
                         <button onclick="toggleRowActionMenu(event, 'm-${a.id}')" type="button" aria-label="សកម្មភាព"
-                            class="w-11 h-11 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200/70 inline-flex items-center justify-center"><i class="fas fa-ellipsis-vertical text-sm"></i></button>
+                            class="w-9 h-9 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 inline-flex items-center justify-center"><i class="fas fa-ellipsis-vertical text-sm"></i></button>
                         ${menu(a, 'm-' + a.id)}
                     </td>
                 </tr>`).join('');
             document.getElementById('cards').innerHTML = rows.map(a => `
-                <div class="p-4">
+                <div data-row-id="${a.id}" class="p-4">
                     <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0">
                             ${typeChip(a)}
@@ -181,7 +187,7 @@
                         </div>
                         <div class="flex-shrink-0 relative">
                             <button onclick="toggleRowActionMenu(event, 'c-${a.id}')" type="button" aria-label="សកម្មភាព"
-                                class="w-11 h-11 rounded-xl bg-slate-50 border border-slate-200/70 text-slate-500 inline-flex items-center justify-center"><i class="fas fa-ellipsis-vertical text-sm"></i></button>
+                                class="w-9 h-9 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 inline-flex items-center justify-center"><i class="fas fa-ellipsis-vertical text-sm"></i></button>
                             ${menu(a, 'c-' + a.id)}
                         </div>
                     </div>
@@ -200,8 +206,13 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             bmsSetSelectOptions('cashierFilter', [{ value: '', label: 'អ្នកគិតលុយទាំងអស់' }].concat(CASHIERS.map(c => ({ value: c.id, label: c.name }))));
-            bmsSetSelect('cashierFilter', '');
+            const saved = loadListState('approvals') || {};
+            if (TABS.some(t => t.id === saved.tab)) tab = saved.tab;
+            bmsSetSelect('cashierFilter', saved.cashier || '');
+            document.getElementById('searchInput').value = saved.q || '';
+            listReady = true;
             refresh();
+            flashViewedRow();
         });
     </script>
 </body>

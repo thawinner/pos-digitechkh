@@ -15,7 +15,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#059669", 'primary-dark': "#047857", accent: "#34d399" },
+                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -43,7 +43,7 @@
                     <label class="relative w-full sm:w-[280px]">
                         <i class="fas fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                         <input id="search" oninput="renderList()" type="text" placeholder="ស្វែងរកវិក្កយបត្រ ឬអ្នកផ្គត់ផ្គង់"
-                            class="sm-td w-full h-9 pl-8 pr-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:outline-none">
+                            class="sm-td w-full h-9 pl-8 pr-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500 focus:outline-none">
                     </label>
                 </div>
 
@@ -65,6 +65,7 @@
                     </table></div>
                     <div id="cards" class="md:hidden divide-y divide-slate-100"></div>
                     <div id="empty" class="hidden"></div>
+                    <div id="pager" data-pager="stockIn"></div>
                 </section>
             </div>
         </main>
@@ -77,6 +78,7 @@
     <script src="../../shared/scripts/portal.js"></script>
     <script>
         let currentTab = 'pending';
+        let listReady = false; // រក្សាទុកតម្រងបន្ទាប់ពីស្តារឡើងវិញរួចប៉ុណ្ណោះ
         let shipments = [];
 
         function loadData() {
@@ -123,37 +125,40 @@
             document.getElementById('statusTabs').innerHTML = tabs.map(t => {
                 const on = currentTab === t.id;
                 return `<button type="button" onclick="currentTab='${t.id}'; renderTabs(); renderList()"
-                    class="sm-badge h-9 px-3.5 rounded-xl transition inline-flex items-center gap-2 ${on ? 'bg-emerald-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">
+                    class="sm-badge h-9 px-3.5 rounded-xl transition inline-flex items-center gap-2 ${on ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">
                     ${t.label}
-                    <span class="text-[12px] sm-figure ${on ? 'text-emerald-100' : 'text-slate-400'}">${t.count}</span>
+                    <span class="text-[12px] sm-figure ${on ? 'text-blue-100' : 'text-slate-400'}">${t.count}</span>
                 </button>`;
             }).join('');
         }
 
         function renderList() {
-            const list = filterShipments();
+            if (listReady) saveListState('stockIn', { tab: currentTab, q: document.getElementById('search').value });
+            const pg = pagerSlice('stockIn', filterShipments(), { render: 'renderList', sig: [currentTab, document.getElementById('search').value.trim()].join('|') });
+            document.getElementById('pager').innerHTML = pg.html;
+            const list = pg.rows;
             const emptyEl = document.getElementById('empty');
             emptyEl.classList.toggle('hidden', !!list.length);
             emptyEl.innerHTML = list.length ? '' : emptyState('fa-truck-ramp-box', 'គ្មានការទទួលស្តុកក្នុងបញ្ជីនេះ', 'សូមសាកល្បងពាក្យស្វែងរកផ្សេង ឬជ្រើសរើសផ្ទាំងផ្សេង');
 
             document.getElementById('rows').innerHTML = list.map(s => {
                 const statusBadge = s.confirmed
-                    ? '<span class="sm-badge px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium"><i class="fas fa-check mr-1"></i>បានបញ្ជាក់</span>'
+                    ? '<span class="sm-badge px-2.5 py-1 rounded-full bg-slate-50 text-slate-600 border border-slate-200 text-xs font-medium"><i class="fas fa-check mr-1"></i>បានបញ្ជាក់</span>'
                     : '<span class="sm-badge px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-medium"><i class="fas fa-clock mr-1"></i>រង់ចាំបញ្ជាក់</span>';
 
                 const btnLabel = s.confirmed ? 'មើលលម្អិត' : 'បញ្ជាក់ថ្លៃដើម';
-                const btnTone = s.confirmed ? 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm';
+                const btnTone = s.confirmed ? 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm';
 
-                return `<tr>
-                    <td class="py-3 px-5 sm-td text-slate-600 sm-figure">${fmtDate(s.at)} <span class="sm-td-sub text-slate-400 block">${fmtTime(s.at)}</span></td>
-                    <td class="py-3 px-3 sm-td-strong text-slate-800 font-mono">${escapeText(s.invoice)}</td>
-                    <td class="py-3 px-3 sm-td text-slate-700 font-medium">${escapeText(s.supplier)}</td>
-                    <td class="py-3 px-3 text-right sm-td sm-figure text-slate-600">${s.lines.length} មុខ</td>
-                    <td class="py-3 px-3 text-right sm-td-strong sm-figure text-slate-800">${s.totalQty}</td>
-                    <td class="py-3 px-3 text-right sm-td-strong sm-figure ${s.confirmed ? 'text-emerald-700' : 'text-slate-700'}">${fmtUSD(s.totalCost)}</td>
-                    <td class="py-3 px-3 text-center">${statusBadge}</td>
-                    <td class="py-3 px-3 sm-td text-slate-600">${personName(s.by)}</td>
-                    <td class="py-3 px-5 text-right">
+                return `<tr data-row-id="${escapeText(s.invoice)}">
+                    <td class="py-2.5 px-5 sm-td text-slate-600 sm-figure">${fmtDate(s.at)} <span class="sm-td-sub text-slate-400 block">${fmtTime(s.at)}</span></td>
+                    <td class="py-2.5 px-3 sm-td-strong text-slate-800 font-mono">${escapeText(s.invoice)}</td>
+                    <td class="py-2.5 px-3 sm-td text-slate-700 font-medium">${escapeText(s.supplier)}</td>
+                    <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-600">${s.lines.length} មុខ</td>
+                    <td class="py-2.5 px-3 text-right sm-td-strong sm-figure text-slate-800">${s.totalQty}</td>
+                    <td class="py-2.5 px-3 text-right sm-td-strong sm-figure text-slate-700">${fmtUSD(s.totalCost)}</td>
+                    <td class="py-2.5 px-3 text-center">${statusBadge}</td>
+                    <td class="py-2.5 px-3 sm-td text-slate-600">${personName(s.by)}</td>
+                    <td class="py-2.5 px-5 text-right">
                         <a href="view-stock-in.html?invoice=${encodeURIComponent(s.invoice)}" class="sm-badge h-8 px-3 rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition ${btnTone}">
                             ${btnLabel} <i class="fas fa-arrow-right text-[10px]"></i>
                         </a>
@@ -163,10 +168,10 @@
 
             document.getElementById('cards').innerHTML = list.map(s => {
                 const statusBadge = s.confirmed
-                    ? '<span class="sm-badge px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium">បានបញ្ជាក់</span>'
+                    ? '<span class="sm-badge px-2 py-0.5 rounded-full bg-slate-50 text-slate-600 border border-slate-200 text-xs font-medium">បានបញ្ជាក់</span>'
                     : '<span class="sm-badge px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-medium">រង់ចាំបញ្ជាក់</span>';
 
-                return `<div class="p-4 space-y-2">
+                return `<div data-row-id="${escapeText(s.invoice)}" class="p-4 space-y-2">
                     <div class="flex items-start justify-between gap-2">
                         <div>
                             <p class="sm-value text-slate-800 font-mono">${escapeText(s.invoice)}</p>
@@ -196,7 +201,14 @@
         }
 
         window.onStoreChanged = () => renderAll();
-        document.addEventListener('DOMContentLoaded', renderAll);
+        document.addEventListener('DOMContentLoaded', () => {
+            const saved = loadListState('stockIn') || {};
+            if (saved.tab) currentTab = saved.tab;
+            document.getElementById('search').value = saved.q || '';
+            listReady = true;
+            renderAll();
+            flashViewedRow();
+        });
     </script>
 </body>
 </html>

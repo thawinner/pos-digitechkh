@@ -66,7 +66,7 @@ function numInput(key, unit, opts) {
         ${o.prefix ? `<span class="absolute left-3.5 top-1/2 -translate-y-1/2 sm-value text-slate-400">${o.prefix}</span>` : ''}
         <input type="text" inputmode="decimal" value="${v === '' || v == null || (o.blankZero && !v) ? '' : fmtInt(v)}" placeholder="${o.placeholder || '0'}"
             oninput="numChanged('${key}', this)" onblur="this.value = draft['${key}'] || ${o.blankZero ? "''" : 0} ? fmtInt(draft['${key}']) : ''"
-            class="sm-value w-full h-12 ${o.prefix ? 'pl-8' : 'pl-3.5'} pr-16 rounded-xl border ${isChanged(key) ? 'border-amber-300 bg-amber-50/40' : 'border-slate-200 bg-slate-50'} text-right sm-figure focus:outline-none focus:border-indigo-500 focus:bg-white transition">
+            class="sm-value w-full h-12 ${o.prefix ? 'pl-8' : 'pl-3.5'} pr-16 rounded-xl border ${isChanged(key) ? 'border-amber-300 bg-amber-50/40' : 'border-slate-200 bg-slate-50'} text-right sm-figure focus:outline-none focus:border-blue-500 focus:bg-white transition">
         <span class="absolute right-3.5 top-1/2 -translate-y-1/2 sm-td-sub text-slate-400">${unit}</span>
     </div>`;
 }
@@ -192,7 +192,7 @@ function nightHours(t) {
 
 /* របារពេលវេលា 24 ម៉ោង — ឃើញភ្លាមថាម៉ោងណាគ្មានវេន ឬវេនជាន់គ្នា */
 function timeline() {
-    const colors = ['bg-amber-500', 'bg-cyan-500', 'bg-indigo-700', 'bg-emerald-500'];
+    const colors = ['bg-amber-500', 'bg-blue-500', 'bg-blue-700', 'bg-emerald-500'];
     const segs = draft.shiftTemplates.flatMap((t, i) => {
         const s = minutesOf(t.start) / 1440 * 100;
         const e = minutesOf(t.end) / 1440 * 100;
@@ -371,7 +371,7 @@ function renderShifts(s) {
         const valid = /^([01]\d|2[0-3]):[0-5]\d$/.test(t.start) && /^([01]\d|2[0-3]):[0-5]\d$/.test(t.end);
         const tone = !valid || h > 12 ? 'text-rose-600' : h > 8 ? 'text-amber-700' : 'text-emerald-700';
         return `<div class="grid grid-cols-[1fr_auto_auto_44px] gap-2 items-center py-3 border-b border-slate-100">
-            <input value="${escapeText(t.name)}" oninput="draft.shiftTemplates[${i}].name=this.value; renderSaveBar()" onblur="render()" class="sm-td h-11 px-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-indigo-500">
+            <input value="${escapeText(t.name)}" oninput="draft.shiftTemplates[${i}].name=this.value; renderSaveBar()" onblur="render()" class="sm-td h-11 px-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-blue-500">
             <div class="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl px-1 h-11">
                 <button type="button" onclick="stepTime(${i}, 'start', -30)" class="w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs"><i class="fas fa-minus text-[10px]"></i></button>
                 <input value="${t.start}" inputmode="numeric" maxlength="5" oninput="draft.shiftTemplates[${i}].start=this.value" onblur="draft.shiftTemplates[${i}].start=normalizeTime(this.value); renderSaveBar(); render()" class="sm-value w-16 h-8 bg-transparent text-center sm-figure focus:outline-none">
@@ -393,9 +393,9 @@ function renderShifts(s) {
         try {
             const not = JSON.parse(noticeRaw);
             noticeHtml = `
-                <div class="mb-4 p-3 rounded-2xl bg-indigo-50 border border-indigo-200 flex items-center justify-between gap-3">
-                    <p class="sm-td text-indigo-900"><i class="fas fa-circle-info mr-1 text-indigo-600"></i>${escapeText(not.name)} មិនទាន់មានអ្នកគិតលុយ 7 ថ្ងៃខាងមុខ</p>
-                    <a href="../roster/roster.html?template=${not.code}" class="sm-badge h-8 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs inline-flex items-center gap-1.5 flex-shrink-0">
+                <div class="mb-4 p-3 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-between gap-3">
+                    <p class="sm-td text-blue-900"><i class="fas fa-circle-info mr-1 text-blue-600"></i>${escapeText(not.name)} មិនទាន់មានអ្នកគិតលុយ 7 ថ្ងៃខាងមុខ</p>
+                    <a href="../roster/roster.html?template=${not.code}" class="sm-badge h-8 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs inline-flex items-center gap-1.5 flex-shrink-0">
                         ចាត់តាំងឥឡូវ <i class="fas fa-arrow-right text-[10px]"></i>
                     </a>
                 </div>
@@ -424,10 +424,10 @@ function renderShifts(s) {
         <div class="flex flex-wrap items-center justify-between gap-3 mt-4">
             <div class="flex items-center gap-2">
                 ${draft.shiftTemplates.length < 4
-                    ? `<button onclick="addTemplate()" type="button" class="sm-badge h-10 px-4 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold"><i class="fas fa-plus mr-1"></i> បន្ថែមវេន</button>`
+                    ? `<button onclick="addTemplate()" type="button" class="sm-badge h-10 px-4 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold"><i class="fas fa-plus mr-1"></i> បន្ថែមវេន</button>`
                     : `<button disabled type="button" class="sm-badge h-10 px-4 rounded-xl bg-slate-100 text-slate-400 cursor-not-allowed font-semibold"><i class="fas fa-plus mr-1"></i> បន្ថែមវេន</button><span class="sm-td-sub text-slate-400">អតិបរមា 4 វេនក្នុងមួយថ្ងៃ</span>`}
             </div>
-            <a href="../roster/roster.html" class="sm-badge text-indigo-700 hover:text-indigo-900 font-semibold">ចាត់តាំងអ្នកគិតលុយក្នុងកាលវិភាគវេន <i class="fas fa-arrow-right text-[10px]"></i></a>
+            <a href="../roster/roster.html" class="sm-badge text-blue-700 hover:text-blue-900 font-semibold">ចាត់តាំងអ្នកគិតលុយក្នុងកាលវិភាគវេន <i class="fas fa-arrow-right text-[10px]"></i></a>
         </div>
     </div>`;
 }
@@ -440,7 +440,7 @@ function renderTill(s) {
             <div class="flex items-center gap-3">${avatarHtml(c.id, 'w-8 h-8')}<span class="sm-td text-slate-700 flex-1 truncate">${c.name}</span>
                 <div class="relative w-28"><input type="text" inputmode="decimal" value="${draft.discountLimits[c.id] != null ? draft.discountLimits[c.id] : 5}"
                     oninput="draft.discountLimits['${c.id}'] = Number(this.value.replace(/[^0-9.]/g, '')) || 0; renderSaveBar()"
-                    class="sm-value w-full h-11 pl-3 pr-8 rounded-xl bg-slate-50 border border-slate-200 text-right focus:outline-none focus:border-indigo-500"><span class="absolute right-3 top-1/2 -translate-y-1/2 sm-td-sub text-slate-400">%</span></div></div>`).join('')}</div>`)}
+                    class="sm-value w-full h-11 pl-3 pr-8 rounded-xl bg-slate-50 border border-slate-200 text-right focus:outline-none focus:border-blue-500"><span class="absolute right-3 top-1/2 -translate-y-1/2 sm-td-sub text-slate-400">%</span></div></div>`).join('')}</div>`)}
     </div>`;
 }
 
@@ -450,16 +450,16 @@ function renderStock(s) {
     return sectionHead(s, 'ដែនកំណត់នៃការកែតម្រូវស្តុក កាលវិភាគរាប់ស្តុក និងការលក់ពេលអស់ស្តុក') + `<div class="px-5 sm:px-6">
         ${row('allowNegativeStock', 'អនុញ្ញាតលក់ពេលស្តុកមិនគ្រប់', 'បើក៖ អនុញ្ញាតឱ្យអ្នកគិតលុយបន្តលក់ទោះបីស្តុកអស់ ឬអវិជ្ជមាន · បិទ៖ បញ្ឈប់ការលក់ពេលអស់ស្តុក', `
             <div class="flex items-center gap-2">
-                <button type="button" onclick="draft.allowNegativeStock = true; renderSaveBar(); render()" class="sm-badge h-11 px-4 rounded-xl border font-semibold transition ${neg ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}"><i class="fas fa-check mr-1.5"></i>អនុញ្ញាត</button>
-                <button type="button" onclick="draft.allowNegativeStock = false; renderSaveBar(); render()" class="sm-badge h-11 px-4 rounded-xl border font-semibold transition ${!neg ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}"><i class="fas fa-ban mr-1.5"></i>មិនអនុញ្ញាត</button>
+                <button type="button" onclick="draft.allowNegativeStock = true; renderSaveBar(); render()" class="sm-badge h-11 px-4 rounded-xl border font-semibold transition ${neg ? 'bg-blue-600 border-blue-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}"><i class="fas fa-check mr-1.5"></i>អនុញ្ញាត</button>
+                <button type="button" onclick="draft.allowNegativeStock = false; renderSaveBar(); render()" class="sm-badge h-11 px-4 rounded-xl border font-semibold transition ${!neg ? 'bg-blue-600 border-blue-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}"><i class="fas fa-ban mr-1.5"></i>មិនអនុញ្ញាត</button>
             </div>
         `)}
         ${row('adjustLimitQty', 'ដែនកំណត់ចំនួនកែតម្រូវ', 'ចំនួនឯកតាអតិបរមាដែលអាចកែតម្រូវក្នុងមួយលើកដោយគ្មានការត្រួតពិនិត្យបន្ថែម', numInput('adjustLimitQty', 'ឯកតា'), noteFor('adjustLimitQty'))}
         ${row('adjustLimitUSD', 'ដែនកំណត់ទឹកប្រាក់កែតម្រូវ', 'ទឹកប្រាក់អតិបរមាគិតជាដុល្លារដែលអាចកែតម្រូវស្តុកក្នុងមួយលើក', numInput('adjustLimitUSD', 'ដុល្លារ', { prefix: '$' }), noteFor('adjustLimitUSD'))}
         ${row('countSchedule', 'កាលវិភាគរាប់ស្តុកទៀងទាត់', 'កំណត់ពេលវេលាដែលអ្នកគ្រប់គ្រងត្រូវរាប់ស្តុកជាក់ស្តែង', `
             <div class="flex items-center gap-2">
-                <button type="button" onclick="draft.countSchedule = 'weekly'; renderSaveBar(); render()" class="sm-badge h-11 px-4 rounded-xl border font-semibold transition ${sched === 'weekly' ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}"><i class="fas fa-calendar-week mr-1.5"></i>រៀងរាល់សប្តាហ៍ (7 ថ្ងៃ)</button>
-                <button type="button" onclick="draft.countSchedule = 'monthly'; renderSaveBar(); render()" class="sm-badge h-11 px-4 rounded-xl border font-semibold transition ${sched === 'monthly' ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}"><i class="fas fa-calendar-days mr-1.5"></i>រៀងរាល់ខែ (30 ថ្ងៃ)</button>
+                <button type="button" onclick="draft.countSchedule = 'weekly'; renderSaveBar(); render()" class="sm-badge h-11 px-4 rounded-xl border font-semibold transition ${sched === 'weekly' ? 'bg-blue-600 border-blue-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}"><i class="fas fa-calendar-week mr-1.5"></i>រៀងរាល់សប្តាហ៍ (7 ថ្ងៃ)</button>
+                <button type="button" onclick="draft.countSchedule = 'monthly'; renderSaveBar(); render()" class="sm-badge h-11 px-4 rounded-xl border font-semibold transition ${sched === 'monthly' ? 'bg-blue-600 border-blue-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}"><i class="fas fa-calendar-days mr-1.5"></i>រៀងរាល់ខែ (30 ថ្ងៃ)</button>
             </div>
         `)}
     </div>`;
@@ -500,7 +500,7 @@ function renderReasons(s) {
             <div class="flex flex-wrap gap-1.5">${draft.reasons[k].map((r, i) => `<span class="sm-td-sub inline-flex items-center gap-1 pl-3 pr-1 py-1 rounded-full bg-slate-100 text-slate-700">${escapeText(r)}
                 <button onclick="draft.reasons['${k}'].splice(${i},1); render()" type="button" aria-label="លុប" class="w-6 h-6 rounded-full hover:bg-rose-100 hover:text-rose-600"><i class="fas fa-xmark text-[10px]"></i></button></span>`).join('')}</div>
             <input placeholder="+ បន្ថែមមូលហេតុ" onkeydown="if(event.key==='Enter'&&this.value.trim()){draft.reasons['${k}'].push(this.value.trim()); render(); setTimeout(()=>document.querySelector('[data-r=${k}]').focus(),0)}" data-r="${k}"
-                class="sm-td w-full h-10 mt-2 px-3 rounded-xl bg-white border border-dashed border-slate-300 focus:outline-none focus:border-indigo-500">`)).join('')}
+                class="sm-td w-full h-10 mt-2 px-3 rounded-xl bg-white border border-dashed border-slate-300 focus:outline-none focus:border-blue-500">`)).join('')}
     </div>`;
 }
 
@@ -547,10 +547,10 @@ function renderNav() {
         const n = s.keys.filter(isChanged).length;
         const on = s.id === section;
         return `<button onclick="goSection('${s.id}')" type="button"
-            class="flex-shrink-0 lg:w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition ${on ? 'bg-indigo-50 text-indigo-800' : 'text-slate-600 hover:bg-slate-50'}">
-            <i class="fas ${s.icon} w-5 text-center ${on ? 'text-indigo-600' : 'text-slate-400'}"></i>
+            class="flex-shrink-0 lg:w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition ${on ? 'bg-blue-50 text-blue-800' : 'text-slate-600 hover:bg-slate-50'}">
+            <i class="fas ${s.icon} w-5 text-center ${on ? 'text-blue-600' : 'text-slate-400'}"></i>
             <span class="flex-1 min-w-0"><span class="sm-td font-medium whitespace-nowrap block">${s.label}</span>
-                <span class="sm-td-sub ${on ? 'text-indigo-600/80' : 'text-slate-400'} whitespace-nowrap block truncate sm-figure">${navSummary(s.id)}</span></span>
+                <span class="sm-td-sub ${on ? 'text-blue-600/80' : 'text-slate-400'} whitespace-nowrap block truncate sm-figure">${navSummary(s.id)}</span></span>
             ${n ? `<span class="w-2 h-2 rounded-full bg-amber-500"></span>` : ''}
         </button>`;
     }).join('');
@@ -579,7 +579,7 @@ function renderSaveBar() {
         ? `មិនទាន់រក្សាទុក ${keys.length}៖ ${keys.map(k => SETTING_LABELS[k] || k).join(' · ')}` : 'ការកំណត់ទាំងអស់បានរក្សាទុក';
     document.getElementById('dirtyNote').className = `sm-td-sub truncate ${dirty ? 'text-amber-700 font-semibold' : 'text-slate-500'}`;
     document.getElementById('saveBtn').disabled = !dirty;
-    document.getElementById('saveBtn').className = `sm-value h-11 px-5 rounded-xl font-semibold inline-flex items-center gap-2 transition ${dirty ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`;
+    document.getElementById('saveBtn').className = `sm-value h-11 px-5 rounded-xl font-semibold inline-flex items-center gap-2 transition ${dirty ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`;
     document.getElementById('discardBtn').style.display = dirty ? '' : 'none';
     renderNav();
 }

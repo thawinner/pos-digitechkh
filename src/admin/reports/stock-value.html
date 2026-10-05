@@ -15,7 +15,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#059669", 'primary-dark': "#047857", accent: "#34d399" },
+                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -47,7 +47,7 @@
                         <label class="relative w-full sm:w-[240px]">
                             <i class="fas fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                             <input id="search" oninput="renderAll()" type="text" placeholder="ស្វែងរកមុខទំនិញ..."
-                                class="sm-td w-full h-9 pl-8 pr-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:outline-none">
+                                class="sm-td w-full h-9 pl-8 pr-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500 focus:outline-none">
                         </label>
                         <button onclick="window.print()" type="button" class="sm-badge h-9 px-3.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center gap-2">
                             <i class="fas fa-print"></i> បោះពុម្ព
@@ -105,7 +105,7 @@
             document.getElementById('viewTabs').innerHTML = tabs.map(t => {
                 const on = currentView === t.id;
                 return `<button type="button" onclick="currentView='${t.id}'; renderTabs(); renderAll()"
-                    class="sm-badge h-9 px-3.5 rounded-xl transition ${on ? 'bg-emerald-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">
+                    class="sm-badge h-9 px-3.5 rounded-xl transition ${on ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">
                     ${t.label}
                 </button>`;
             }).join('');
@@ -129,7 +129,7 @@
                     formatter: ps => {
                         const d = chartData[ps[0].dataIndex];
                         return chartTipTitle(d.label) +
-                            chartTipRow(CHART_TONE.emerald, 'តម្លៃស្តុក', fmtUSD(d.value)) +
+                            chartTipRow(CHART_TONE.accent, 'តម្លៃស្តុក', fmtUSD(d.value)) +
                             chartTipRow(CHART_TONE.slate, 'ចំនួនឯកតា', `${d.units} ឯកតា`) +
                             chartTipRow(CHART_TONE.slate, 'មុខទំនិញ', `${d.products} មុខ`);
                     }
@@ -138,7 +138,7 @@
                     name: 'តម្លៃស្តុក',
                     type: 'bar',
                     barMaxWidth: 40,
-                    itemStyle: { color: CHART_TONE.emerald, borderRadius: [4, 4, 0, 0] },
+                    itemStyle: { color: CHART_TONE.accent, borderRadius: [4, 4, 0, 0] },
                     data: chartData.map(c => +c.value.toFixed(2))
                 }]
             });
@@ -170,14 +170,14 @@
                 tbody.innerHTML = filtered.map(c => {
                     const pct = stats.totalValue > 0 ? (c.value / stats.totalValue * 100) : 0;
                     return `<tr>
-                        <td class="py-3 px-5 sm-td font-medium text-slate-800">${escapeText(c.label)}</td>
-                        <td class="py-3 px-3 text-right sm-td sm-figure text-slate-600">${c.products} មុខ</td>
-                        <td class="py-3 px-3 text-right sm-td sm-figure text-slate-700">${c.units}</td>
-                        <td class="py-3 px-3 text-right sm-td-strong sm-figure text-emerald-700">${fmtUSD(c.value)}</td>
-                        <td class="py-3 px-5">
+                        <td class="py-2.5 px-5 sm-td font-medium text-slate-800">${escapeText(c.label)}</td>
+                        <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-600">${c.products} មុខ</td>
+                        <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-700">${c.units}</td>
+                        <td class="py-2.5 px-3 text-right sm-td-strong sm-figure text-emerald-700">${fmtUSD(c.value)}</td>
+                        <td class="py-2.5 px-5">
                             <div class="flex items-center gap-2.5">
                                 <div class="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
-                                    <div class="h-full bg-emerald-600 rounded-full" style="width:${Math.min(pct, 100)}%"></div>
+                                    <div class="h-full bg-blue-600 rounded-full" style="width:${Math.min(pct, 100)}%"></div>
                                 </div>
                                 <span class="sm-td-sub sm-figure w-12 text-right font-medium text-slate-600">${pct.toFixed(1)}%</span>
                             </div>
@@ -186,11 +186,11 @@
                 }).join('');
 
                 tfoot.innerHTML = `<tr>
-                    <td class="py-3 px-5 text-slate-800">សរុបទាំងអស់</td>
-                    <td class="py-3 px-3 text-right text-slate-800">${stats.productCount} មុខ</td>
-                    <td class="py-3 px-3 text-right text-slate-800">${stats.totalUnits}</td>
-                    <td class="py-3 px-3 text-right text-emerald-700 sm-figure">${fmtUSD(stats.totalValue)}</td>
-                    <td class="py-3 px-5 text-slate-600 sm-figure">100.0%</td>
+                    <td class="py-2.5 px-5 text-slate-800">សរុបទាំងអស់</td>
+                    <td class="py-2.5 px-3 text-right text-slate-800">${stats.productCount} មុខ</td>
+                    <td class="py-2.5 px-3 text-right text-slate-800">${stats.totalUnits}</td>
+                    <td class="py-2.5 px-3 text-right text-emerald-700 sm-figure">${fmtUSD(stats.totalValue)}</td>
+                    <td class="py-2.5 px-5 text-slate-600 sm-figure">100.0%</td>
                 </tr>`;
 
             } else {
@@ -219,7 +219,7 @@
                         : '';
 
                     return `<tr>
-                        <td class="py-3 px-5">
+                        <td class="py-2.5 px-5">
                             <div class="flex items-center gap-3">
                                 ${thumb(p)}
                                 <div class="min-w-0">
@@ -228,20 +228,20 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="py-3 px-3 text-right">
+                        <td class="py-2.5 px-3 text-right">
                             <span class="sm-td-strong sm-figure text-slate-800">${p.qty}</span> <span class="text-slate-400 text-xs">${p.unit}</span>
                             <span class="block sm-td-sub text-[11px] font-medium ${p.status === 'out' ? 'text-rose-600' : p.status === 'low' ? 'text-amber-600' : 'text-emerald-700'}">${st.label}</span>
                         </td>
-                        <td class="py-3 px-3 text-right sm-td sm-figure text-slate-600">
+                        <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-600">
                             ${fmtUSD(p.cost)}${unconfBadge}
                         </td>
-                        <td class="py-3 px-3 text-right sm-td-strong sm-figure text-emerald-700">
+                        <td class="py-2.5 px-3 text-right sm-td-strong sm-figure text-emerald-700">
                             ${fmtUSD(p.value)}
                         </td>
-                        <td class="py-3 px-5">
+                        <td class="py-2.5 px-5">
                             <div class="flex items-center gap-2.5">
                                 <div class="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
-                                    <div class="h-full bg-emerald-600 rounded-full" style="width:${Math.min(pct * 2, 100)}%"></div>
+                                    <div class="h-full bg-blue-600 rounded-full" style="width:${Math.min(pct * 2, 100)}%"></div>
                                 </div>
                                 <span class="sm-td-sub sm-figure w-12 text-right font-medium text-slate-600">${pct.toFixed(1)}%</span>
                             </div>
@@ -253,11 +253,11 @@
                 const sumFilteredVal = filtered.reduce((s, p) => s + p.value, 0);
 
                 tfoot.innerHTML = `<tr>
-                    <td class="py-3 px-5 text-slate-800">សរុបមុខទំនិញ (${filtered.length})</td>
-                    <td class="py-3 px-3 text-right text-slate-800">${sumFilteredUnits}</td>
-                    <td class="py-3 px-3 text-right text-slate-500">—</td>
-                    <td class="py-3 px-3 text-right text-emerald-700 sm-figure">${fmtUSD(sumFilteredVal)}</td>
-                    <td class="py-3 px-5 text-slate-600 sm-figure">${stats.totalValue > 0 ? (sumFilteredVal / stats.totalValue * 100).toFixed(1) : 0}%</td>
+                    <td class="py-2.5 px-5 text-slate-800">សរុបមុខទំនិញ (${filtered.length})</td>
+                    <td class="py-2.5 px-3 text-right text-slate-800">${sumFilteredUnits}</td>
+                    <td class="py-2.5 px-3 text-right text-slate-500">—</td>
+                    <td class="py-2.5 px-3 text-right text-emerald-700 sm-figure">${fmtUSD(sumFilteredVal)}</td>
+                    <td class="py-2.5 px-5 text-slate-600 sm-figure">${stats.totalValue > 0 ? (sumFilteredVal / stats.totalValue * 100).toFixed(1) : 0}%</td>
                 </tr>`;
             }
         }

@@ -15,7 +15,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -72,7 +72,7 @@
             const host = document.getElementById('page');
             if (!a) {
                 host.innerHTML = `<div class="bg-white rounded-2xl border border-slate-200 shadow-sm">${emptyState('fa-circle-question', 'រកមិនឃើញសំណើ', 'សំណើនេះមិនមាន ឬត្រូវបានលុប',
-                    '<a href="approvals.html" class="sm-badge inline-block mt-4 px-4 py-2 rounded-xl bg-indigo-600 text-white font-semibold">ត្រឡប់ទៅបញ្ជីសំណើ</a>')}</div>`;
+                    '<a href="approvals.html" class="sm-badge inline-block mt-4 px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold">ត្រឡប់ទៅបញ្ជីសំណើ</a>')}</div>`;
                 return;
             }
             const sale = findAnySale(a.saleId);
@@ -155,7 +155,7 @@
         }
 
         window.onStoreChanged = render;
-        document.addEventListener('DOMContentLoaded', render);
+        document.addEventListener('DOMContentLoaded', () => { markRecordViewed(reqId); render(); });
     </script>
 </body>
 </html>

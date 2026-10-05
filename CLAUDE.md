@@ -43,21 +43,32 @@ src/
 
 ## How a page is assembled
 
-- Cashier: `<body id="posPortal" …>` (navy sidebar); manager: `<body id="managerPortal" …>` (indigo sidebar, `badgeFn`
-  nav badges); owner: `<body id="adminPortal" …>` (dark green sidebar). The sidebar brand block switches views
+- Cashier: `<body id="posPortal" …>`; manager: `<body id="managerPortal" …>` (`badgeFn` nav badges); owner:
+  `<body id="adminPortal" …>`. All three share one neutral dark sidebar (`portal.css`); the role shows in the label
+  under the logo, not in colour. The sidebar brand block switches views
   (`ROLE_VIEW`): owner ⇄ manager, manager ⇄ cashier. The sidebar is never collapsible.
   `data-active` picks the highlighted nav item. Change nav in `PORTAL_CONFIGS`, never in pages.
 - Script order: `ui-components.js` → `data.js` → (`manager-data.js`, manager + owner pages) → (`admin-data.js`, owner
   pages only) → `portal.js` → (`echarts.min.js` from cdnjs + `charts.js`, chart pages) → (`settings-page.js`, both
   settings pages) → inline script.
 - Charts: always ECharts through `posChart(el, option)` in `charts.js` (owner override of the eBMS «no ECharts on
-  dashboards» rule). Steppers: always `bmsStepper()` with `variant: 'icon'`, `tone: 'amber'`, `doneTone: 'brand'` (round icons;
+  dashboards» rule). Steppers: always `bmsStepper()` with `variant: 'icon'`, `tone: 'accent'`, `doneTone: 'accent'` (round icons;
   `dark: true` on dark pages) so login, open-shift and close-shift look the same.
 - Manager pages are generated from a shared shell (head, sidebar host, header host, script tags); keep that shell
   identical when adding one. View/create pages are full pages with `data-back`, never modals.
 - Shared dialogs in `ui-components.js`: `showManagerOverride` (manager PIN on the cashier's screen), `showPinConfirm`,
   `showReasonPicker`, `showOptionDialog`, `showFormDialog` (short inputs with validate + live preview), plus the inherited
   `showToast` / `showCustomConfirm` (`hideCancel` for one button) / `showReasonPrompt`.
+- List memory (`ui-components.js`): a list page saves its tab / filters / search with `saveListState(key, …)` (only
+  after it restored them; guard with a `listReady` flag, because custom selects fire `onchange` at init) and restores
+  them with `loadListState(key)`; a URL parameter from a dashboard link wins. View pages call `markRecordViewed(id)`;
+  the list calls `flashViewedRow()` after rendering to scroll to and highlight that `data-row-id` row. Date ranges use
+  `dateRangeSnapshot()` / `restoreDateRange()` (`portal.js`). `kpiCard(label, value, sub, tone, href)` links to the
+  list behind the figure.
+- Pagination (`ui-components.js`): any list that grows over time uses `pagerSlice(key, rows, { size, render, sig })`
+  and puts `pg.html` in a `data-pager="key"` box under the table (25 rows; receipts 20, audit 50, detail lists 15).
+  `sig` is the filter string (use `dateRangeKey()` for date ranges); the page is remembered per tab only after the
+  user changes page, and resets when the filters change. Small fixed lists (staff, payroll, dashboards) are not paged.
 
 ## Data
 
@@ -118,6 +129,37 @@ old eBMS layout; the rules apply as-is. Condensed:
 | Money summary | subtotal → down payment → special discount → VAT 10% → grand total. Dual currency USD/KHR. |
 | Printing | Receipts print to 80mm thermal, the Z-report to A4, via `@media print`. |
 | Em dash | Don't put «—» between Khmer phrases; a lone «—» as an empty-value marker is fine. |
+| Colour | One accent: blue (`primary` #2563EB, Tailwind `blue-*`) for primary buttons, active tabs, links, chart series. Green / amber / red only for status, and only on exceptions: normal or finished states (in stock, approved, confirmed, reviewed, payment method, roles, categories) are slate. No indigo, cyan, sky, teal or purple. `kpiCard()` ignores non-warning tones. |
+| Theme | Light by default (`bms_theme` unset). The login, cashier terminal and open-shift are authored dark and get their light look from the `html:not(.dark)` layer in their `<style>` (login: only `.login-dark` parts); never put a `:hover` selector inside `:is()` there (it raises specificity and beats the white-text restore). Sidebar is never collapsible. |
+
+## UX/UI rules (for AI working on this repo)
+
+This is a product for shop staff (cashiers, supervisors, owners), not a developer tool. Every change must make their
+work faster, clearer or safer. Apply these on every page you add or touch:
+
+**Look: simple, neutral, professional**
+- White panels, thin slate borders, slate text. One accent colour (blue) for the primary action, the active tab and
+  links. Nothing decorative: no gradients, glows, tinted cards, coloured icon boxes or coloured left borders.
+- Colour carries meaning only. Red = error / loss / destructive, amber = needs attention / pending, green = live or
+  positive change. Highlight exceptions only; a normal row (in stock, approved, paid in cash) stays slate.
+- Figures are slate-800; colour a number only when it needs attention. Categories (payment method, role, movement
+  type) are plain text or slate chips, never colour-coded.
+- Compact and dense: table rows about 52px, no repeated intro text under the header subtitle, one ⋮ menu per row with a
+  borderless icon button.
+
+**Behaviour: designed for staff, not developers**
+- Plain Khmer words staff use at the counter. No IDs, codes, internal statuses or debug detail unless staff act on them.
+- Every screen answers "what do I do next": one obvious primary button, the next step named on it, a clear result
+  after the action (toast, highlighted row, updated count).
+- Show every state: empty (with the next action), loading, done, error with how to fix it. Never a blank area.
+- Prevent mistakes before warning about them: sensible defaults, disabled buttons with the reason shown, confirmation
+  only for actions that cannot be undone, a reason for void / reject.
+- Fewest taps on the cashier screen: 48px touch targets, keyboard shortcuts shown on the buttons, focus back on the
+  barcode field after every dialog.
+- Keep context: return to the same tab, filter and scroll after viewing a record; a dashboard item opens the filtered
+  list behind it.
+- Light theme is the default; dark mode must still work. Check pages at desktop and phone width, in both themes,
+  before calling a UI change done.
 
 ## `custom.css` traps
 

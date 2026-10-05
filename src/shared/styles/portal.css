@@ -181,7 +181,7 @@
     font-weight: 500 !important;
 }
 
-/* ===== របារចំហៀងកំណែទី 2 (បង្រួមបាន) =====
+/* ===== របារចំហៀងកំណែទី 2 =====
    ធាតុ .sb-* ប្រើតែក្នុងរបារចំហៀងដែលបើក sidebarV2 ប៉ុណ្ណោះ */
 
 #portalSidebar {
@@ -206,77 +206,6 @@
     white-space: normal !important;
     line-height: 1.35 !important;
     word-break: break-word !important;
-}
-
-#portalSidebar.is-collapsed {
-    width: 72px !important;
-    min-width: 72px !important;
-}
-
-#portalSidebar.is-collapsed .sb-brand {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    justify-content: center !important;
-}
-
-#portalSidebar.is-collapsed .sb-switcher {
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 44px !important;
-    height: 44px !important;
-    justify-content: center !important;
-}
-
-#portalSidebar.is-collapsed .sb-brand-text,
-#portalSidebar.is-collapsed .sb-label,
-#portalSidebar.is-collapsed .sb-sub,
-#portalSidebar.is-collapsed .sb-group,
-#portalSidebar.is-collapsed .sb-muted,
-#portalSidebar.is-collapsed #sbStatus,
-#portalSidebar.is-collapsed .user-meta {
-    display: none !important;
-}
-
-#portalSidebar.is-collapsed .sb-nav-item {
-    justify-content: center !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    width: 44px !important;
-    height: 44px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    border-radius: 12px !important;
-}
-
-#portalSidebar.is-collapsed .sb-icon {
-    font-size: 20px !important;
-    margin: 0 !important;
-}
-
-#portalSidebar.is-collapsed .sb-count {
-    position: absolute !important;
-    top: 6px !important;
-    right: 6px !important;
-    min-width: 8px !important;
-    width: 8px !important;
-    height: 8px !important;
-    padding: 0 !important;
-    border-radius: 9999px !important;
-    font-size: 0 !important;
-}
-
-#portalSidebar.is-collapsed .sb-user {
-    justify-content: center !important;
-    padding: 0 !important;
-    width: 44px !important;
-    height: 44px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-}
-
-#portalSidebar.is-collapsed nav {
-    padding-left: 8px !important;
-    padding-right: 8px !important;
 }
 
 /*
@@ -358,39 +287,19 @@
 }
 
 
-/* ===== របារចំហៀង៖ ពណ៌តាមតួនាទី និងរចនាសម្ព័ន្ធជួរ =====
-   តួនាទីនីមួយៗកំណត់តែអថេរ --sb-* ប៉ុណ្ណោះ ផ្នែកផ្សេងៗនៃរបារចំហៀងអានពីអថេរទាំងនោះ
-   អ្នកគិតលុយ = ខៀវដែន + ខៀវមេឃ · អ្នកគ្រប់គ្រង = ខៀវឆ្លុះ + ឆ្លុះ · ម្ចាស់ហាង = បៃតងស្រល់ + មរកត
-   ផ្ទៃស្ងប់ មិនឆ្អែតពណ៌ ពណ៌តួនាទីបង្ហាញលើធាតុសកម្ម ស្លាកស្ថានភាព និងម៉ឺនុយលេចចេញ */
+/* ===== របារចំហៀង៖ ពណ៌តែមួយសម្រាប់គ្រប់តួនាទី =====
+   ផ្ទៃប្រផេះងងឹតអព្យាក្រឹត និងពណ៌ខៀវតែមួយលើធាតុសកម្ម ដូច្នេះតួនាទីទាំងបីមើលទៅជាផលិតផលតែមួយ
+   តួនាទីបង្ហាញដោយស្លាកក្រោមឈ្មោះម៉ាក មិនមែនដោយពណ៌របារចំហៀងទេ */
 #portalSidebar {
-    --sb-bg: #0f1d32;
-    --sb-menu-bg: #0a1526;
+    --sb-bg: #111827;
+    --sb-menu-bg: #0b111d;
     --sb-line: rgba(255, 255, 255, .07);
-    --sb-accent: #38bdf8;
-    --sb-accent-icon: #7dd3fc;
-    --sb-accent-text: #bae6fd;
-    --sb-active-bg: rgba(56, 189, 248, .14);
+    --sb-accent: #60a5fa;
+    --sb-accent-icon: #93c5fd;
+    --sb-accent-text: #bfdbfe;
+    --sb-active-bg: rgba(255, 255, 255, .08);
 }
-#managerPortal #portalSidebar {
-    --sb-bg: #1a1e3a;
-    --sb-menu-bg: #12152b;
-    --sb-accent: #818cf8;
-    --sb-accent-icon: #a5b4fc;
-    --sb-accent-text: #c7d2fe;
-    --sb-active-bg: rgba(129, 140, 248, .17);
-}
-#adminPortal #portalSidebar {
-    --sb-bg: #10261f;
-    --sb-menu-bg: #0a1b16;
-    --sb-accent: #34d399;
-    --sb-accent-icon: #6ee7b7;
-    --sb-accent-text: #a7f3d0;
-    --sb-active-bg: rgba(52, 211, 153, .14);
-}
-/* ទម្រង់ងងឹត៖ ផ្ទៃជ្រៅជាងបន្តិច ហើយបន្ទាត់ព្រំដែនច្បាស់ជាង ដើម្បីបំបែកពីផ្ទៃទំព័រងងឹត */
-html.dark #portalSidebar { --sb-bg: #0b1626; --sb-menu-bg: #08111e; --sb-line: rgba(255, 255, 255, .09); }
-html.dark #managerPortal #portalSidebar { --sb-bg: #141831; --sb-menu-bg: #0e1124; }
-html.dark #adminPortal #portalSidebar { --sb-bg: #0b1e19; --sb-menu-bg: #071511; }
+html.dark #portalSidebar { --sb-bg: #0b111d; --sb-menu-bg: #070c15; --sb-line: rgba(255, 255, 255, .09); }
 
 /* custom.css បង្ខំ <aside> ទាំងអស់ទៅពណ៌បៃតង ដោយ !important */
 aside#portalSidebar,
@@ -448,7 +357,8 @@ html.dark aside#portalSidebar {
     display: inline-flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, .12); color: rgba(255, 255, 255, .9);
 }
 #portalSidebar .sb-count.hidden { display: none; }
-#portalSidebar .sb-count-warn { background: #f59e0b; color: #1c1917; }
+#portalSidebar .sb-count-warn { background: rgba(255, 255, 255, .12); color: #fff; }
+#portalSidebar .sb-count-urgent { background: #dc2626; color: #fff; }
 
 /* ម៉ឺនុយលេចចេញ (ប្តូរទិដ្ឋភាព · គណនី) ប្រើពណ៌ផ្ទៃរបស់តួនាទីដដែល */
 .sb-menu { background: var(--sb-menu-bg); }
@@ -456,7 +366,23 @@ html.dark aside#portalSidebar {
 .sb-menu .sb-menu-item { font-size: 14.5px; color: rgba(255, 255, 255, .84); }
 .sb-menu button.sb-menu-item:hover { background: rgba(255, 255, 255, .07); color: #fff; }
 
-/* ទូរស័ព្ទ និងថេប្លេត៖ ថតរបារចំហៀងមានប៊ូតុងបិទ (×) រួចហើយ ប៊ូតុងបង្រួមស្ទួនគ្នា ហើយច្របាច់ឈ្មោះម៉ាក */
-@media (max-width: 1023px) {
-    #portalSidebar .sb-collapse-btn { display: none !important; }
+
+/* ជួរដែលទើបមើល ឬទើបកែ — បន្លិចពណ៌ខៀវស្រាល រួចរសាត់បាត់ (flashViewedRow) */
+@keyframes rowFlash { 0%, 40% { background-color: rgb(219 234 254); } 100% { background-color: transparent; } }
+.row-flash, .row-flash > td { animation: rowFlash 2.2s ease-out; }
+html.dark .row-flash, html.dark .row-flash > td { animation-name: rowFlashDark; }
+@keyframes rowFlashDark { 0%, 40% { background-color: rgba(59, 130, 246, .22); } 100% { background-color: transparent; } }
+
+
+/* ===== អក្សររងលើផ្ទៃភ្លឺ៖ កម្រិតពន្លឺអាចអានបាន =====
+   text-slate-400 / text-gray-400 លើផ្ទៃពណ៌សមានកម្រិតពន្លឺត្រឹម 2.5:1 ពិបាកអាននៅបញ្ជរ។
+   លើទំព័រភ្លឺ ប្តូរទៅ slate-500 (4.8:1)។ របារចំហៀង ម៉ឺនុយរបស់វា និងទំព័រងងឹត (ចូលប្រើ បើកវេន ផ្ទាំងគិតលុយ)
+   មិនប៉ះពាល់ទេ ព្រោះពណ៌នេះត្រឹមត្រូវលើផ្ទៃងងឹត។ */
+html:not(.dark) body:is(#managerPortal, #adminPortal, .bg-slate-50) :is(.text-slate-400, .text-gray-400):not(#portalSidebar *, .sb-menu *),
+html:not(.dark) #loginPortal .bg-white :is(.text-slate-400, .text-gray-400) {
+    color: #64748b !important;
+}
+/* តួលេខសូន្យ និងសញ្ញា «—» ដែលបន្ថយពន្លឺដោយចេតនា (slate-300) នៅតែស្រាល តែអាចមើលឃើញ */
+html:not(.dark) body:is(#managerPortal, #adminPortal, .bg-slate-50) .text-slate-300:not(#portalSidebar *, .sb-menu *) {
+    color: #94a3b8 !important;
 }

@@ -4,9 +4,10 @@
    ក្រាហ្វប្តូរទំហំតាមប្រអប់ដោយស្វ័យប្រវត្តិ ហើយគូរជា SVG ដូច្នេះបោះពុម្ពបានច្បាស់។ */
 
 const CHART_FONT = "'Kantumruy Pro', sans-serif";
+/* ស៊េរីទិន្នន័យប្រើពណ៌ខៀវចម្បងតែមួយ (accent) ជាមួយប្រផេះ · លឿង និងក្រហមសម្រាប់តែការព្រមាន */
 const CHART_TONE = {
-    emerald: '#059669', emeraldSoft: '#a7f3d0', indigo: '#4f46e5', indigoSoft: '#c7d2fe',
-    slate: '#94a3b8', amber: '#f59e0b', rose: '#e11d48', cyan: '#0891b2'
+    accent: '#2563eb', accentSoft: '#bfdbfe', accentStrong: '#1d4ed8',
+    slate: '#94a3b8', amber: '#f59e0b', rose: '#e11d48'
 };
 
 function chartIsDark() {

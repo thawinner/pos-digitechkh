@@ -15,7 +15,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -33,9 +33,8 @@
              data-subtitle="កាលវិភាគ និងប្រវត្តិនៃការរាប់ស្តុកជាក់ស្តែង"></div>
         <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
             <div class="w-full space-y-5">
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                    <p class="sm-card-sub text-slate-500">ការរាប់ស្តុកជាក់ស្តែងដោយមិនបង្ហាញចំនួនក្នុងប្រព័ន្ធ ដើម្បីធានាភាពសុក្រឹត្យ</p>
-                    <a href="create-count.html" class="sm-value h-11 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold inline-flex items-center gap-2 shadow-sm transition"><i class="fas fa-clipboard-check"></i> ចាប់ផ្តើមរាប់ស្តុកថ្មី</a>
+                <div class="flex flex-wrap items-center justify-end gap-3">
+                    <a href="create-count.html" class="sm-value h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2 shadow-sm transition"><i class="fas fa-clipboard-check"></i> ចាប់ផ្តើមរាប់ស្តុកថ្មី</a>
                 </div>
 
                 <div id="kpiRow" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
@@ -54,13 +53,13 @@
                         <table class="w-full text-left">
                             <thead class="bg-slate-50 text-slate-500 border-b border-slate-100">
                                 <tr>
-                                    <th class="sm-th py-3.5 px-4">កាលបរិច្ឆេទ</th>
-                                    <th class="sm-th py-3.5 px-4">លេខសម្គាល់វគ្គ</th>
-                                    <th class="sm-th py-3.5 px-4">រាប់ដោយ</th>
-                                    <th class="sm-th py-3.5 px-4 text-center">មុខទំនិញរាប់</th>
-                                    <th class="sm-th py-3.5 px-4 text-center">ភាពខុសគ្នា</th>
-                                    <th class="sm-th py-3.5 px-4 text-right">តម្លៃខុសគ្នាសរុប</th>
-                                    <th class="sm-th py-3.5 px-4 text-center w-28">សកម្មភាព</th>
+                                    <th class="sm-th py-2.5 px-4">កាលបរិច្ឆេទ</th>
+                                    <th class="sm-th py-2.5 px-4">លេខសម្គាល់វគ្គ</th>
+                                    <th class="sm-th py-2.5 px-4">រាប់ដោយ</th>
+                                    <th class="sm-th py-2.5 px-4 text-center">មុខទំនិញរាប់</th>
+                                    <th class="sm-th py-2.5 px-4 text-center">ភាពខុសគ្នា</th>
+                                    <th class="sm-th py-2.5 px-4 text-right">តម្លៃខុសគ្នាសរុប</th>
+                                    <th class="sm-th py-2.5 px-4 text-center w-28">សកម្មភាព</th>
                                 </tr>
                             </thead>
                             <tbody id="rows" class="divide-y divide-slate-100 text-slate-700"></tbody>
@@ -95,7 +94,7 @@
                     </div>
                     <div class="bg-slate-50 rounded-xl p-2.5">
                         <p class="text-xs text-slate-400">តម្លៃខុសគ្នាសរុប</p>
-                        <p id="modalDiffUSD" class="sm-value font-bold text-indigo-700 mt-0.5">$0.00</p>
+                        <p id="modalDiffUSD" class="sm-value font-bold text-blue-700 mt-0.5">$0.00</p>
                     </div>
                 </div>
                 <div class="flex-1 overflow-y-auto p-4">
@@ -167,7 +166,7 @@
                 banner = `
                 <div class="bg-white border border-slate-200/80 rounded-2xl p-4 flex items-center justify-between gap-3 shadow-sm">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0">
+                        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
                             <i class="fas fa-calendar-check text-lg"></i>
                         </div>
                         <div>
@@ -224,24 +223,24 @@
 
                 return `
                 <tr class="hover:bg-slate-50 transition">
-                    <td class="py-3 px-4 sm-td sm-figure">
+                    <td class="py-2.5 px-4 sm-td sm-figure">
                         <span class="block font-medium text-slate-800">${fmtDate(s.at)}</span>
                         <span class="text-xs text-slate-400">${fmtTime(s.at)}</span>
                     </td>
-                    <td class="py-3 px-4 font-mono sm-td text-indigo-700 font-semibold">${s.id}</td>
-                    <td class="py-3 px-4 sm-td">${personChip(s.by)}</td>
-                    <td class="py-3 px-4 text-center sm-td sm-figure font-medium">${lines.length} មុខ</td>
-                    <td class="py-3 px-4 text-center">
+                    <td class="py-2.5 px-4 font-mono sm-td text-blue-700 font-semibold">${s.id}</td>
+                    <td class="py-2.5 px-4 sm-td">${personChip(s.by)}</td>
+                    <td class="py-2.5 px-4 text-center sm-td sm-figure font-medium">${lines.length} មុខ</td>
+                    <td class="py-2.5 px-4 text-center">
                         ${hasDiff
                             ? `<span class="sm-badge px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-semibold">${diffLines.length} មុខខុសគ្នា</span>`
                             : `<span class="sm-badge px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold">ត្រូវ 100%</span>`}
                     </td>
-                    <td class="py-3 px-4 text-right sm-td sm-figure font-semibold ${totalDiffUSD ? 'text-rose-600' : 'text-slate-500'}">
+                    <td class="py-2.5 px-4 text-right sm-td sm-figure font-semibold ${totalDiffUSD ? 'text-rose-600' : 'text-slate-500'}">
                         ${fmtUSD(totalDiffUSD)}
                     </td>
-                    <td class="py-3 px-4 text-center">
+                    <td class="py-2.5 px-4 text-center">
                         <button onclick="openDetailModal('${s.id}')" type="button" class="sm-badge px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs inline-flex items-center gap-1.5 transition">
-                            <i class="fas fa-eye text-xs text-indigo-600"></i> លម្អិត
+                            <i class="fas fa-eye text-xs text-blue-600"></i> លម្អិត
                         </button>
                     </td>
                 </tr>`;
@@ -259,7 +258,7 @@
                 return `
                 <div class="p-4 space-y-2.5">
                     <div class="flex items-center justify-between gap-2">
-                        <span class="font-mono text-xs font-semibold text-indigo-700">${s.id}</span>
+                        <span class="font-mono text-xs font-semibold text-blue-700">${s.id}</span>
                         <span class="text-xs text-slate-400">${fmtDate(s.at)} ${fmtTime(s.at)}</span>
                     </div>
                     <div class="flex items-center justify-between">

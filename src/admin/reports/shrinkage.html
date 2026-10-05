@@ -15,7 +15,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#059669", 'primary-dark': "#047857", accent: "#34d399" },
+                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -104,7 +104,7 @@
             document.getElementById('viewTabs').innerHTML = VIEWS.map(v => {
                 const on = currentView === v.id;
                 return `<button type="button" onclick="currentView='${v.id}'; renderTabs(); renderAll()"
-                    class="sm-badge h-9 px-3.5 rounded-xl transition ${on ? 'bg-emerald-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">${v.label}</button>`;
+                    class="sm-badge h-9 px-3.5 rounded-xl transition ${on ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">${v.label}</button>`;
             }).join('');
         }
 
@@ -179,11 +179,11 @@
                 tbody.innerHTML = stats.byReason.map(r => {
                     const pct = stats.totalValue > 0 ? (r.value / stats.totalValue * 100) : 0;
                     return `<tr>
-                        <td class="py-3 px-5 sm-td font-medium text-slate-800">${escapeText(r.label)}</td>
-                        <td class="py-3 px-3 text-right sm-td sm-figure text-slate-600">${r.count} ករណី</td>
-                        <td class="py-3 px-3 text-right sm-td sm-figure text-slate-700 font-medium">${r.qty}</td>
-                        <td class="py-3 px-3 text-right sm-td-strong sm-figure text-rose-600">${fmtUSD(r.value)}</td>
-                        <td class="py-3 px-5">
+                        <td class="py-2.5 px-5 sm-td font-medium text-slate-800">${escapeText(r.label)}</td>
+                        <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-600">${r.count} ករណី</td>
+                        <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-700 font-medium">${r.qty}</td>
+                        <td class="py-2.5 px-3 text-right sm-td-strong sm-figure text-rose-600">${fmtUSD(r.value)}</td>
+                        <td class="py-2.5 px-5">
                             <div class="flex items-center gap-2.5">
                                 <div class="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
                                     <div class="h-full bg-rose-500 rounded-full" style="width:${Math.min(pct, 100)}%"></div>
@@ -195,11 +195,11 @@
                 }).join('');
 
                 tfoot.innerHTML = `<tr>
-                    <td class="py-3 px-5 text-slate-800">សរុបទាំងអស់</td>
-                    <td class="py-3 px-3 text-right text-slate-800">${stats.eventsCount} ករណី</td>
-                    <td class="py-3 px-3 text-right text-slate-800">${stats.totalQty}</td>
-                    <td class="py-3 px-3 text-right text-rose-600 sm-figure">${fmtUSD(stats.totalValue)}</td>
-                    <td class="py-3 px-5 text-slate-600 sm-figure">100.0%</td>
+                    <td class="py-2.5 px-5 text-slate-800">សរុបទាំងអស់</td>
+                    <td class="py-2.5 px-3 text-right text-slate-800">${stats.eventsCount} ករណី</td>
+                    <td class="py-2.5 px-3 text-right text-slate-800">${stats.totalQty}</td>
+                    <td class="py-2.5 px-3 text-right text-rose-600 sm-figure">${fmtUSD(stats.totalValue)}</td>
+                    <td class="py-2.5 px-5 text-slate-600 sm-figure">100.0%</td>
                 </tr>`;
 
             } else if (currentView === 'staff') {
@@ -217,11 +217,11 @@
                 tbody.innerHTML = stats.byStaff.map(s => {
                     const pct = stats.totalValue > 0 ? (s.value / stats.totalValue * 100) : 0;
                     return `<tr>
-                        <td class="py-3 px-5 sm-td font-medium text-slate-800">${escapeText(s.label)}</td>
-                        <td class="py-3 px-3 text-right sm-td sm-figure text-slate-600">${s.count} ករណី</td>
-                        <td class="py-3 px-3 text-right sm-td sm-figure text-slate-700 font-medium">${s.qty}</td>
-                        <td class="py-3 px-3 text-right sm-td-strong sm-figure text-rose-600">${fmtUSD(s.value)}</td>
-                        <td class="py-3 px-5">
+                        <td class="py-2.5 px-5 sm-td font-medium text-slate-800">${escapeText(s.label)}</td>
+                        <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-600">${s.count} ករណី</td>
+                        <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-700 font-medium">${s.qty}</td>
+                        <td class="py-2.5 px-3 text-right sm-td-strong sm-figure text-rose-600">${fmtUSD(s.value)}</td>
+                        <td class="py-2.5 px-5">
                             <div class="flex items-center gap-2.5">
                                 <div class="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
                                     <div class="h-full bg-rose-500 rounded-full" style="width:${Math.min(pct, 100)}%"></div>
@@ -233,11 +233,11 @@
                 }).join('');
 
                 tfoot.innerHTML = `<tr>
-                    <td class="py-3 px-5 text-slate-800">សរុបទាំងអស់</td>
-                    <td class="py-3 px-3 text-right text-slate-800">${stats.eventsCount} ករណី</td>
-                    <td class="py-3 px-3 text-right text-slate-800">${stats.totalQty}</td>
-                    <td class="py-3 px-3 text-right text-rose-600 sm-figure">${fmtUSD(stats.totalValue)}</td>
-                    <td class="py-3 px-5 text-slate-600 sm-figure">100.0%</td>
+                    <td class="py-2.5 px-5 text-slate-800">សរុបទាំងអស់</td>
+                    <td class="py-2.5 px-3 text-right text-slate-800">${stats.eventsCount} ករណី</td>
+                    <td class="py-2.5 px-3 text-right text-slate-800">${stats.totalQty}</td>
+                    <td class="py-2.5 px-3 text-right text-rose-600 sm-figure">${fmtUSD(stats.totalValue)}</td>
+                    <td class="py-2.5 px-5 text-slate-600 sm-figure">100.0%</td>
                 </tr>`;
 
             } else if (currentView === 'product') {
@@ -255,11 +255,11 @@
                 tbody.innerHTML = stats.byProduct.map(p => {
                     const pct = stats.totalValue > 0 ? (p.value / stats.totalValue * 100) : 0;
                     return `<tr>
-                        <td class="py-3 px-5 sm-td font-medium text-slate-800">${escapeText(p.name)} <span class="sm-td-sub text-slate-400 font-mono ml-1">${p.sku}</span></td>
-                        <td class="py-3 px-3 text-right sm-td sm-figure text-slate-600">${p.count} ករណី</td>
-                        <td class="py-3 px-3 text-right sm-td sm-figure text-slate-700 font-medium">${p.qty} ${p.unit}</td>
-                        <td class="py-3 px-3 text-right sm-td-strong sm-figure text-rose-600">${fmtUSD(p.value)}</td>
-                        <td class="py-3 px-5">
+                        <td class="py-2.5 px-5 sm-td font-medium text-slate-800">${escapeText(p.name)} <span class="sm-td-sub text-slate-400 font-mono ml-1">${p.sku}</span></td>
+                        <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-600">${p.count} ករណី</td>
+                        <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-700 font-medium">${p.qty} ${p.unit}</td>
+                        <td class="py-2.5 px-3 text-right sm-td-strong sm-figure text-rose-600">${fmtUSD(p.value)}</td>
+                        <td class="py-2.5 px-5">
                             <div class="flex items-center gap-2.5">
                                 <div class="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
                                     <div class="h-full bg-rose-500 rounded-full" style="width:${Math.min(pct, 100)}%"></div>
@@ -271,11 +271,11 @@
                 }).join('');
 
                 tfoot.innerHTML = `<tr>
-                    <td class="py-3 px-5 text-slate-800">សរុបមុខទំនិញ (${stats.byProduct.length})</td>
-                    <td class="py-3 px-3 text-right text-slate-800">${stats.eventsCount} ករណី</td>
-                    <td class="py-3 px-3 text-right text-slate-800">${stats.totalQty}</td>
-                    <td class="py-3 px-3 text-right text-rose-600 sm-figure">${fmtUSD(stats.totalValue)}</td>
-                    <td class="py-3 px-5 text-slate-600 sm-figure">100.0%</td>
+                    <td class="py-2.5 px-5 text-slate-800">សរុបមុខទំនិញ (${stats.byProduct.length})</td>
+                    <td class="py-2.5 px-3 text-right text-slate-800">${stats.eventsCount} ករណី</td>
+                    <td class="py-2.5 px-3 text-right text-slate-800">${stats.totalQty}</td>
+                    <td class="py-2.5 px-3 text-right text-rose-600 sm-figure">${fmtUSD(stats.totalValue)}</td>
+                    <td class="py-2.5 px-5 text-slate-600 sm-figure">100.0%</td>
                 </tr>`;
 
             } else {
@@ -295,23 +295,23 @@
                 tbody.innerHTML = stats.list.map(x => {
                     const rLabel = x.reason === 'count_shortage' ? 'ខ្វះពេលរាប់ស្តុក' : (STOCK_ADJUST_REASONS[x.reason] ? STOCK_ADJUST_REASONS[x.reason].label : x.reason);
                     return `<tr>
-                        <td class="py-3 px-5 sm-td text-slate-600 sm-figure">${fmtDate(x.at)} <span class="sm-td-sub text-slate-400 block">${fmtTime(x.at)}</span></td>
-                        <td class="py-3 px-3 sm-td font-medium text-slate-800">${escapeText(x.name)}<span class="sm-td-sub text-slate-400 font-mono block">${x.sku}</span></td>
-                        <td class="py-3 px-3"><span class="sm-badge px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-medium">${escapeText(rLabel)}</span></td>
-                        <td class="py-3 px-3 text-right sm-td sm-figure text-slate-800 font-semibold">${x.qty} ${x.unit}</td>
-                        <td class="py-3 px-3 text-right sm-td sm-figure text-slate-600">${fmtUSD(x.unitCost)}</td>
-                        <td class="py-3 px-3 text-right sm-td-strong sm-figure text-rose-600">${fmtUSD(x.costValue)}</td>
-                        <td class="py-3 px-5 sm-td text-slate-600">${personName(x.by)}</td>
+                        <td class="py-2.5 px-5 sm-td text-slate-600 sm-figure">${fmtDate(x.at)} <span class="sm-td-sub text-slate-400 block">${fmtTime(x.at)}</span></td>
+                        <td class="py-2.5 px-3 sm-td font-medium text-slate-800">${escapeText(x.name)}<span class="sm-td-sub text-slate-400 font-mono block">${x.sku}</span></td>
+                        <td class="py-2.5 px-3"><span class="sm-badge px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-medium">${escapeText(rLabel)}</span></td>
+                        <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-800 font-semibold">${x.qty} ${x.unit}</td>
+                        <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-600">${fmtUSD(x.unitCost)}</td>
+                        <td class="py-2.5 px-3 text-right sm-td-strong sm-figure text-rose-600">${fmtUSD(x.costValue)}</td>
+                        <td class="py-2.5 px-5 sm-td text-slate-600">${personName(x.by)}</td>
                     </tr>`;
                 }).join('');
 
                 tfoot.innerHTML = `<tr>
-                    <td class="py-3 px-5 text-slate-800">សរុបទាំងអស់ (${stats.list.length} ករណី)</td>
-                    <td class="py-3 px-3" colspan="2"></td>
-                    <td class="py-3 px-3 text-right text-slate-800">${stats.totalQty}</td>
-                    <td class="py-3 px-3 text-right text-slate-500">—</td>
-                    <td class="py-3 px-3 text-right text-rose-600 sm-figure">${fmtUSD(stats.totalValue)}</td>
-                    <td class="py-3 px-5"></td>
+                    <td class="py-2.5 px-5 text-slate-800">សរុបទាំងអស់ (${stats.list.length} ករណី)</td>
+                    <td class="py-2.5 px-3" colspan="2"></td>
+                    <td class="py-2.5 px-3 text-right text-slate-800">${stats.totalQty}</td>
+                    <td class="py-2.5 px-3 text-right text-slate-500">—</td>
+                    <td class="py-2.5 px-3 text-right text-rose-600 sm-figure">${fmtUSD(stats.totalValue)}</td>
+                    <td class="py-2.5 px-5"></td>
                 </tr>`;
             }
         }

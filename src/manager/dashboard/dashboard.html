@@ -15,7 +15,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#4f46e5", 'primary-dark': "#4338ca", accent: "#818cf8" },
+                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -34,52 +34,51 @@
         <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
             <div class="w-full space-y-5">
                 <div id="blockedAlertBanner"></div>
-                <div id="handoverSection"></div>
                 <div id="kpiRow" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
-                <section id="todo"></section>
-                <section id="shiftCoverageBoard" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4"></section>
+                <div id="handoverSection"></div>
 
-                <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
-                    <section class="xl:col-span-2 space-y-3">
-                        <div class="flex items-center justify-between gap-3">
-                            <h3 class="sm-card-title text-slate-700">បញ្ជរគិតលុយ</h3>
-                            <a href="../shifts/shifts.html" class="sm-badge text-indigo-700 hover:text-indigo-900 font-semibold">វេនទាំងអស់ <i class="fas fa-arrow-right text-[10px]"></i></a>
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 items-start">
+                    <section id="todo" class="xl:col-span-2"></section>
+                    <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                        <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between gap-3">
+                            <h3 class="sm-card-title text-slate-800">សំណើរង់ចាំអនុម័ត</h3>
+                            <a href="../approvals/approvals.html" class="sm-badge text-blue-700 hover:text-blue-900 font-semibold whitespace-nowrap">ទាំងអស់ <i class="fas fa-arrow-right text-[10px]"></i></a>
                         </div>
-                        <div id="registerBoard" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
-                    </section>
-                    <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col">
-                        <div class="p-4 border-b border-slate-100 flex items-center justify-between gap-2">
-                            <div>
-                                <h3 class="sm-card-title text-slate-700">សំណើរង់ចាំអនុម័ត</h3>
-                                <p class="sm-card-sub text-slate-500">ចាស់មុនគេ</p>
-                            </div>
-                            <a href="../approvals/approvals.html" class="sm-badge text-indigo-700 hover:text-indigo-900 font-semibold">ទាំងអស់ <i class="fas fa-arrow-right text-[10px]"></i></a>
-                        </div>
-                        <div id="approvalList" class="divide-y divide-slate-100 flex-1"></div>
+                        <div id="approvalList" class="divide-y divide-slate-100"></div>
                     </section>
                 </div>
 
-                <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4">
-                    <div class="flex items-center justify-between gap-3 mb-3">
-                        <h3 class="sm-card-title text-slate-700">ករណីមិនប្រក្រតីថ្ងៃនេះ</h3>
-                        <a href="../exceptions/exceptions.html" class="sm-badge text-indigo-700 hover:text-indigo-900 font-semibold">មើលលម្អិត <i class="fas fa-arrow-right text-[10px]"></i></a>
+                <section class="space-y-3">
+                    <div class="flex items-center justify-between gap-3">
+                        <h3 class="sm-card-title text-slate-800">បញ្ជរគិតលុយ</h3>
+                        <a href="../shifts/shifts.html" class="sm-badge text-blue-700 hover:text-blue-900 font-semibold whitespace-nowrap">វេនទាំងអស់ <i class="fas fa-arrow-right text-[10px]"></i></a>
                     </div>
-                    <div id="exceptionStrip" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2"></div>
+                    <div id="registerBoard" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
                 </section>
+
+                <section id="shiftCoverageBoard" class="space-y-3"></section>
 
                 <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
                     <section class="xl:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5">
-                        <h3 class="sm-card-title text-slate-700">ការលក់តាមម៉ោង</h3>
+                        <h3 class="sm-card-title text-slate-800">ការលក់តាមម៉ោង</h3>
                         <p class="sm-card-sub text-slate-500">លក់សរុប (ដុល្លារ) គ្រប់បញ្ជរ</p>
                         <div id="hourBars" class="mt-3 w-full h-[220px]"></div>
                         <p id="hourEmpty" class="hidden sm-td-sub text-slate-400 text-center mt-1">មិនទាន់មានការលក់ក្នុងថ្ងៃប្រតិបត្តិការនេះទេ</p>
                     </section>
                     <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5">
-                        <h3 class="sm-card-title text-slate-700">វិធីទូទាត់</h3>
+                        <h3 class="sm-card-title text-slate-800">វិធីទូទាត់</h3>
                         <p class="sm-card-sub text-slate-500">ចំណែកនៃការលក់ថ្ងៃនេះ</p>
-                        <div id="paySplit" class="mt-4"></div>
+                        <div id="paySplit" class="mt-5"></div>
                     </section>
                 </div>
+
+                <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between gap-3">
+                        <h3 class="sm-card-title text-slate-800">ករណីមិនប្រក្រតីថ្ងៃនេះ</h3>
+                        <a href="../exceptions/exceptions.html" class="sm-badge text-blue-700 hover:text-blue-900 font-semibold whitespace-nowrap">មើលលម្អិត <i class="fas fa-arrow-right text-[10px]"></i></a>
+                    </div>
+                    <div id="exceptionStrip" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-x divide-y lg:divide-y-0 divide-slate-100"></div>
+                </section>
             </div>
         </main>
     </div>
@@ -111,10 +110,10 @@
             const prev = aggregateSales(salesInRange({ start: yd, end: yd }).filter(cut));
             const pend = pendingApprovals().length;
             document.getElementById('kpiRow').innerHTML =
-                kpiCard('លក់សុទ្ធថ្ងៃនេះ', fmtUSD(agg.netSales), delta(agg.netSales, prev.netSales, true), 'text-emerald-600') +
-                kpiCard('វិក្កយបត្រ', `${agg.tx}`, delta(agg.tx, prev.tx)) +
-                kpiCard('មធ្យមក្នុងមួយវិក្កយបត្រ', fmtUSD(agg.avg), delta(agg.avg, prev.avg, true)) +
-                kpiCard('សំណើរង់ចាំអនុម័ត', `${pend}`, pend ? 'ត្រូវការការសម្រេចរបស់អ្នក' : 'គ្មានសំណើរង់ចាំ', pend ? 'text-amber-600' : 'text-slate-800');
+                kpiCard('លក់សុទ្ធថ្ងៃនេះ', fmtUSD(agg.netSales), delta(agg.netSales, prev.netSales, true), '', '../reports/sales-report.html') +
+                kpiCard('វិក្កយបត្រ', `${agg.tx}`, delta(agg.tx, prev.tx), '', '../reports/sales-report.html') +
+                kpiCard('មធ្យមក្នុងមួយវិក្កយបត្រ', fmtUSD(agg.avg), delta(agg.avg, prev.avg, true), '', '../reports/sales-report.html') +
+                kpiCard('សំណើរង់ចាំអនុម័ត', `${pend}`, pend ? 'ត្រូវការការសម្រេចរបស់អ្នក' : 'គ្មានសំណើរង់ចាំ', pend ? 'text-amber-600' : 'text-slate-800', '../approvals/approvals.html');
         }
 
         /* «ការងាររបស់អ្នក» — អ្វីៗដែលរង់ចាំអ្នកគ្រប់គ្រង ប្រមូលនៅកន្លែងតែមួយ ជាមួយប៊ូតុងទៅធ្វើភ្លាម */
@@ -129,7 +128,7 @@
             const review = mgrAllShifts().filter(x => x.status === 'closed');
             if (review.length) {
                 const big = review.filter(x => { const v = shiftVariance(x); return v && v.level === 'large'; }).length;
-                items.push({ icon: 'fa-signature', tone: big ? 'rose' : 'indigo', title: `វេន ${review.length} រង់ចាំត្រួតពិនិត្យ`,
+                items.push({ icon: 'fa-signature', tone: big ? 'rose' : 'slate', title: `វេន ${review.length} រង់ចាំត្រួតពិនិត្យ`,
                     note: big ? `${big} មានភាពខុសគ្នាធំ` : 'ពិនិត្យ និងចុះហត្ថលេខា',
                     href: review.length === 1 ? `../shifts/view-shift.html?id=${review[0].id}` : '../shifts/shifts.html?status=closed', cta: 'ត្រួតពិនិត្យ' });
             }
@@ -154,139 +153,113 @@
             }
             const sched = stockCountScheduleStatus();
             if (sched.isDue) {
-                items.push({ icon: 'fa-clipboard-check', tone: sched.isOverdue ? 'rose' : 'indigo',
+                items.push({ icon: 'fa-clipboard-check', tone: sched.isOverdue ? 'rose' : 'slate',
                     title: sched.isOverdue ? `រាប់ស្តុកហួសកំណត់ ${sched.overdueDays} ថ្ងៃ` : 'ដល់កាលបរិច្ឆេទរាប់ស្តុក',
                     note: `កាលវិភាគ${sched.schedule === 'monthly' ? 'ប្រចាំខែ' : 'ប្រចាំសប្តាហ៍'}`,
                     href: '../stock-count/stock-count.html', cta: 'រាប់ស្តុក' });
             }
+            // ជួរធម្មតា៖ រូបតំណាងប្រផេះ · ពណ៌ក្រហមតែលើការងារបន្ទាន់ (tone rose) ប៉ុណ្ណោះ
             document.getElementById('todo').innerHTML = `
-                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4">
-                    <div class="flex items-center justify-between gap-3 mb-3">
-                        <h3 class="sm-card-title text-slate-700">ការងាររបស់អ្នក</h3>
-                        <span class="sm-badge ${items.length ? 'text-amber-700' : 'text-emerald-700'} font-semibold">${items.length ? `${items.length} ត្រូវធ្វើ` : 'រួចរាល់ទាំងអស់'}</span>
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between gap-3">
+                        <h3 class="sm-card-title text-slate-800">ការងាររបស់អ្នក</h3>
+                        <span class="sm-badge text-slate-500">${items.length ? `${items.length} ត្រូវធ្វើ` : 'រួចរាល់ទាំងអស់'}</span>
                     </div>
-                    ${items.length ? `<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2.5">${items.map(i => `
-                        <a href="${i.href}" class="group flex items-center gap-3 pl-3 pr-3 py-2.5 rounded-lg border border-slate-200 border-l-[3px] border-l-${i.tone}-500 bg-white hover:bg-slate-50 transition">
-                            <i class="fas ${i.icon} w-4 text-center text-${i.tone}-600 flex-shrink-0"></i>
-                            <span class="min-w-0 flex-1"><span class="sm-value text-slate-800 block truncate">${i.title}</span><span class="sm-td-sub text-slate-500 block truncate">${i.note}</span></span>
-                            <span class="sm-badge text-slate-600 font-semibold flex-shrink-0 group-hover:text-slate-900 inline-flex items-center gap-1.5">${i.cta}<i class="fas fa-chevron-right text-[10px]"></i></span>
+                    ${items.length ? `<div class="divide-y divide-slate-100">${items.map(i => `
+                        <a href="${i.href}" class="group flex items-center gap-3 px-5 py-3 hover:bg-slate-50 transition">
+                            <i class="fas ${i.icon} w-4 text-center ${i.tone === 'rose' ? 'text-rose-600' : 'text-slate-400'} flex-shrink-0"></i>
+                            <span class="min-w-0 flex-1"><span class="sm-value text-slate-800 block truncate">${i.title}</span><span class="sm-td-sub ${i.tone === 'rose' ? 'text-rose-600' : 'text-slate-500'} block truncate">${i.note}</span></span>
+                            <span class="sm-badge text-slate-500 font-medium flex-shrink-0 group-hover:text-blue-700 inline-flex items-center gap-1.5">${i.cta}<i class="fas fa-chevron-right text-[10px]"></i></span>
                         </a>`).join('')}</div>`
-                    : '<p class="sm-card-sub text-slate-500 flex items-center gap-2"><i class="fas fa-circle-check text-emerald-500"></i>គ្មានអ្វីរង់ចាំអ្នកទេ · បញ្ជរទាំងអស់ដំណើរការធម្មតា</p>'}
+                    : '<p class="sm-card-sub text-slate-500 px-5 py-4">គ្មានអ្វីរង់ចាំអ្នកទេ · បញ្ជរទាំងអស់ដំណើរការធម្មតា</p>'}
                 </div>`;
         }
 
-        /* អ្នកដែលបានប្រើបញ្ជរនេះថ្ងៃនេះ តាមវេន · អ្នកគិតលុយជ្រើសបញ្ជរពេលបើកវេន ដូច្នេះមិនមានផែនការតាមបញ្ជរទេ */
-        function timelineHtml(register) {
-            const bd = businessDate();
-            const now = new Date();
-            const shifts = mgrAllShifts().filter(s => s.register === register && s.date === bd);
-            return `<div class="mt-3 pt-3 border-t border-slate-100 space-y-1.5">${shiftTemplates().map(t => {
-                const sh = shifts.filter(s => s.templateCode === t.code).sort((a, b) => b.openedAt.localeCompare(a.openedAt))[0];
-                const start = dateAt(bd, t.start);
-                // ស្ថានភាពជារូបតំណាងពណ៌ ដើម្បីទុកទីធ្លាឱ្យឈ្មោះអ្នកគិតលុយ
-                let icon = 'fa-circle text-slate-200';
-                let label = 'មិនទាន់ដល់ម៉ោង';
-                if (sh && sh.status === 'open') {
-                    const over = now > shiftEndDate(sh);
-                    icon = over ? 'fa-clock text-amber-500' : 'fa-circle-play text-emerald-500';
-                    label = over ? 'ហួសម៉ោង' : 'កំពុងបើក';
-                } else if (sh) {
-                    icon = sh.status === 'reviewed' ? 'fa-circle-check text-indigo-500' : 'fa-hourglass-half text-amber-500';
-                    label = SHIFT_STATUS[sh.status].label;
-                } else if (start < now) {
-                    icon = 'fa-minus text-slate-300';
-                    label = 'មិនបានប្រើ';
-                }
-                const who = sh && sh.cashierId;
-                return `<div class="flex items-center gap-2 min-w-0" aria-label="${t.name} · ${label}">
-                    <i class="fas ${icon} text-[12px] w-3.5 text-center flex-shrink-0"></i>
-                    <span class="text-[12px] font-semibold text-slate-600 w-[68px] flex-shrink-0 truncate">${t.name}</span>
-                    ${who ? avatarHtml(who, 'w-5 h-5') : ''}
-                    <span class="text-[12px] ${who ? 'text-slate-600' : 'text-slate-400'} truncate flex-1 min-w-0">${who ? personName(who) : label}</span>
-                </div>`;
-            }).join('')}</div>`;
+        /* ស្ថានភាពជាចំណុចពណ៌ និងអត្ថបទ (មិនមែនស្លាកពណ៌ពេញ) · បៃតង = កំពុងដំណើរការ លឿង = ត្រូវយកចិត្តទុកដាក់ ក្រហម = បញ្ហា */
+        const DOT_TONE = {
+            green: ['bg-emerald-500', 'text-slate-700'],
+            amber: ['bg-amber-500', 'text-amber-700'],
+            rose: ['bg-rose-500', 'text-rose-600'],
+            slate: ['bg-slate-300', 'text-slate-500']
+        };
+        function statusDot(label, tone) {
+            const [dot, text] = DOT_TONE[tone] || DOT_TONE.slate;
+            return `<span class="inline-flex items-center gap-1.5 sm-td ${text} whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full ${dot} flex-shrink-0"></span>${label}</span>`;
         }
 
-        function registerCard(register) {
-            const open = mgrAllShifts().find(s => s.register === register && s.status === 'open');
-            const last = mgrAllShifts().find(s => s.register === register);
-            const sh = open || last;
-            const st = posSettings();
+        function registerMenu(register, open, sh) {
             const menuId = `regMenu-${register}`;
-            let body = '';
-            if (open) {
-                const s = summaryOf(open);
-                const sales = salesOfAnyShift(open.id);
-                const lastSale = sales[0];
-                const pct = Math.min(Math.max(s.expectedUSD / st.drawerLimitUSD, s.expectedKHR / st.drawerLimitKHR) * 100, 100);
-                const over = s.expectedUSD > st.drawerLimitUSD || s.expectedKHR > st.drawerLimitKHR;
-                const held = open.generated ? 0 : heldOfShift(open.id).length;
-                const overrun = new Date() - shiftEndDate(open);
-                body = `
-                    <div class="mt-3 grid grid-cols-2 gap-2">
-                        <div><p class="sm-td-sub text-slate-400">លក់</p><p class="sm-value text-slate-800 sm-figure">${fmtUSD(s.netSales)}</p></div>
-                        <div><p class="sm-td-sub text-slate-400">វិក្កយបត្រ</p><p class="sm-value text-slate-800 sm-figure">${s.count}</p></div>
-                    </div>
-                    <div class="mt-3">
-                        <div class="flex justify-between sm-td-sub"><span class="text-slate-400">សាច់ប្រាក់ក្នុងថត</span>
-                            <span class="sm-figure ${over ? 'text-rose-600 font-semibold' : 'text-slate-600'}">${fmtUSD(s.expectedUSD)} · ${fmtKHR(s.expectedKHR)}</span></div>
-                        <div class="h-2 rounded-full bg-slate-100 mt-1 overflow-hidden"><div class="h-full rounded-full ${over ? 'bg-rose-500' : pct > 75 ? 'bg-amber-400' : 'bg-indigo-500'}" style="width:${pct}%"></div></div>
-                        ${over ? '<p class="sm-td-sub text-rose-600 mt-1"><i class="fas fa-vault mr-1"></i>ត្រូវផ្ទេរចូលទូដែក</p>' : ''}
-                    </div>
-                    <p class="sm-td-sub text-slate-500 mt-2">${lastSale ? `លក់ចុងក្រោយ ${fmtDuration(new Date() - new Date(lastSale.time))}មុន` : 'មិនទាន់មានការលក់'}${held ? ` · ព្យួរ ${held}` : ''}${s.pendingDrops ? ` · ផ្ទេររង់ចាំ ${s.pendingDrops}` : ''}</p>
-                    ${overrun > 0 ? `<p class="sm-td-sub text-amber-700 mt-1"><i class="fas fa-clock mr-1"></i>ហួសម៉ោងវេន ${fmtDuration(overrun)}</p>` : ''}`;
-            } else if (last) {
-                const v = shiftVariance(last);
-                body = `<p class="sm-td-sub text-slate-500 mt-3">វេនចុងក្រោយ ${last.templateName} · ${fmtDate(last.openedAt)} · ${personName(last.cashierId)}</p>
-                    ${v ? `<p class="sm-td-sub mt-1 ${v.level === 'large' ? 'text-rose-600' : v.level === 'small' ? 'text-amber-700' : 'text-emerald-700'}">${DIRECTION_LABEL[v.direction]} ${fmtUSD(v.abs)}</p>` : ''}`;
-            }
-            const status = open ? SHIFT_STATUS.open : { label: 'មិនទាន់បើក', cls: 'bg-white text-slate-500 border-slate-200' };
-            return `
-                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 min-w-0">
-                    <div class="flex items-start justify-between gap-2">
-                        <div class="min-w-0">
-                            <p class="sm-card-title text-slate-800">${register}</p>
-                            <div class="mt-1">${statusChip(status)}</div>
-                        </div>
-                        <div class="relative">
-                            <button onclick="toggleRowActionMenu(event, '${menuId}')" type="button" aria-label="សកម្មភាព"
-                                class="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200/70 inline-flex items-center justify-center">
-                                <i class="fas fa-ellipsis-vertical text-sm"></i></button>
-                            <div id="${menuId}" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 text-left">
-                                ${sh ? `<a href="../shifts/view-shift.html?id=${sh.id}" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50"><i class="fas fa-eye w-5 text-slate-500"></i>${open ? 'មើលរបាយការណ៍ពាក់កណ្តាលវេន' : 'មើលវេនចុងក្រោយ'}</a>` : ''}
-                                ${open ? '' : `<button type="button" onclick="location.href='../cash/create-movement.html?type=float&register=${register}'" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 text-left"><i class="fas fa-hand-holding-dollar w-5 text-sky-600"></i>ចេញប្រាក់បាតថត</button>`}
-                                ${open ? `<button type="button" onclick="location.href='../cash/create-movement.html?type=payout&register=${register}'" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 text-left"><i class="fas fa-money-bill-transfer w-5 text-rose-600"></i>ដកប្រាក់ចំណាយ</button>` : ''}
-                            </div>
-                        </div>
-                    </div>
-                    ${open ? `<div class="mt-3">${personChip(open.cashierId)}<p class="sm-td-sub text-slate-400 mt-1">${open.templateName} · បើកម៉ោង ${fmtTime(open.openedAt)}</p></div>` : ''}
-                    ${body}
-                    ${open
-                        ? `<a href="../shifts/view-shift.html?id=${open.id}" class="mt-3 w-full sm-badge h-10 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold inline-flex items-center justify-center gap-2"><i class="fas fa-chart-simple"></i> របាយការណ៍ពាក់កណ្តាលវេន</a>`
-                        : `<button type="button" onclick="location.href='../cash/create-movement.html?type=float&register=${register}'" class="mt-3 w-full sm-badge h-10 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 font-semibold inline-flex items-center justify-center gap-2"><i class="fas fa-hand-holding-dollar"></i> ចេញប្រាក់បាតថតសម្រាប់វេនបន្ទាប់</button>`}
-                    ${timelineHtml(register)}
-                </div>`;
+            const item = (onclick, icon, label) => `<button type="button" onclick="${onclick}" class="sm-row-menu-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-700 hover:bg-slate-50 text-left"><i class="fas ${icon} w-4 text-center text-slate-400"></i>${label}</button>`;
+            return `<div class="relative inline-block">
+                <button onclick="toggleRowActionMenu(event, '${menuId}')" type="button" aria-label="សកម្មភាព"
+                    class="w-9 h-9 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 inline-flex items-center justify-center"><i class="fas fa-ellipsis-vertical text-sm"></i></button>
+                <div id="${menuId}" class="hidden bg-white rounded-xl shadow-2xl border border-slate-200 p-1.5 text-left">
+                    ${sh ? item(`location.href='../shifts/view-shift.html?id=${sh.id}'`, 'fa-eye', open ? 'របាយការណ៍ពាក់កណ្តាលវេន' : 'មើលវេនចុងក្រោយ') : ''}
+                    ${open ? item(`location.href='../cash/create-movement.html?type=payout&register=${register}'`, 'fa-money-bill-transfer', 'ដកប្រាក់ចំណាយ')
+                           : item(`location.href='../cash/create-movement.html?type=float&register=${register}'`, 'fa-hand-holding-dollar', 'ចេញប្រាក់បាតថត')}
+                </div>
+            </div>`;
         }
 
+        /* បញ្ជរគិតលុយ — កាតមួយក្នុងមួយបញ្ជរ · ផ្ទៃសាមញ្ញ តួលេខជាស្លាក/តម្លៃ គ្មានប្រអប់ក្នុងប្រអប់ */
         function renderRegisters() {
-            document.getElementById('registerBoard').innerHTML = REGISTERS.map(registerCard).join('');
+            const st = posSettings();
+            const now = new Date();
+            const stat = (label, value, cls) => `<div><p class="sm-td-sub text-slate-500">${label}</p><p class="sm-td-strong sm-figure ${cls || 'text-slate-800'}">${value}</p></div>`;
+            document.getElementById('registerBoard').innerHTML = REGISTERS.map(register => {
+                const open = mgrAllShifts().find(s => s.register === register && s.status === 'open');
+                const last = mgrAllShifts().find(s => s.register === register);
+                const sh = open || last;
+                let status, body, footer;
+                if (open) {
+                    const s = summaryOf(open);
+                    const lastSale = salesOfAnyShift(open.id)[0];
+                    const over = s.expectedUSD > st.drawerLimitUSD || s.expectedKHR > st.drawerLimitKHR;
+                    const overrun = now - shiftEndDate(open);
+                    const held = open.generated ? 0 : heldOfShift(open.id).length;
+                    status = overrun > 0 ? statusDot(`ហួសម៉ោង ${fmtDuration(overrun)}`, 'amber') : statusDot('កំពុងបើក', 'green');
+                    body = `
+                        <div class="flex items-center gap-2.5 mt-4">${avatarHtml(open.cashierId, 'w-8 h-8')}<div class="min-w-0"><p class="sm-td text-slate-800 truncate">${personName(open.cashierId)}</p><p class="sm-td-sub text-slate-500">${open.templateName} · បើកម៉ោង ${fmtTime(open.openedAt)}</p></div></div>
+                        <div class="grid grid-cols-2 gap-x-4 gap-y-3 mt-4 pt-4 border-t border-slate-100">
+                            ${stat('លក់', fmtUSD(s.netSales))}
+                            ${stat('វិក្កយបត្រ', s.count)}
+                            ${stat('សាច់ប្រាក់ក្នុងថត', `${fmtUSD(s.expectedUSD)} · ${fmtKHR(s.expectedKHR)}`, over ? 'text-rose-600' : '')}
+                            ${stat('លក់ចុងក្រោយ', lastSale ? `${fmtDuration(now - new Date(lastSale.time))}មុន` : '—')}
+                        </div>
+                        ${over || held ? `<p class="sm-td-sub mt-3 ${over ? 'text-rose-600' : 'text-amber-700'}">${[over ? 'លើសកំណត់ថត · ត្រូវផ្ទេរចូលទូដែក' : '', held ? `ការលក់ព្យួរ ${held}` : ''].filter(Boolean).join(' · ')}</p>` : ''}`;
+                    footer = `<a href="../shifts/view-shift.html?id=${open.id}" class="sm-badge h-9 w-full rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium inline-flex items-center justify-center">របាយការណ៍ពាក់កណ្តាលវេន</a>`;
+                } else {
+                    const v = last && shiftVariance(last);
+                    status = statusDot('មិនទាន់បើក', 'slate');
+                    body = `<p class="sm-td text-slate-500 mt-4">${last ? `វេនចុងក្រោយ ${last.templateName} · ${personName(last.cashierId)}` : 'មិនទាន់មានវេន'}</p>
+                        ${last ? `<p class="sm-td-sub text-slate-500">${fmtDate(last.openedAt)}${v ? ` · <span class="${v.level === 'large' ? 'text-rose-600' : v.level === 'small' ? 'text-amber-700' : ''}">${DIRECTION_LABEL[v.direction]} ${fmtUSD(v.abs)}</span>` : ''}</p>` : ''}`;
+                    footer = `<button type="button" onclick="location.href='../cash/create-movement.html?type=float&register=${register}'" class="sm-badge h-9 w-full rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium inline-flex items-center justify-center">ចេញប្រាក់បាតថតសម្រាប់វេនបន្ទាប់</button>`;
+                }
+                return `<div data-row-id="${register}" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 flex flex-col min-w-0">
+                    <div class="flex items-start justify-between gap-2">
+                        <div><p class="sm-card-title text-slate-800">${register}</p><div class="mt-0.5">${status}</div></div>
+                        ${registerMenu(register, open, sh)}
+                    </div>
+                    <div class="flex-1">${body}</div>
+                    <div class="mt-5">${footer}</div>
+                </div>`;
+            }).join('');
         }
 
         function renderApprovals() {
             const list = pendingApprovals().slice(0, 6);
             const host = document.getElementById('approvalList');
             if (!list.length) {
-                host.innerHTML = emptyState('fa-circle-check', 'គ្មានសំណើរង់ចាំ', 'សំណើលុបចោល និងប្រគល់ទំនិញវិញពីបញ្ជរនឹងបង្ហាញនៅទីនេះ');
+                host.innerHTML = '<p class="sm-card-sub text-slate-500 px-5 py-4">គ្មានសំណើរង់ចាំ</p>';
                 return;
             }
             host.innerHTML = list.map(a => {
                 const age = new Date() - new Date(a.raisedAt);
                 const t = APPROVAL_TYPE[a.type];
-                return `<a href="../approvals/view-request.html?id=${a.id}" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50">
-                    <span class="w-10 h-10 rounded-xl bg-${t.tone}-50 text-${t.tone}-600 flex items-center justify-center flex-shrink-0"><i class="fas ${t.icon}"></i></span>
+                return `<a href="../approvals/view-request.html?id=${a.id}" class="flex items-start gap-3 px-5 py-3 hover:bg-slate-50">
                     <span class="min-w-0 flex-1">
-                        <span class="sm-value text-slate-700 block truncate">${t.label} · ${fmtUSD(a.amount)}</span>
-                        <span class="sm-td-sub text-slate-400 block truncate">${a.saleId} · ${personName(a.cashierId)} · ${a.register}</span>
+                        <span class="sm-value text-slate-800 block truncate">${t.label} · <span class="sm-figure">${fmtUSD(a.amount)}</span></span>
+                        <span class="sm-td-sub text-slate-500 block truncate">${personName(a.cashierId)} · ${a.register} · ${a.saleId}</span>
                     </span>
                     <span class="sm-td-sub sm-figure flex-shrink-0 ${age > 10 * 60000 ? 'text-rose-600 font-semibold' : 'text-slate-500'}">${fmtDuration(age)}</span>
                 </a>`;
@@ -296,18 +269,18 @@
         function renderExceptions() {
             const { rows } = exceptionStats(mgrToday());
             const sum = k => rows.reduce((n, r) => n + r[k], 0);
-            const item = (label, value, icon, filter) => `
-                <a href="../exceptions/exceptions.html${filter ? '?type=' + filter : ''}" class="rounded-xl border ${value ? 'border-amber-200 bg-amber-50/60' : 'border-slate-200 bg-slate-50/50'} px-3 py-2.5 hover:border-indigo-300 transition">
-                    <p class="sm-td-sub text-slate-500 truncate"><i class="fas ${icon} mr-1"></i>${label}</p>
-                    <p class="sm-value sm-figure ${value ? 'text-amber-700' : 'text-slate-400'}">${value}</p>
+            const item = (label, value, filter) => `
+                <a href="../exceptions/exceptions.html${filter ? '?type=' + filter : ''}" class="px-5 py-3.5 hover:bg-slate-50 transition">
+                    <p class="sm-td-sub text-slate-500 truncate">${label}</p>
+                    <p class="sm-card-title sm-figure ${value ? 'text-amber-700' : 'text-slate-400'}">${value}</p>
                 </a>`;
             document.getElementById('exceptionStrip').innerHTML =
-                item('លុបចោល', sum('voids'), 'fa-ban', 'voids') +
-                item('ប្រគល់វិញ', sum('returns'), 'fa-rotate-left', 'returns') +
-                item('បញ្ចុះលើសកំណត់', sum('overrides'), 'fa-tag', 'overrides') +
-                item('ដកទំនិញមុនទូទាត់', sum('lineRemovals'), 'fa-minus', 'lineRemovals') +
-                item('លេខសម្ងាត់ខុស', sum('wrongPins'), 'fa-key', 'wrongPins') +
-                item('ភាពខុសគ្នាធំ', sum('largeVariances'), 'fa-scale-unbalanced', '');
+                item('លុបចោល', sum('voids'), 'voids') +
+                item('ប្រគល់វិញ', sum('returns'), 'returns') +
+                item('បញ្ចុះលើសកំណត់', sum('overrides'), 'overrides') +
+                item('ដកទំនិញមុនទូទាត់', sum('lineRemovals'), 'lineRemovals') +
+                item('លេខសម្ងាត់ខុស', sum('wrongPins'), 'wrongPins') +
+                item('ភាពខុសគ្នាធំ', sum('largeVariances'), '');
         }
 
         function renderHours() {
@@ -333,44 +306,37 @@
                         const h = keys[ps[0].dataIndex];
                         const n = sales.filter(s => new Date(s.time).getHours() === h).length;
                         return chartTipTitle(`${pad2(h)}:00 – ${pad2((h + 1) % 24)}:00`) +
-                            chartTipRow(CHART_TONE.indigo, 'លក់សរុប', fmtUSD(hours[h])) +
+                            chartTipRow(CHART_TONE.accent, 'លក់សរុប', fmtUSD(hours[h])) +
                             chartTipRow('#94a3b8', 'វិក្កយបត្រ', n);
                     }
                 },
                 series: [{
                     type: 'bar', barMaxWidth: 26,
                     itemStyle: { borderRadius: [4, 4, 0, 0] },
-                    data: keys.map(h => ({ value: +hours[h].toFixed(2), itemStyle: { color: h === nowH ? CHART_TONE.indigo : CHART_TONE.indigoSoft } }))
+                    data: keys.map(h => ({ value: +hours[h].toFixed(2), itemStyle: { color: h === nowH ? CHART_TONE.accentStrong : CHART_TONE.accent } }))
                 }]
             });
         }
 
+        /* ចំណែកវិធីទូទាត់ — របារជង់មួយ និងបញ្ជី (ពណ៌ខៀវកម្រិតផ្សេងៗ មិនមែនពណ៌ចម្រុះ) */
         function renderPaySplit() {
             const a = aggregateSales(salesInRange(mgrToday()));
             const total = a.usdCash + a.khrCashUSD + a.khqr;
             const parts = [
-                { label: 'សាច់ប្រាក់ដុល្លារ', v: a.usdCash, cls: 'bg-emerald-500', color: '#10b981' },
-                { label: 'សាច់ប្រាក់រៀល', v: a.khrCashUSD, cls: 'bg-amber-400', color: '#fbbf24' },
-                { label: 'ស្កេនកូដបាគង', v: a.khqr, cls: 'bg-cyan-500', color: '#06b6d4' }
+                { label: 'សាច់ប្រាក់ដុល្លារ', v: a.usdCash, color: '#1d4ed8' },
+                { label: 'សាច់ប្រាក់រៀល', v: a.khrCashUSD, color: '#60a5fa' },
+                { label: 'ស្កេនកូដបាគង', v: a.khqr, color: '#bfdbfe' }
             ];
             document.getElementById('paySplit').innerHTML = total ? `
-                <div id="payDonut" class="w-full h-[150px]"></div>
-                <div class="mt-3 space-y-2.5">${parts.map(p => `
-                    <div class="flex items-center gap-3">
-                        <span class="w-3 h-3 rounded ${p.cls} flex-shrink-0"></span>
+                <div class="flex h-2.5 rounded-full overflow-hidden bg-slate-100">${parts.map(p => `<span style="width:${p.v / total * 100}%;background:${p.color}"></span>`).join('')}</div>
+                <div class="mt-4 divide-y divide-slate-100">${parts.map(p => `
+                    <div class="flex items-center gap-3 py-2.5">
+                        <span class="w-2.5 h-2.5 rounded-sm flex-shrink-0" style="background:${p.color}"></span>
                         <span class="sm-td text-slate-600 flex-1">${p.label}</span>
-                        <span class="sm-value text-slate-800 sm-figure">${fmtUSD(p.v)}</span>
-                        <span class="sm-td-sub text-slate-400 sm-figure w-12 text-right">${Math.round(p.v / total * 100)}%</span>
+                        <span class="sm-td-strong text-slate-800 sm-figure">${fmtUSD(p.v)}</span>
+                        <span class="sm-td-sub text-slate-500 sm-figure w-10 text-right">${Math.round(p.v / total * 100)}%</span>
                     </div>`).join('')}</div>`
                 : '<p class="sm-td-sub text-slate-400 py-6 text-center">មិនទាន់មានការលក់</p>';
-            if (total) posChart('payDonut', {
-                tooltip: { trigger: 'item', formatter: p => chartTipTitle(p.name) + chartTipRow(p.color, fmtUSD(p.value), Math.round(p.percent) + '%') },
-                series: [{
-                    type: 'pie', radius: ['58%', '88%'], avoidLabelOverlap: true, label: { show: false },
-                    itemStyle: { borderColor: (typeof chartIsDark === 'function' && chartIsDark()) ? '#0f172a' : '#fff', borderWidth: 2 },
-                    data: parts.map(p => ({ name: p.label, value: +p.v.toFixed(2), itemStyle: { color: p.color } }))
-                }]
-            });
         }
 
         function renderBlockedBanner() {
@@ -389,19 +355,9 @@
             const tName = t ? t.name : 'វេន';
             const reason = d.reason === 'over_12h' ? 'លើសកំណត់ច្បាប់ 12 ម៉ោងក្នុងមួយថ្ងៃ' : (d.reason || 'បញ្ហាកាលវិភាគ');
             host.innerHTML = `
-                <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 flex flex-wrap items-center justify-between gap-3 shadow-sm">
-                    <div class="flex items-center gap-3 min-w-0">
-                        <div class="w-10 h-10 rounded-xl bg-rose-500 text-white flex items-center justify-center text-lg flex-shrink-0">
-                            <i class="fas fa-triangle-exclamation"></i>
-                        </div>
-                        <div class="min-w-0">
-                            <h4 class="font-bold text-rose-950 text-sm">វេនត្រូវបានរារាំងមិនអាចបើក</h4>
-                            <p class="text-xs text-rose-800">អ្នកគិតលុយ <strong class="font-semibold text-rose-900">${cashier}</strong> មិនអាចបើក <strong class="font-semibold text-rose-900">${tName}</strong> បានទេ ដោយសារ ${reason}</p>
-                        </div>
-                    </div>
-                    <a href="../roster/roster.html?template=${d.templateCode || ''}" class="h-9 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold inline-flex items-center gap-1.5 transition shadow-sm">
-                        <i class="fas fa-user-plus"></i> រកអ្នកជំនួស
-                    </a>
+                <div class="px-5 py-3.5 rounded-2xl bg-rose-50 border border-rose-200 flex flex-wrap items-center justify-between gap-3">
+                    <p class="sm-td text-rose-800 min-w-0"><i class="fas fa-triangle-exclamation text-rose-600 mr-2"></i><strong class="font-semibold">${tName} មិនអាចបើកបាន</strong> · ${cashier} · ${reason}</p>
+                    <a href="../roster/roster.html?template=${d.templateCode || ''}" class="sm-badge h-9 px-4 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold inline-flex items-center gap-1.5 transition">រកអ្នកជំនួស</a>
                 </div>`;
         }
 
@@ -437,83 +393,57 @@
             const floatsReady = REGISTERS.filter(r => pendingFloatFor(r)).length;
             const st = posSettings();
 
+            const ready = Math.min(floatsReady, incomingRoster.length);
             host.innerHTML = `
-                <div class="bg-white rounded-2xl border border-cyan-200/90 shadow-sm p-5 space-y-4 border-l-4 border-l-cyan-600">
-                    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
-                        <div class="flex items-center gap-2.5">
-                            <span class="w-8 h-8 rounded-lg bg-cyan-100 text-cyan-700 flex items-center justify-center font-bold text-sm">
-                                <i class="fas fa-handshake"></i>
-                            </span>
-                            <div>
-                                <h3 class="sm-card-title text-slate-800">ប្តូរវេន · ${handoverT.name} ➔ ${nextT ? nextT.name : ''}</h3>
-                                <p class="sm-card-sub text-slate-500">ម៉ោងប្តូរវេន ${handoverT.end}</p>
-                            </div>
+                <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between gap-3 flex-wrap">
+                        <div>
+                            <h3 class="sm-card-title text-slate-800">ប្តូរវេន · ${handoverT.name} → ${nextT ? nextT.name : ''}</h3>
+                            <p class="sm-card-sub text-slate-500">ម៉ោងប្តូរវេន ${handoverT.end}</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <a href="../shifts/shifts.html" class="h-8 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold inline-flex items-center gap-1 transition">
-                                <i class="fas fa-lock text-[10px]"></i> មើលការបិទវេន
-                            </a>
-                            <a href="../cash/cash.html" class="h-8 px-3 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold inline-flex items-center gap-1 transition">
-                                <i class="fas fa-vault text-[10px]"></i> ពិនិត្យការផ្ទេរចូលទូដែក
-                            </a>
+                            <a href="../shifts/shifts.html" class="sm-badge h-9 px-3.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium inline-flex items-center">មើលការបិទវេន</a>
+                            <a href="../cash/cash.html" class="sm-badge h-9 px-3.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium inline-flex items-center">ពិនិត្យការផ្ទេរចូលទូដែក</a>
                         </div>
                     </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <!-- Outgoing -->
-                        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3">
-                            <p class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
-                                <i class="fas fa-arrow-right-from-bracket text-amber-500"></i> អ្នកចេញវេន (${handoverT.name})
-                            </p>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 lg:divide-x divide-y lg:divide-y-0 divide-slate-100">
+                        <div>
+                            <p class="sm-td-sub font-semibold text-slate-500 px-5 pt-3 pb-1">ចេញវេន · ${handoverT.name}</p>
                             ${outgoingShifts.length ? outgoingShifts.map(sh => {
                                 const s = summaryOf(sh);
                                 const drops = movementsOfShift(sh.id).filter(m => m.type === 'drop' && m.status === 'pending').length;
                                 const held = heldOfShift(sh.id).length;
                                 const overLimit = s.expectedUSD > st.drawerLimitUSD || s.expectedKHR > st.drawerLimitKHR;
-                                return `<div class="p-3 bg-white rounded-xl border border-slate-200/70 space-y-1.5">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-2">
-                                            ${avatarHtml(sh.cashierId, 'w-6 h-6')}
-                                            <span class="sm-value text-slate-800">${personName(sh.cashierId)}</span>
-                                            <span class="text-xs text-slate-400">· ${sh.register}</span>
-                                        </div>
-                                        <span class="sm-value text-emerald-600 sm-figure">${fmtUSD(s.gross)}</span>
+                                const notes = [overLimit ? '<span class="text-rose-600">លើសកំណត់ថត</span>' : '', drops ? `<span class="text-amber-700">${drops} ផ្ទេររង់ចាំ</span>` : '', held ? `<span class="text-amber-700">${held} ការលក់ព្យួរ</span>` : ''].filter(Boolean).join(' · ');
+                                return `<div class="flex items-center gap-3 px-5 py-3">
+                                    ${avatarHtml(sh.cashierId, 'w-8 h-8')}
+                                    <div class="min-w-0 flex-1">
+                                        <p class="sm-td text-slate-800">${personName(sh.cashierId)} <span class="text-slate-500">· ${sh.register}</span></p>
+                                        <p class="sm-td-sub text-slate-500 sm-figure">ក្នុងថត ${fmtUSD(s.expectedUSD)} · ${fmtKHR(s.expectedKHR)}${notes ? ' · ' + notes : ''}</p>
                                     </div>
-                                    <div class="flex flex-wrap items-center gap-2 text-xs text-slate-600">
-                                        <span>ក្នុងថត៖ ${fmtUSD(s.expectedUSD)} · ${fmtKHR(s.expectedKHR)}</span>
-                                        ${overLimit ? '<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-semibold">លើសកំណត់ថត</span>' : ''}
-                                        ${drops ? `<span class="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800 font-semibold">${drops} ផ្ទេររង់ចាំ</span>` : ''}
-                                        ${held ? `<span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 font-semibold">${held} ការលក់ព្យួរ</span>` : ''}
-                                    </div>
+                                    <span class="sm-td-strong text-slate-800 sm-figure">${fmtUSD(s.gross)}</span>
                                 </div>`;
-                            }).join('') : '<p class="text-xs text-slate-400 italic">មិនមានអ្នកគិតលុយកំពុងបើកវេននេះទេ</p>'}
+                            }).join('') : '<p class="sm-td-sub text-slate-500 px-5 py-3">មិនមានអ្នកគិតលុយកំពុងបើកវេននេះទេ</p>'}
                         </div>
-
-                        <!-- Incoming -->
-                        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3">
-                            <p class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
-                                <i class="fas fa-arrow-right-to-bracket text-emerald-500"></i> អ្នកចូលវេន (${nextT ? nextT.name : ''})
-                                ${incomingRoster.length ? `<span class="ml-auto normal-case tracking-normal text-[11px] px-2 py-0.5 rounded-lg font-semibold ${floatsReady >= incomingRoster.length ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">បាតថតត្រៀម ${Math.min(floatsReady, incomingRoster.length)}/${incomingRoster.length}</span>` : ''}
+                        <div>
+                            <p class="sm-td-sub font-semibold text-slate-500 px-5 pt-3 pb-1 flex items-center justify-between gap-2">
+                                <span>ចូលវេន · ${nextT ? nextT.name : ''}</span>
+                                ${incomingRoster.length ? `<span class="font-medium ${ready >= incomingRoster.length ? 'text-slate-500' : 'text-amber-700'}">បាតថតត្រៀម ${ready}/${incomingRoster.length}</span>` : ''}
                             </p>
                             ${incomingRoster.length ? incomingRoster.map(a => {
                                 const opened = mgrAllShifts().find(s => s.date === nextDate && s.templateCode === nextT.code && s.cashierId === a.cashierId);
-                                return `<div class="p-3 bg-white rounded-xl border border-slate-200/70 flex items-center justify-between gap-2">
-                                    <div class="flex items-center gap-2">
-                                        ${avatarHtml(a.cashierId, 'w-6 h-6')}
-                                        <div>
-                                            <p class="sm-value text-slate-800 leading-tight">${personName(a.cashierId)}</p>
-                                            <p class="text-[11px] text-slate-400 sm-figure">ចូលម៉ោង ${a.from || nextT.start}${a.pin && a.register ? ` · ភ្ជាប់ ${a.register}` : ''}</p>
-                                        </div>
+                                return `<div class="flex items-center gap-3 px-5 py-3">
+                                    ${avatarHtml(a.cashierId, 'w-8 h-8')}
+                                    <div class="min-w-0 flex-1">
+                                        <p class="sm-td text-slate-800">${personName(a.cashierId)}</p>
+                                        <p class="sm-td-sub text-slate-500 sm-figure">ចូលម៉ោង ${a.from || nextT.start}${a.pin && a.register ? ` · ភ្ជាប់ ${a.register}` : ''}</p>
                                     </div>
-                                    <div>
-                                        ${opened ? `<span class="text-xs px-2 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-semibold inline-flex items-center gap-1"><i class="fas fa-check text-[10px]"></i> បានបើក ${opened.register}</span>`
-                                            : '<span class="text-xs px-2 py-1 rounded-lg bg-slate-100 text-slate-600 font-semibold">មិនទាន់បើក</span>'}
-                                    </div>
+                                    ${opened ? statusDot(`បានបើក ${opened.register}`, 'green') : statusDot('មិនទាន់បើក', 'slate')}
                                 </div>`;
-                            }).join('') : '<p class="text-xs text-rose-500 italic">មិនទាន់មានអ្នកចាត់តាំងក្នុងកាលវិភាគវេនបន្ទាប់ទេ</p>'}
+                            }).join('') : '<p class="sm-td-sub text-rose-600 px-5 py-3">មិនទាន់មានអ្នកចាត់តាំងក្នុងកាលវិភាគវេនបន្ទាប់ទេ</p>'}
                         </div>
                     </div>
-                </div>`;
+                </section>`;
         }
 
         function renderCoverageBoard() {
@@ -614,83 +544,41 @@
 
             const coveredCount = templateData.filter(d => d.isCovered).length;
             const totalCount = templateData.length;
-            const allCovered = coveredCount === totalCount;
+            const tone = t => /យឺត/.test(t) ? 'rose' : /មិនបានបើក|ជំនួសវេន/.test(t) ? 'amber' : t === 'កំពុងធ្វើការ' ? 'green' : 'slate';
+            const cards = templateData.map(d => {
+                const { t, crew, isCovered, isCurrent, isPast, floatBadge } = d;
+                const phase = !isCovered ? statusDot('គ្មានអ្នកគិតលុយ', 'rose') : isCurrent ? statusDot('ឥឡូវនេះ', 'green') : isPast ? statusDot('បានបញ្ចប់', 'slate') : statusDot('មិនទាន់ដល់', 'slate');
+                const floatNote = floatBadge ? (floatBadge.includes('មិនទាន់') ? '<p class="sm-td-sub text-amber-700 mt-2">មិនទាន់ចេញបាតថត</p>' : '<p class="sm-td-sub text-slate-500 mt-2">បាតថតត្រៀមរួច</p>') : '';
+                const people = crew.length ? crew.slice().sort((x, y) => (x.register || 'ZZ').localeCompare(y.register || 'ZZ')).map(c => `
+                    <div class="flex items-center gap-2.5 py-2.5">
+                        ${avatarHtml(c.cashierId, 'w-8 h-8')}
+                        <div class="min-w-0 flex-1">
+                            <p class="sm-td text-slate-800 truncate">${personName(c.cashierId)}${c.cover ? ' <span class="sm-td-sub text-amber-700">· ជំនួស</span>' : ''}</p>
+                            ${c.seat ? `<p class="sm-td-sub text-slate-500 sm-figure">${c.seat}</p>` : ''}
+                        </div>
+                        <div class="text-right flex-shrink-0">${statusDot(c.statusText, tone(c.statusText))}${c.willExceed12 ? '<p class="sm-td-sub text-rose-600">នឹងលើស 12 ម៉ោង</p>' : ''}</div>
+                    </div>`).join('')
+                    : '<p class="sm-td text-rose-600 py-2.5">គ្មានអ្នកគិតលុយក្នុងវេននេះ</p>';
+                return `<div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 flex flex-col min-w-0">
+                    <div class="flex items-start justify-between gap-2">
+                        <div><p class="sm-card-title text-slate-800">${t.name}</p><p class="sm-td-sub text-slate-500 sm-figure">${t.start}–${t.end} · ${templateHours(t)} ម៉ោង</p></div>
+                        ${phase}
+                    </div>
+                    <div class="mt-3 border-t border-slate-100 divide-y divide-slate-100 flex-1">${people}</div>
+                    ${floatNote}
+                    ${isPast ? '' : `<div class="mt-3 pt-3 border-t border-slate-100 flex justify-end"><a href="../roster/roster.html?template=${t.code}" class="sm-badge font-semibold ${isCovered ? 'text-blue-700 hover:text-blue-900' : 'text-rose-700 hover:text-rose-900'}">${isCovered ? 'កែកាលវិភាគ' : 'រកអ្នកជំនួស'}</a></div>`}
+                </div>`;
+            }).join('');
 
             host.innerHTML = `
-                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                <div class="flex items-center justify-between gap-3">
                     <div>
-                        <div class="flex items-center gap-2">
-                            <h3 class="sm-card-title text-slate-800">វេនថ្ងៃនេះ</h3>
-                            ${allCovered
-                                ? '<span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold inline-flex items-center gap-1"><i class="fas fa-circle-check text-[10px]"></i> គ្រប់វេនមានបុគ្គលិក</span>'
-                                : `<span class="text-xs px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-semibold inline-flex items-center gap-1"><i class="fas fa-triangle-exclamation text-[10px]"></i> ខ្វះ ${totalCount - coveredCount} វេន</span>`}
-                        </div>
-                        <p class="sm-card-sub text-slate-500 mt-0.5">អ្នកដែលធ្វើការជាក់ស្តែង ធៀបនឹងកាលវិភាគ · ${coveredCount}/${totalCount} វេនមានអ្នកគិតលុយ</p>
+                        <h3 class="sm-card-title text-slate-800">វេនថ្ងៃនេះ</h3>
+                        <p class="sm-card-sub ${coveredCount === totalCount ? 'text-slate-500' : 'text-rose-600'}">${coveredCount === totalCount ? `គ្រប់ ${totalCount} វេនមានអ្នកគិតលុយ` : `ខ្វះអ្នកគិតលុយ ${totalCount - coveredCount} វេន`}</p>
                     </div>
-                    <a href="../roster/roster.html" class="sm-badge px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition inline-flex items-center gap-1.5">
-                        <i class="fas fa-calendar-week"></i> មើលកាលវិភាគវេន <i class="fas fa-arrow-right text-[10px]"></i>
-                    </a>
+                    <a href="../roster/roster.html" class="sm-badge text-blue-700 hover:text-blue-900 font-semibold whitespace-nowrap">កាលវិភាគវេន <i class="fas fa-arrow-right text-[10px]"></i></a>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-${Math.min(templates.length, 4)} gap-4">
-                    ${templateData.map(d => {
-                        const { t, crew, isCovered, isCurrent, isPast, isFuture, floatBadge } = d;
-
-                        // បង្ហាញតែអ្នកដែលមានក្នុងវេន · បញ្ជរទំនេរមិនមែនជាបញ្ហា ព្រោះវេនមួយត្រូវការយ៉ាងតិច 1 នាក់
-                        const registersListHtml = crew.length ? crew.slice().sort((x, y) => (x.register || 'ZZ').localeCompare(y.register || 'ZZ')).map(assigned => `
-                                    <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/70 flex items-center justify-between gap-2.5">
-                                        <div class="flex items-center gap-2.5 min-w-0">
-                                            ${avatarHtml(assigned.cashierId, 'w-8 h-8')}
-                                            <div class="min-w-0">
-                                                <div class="flex items-center gap-1.5">
-                                                    <p class="sm-td text-slate-800 truncate">${personName(assigned.cashierId)}</p>
-                                                    ${assigned.cover ? '<span class="text-[11px] px-1.5 rounded bg-amber-100 text-amber-800 font-medium flex-shrink-0">ជំនួស</span>' : ''}
-                                                </div>
-                                                ${assigned.seat ? `<p class="text-[12px] text-slate-400 font-medium sm-figure">${assigned.seat}</p>` : ''}
-                                            </div>
-                                        </div>
-                                        <div class="flex flex-col items-end gap-1 flex-shrink-0">
-                                            <span class="text-[11px] px-2 py-0.5 rounded-full border ${assigned.statusTone} font-medium whitespace-nowrap">${assigned.statusText}</span>
-                                            ${assigned.willExceed12 ? '<span class="text-[11px] px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 font-semibold whitespace-nowrap">នឹងលើស 12 ម៉ោង</span>' : ''}
-                                        </div>
-                                    </div>`).join('')
-                            : `<div class="p-3 rounded-xl border border-dashed border-rose-300 bg-rose-50/50 flex items-center gap-2 text-rose-700">
-                                    <i class="fas fa-user-xmark text-rose-500 text-[12px]"></i>
-                                    <span class="sm-td-sub font-medium">គ្មានអ្នកគិតលុយក្នុងវេននេះ</span>
-                               </div>`;
-
-
-                        return `
-                        <div class="p-4 rounded-2xl border ${!isCovered ? 'border-rose-300 bg-rose-50/20 shadow-sm ring-1 ring-rose-200' : isCurrent ? 'border-cyan-400 bg-cyan-50/20 shadow-sm' : 'border-slate-200 bg-white shadow-sm'} flex flex-col justify-between space-y-3">
-                            <div class="space-y-3">
-                                <div class="flex items-start justify-between gap-2">
-                                    <div>
-                                        <div class="flex items-center gap-1.5">
-                                            <h4 class="font-bold text-slate-800 text-sm">${t.name}</h4>
-                                            ${isCurrent ? '<span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>' : ''}
-                                        </div>
-                                        <p class="text-xs text-slate-400 sm-figure">${t.start}–${t.end} · ${templateHours(t)} ម៉ោង</p>
-                                    </div>
-                                    <div class="text-right flex flex-col items-end gap-1">
-                                        <span class="text-xs font-semibold ${!isCovered ? 'text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full inline-flex items-center gap-1' : isCurrent ? 'text-cyan-700 bg-cyan-100/70 px-2 py-0.5 rounded-full' : isPast ? 'text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full' : 'text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full'}">
-                                            ${!isCovered ? '<i class="fas fa-triangle-exclamation text-[10px]"></i>ខ្វះអ្នកគិតលុយ' : isCurrent ? 'កំពុងដំណើរការ' : isPast ? 'បានបញ្ចប់' : 'មិនទាន់ដល់'}
-                                        </span>
-                                        ${floatBadge}
-                                    </div>
-                                </div>
-
-                                <div class="space-y-2 pt-2 border-t border-slate-100">
-                                    ${registersListHtml}
-                                </div>
-                            </div>
-
-                            <div class="pt-2 border-t ${!isCovered ? 'border-rose-200' : 'border-slate-100'} flex items-center justify-between gap-2 text-xs">
-                                <span class="text-[12px] ${isCovered ? 'text-slate-500' : 'text-rose-600 font-semibold'} font-medium">${crew.length}/${REGISTERS.length} នាក់</span>
-                                ${isPast ? '' : `<a href="../roster/roster.html?template=${t.code}" class="font-semibold ${isCovered ? 'text-indigo-600 hover:text-indigo-800' : 'text-rose-700 hover:text-rose-900'} inline-flex items-center gap-1 transition">
-                                    <i class="fas ${crew.length >= REGISTERS.length ? 'fa-pen' : 'fa-user-plus'} text-[11px]"></i> ${!isCovered ? 'រកអ្នកជំនួស' : crew.length >= REGISTERS.length ? 'កែកាលវិភាគ' : 'បន្ថែមអ្នក'}</a>`}
-                            </div>
-                        </div>`;
-                    }).join('')}
-                </div>`;
+                <div class="grid grid-cols-1 md:grid-cols-${Math.min(templateData.length, 3)} gap-4">${cards}</div>`;
         }
 
         function renderAll() {

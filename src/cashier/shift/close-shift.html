@@ -14,7 +14,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#0891b2", 'primary-dark': "#0e7490", accent: "#22d3ee" },
+                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -36,7 +36,7 @@
         }
     </style>
 </head>
-<body id="posPortal" data-role-root="../.." data-active="close-shift" class="bg-teal-50/40 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+<body id="posPortal" data-role-root="../.." data-active="close-shift" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
 
     <div id="sidebarHost"></div>
 
@@ -52,9 +52,9 @@
 
                 <!-- ជំហានទី 1 — ព័ត៌មានប្រព័ន្ធ -->
                 <section id="step-1" class="space-y-5">
-                    <div class="p-4 rounded-2xl bg-sky-50 border border-sky-200 flex items-start gap-3">
-                        <i class="fas fa-circle-info text-sky-600 mt-0.5 flex-shrink-0"></i>
-                        <p class="sm-card-sub text-sky-900">
+                    <div class="p-4 rounded-2xl bg-blue-50 border border-blue-200 flex items-start gap-3">
+                        <i class="fas fa-circle-info text-blue-600 mt-0.5 flex-shrink-0"></i>
+                        <p class="sm-card-sub text-blue-900">
                             ការរាប់បិទភ្នែក៖ ប្រព័ន្ធមិនបង្ហាញសាច់ប្រាក់ដែលរំពឹងទុកក្នុងថតទេ រហូតដល់លោកអ្នករាប់រួច។ ពិនិត្យតែព័ត៌មានខាងក្រោម រួចបន្តទៅរាប់។
                         </p>
                     </div>
@@ -79,7 +79,7 @@
                                 <p class="sm-card-sub text-slate-500">បញ្ចូលចំនួនសន្លឹកជាក់ស្តែងក្នុងថតប្រាក់</p>
                             </div>
                             <div id="usdNotes" class="p-5 space-y-3"></div>
-                            <div class="px-5 py-4 bg-teal-50/60 border-t border-slate-100 flex items-center justify-between">
+                            <div class="px-5 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
                                 <span class="sm-card-title text-slate-700">សរុបរាប់បានជាដុល្លារ</span>
                                 <span id="usdCounted" class="sm-kpi-value text-slate-800 sm-figure"></span>
                             </div>
@@ -95,7 +95,7 @@
                                     class="sm-badge px-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition flex-shrink-0"></button>
                             </div>
                             <div id="khrNotes" class="p-5 space-y-3"></div>
-                            <div id="khrFoot" class="px-5 py-4 bg-teal-50/60 border-t border-slate-100 flex items-center justify-between">
+                            <div id="khrFoot" class="px-5 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
                                 <span class="sm-card-title text-slate-700">សរុបរាប់បានជារៀល</span>
                                 <span id="khrCounted" class="sm-kpi-value text-slate-800 sm-figure"></span>
                             </div>
@@ -128,7 +128,7 @@
 
                         <label class="flex items-start gap-3 cursor-pointer">
                             <input id="confirmCheck" type="checkbox" onchange="renderStep4()"
-                                class="!min-h-0 w-5 h-5 mt-0.5 rounded border-slate-300 text-teal-600 focus:ring-teal-500 flex-shrink-0">
+                                class="!min-h-0 w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 flex-shrink-0">
                             <span class="sm-td text-slate-700">
                                 ខ្ញុំបញ្ជាក់ថាការរាប់សាច់ប្រាក់ខាងលើត្រឹមត្រូវ ហើយខ្ញុំព្រមបិទវេននេះ។
                             </span>
@@ -159,7 +159,7 @@
                                 <i class="fas fa-receipt"></i> មើលវិក្កយបត្រវេន
                             </a>
                             <span id="closePrimaryAction" class="inline-flex items-center gap-2">
-                                <a href="open-shift.html" class="pos-tap sm-badge px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition inline-flex items-center gap-2">
+                                <a href="open-shift.html" class="pos-tap sm-badge px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition inline-flex items-center gap-2">
                                     <i class="fas fa-play"></i> បើកវេនថ្មី
                                 </a>
                             </span>
@@ -214,8 +214,8 @@
                 steps: STEPS,
                 current: step,
                 variant: 'icon',
-                tone: 'amber',
-                doneTone: 'brand',
+                tone: 'accent',
+                doneTone: 'accent',
                 onStep: n => goStep(n)
             });
         }
@@ -332,7 +332,7 @@
             const right = step < 4
                 ? `<button onclick="nextStep()" type="button" ${ready ? '' : 'disabled aria-disabled="true"'}
                       class="sm-value h-12 px-6 rounded-xl font-semibold transition inline-flex items-center gap-2 flex-shrink-0 ${ready
-                          ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-sm' : off}">
+                          ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm' : off}">
                        ${STEPS[step].label} <i class="fas fa-arrow-right"></i>
                    </button>`
                 : `<button onclick="closeShift()" type="button" ${ready ? '' : 'disabled aria-disabled="true"'}
@@ -379,7 +379,7 @@
             const over = new Date() - shiftEndDate(sh);
             document.getElementById('systemCards').innerHTML =
                 metricCard('ចំនួនវិក្កយបត្រ', `${s.count}`, 'text-slate-800', `${s.qty} ឯកតាទំនិញ`) +
-                metricCard('ទូទាត់តាមបាគង', fmtUSD(s.khqr), 'text-cyan-600', `${s.khqrCount} វិក្កយបត្រ · មិនចូលថតប្រាក់`) +
+                metricCard('ទូទាត់តាមបាគង', fmtUSD(s.khqr), 'text-blue-600', `${s.khqrCount} វិក្កយបត្រ · មិនចូលថតប្រាក់`) +
                 metricCard('លុបចោល · ប្រគល់វិញ', `${s.voidCount} · ${s.returnCount}`, s.voidCount + s.returnCount ? 'text-rose-600' : 'text-slate-800', 'អនុម័តដោយអ្នកគ្រប់គ្រង') +
                 metricCard('រយៈពេលវេន', fmtDuration(opened), over > 0 ? 'text-amber-600' : 'text-slate-800',
                     `${sh.templateName} ${sh.start}–${sh.end}${over > 0 ? ` · ហួស ${fmtDuration(over)}` : ''}`);
@@ -395,7 +395,7 @@
                 ${b.drops ? `<div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 flex flex-wrap items-center gap-3">
                     <i class="fas fa-vault"></i><p class="sm-card-sub flex-1 min-w-0">ការផ្ទេរចូលទូដែក ${b.drops} ដងមិនទាន់មានអ្នកគ្រប់គ្រងទទួល។ វេនមិនអាចបិទបានទេ រហូតដល់បញ្ជាក់ការទទួល។</p>
                     <button onclick="confirmDropsHere()" type="button" class="sm-badge px-4 py-2 rounded-xl bg-white border border-amber-300 font-semibold">អ្នកគ្រប់គ្រងបញ្ជាក់នៅទីនេះ</button></div>` : ''}
-                ${b.requests ? row('bg-sky-50 border-sky-200 text-sky-800', 'fa-hourglass-half', `មានសំណើ ${b.requests} កំពុងរង់ចាំអ្នកគ្រប់គ្រង។ បើអនុម័តក្រោយបិទវេន ការផ្ទៀងផ្ទាត់នឹងត្រូវកែតម្រូវដោយអ្នកគ្រប់គ្រង។`) : ''}
+                ${b.requests ? row('bg-blue-50 border-blue-200 text-blue-800', 'fa-hourglass-half', `មានសំណើ ${b.requests} កំពុងរង់ចាំអ្នកគ្រប់គ្រង។ បើអនុម័តក្រោយបិទវេន ការផ្ទៀងផ្ទាត់នឹងត្រូវកែតម្រូវដោយអ្នកគ្រប់គ្រង។`) : ''}
             </div>`;
 
             const top = topSellers(salesOfShift(sh.id), 5);
@@ -453,8 +453,8 @@
                         ${btn(-1, 'fa-minus', 'បន្ថយ', 'border-slate-200 text-slate-500 hover:bg-slate-50')}
                         <input id="${currency}In-${note}" type="number" inputmode="numeric" min="0" step="1" value="${map[note] || ''}" placeholder="0"
                             oninput="setCount('${currency}', ${note}, this.value)" onkeydown="countKey(event, this)" onfocus="this.select()" aria-label="ចំនួនសន្លឹក ${label}"
-                            class="pos-num sm-value w-16 h-10 px-1 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-center focus:outline-none focus:border-teal-600 focus:bg-white transition">
-                        ${btn(1, 'fa-plus', 'បន្ថែម', 'border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100')}
+                            class="pos-num sm-value w-16 h-10 px-1 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-center focus:outline-none focus:border-blue-600 focus:bg-white transition">
+                        ${btn(1, 'fa-plus', 'បន្ថែម', 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100')}
                     </div>
                     <span data-line="${currency}-${note}" class="hidden sm:!block sm-value sm-figure flex-1 text-right text-slate-300 whitespace-nowrap">—</span>
                 </div>`;
@@ -617,12 +617,12 @@
                 ${required ? '' : `
                 <label class="flex items-start gap-3 cursor-pointer mb-3">
                     <input id="ackCheck" type="checkbox" ${ackDraft ? 'checked' : ''} onchange="ackDraft = this.checked; renderWizardNav()"
-                        class="!min-h-0 w-5 h-5 mt-0.5 rounded border-slate-300 text-teal-600 focus:ring-teal-500 flex-shrink-0">
+                        class="!min-h-0 w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 flex-shrink-0">
                     <span class="sm-td text-slate-700">ខ្ញុំបានពិនិត្យរួចហើយ និងទទួលស្គាល់ភាពខុសគ្នានេះ</span>
                 </label>`}
                 <textarea id="varianceNote" rows="4" oninput="reasonDraft = this.value; syncReasonHint(); renderWizardNav()"
                     placeholder="ឧទាហរណ៍៖ អាប់ប្រាក់ខុសក្នុងប្រតិបត្តិការមួយ · ក្រដាសប្រាក់រហែក · ទទួលបានក្រដាសប្រាក់ក្លែងក្លាយ..."
-                    class="sm-td w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 focus:outline-none focus:border-teal-600 transition resize-none">${escapeText(reasonDraft)}</textarea>
+                    class="sm-td w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 focus:outline-none focus:border-blue-600 transition resize-none">${escapeText(reasonDraft)}</textarea>
                 ${required ? '<p id="reasonHint" class="sm-td-sub text-slate-400 mt-1.5"></p>' : ''}`;
             syncReasonHint();
         }
@@ -779,18 +779,18 @@
             if (next) {
                 if (nextCardEl) {
                     nextCardEl.innerHTML = `
-                        <div class="p-5 rounded-2xl bg-cyan-50 border border-cyan-200 flex flex-wrap items-center justify-between gap-4 no-print shadow-sm">
+                        <div class="p-5 rounded-2xl bg-blue-50 border border-blue-200 flex flex-wrap items-center justify-between gap-4 no-print shadow-sm">
                             <div class="flex items-center gap-3.5">
-                                <div class="w-11 h-11 rounded-2xl bg-cyan-600 text-white flex items-center justify-center text-lg flex-shrink-0 shadow-sm">
+                                <div class="w-11 h-11 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-lg flex-shrink-0 shadow-sm">
                                     <i class="fas fa-calendar-day"></i>
                                 </div>
                                 <div>
-                                    <h4 class="sm-card-title text-cyan-950">វេនបន្ទាប់របស់អ្នកថ្ងៃនេះ</h4>
-                                    <p class="sm-card-sub text-cyan-800 mt-0.5">បន្ទាប់៖ <strong class="font-semibold">${next.template.name}</strong> ${next.template.start}–${next.template.end}${next.register ? ` · ${next.register}` : ''}</p>
+                                    <h4 class="sm-card-title text-blue-950">វេនបន្ទាប់របស់អ្នកថ្ងៃនេះ</h4>
+                                    <p class="sm-card-sub text-blue-800 mt-0.5">បន្ទាប់៖ <strong class="font-semibold">${next.template.name}</strong> ${next.template.start}–${next.template.end}${next.register ? ` · ${next.register}` : ''}</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2">
-                                <a href="open-shift.html?template=${next.template.code}" class="pos-tap sm-badge px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white font-semibold transition inline-flex items-center gap-2 shadow-sm">
+                                <a href="open-shift.html?template=${next.template.code}" class="pos-tap sm-badge px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition inline-flex items-center gap-2 shadow-sm">
                                     <i class="fas fa-play"></i> បើក${next.template.name}
                                 </a>
                                 <button onclick="handleLogout()" type="button" class="pos-tap sm-badge px-3.5 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-medium transition inline-flex items-center gap-1.5">
@@ -809,7 +809,7 @@
                 if (nextCardEl) nextCardEl.innerHTML = '';
                 if (primaryActionEl) {
                     primaryActionEl.innerHTML = `
-                        <a href="open-shift.html" class="pos-tap sm-badge px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition inline-flex items-center gap-2">
+                        <a href="open-shift.html" class="pos-tap sm-badge px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition inline-flex items-center gap-2">
                             <i class="fas fa-play"></i> បើកវេនថ្មី
                         </a>
                         <button onclick="handleLogout()" type="button" class="pos-tap sm-badge px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition inline-flex items-center gap-2">
