@@ -62,6 +62,9 @@
         html:not(.dark) .os-shell .border-blue-500 { border-color: #3b82f6 !important; }
         html:not(.dark) body.os-shell :is([class~="bg-blue-400"], [class~="bg-blue-500"], [class~="bg-blue-600"], [class~="bg-blue-700"], [class~="bg-emerald-500"], [class~="bg-emerald-600"], [class~="bg-rose-500"], [class~="bg-rose-600"], [class~="bg-amber-500"]),
         html:not(.dark) body.os-shell :is([class~="bg-blue-400"], [class~="bg-blue-500"], [class~="bg-blue-600"], [class~="bg-blue-700"], [class~="bg-emerald-500"], [class~="bg-emerald-600"], [class~="bg-rose-500"], [class~="bg-rose-600"], [class~="bg-amber-500"]) :is(.text-white, .text-slate-100, .text-slate-950) { color: #ffffff !important; }
+        /* ទម្រង់ងងឹត៖ custom.css ប្តូរ .sm-td-sub ទៅប្រផេះ · រក្សាពណ៌ស្ថានភាព (ត្រូវគ្នា · លើស) */
+        html.dark .os-shell .text-emerald-300 { color: #6ee7b7 !important; }
+        html.dark .os-shell .text-amber-300 { color: #fcd34d !important; }
     </style>
 </head>
 <body id="posPortal" data-role-root="../.." data-active="pos" class="os-shell font-sans text-slate-100 text-[16px] flex flex-col">
@@ -195,7 +198,7 @@
                             : myPin() === r ? 'ទំនេរ · អ្នកគ្រប់គ្រងភ្ជាប់ឱ្យអ្នក'
                             : last && last.cashierId === ME_CASHIER ? 'ទំនេរ · ប្រើចុងក្រោយ' : 'ទំនេរ';
                         return `<button type="button" role="radio" aria-checked="${on}" ${owner || res ? 'disabled' : ''} onclick="switchRegister('${r}')"
-                            class="text-left rounded-lg border px-3.5 py-3 transition-colors flex items-center gap-3 ${owner || res ? 'border-white/[0.06] bg-white/[0.02] opacity-50 cursor-not-allowed' : on ? 'border-blue-500/70 bg-blue-500/10' : 'border-white/10 hover:bg-white/[0.04]'}">
+                            class="text-left rounded-lg border px-3.5 py-3 transition-colors flex items-center gap-3 ${owner || res ? 'border-white/[0.06] bg-white/[0.02] opacity-50 cursor-not-allowed' : on ? 'border-blue-500 ring-1 ring-blue-500' : 'border-white/10 hover:bg-white/[0.04]'}">
                             <span class="w-4 h-4 rounded-full border-2 ${on ? 'border-blue-400' : 'border-slate-600'} inline-flex items-center justify-center flex-shrink-0">${on ? '<span class="w-2 h-2 rounded-full bg-blue-400"></span>' : ''}</span>
                             <span class="min-w-0">
                                 <span class="sm-value ${on ? 'text-white' : 'text-slate-200'} block">${r}</span>
@@ -257,7 +260,7 @@
             const now = new Date();
             const start = dateAt(templateDateFor(t, now), t.start);
             const end = shiftEndDate({ date: templateDateFor(t, now), start: t.start, end: t.end });
-            if (now < start) return { state: 'soon', text: `ចាប់ផ្តើមក្នុង ${fmtDuration(start - now)}`, tone: 'text-blue-300' };
+            if (now < start) return { state: 'soon', text: `ចាប់ផ្តើមក្នុង ${fmtDuration(start - now)}`, tone: 'text-slate-300', early: start - now };
             if (now > end) return { state: 'past', text: `បានបញ្ចប់ម៉ោង ${t.end}`, tone: 'text-slate-400' };
             const late = now - start;
             return late > 10 * 60000
@@ -287,7 +290,7 @@
             const on = t.code === templateCode;
             const tm = timing(t);
             const crew = rosterFor(templateDateFor(t, new Date()), t.code).filter(a => a.cashierId !== ME_CASHIER);
-            const tag = mine ? '<span class="sm-td-sub text-blue-300 whitespace-nowrap">វេនរបស់ខ្ញុំ</span>'
+            const tag = mine ? '<span class="sm-td-sub px-2 py-0.5 rounded-md bg-white/10 text-slate-300 font-medium whitespace-nowrap">វេនរបស់ខ្ញុំ</span>'
                 : on ? '<span class="sm-td-sub text-amber-300 whitespace-nowrap">ជំនួសវេន</span>' : '';
             return `<button onclick="pickTemplate('${t.code}')" type="button" role="radio" aria-checked="${on}"
                 class="w-full text-left flex items-center gap-4 px-5 py-4 transition-colors ${on ? 'bg-white/[0.05]' : 'hover:bg-white/[0.03]'}">
@@ -328,9 +331,7 @@
             const hello = hour < 11 ? 'អរុណសួស្តី' : hour < 17 ? 'ទិវាសួស្តី' : 'សាយណ្ហសួស្តី';
             const m = mine.find(x => x.template.code === templateCode);
             const cover = t && !m;
-            const status = mine.length
-                ? `<p class="sm-td text-slate-300"><i class="fas fa-calendar-check text-slate-500 mr-2"></i>វេនរបស់អ្នកថ្ងៃនេះ៖ <span class="text-white font-semibold">${mine.map(x => `${x.template.name} ${x.from || x.template.start}–${x.until || x.template.end}`).join(' · ')}</span></p>`
-                : `<p class="sm-td text-slate-300"><i class="fas fa-calendar-xmark text-amber-300 mr-2"></i><span class="text-white font-semibold">ថ្ងៃនេះអ្នកមិនមានវេនក្នុងកាលវិភាគទេ</span></p>
+            const status = mine.length ? '' : `<p class="sm-td text-slate-300"><i class="fas fa-calendar-xmark text-amber-300 mr-2"></i><span class="text-white font-semibold">ថ្ងៃនេះអ្នកមិនមានវេនក្នុងកាលវិភាគទេ</span></p>
                    <p class="sm-td-sub text-slate-400 mt-1 ml-6">បើមកជំនួសវេនអ្នកណាម្នាក់ សូមជ្រើសរើសវេនខាងក្រោម។ អ្នកគ្រប់គ្រងត្រូវអនុម័ត ហើយកាលវិភាគនឹងកត់ត្រាថា «ជំនួស»។</p>`;
 
             const over = t && (workedToday() + templateHours(t) > 12);
@@ -345,7 +346,7 @@
                         <p class="sm-td-sub text-slate-400">${hello} · អ្នកគិតលុយ</p>
                     </div>
                 </div>
-                <div class="px-5 py-4 border-b border-white/[0.08]">${status}</div>
+                ${status ? `<div class="px-5 py-4 border-b border-white/[0.08]">${status}</div>` : ''}
                 ${busy ? `<div class="px-5 py-3.5 bg-amber-500/10 border-b border-amber-500/20 flex flex-wrap items-center justify-between gap-2">
                     <p class="sm-td text-amber-200"><i class="fas fa-triangle-exclamation text-amber-400 mr-1.5"></i>គ្មានបញ្ជរទំនេរ · សូមរង់ចាំអ្នកណាម្នាក់បិទវេន ឬសួរអ្នកគ្រប់គ្រង</p>
                     <button type="button" onclick="render()" class="h-8 px-2.5 rounded-lg bg-white/10 hover:bg-white/15 text-slate-200 sm-td-sub font-medium transition">
@@ -382,6 +383,7 @@
                     <div class="min-w-0">
                         <p class="sm-td-sub text-slate-400">នឹងបើក</p>
                         <p class="sm-value text-white">${t ? `${t.name} · ${reg()}` : '—'}${cover ? ' <span class="sm-td-sub text-amber-300 font-medium ml-1">ជំនួសវេន</span>' : ''}${isShortShift ? ` <span class="sm-td-sub text-amber-300 font-medium ml-1">(វេនខ្លី ដល់ម៉ោង ${shortShiftCap})</span>` : ''}</p>
+                        ${t && timing(t).early > 30 * 60000 ? `<p class="sm-td-sub text-amber-300 mt-0.5"><i class="fas fa-clock mr-1"></i>${t.name} ចាប់ផ្តើមម៉ោង ${t.start} · នៅ ${fmtDuration(timing(t).early)}ទៀត · សូមប្រាកដថាបើកវេនត្រឹមត្រូវ</p>` : ''}
                         <p id="limitNote" class="sm-td-sub text-rose-300"></p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
@@ -468,68 +470,21 @@
 
         /* ===== ជំហាន 2៖ រាប់ប្រាក់បាតថត ===== */
 
-        function noteTile(currency, note) {
-            const map = currency === 'usd' ? countUSD : countKHR;
-            const q = map[note] || 0;
-            const label = currency === 'usd' ? '$' + note : note.toLocaleString('en-US') + ' ៛';
-            return `<div class="rounded-xl border ${q ? 'border-blue-600/50 bg-[#111a2b]' : 'border-white/10 bg-[#111a2b]'} p-3">
-                <div class="flex items-baseline justify-between gap-2">
-                    <span class="sm-value text-white sm-figure">${label}</span>
-                    <span data-sub="${currency}-${note}" class="sm-td-sub sm-figure ${q ? 'text-blue-200' : 'text-slate-600'}">${q ? (currency === 'usd' ? fmtUSD(note * q) : fmtKHR(note * q)) : '—'}</span>
-                </div>
-                <div class="flex items-center gap-1.5 mt-2.5">
-                    <button onclick="bump('${currency}', ${note}, -1)" type="button" aria-label="បន្ថយ ${label}"
-                        class="w-11 h-11 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300"><i class="fas fa-minus text-xs"></i></button>
-                    <input id="${currency}In-${note}" type="number" inputmode="numeric" min="0" value="${q || ''}" placeholder="0"
-                        oninput="setCount('${currency}', ${note}, this.value)" onfocus="this.select()" aria-label="ចំនួនសន្លឹក ${label}"
-                        class="os-num sm-value flex-1 min-w-0 h-11 rounded-xl bg-[#0b1220] border border-white/10 text-white text-center focus:outline-none focus:border-blue-500">
-                    <button onclick="bump('${currency}', ${note}, 1)" type="button" aria-label="បន្ថែម ${label}"
-                        class="w-11 h-11 rounded-xl bg-blue-600 hover:bg-blue-500 text-white"><i class="fas fa-plus text-xs"></i></button>
-                </div>
-            </div>`;
-        }
-
         function renderCount() {
             const t = chosenTemplate();
             document.getElementById('stage').innerHTML = `
-                <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 fade-up">
-                    <div class="xl:col-span-2 space-y-5">
-                        <div class="flex items-center justify-between gap-3">
-                            <button onclick="stage='overview'; render()" type="button" class="sm-td px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 inline-flex items-center gap-2">
-                                <i class="fas fa-arrow-left"></i> ត្រឡប់
-                            </button>
-                            <p class="sm-td-sub text-slate-400 text-right">${t.name} ${t.start}–${t.end} · ${reg()} · រាប់ជាមួយអ្នកគ្រប់គ្រង</p>
-                        </div>
-                        <section>
-                            <p class="sm-value text-slate-200 mb-2.5"><i class="fas fa-money-bill-wave text-emerald-300 mr-1.5"></i>ក្រដាសប្រាក់ដុល្លារ</p>
-                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">${USD_NOTES.map(n => noteTile('usd', n)).join('')}</div>
-                        </section>
-                        <section>
-                            <p class="sm-value text-slate-200 mb-2.5"><i class="fas fa-money-bill-1 text-amber-300 mr-1.5"></i>ក្រដាសប្រាក់រៀល</p>
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">${KHR_NOTES.map(n => noteTile('khr', n)).join('')}</div>
-                        </section>
-                    </div>
-                    <div class="xl:sticky xl:top-4 self-start os-panel rounded-xl p-5 space-y-4" id="summary"></div>
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 items-start fade-up">
+                    <div class="xl:col-span-2" id="cashCount"></div>
+                    <div class="xl:sticky xl:top-4 os-panel rounded-xl p-5 space-y-4" id="summary"></div>
                 </div>`;
-            renderSummary();
-        }
-
-        function bump(currency, note, delta) {
-            const map = currency === 'usd' ? countUSD : countKHR;
-            map[note] = Math.max((map[note] || 0) + delta, 0);
-            renderCount();
-        }
-
-        function setCount(currency, note, value) {
-            const map = currency === 'usd' ? countUSD : countKHR;
-            map[note] = Math.max(parseInt(value, 10) || 0, 0);
-            const el = document.querySelector(`[data-sub="${currency}-${note}"]`);
-            const q = map[note];
-            if (el) {
-                el.textContent = q ? (currency === 'usd' ? fmtUSD(note * q) : fmtKHR(note * q)) : '—';
-                el.className = `sm-td-sub sm-figure ${q ? 'text-blue-200' : 'text-slate-600'}`;
-            }
-            renderSummary();
+            // ឧបករណ៍រាប់ក្រដាសប្រាក់រួម (ui-components.js) — ដូចទំព័របិទវេន
+            cashCounter('cashCount', {
+                usd: countUSD, khr: countKHR, onChange: renderSummary,
+                title: 'រាប់ប្រាក់បាតថត',
+                sub: `${t.name} ${t.start}–${t.end} · ${reg()} · រាប់ជាមួយអ្នកគ្រប់គ្រង`,
+                action: `<button onclick="stage='overview'; render()" type="button" class="cc-clear sm-td h-10 px-3 rounded-lg inline-flex items-center gap-2 font-medium"><i class="fas fa-arrow-left text-[12px]"></i> ប្តូរវេន ឬបញ្ជរ</button>`,
+                onDone: () => { const b = document.querySelector('#startBtn button:not([disabled])'); if (b) b.focus(); }
+            });
         }
 
         function mismatch() {
@@ -541,11 +496,30 @@
             if (!chosenTemplate()) return 'សូមជ្រើសរើសវេន';
             if (!isShortShift && workedToday() + templateHours(chosenTemplate()) > 12) return 'លើស 12 ម៉ោងក្នុងមួយថ្ងៃ ដែលជាកំណត់ច្បាប់';
             if (regBusy()) return `${reg()} ជារបស់ ${personName(blockedBy(reg()).cashierId)} · សូមត្រឡប់ទៅជ្រើសបញ្ជរផ្សេង`;
-            if (!(totalUSD() + totalKHR())) return 'សូមរាប់ប្រាក់បាតថតជាមុនសិន';
+            if (!(totalUSD() + totalKHR())) return 'រាប់ក្រដាសប្រាក់ខាងឆ្វេងជាមុនសិន';
             const m = mismatch();
             const off = Math.abs(m.dUSD) >= 0.005 || Math.abs(m.dKHR) >= 0.5;
-            if (off && mismatchNote.trim().length < 5) return 'សូមពន្យល់ភាពខុសគ្នានៃប្រាក់បាតថត';
+            if (off && mismatchNote.trim().length < 5) return (totalUSD() > 0 || !issuedFloat().usd) && (totalKHR() > 0 || !issuedFloat().khr) ? 'រាប់បន្ត ឬសរសេរមូលហេតុភាពខុសគ្នា' : 'រាប់ក្រដាសប្រាក់ទាំងដុល្លារ និងរៀល';
             return '';
+        }
+
+        /* សង្ខេប៖ វឌ្ឍនភាពតាមរូបិយប័ណ្ណ — ពេលកំពុងរាប់បង្ហាញ «នៅខ្វះ» ពណ៌ប្រផេះ (មិនមែនក្រហម)
+           បៃតង = ត្រូវគ្នា · លឿង = លើស · ប្រអប់ពន្យល់បង្ហាញតែពេលរាប់គ្រប់រូបិយប័ណ្ណរួច ហើយនៅតែមិនស្មើ */
+        function currencyProgress(label, exp, got, fmt, eps) {
+            const d = got - exp;
+            const done = got > 0 && Math.abs(d) < eps;
+            const pct = exp ? Math.min(100, got / exp * 100) : (got ? 100 : 0);
+            const [text, tone] = !got ? ['មិនទាន់រាប់', 'text-slate-500'] : done ? ['ត្រូវគ្នា', 'text-emerald-300']
+                : d < 0 ? [`នៅខ្វះ ${fmt(-d)}`, 'text-slate-300'] : [`លើស ${fmt(d)}`, 'text-amber-300'];
+            const bar = done ? 'bg-emerald-500' : d > 0 ? 'bg-amber-500' : 'bg-blue-500';
+            return `<div>
+                <div class="flex items-baseline justify-between gap-3">
+                    <span class="sm-td-sub text-slate-400">${label}</span>
+                    <span class="sm-td-sub font-medium ${tone}">${done ? '<i class="fas fa-circle-check mr-1"></i>' : ''}${text}</span>
+                </div>
+                <p class="sm-figure mt-0.5"><span class="text-[22px] font-bold text-white">${fmt(got)}</span> <span class="sm-td-sub text-slate-500">/ ${fmt(exp)}</span></p>
+                <div class="h-1.5 rounded-full bg-white/10 mt-2 overflow-hidden"><div class="h-full rounded-full ${bar} transition-[width] duration-200" style="width:${pct}%"></div></div>
+            </div>`;
         }
 
         function renderSummary() {
@@ -553,31 +527,26 @@
             if (!host) return;
             const f = issuedFloat();
             const m = mismatch();
-            const counted = totalUSD() + totalKHR() > 0;
-            const off = counted && (Math.abs(m.dUSD) >= 0.005 || Math.abs(m.dKHR) >= 0.5);
-            const why = blocker();
-            const tone = d => Math.abs(d) < 0.5 ? 'text-emerald-300' : d > 0 ? 'text-amber-300' : 'text-rose-300';
+            const off = Math.abs(m.dUSD) >= 0.005 || Math.abs(m.dKHR) >= 0.5;
+            // រាប់គ្រប់រូបិយប័ណ្ណដែលត្រូវទទួលរួចហើយ
+            const started = (!f.usd || totalUSD() > 0) && (!f.khr || totalKHR() > 0);
             const prev = document.getElementById('mismatchNote');
             if (prev) mismatchNote = prev.value;
             host.innerHTML = `
-                <p class="sm-card-title text-white">សង្ខេបប្រាក់បាតថត</p>
-                <div class="grid grid-cols-[1fr_auto_auto] gap-x-5 gap-y-2 items-baseline sm-td sm-figure">
-                    <span></span><span class="sm-td-sub text-slate-500 text-right">ដុល្លារ</span><span class="sm-td-sub text-slate-500 text-right">រៀល</span>
-                    <span class="text-slate-400">ត្រូវទទួល</span><span class="text-right text-slate-200">${fmtUSD(f.usd)}</span><span class="text-right text-slate-200">${fmtKHR(f.khr)}</span>
-                    <span class="text-slate-400">រាប់បាន</span><span class="text-right text-white font-semibold">${fmtUSD(totalUSD())}</span><span class="text-right text-white font-semibold">${fmtKHR(totalKHR())}</span>
-                    <span class="col-span-3 border-t border-white/10"></span>
-                    <span class="text-slate-400">ខុសគ្នា</span>
-                    <span class="text-right font-semibold ${counted ? tone(m.dUSD * 100) : 'text-slate-600'}">${counted ? fmtSigned(m.dUSD, fmtUSD) : '—'}</span>
-                    <span class="text-right font-semibold ${counted ? tone(m.dKHR) : 'text-slate-600'}">${counted ? fmtSigned(m.dKHR, fmtKHR, 0.5) : '—'}</span>
+                <div>
+                    <p class="sm-card-title text-white">ប្រាក់បាតថត</p>
+                    <p class="sm-td-sub text-slate-500">${f.movement ? `ចេញដោយ ${personName(f.by)} ម៉ោង ${fmtTime(f.movement.createdAt)}` : 'ចំនួនស្តង់ដារ'} · រាប់ជាមួយអ្នកគ្រប់គ្រង</p>
                 </div>
-                ${counted && !off ? '<p class="sm-td-sub text-emerald-300 flex items-center gap-2"><i class="fas fa-circle-check"></i>ត្រឹមត្រូវនឹងប្រាក់ដែលបានចេញ</p>' : ''}
-                ${off ? `<div>
-                    <p class="sm-td-sub text-amber-300 mb-1.5"><i class="fas fa-triangle-exclamation mr-1"></i>ចំនួនមិនស្មើ · សូមពន្យល់</p>
+                ${currencyProgress('ដុល្លារ', f.usd, totalUSD(), fmtUSD, 0.005)}
+                ${currencyProgress('រៀល', f.khr, totalKHR(), fmtKHR, 0.5)}
+                ${started && !off ? '<p class="sm-td text-emerald-300 flex items-center gap-2 font-medium"><i class="fas fa-circle-check"></i>ត្រូវគ្នានឹងប្រាក់ដែលបានចេញ</p>' : ''}
+                ${started && off ? `<div class="pt-1">
+                    <label for="mismatchNote" class="sm-td-sub text-amber-300 block mb-1.5"><i class="fas fa-triangle-exclamation mr-1"></i>មិនស្មើនឹងប្រាក់ដែលបានចេញ · បើរាប់ត្រឹមត្រូវហើយ សូមសរសេរមូលហេតុ</label>
                     <textarea id="mismatchNote" rows="2" oninput="mismatchNote = this.value; renderButton()"
                         placeholder="ឧ. ខ្វះក្រដាស 500 ៛ · អ្នកគ្រប់គ្រងនឹងបំពេញបន្ថែម..."
                         class="sm-td w-full px-3 py-2.5 rounded-xl bg-[#0b1220] border border-white/10 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none">${escapeText(mismatchNote)}</textarea>
                 </div>` : ''}
-                <div id="startBtn"></div>`;
+                <div id="startBtn" class="pt-1"></div>`;
             renderButton();
         }
 
@@ -588,10 +557,10 @@
             host.innerHTML = `
                 <button onclick="startShift()" type="button" ${why ? 'disabled' : ''}
                     class="w-full h-14 rounded-lg sm-card-title font-bold inline-flex items-center justify-center gap-2 transition ${why
-                        ? 'bg-white/5 text-slate-500 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500 text-white'}">
+                        ? 'bg-white/5 border border-white/10 text-slate-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-500 text-white'}">
                     <i class="fas fa-user-shield"></i> អ្នកគ្រប់គ្រងបញ្ជាក់ ហើយចាប់ផ្តើមវេន
                 </button>
-                <p class="sm-td-sub text-center mt-2 ${why ? 'text-amber-300' : 'text-slate-500'}">${why || 'អ្នកគ្រប់គ្រងវាយលេខសម្ងាត់លើអេក្រង់នេះ'}</p>`;
+                <p class="sm-td-sub text-center mt-2 text-slate-500">${why || 'អ្នកគ្រប់គ្រងវាយលេខសម្ងាត់លើអេក្រង់នេះ'}</p>`;
         }
 
         /* ===== ជំហាន 3៖ អ្នកគ្រប់គ្រងបញ្ជាក់ និងបើកវេន ===== */

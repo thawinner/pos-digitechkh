@@ -38,7 +38,7 @@
                     <!-- ព័ត៌មានវិក្កយបត្រ និងអ្នកផ្គត់ផ្គង់ -->
                     <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 sm:p-6 space-y-4">
                         <h3 class="sm-card-title text-slate-800 flex items-center gap-2">
-                            <i class="fas fa-file-invoice text-blue-600"></i>
+                            <i class="fas fa-file-invoice text-slate-400"></i>
                             <span>ព័ត៌មានដឹកជញ្ជូន និងអ្នកផ្គត់ផ្គង់</span>
                         </h3>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -55,7 +55,7 @@
                                     <div class="relative bms-date-picker mt-1.5">
                                         <button type="button" onclick="toggleSingleDatePicker('deliveryDate')" class="w-full h-12 px-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 flex items-center justify-between transition focus:outline-none focus:border-blue-500 cursor-pointer text-left">
                                             <span id="deliveryDate-display" class="bms-date-label font-medium text-slate-800 text-sm"></span>
-                                            <i class="fas fa-calendar-days text-blue-600 text-sm"></i>
+                                            <i class="fas fa-calendar-days text-slate-400 text-sm"></i>
                                         </button>
                                         <input type="hidden" id="deliveryDate" name="deliveryDate" value="" onchange="renderSummary()" oninput="renderSummary()">
                                     </div>
@@ -83,12 +83,12 @@
                         <div class="flex items-center justify-between gap-3">
                             <div>
                                 <h3 class="sm-card-title text-slate-800 flex items-center gap-2">
-                                    <i class="fas fa-boxes-packing text-blue-600"></i>
+                                    <i class="fas fa-boxes-packing text-slate-400"></i>
                                     <span>មុខទំនិញទទួលចូលស្តុក</span>
                                 </h3>
                                 <p class="sm-card-sub text-slate-500 mt-0.5">ជ្រើសរើសទំនិញ និងបញ្ចូលចំនួនឯកតាជាក់ស្តែង</p>
                             </div>
-                            <button onclick="addLine()" type="button" class="sm-badge h-10 px-4 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold inline-flex items-center gap-2 transition">
+                            <button onclick="addLine()" type="button" class="sm-badge h-10 px-4 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center gap-2 transition">
                                 <i class="fas fa-plus text-xs"></i> បន្ថែមជួរ
                             </button>
                         </div>
@@ -114,9 +114,6 @@
                 <div class="xl:col-span-1 space-y-4 xl:sticky xl:top-0">
                     <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
                         <div class="flex items-center gap-2.5 pb-3 border-b border-slate-100">
-                            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm flex-shrink-0">
-                                <i class="fas fa-truck-ramp-box"></i>
-                            </div>
                             <div>
                                 <h3 class="font-bold text-slate-800 text-base leading-none">សង្ខេបការទទួលស្តុក</h3>
                                 <p class="text-xs text-slate-400 mt-1">ពិនិត្យព័ត៌មានមុនពេលរក្សាទុក</p>
@@ -142,7 +139,7 @@
                             </div>
                             <div class="flex items-center justify-between pt-3">
                                 <span class="text-slate-500">ចំនួនឯកតាសរុប</span>
-                                <span id="sumQty" class="font-bold text-blue-700 sm-figure text-lg">0</span>
+                                <span id="sumQty" class="font-bold text-slate-800 sm-figure text-lg">0</span>
                             </div>
                         </div>
 
@@ -417,7 +414,7 @@
                         ${l.sku ? `${cur} ${unit}` : '—'}
                     </td>
                     <td class="py-2.5 px-3 text-right">
-                        <input type="number" min="1" step="1" value="${l.qty || 1}" oninput="updateLineQty(${idx}, this.value)" class="w-full h-11 px-3 rounded-xl bg-slate-50 border border-slate-200 text-right sm-value font-semibold text-blue-700 focus:outline-none focus:border-blue-500 sm-figure">
+                        <input type="number" min="1" step="1" value="${l.qty || 1}" oninput="updateLineQty(${idx}, this.value)" class="w-full h-11 px-3 rounded-xl bg-white border border-slate-200 text-right sm-value font-semibold text-slate-800 focus:outline-none focus:border-blue-500 sm-figure">
                     </td>
                     <td class="py-2.5 px-3 text-right sm-td sm-figure font-bold text-emerald-700">
                         ${l.sku ? `${after} ${unit}` : '—'}

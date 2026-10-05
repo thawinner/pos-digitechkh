@@ -54,7 +54,8 @@
         html:not(.dark) body.login-bg .login-dark :is([class~="bg-blue-400"], [class~="bg-blue-500"], [class~="bg-blue-600"], [class~="bg-emerald-400"], [class~="bg-emerald-500"], [class~="bg-rose-500"], [class~="bg-slate-900"], [class~="bg-slate-600"]) :is(.text-white, .text-slate-100) { color: #ffffff !important; }
         @keyframes dotPop { 0% { transform: scale(.4); } 70% { transform: scale(1.2); } 100% { transform: scale(1); } }
         .dot-pop { animation: dotPop .16s ease-out; }
-        .tile-live { box-shadow: inset 3px 0 0 #10b981; }
+        /* ឈប់សម្រាកថ្ងៃនេះ៖ ស្រអាប់បន្តិច (នៅតែចុចបាន ពេលត្រូវមកជំនួស) */
+        .tile-off > :not(:last-child) { opacity: .6; }
         .tile:focus-visible, .pin-key:focus-visible { outline: 3px solid #60a5fa; outline-offset: 2px; }
         /* ផ្ទាំងចាប់ផ្តើម៖ ឡូហ្គោ និងចំណុចលោតបី */
         #splash { position: fixed; inset: 0; z-index: 100; background: #0b1220; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity .4s ease, visibility .4s ease; }
@@ -101,7 +102,7 @@
         <p class="splash-foot absolute bottom-8 sm-td-sub text-slate-500">© <span id="splashYear"></span> DIGITECHKH</p>
     </div>
 
-    <main class="min-h-screen w-full flex items-center justify-center px-4 py-6">
+    <main class="min-h-screen w-full flex items-center justify-center px-4 py-6 max-sm:pt-16">
         <div class="w-full max-w-[1120px] grid grid-cols-1 lg:grid-cols-12 gap-4">
 
             <!-- ===== ផ្ទាំងឆ្វេង៖ ម៉ាក នាឡិកា និងស្ថានភាពបញ្ជរ ===== -->
@@ -112,6 +113,7 @@
                         <p class="sm-card-title text-white text-[19px] tracking-wide">DIGITECHKH</p>
                         <p class="sm-td-sub text-blue-200/80">ប្រព័ន្ធគិតលុយលក់រាយ</p>
                     </div>
+                    <img src="shared/assets/KH.svg" alt="ទង់ជាតិកម្ពុជា" width="28" height="21" class="kh-flag ml-auto flex-shrink-0 rounded-[3px] shadow-[0_0_0_1px_rgba(15,23,42,0.08)]">
                 </div>
 
                 <div>
@@ -127,7 +129,7 @@
 
                 <div>
                     <p class="sm-eyebrow text-slate-400 mb-2">កាលវិភាគថ្ងៃនេះ</p>
-                    <div id="rosterBoard" class="space-y-2.5"></div>
+                    <div id="rosterBoard" class="space-y-1"></div>
                 </div>
 
                 <div class="mt-auto">
@@ -249,12 +251,16 @@
                 : plan
                     ? `<i class="${plan.now ? 'fas fa-calendar-check text-blue-600' : 'far fa-clock text-slate-400'} text-[12px] mr-2"></i><span class="${plan.now ? 'text-slate-700' : 'text-slate-500'}">${plan.template.name}<span class="max-md:hidden"> ${plan.template.start}–${plan.template.end}</span></span>`
                     : (role === 'cashier' ? '<span class="text-slate-400">ឈប់សម្រាកថ្ងៃនេះ</span>' : '');
-            return `<button onclick="pickUser('${p.id}')" type="button"
-                class="tile ${sh ? 'tile-live' : ''} group w-full text-left px-4 py-2.5 bg-white hover:bg-slate-50 transition-colors flex items-center gap-3">
+            const off = role === 'cashier' && !sh && !plan;
+            return `<button onclick="pickUser('${p.id}')" type="button" data-tile
+                class="tile ${off ? 'tile-off' : ''} group w-full text-left px-4 py-2.5 bg-white hover:bg-slate-50 transition-colors flex items-center gap-3">
                 ${avatarHtml(p.id, 'w-9 h-9 ring-1 ring-slate-200')}
-                <span class="sm-td font-semibold text-slate-800 truncate flex-1 min-w-0">${p.name}</span>
-                <span class="sm-td-sub truncate w-44 max-sm:w-auto max-sm:max-w-[40%]">${status}</span>
-                <span class="w-[68px] text-right flex-shrink-0">${reg ? `<span class="px-1.5 rounded bg-slate-100 text-slate-600 text-[12px] font-semibold leading-5">${reg}</span>` : ''}</span>
+                <span class="flex-1 min-w-0">
+                    <span class="sm-td font-semibold text-slate-800 truncate block">${p.name}</span>
+                    ${status ? `<span class="sm:hidden sm-td-sub truncate block">${status}</span>` : ''}
+                </span>
+                <span class="sm-td-sub truncate w-44 max-sm:hidden">${status}</span>
+                <span class="w-[68px] max-sm:w-auto text-right flex-shrink-0">${reg ? `<span class="px-1.5 rounded bg-slate-100 text-slate-600 text-[12px] font-semibold leading-5">${reg}</span>` : ''}</span>
                 <i class="fas fa-chevron-right text-[11px] text-slate-300 group-hover:text-slate-500 transition-colors"></i>
             </button>`;
         }
@@ -360,14 +366,14 @@
             const n = Math.max(4, pin.length);
             const err = locked || !!pinMsg;
             const ready = pin.length >= 4 && !locked;
-            const dotActive = pinMsg ? 'bg-rose-500' : (dark ? 'bg-blue-400 shadow-[0_0_8px_rgba(34,211,238,0.6)]' : 'bg-slate-900');
+            const dotActive = pinMsg ? 'bg-rose-500' : (dark ? 'bg-blue-400' : 'bg-slate-900');
             const dotInactive = dark ? 'bg-slate-700/80' : 'bg-slate-200';
             dots.innerHTML = Array.from({ length: n }, (_, i) => `<span class="w-3.5 h-3.5 rounded-full ${i < pin.length
                 ? dotActive + (i === pin.length - 1 && !pinMsg ? ' dot-pop' : '') : dotInactive}"></span>`).join('');
 
             const boxClass = dark
                 ? (err ? 'border-rose-400 bg-rose-950/20' : pin.length ? 'border-blue-400 ring-2 ring-blue-400/20 bg-slate-900/80' : 'border-slate-700 bg-slate-900/60')
-                : (err ? 'border-rose-400 bg-rose-50/40' : pin.length ? 'border-slate-900 ring-2 ring-slate-900/5 bg-white' : 'border-slate-300 bg-white');
+                : (err ? 'border-rose-400 bg-rose-50/40' : pin.length ? 'border-blue-500 ring-2 ring-blue-500/15 bg-white' : 'border-slate-300 bg-white');
             document.getElementById('pinBox').className = `mt-1.5 h-14 rounded-lg border flex items-center justify-center transition-colors ${boxClass}`;
 
             if (shake) {
@@ -379,12 +385,12 @@
             msg.innerHTML = locked ? `<i class="fas fa-lock mr-1.5"></i>វាយខុស 3 ដង · សូមរង់ចាំ ${lockedFor} វិនាទី`
                 : pinMsg ? `<i class="fas fa-circle-exclamation mr-1.5"></i>${pinMsg}`
                 : ready ? '<i class="fas fa-check mr-1.5"></i>ចុច «ចូលប្រើ» ឬ Enter' : '';
-            msg.className = `sm-td-sub mt-1.5 min-h-[22px] ${err ? 'text-rose-500 font-semibold' : (dark ? 'text-emerald-400' : 'text-emerald-700')}`;
+            msg.className = `sm-td-sub mt-1.5 min-h-[22px] ${err ? 'text-rose-600 font-semibold' : 'text-slate-500'}`;
             document.querySelectorAll('[data-pin-key]').forEach(b => { b.disabled = locked; });
             const btn = document.getElementById('pinSubmit');
             btn.disabled = !ready;
             const submitClass = ready
-                ? (dark ? 'bg-blue-500 hover:bg-blue-400 text-slate-950 font-bold border border-blue-400 shadow-md' : 'bg-slate-900 border border-slate-900 hover:bg-slate-800 text-white')
+                ? (dark ? 'bg-blue-500 hover:bg-blue-400 text-white border border-blue-500' : 'bg-blue-600 border border-blue-600 hover:bg-blue-700 text-white')
                 : (dark ? 'bg-white/5 border border-white/10 text-slate-500 cursor-not-allowed' : 'bg-white border border-slate-200 text-slate-400 cursor-not-allowed');
             btn.className = `mt-3 w-full h-12 rounded-lg sm-value font-semibold transition-colors inline-flex items-center justify-center gap-2 ${submitClass}`;
             btn.setAttribute('aria-disabled', String(!ready));
@@ -438,14 +444,14 @@
         function renderRegisters() {
             document.getElementById('registerBoard').innerHTML = REGISTERS.map(r => {
                 const sh = liveShifts().find(s => s.register === r && s.status === 'open');
-                return `<div class="flex items-center gap-3 px-3 py-2 ${sh ? 'bg-white/[0.04]' : ''}">
+                return `<div class="flex items-center gap-3 px-3 min-h-[48px] py-1.5">
                     ${sh ? avatarHtml(sh.cashierId, 'w-7 h-7') : '<span class="w-7 h-7 rounded-full bg-white/5 text-slate-500 inline-flex items-center justify-center"><i class="fas fa-cash-register text-[12px]"></i></span>'}
                     <div class="min-w-0 flex-1">
                         <p class="sm-td-sub font-semibold text-white">${r}</p>
-                        <p class="sm-td-sub ${sh ? 'text-slate-300' : 'text-slate-500'} truncate">${sh ? `${personName(sh.cashierId)} · តាំងពី ${fmtTime(sh.openedAt)}` : 'មិនមានវេនបើក'}</p>
+                        ${sh ? `<p class="sm-td-sub text-slate-300 truncate">${personName(sh.cashierId)} · តាំងពី ${fmtTime(sh.openedAt)}</p>` : ''}
                     </div>
-                    <span class="sm-td-sub font-semibold ${sh ? 'text-emerald-300' : 'text-slate-500'} inline-flex items-center gap-1.5">
-                        <span class="w-2 h-2 rounded-full ${sh ? 'bg-emerald-400' : 'bg-slate-600'}"></span>${sh ? 'បើក' : 'បិទ'}</span>
+                    <span class="sm-td-sub ${sh ? 'font-semibold text-emerald-300' : 'text-slate-500'} inline-flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full ${sh ? 'bg-emerald-400' : 'border border-slate-500'}"></span>${sh ? 'កំពុងលក់' : 'ទំនេរ'}</span>
                 </div>`;
             }).join('');
         }
@@ -485,12 +491,12 @@
 
                 const statusBadge = now
                     ? `<span class="ml-auto text-[11px] font-semibold text-blue-300 flex items-center gap-1.5 whitespace-nowrap">
-                        <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>ឥឡូវនេះ</span>`
+                        <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>ឥឡូវនេះ</span>`
                     : isPast
                         ? `<span class="ml-auto text-[11px] font-medium text-slate-500 whitespace-nowrap">បានបញ្ចប់</span>`
                         : `<span class="ml-auto text-[11px] font-medium text-slate-400 whitespace-nowrap">មិនទាន់ដល់</span>`;
 
-                return `<div class="pl-3 border-l-2 ${now ? 'border-blue-400' : 'border-white/10'}">
+                return `<div class="px-3 py-2 rounded-lg ${now ? 'bg-white/[0.04] border border-white/10' : ''}">
                     <p class="sm-td-sub flex items-center gap-2 ${now ? 'text-white font-semibold' : 'text-slate-400'}">
                         <span class="whitespace-nowrap">${t.name}</span><span class="${now ? 'text-slate-300' : 'text-slate-500'} font-normal sm-figure whitespace-nowrap">${t.start}–${t.end}</span>
                         ${statusBadge}
@@ -533,7 +539,14 @@
         }
 
         document.addEventListener('keydown', e => {
-            if (!pinUser) return;
+            if (!pinUser) {
+                if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+                const tiles = [...document.querySelectorAll('[data-tile]')];
+                const i = tiles.indexOf(document.activeElement);
+                const next = tiles[e.key === 'ArrowDown' ? Math.min(i + 1, tiles.length - 1) : Math.max(i - 1, 0)];
+                if (next) { e.preventDefault(); next.focus(); }
+                return;
+            }
             if (/^[0-9]$/.test(e.key)) press(e.key);
             else if (e.key === 'Backspace') press('⌫');
             else if (e.key === 'Enter') submitPin();

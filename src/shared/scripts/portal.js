@@ -226,7 +226,7 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
         let groupHtml = '';
         const group = item.group || (portalId === 'posPortal' ? 'វេនរបស់ខ្ញុំ' : lastGroup);
         if (group && group !== lastGroup) {
-            groupHtml = `<p class="sb-group px-3 ${lastGroup ? 'pt-5' : 'pt-1'} pb-1.5">${group}</p>`;
+            groupHtml = `<p class="sb-group px-3 ${lastGroup ? 'pt-4' : 'pt-1'} pb-1">${group}</p>`;
             lastGroup = group;
         }
         const isActive = item.id === activeId;
@@ -235,7 +235,7 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
         if (item.alertBadge) badgeHtml += '<span id="navAlertBadge" class="sb-badge sb-count sb-count-warn hidden">0</span>';
         if (item.badgeFn) badgeHtml += `<span data-badge-fn="${item.badgeFn}" class="sb-badge sb-count ${item.badgeTone === 'amber' ? 'sb-count-warn' : ''} hidden">0</span>`;
         return `${groupHtml}
-            <a href="${roleRoot}/${item.href}" ${isActive ? 'aria-current="page"' : ''} title="${item.label}" class="sb-nav-item sb-row relative">
+            <a href="${roleRoot}/${item.href}" ${isActive ? 'aria-current="page"' : ''} class="sb-nav-item sb-row relative">
                 <span class="sb-icon w-5 flex items-center justify-center flex-shrink-0">${getIconHtml(item.icon)}</span>
                 <span class="sb-label flex-1 truncate">${item.label}</span>
                 ${badgeHtml}
@@ -247,6 +247,9 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
         : `<div class="w-8 h-8 rounded-full sb-avatar border flex items-center justify-center font-semibold text-xs flex-shrink-0">${cfg.userInitials}</div>`;
     const roleLabel = { adminPortal: 'ម្ចាស់ហាង', managerPortal: 'អ្នកគ្រប់គ្រង', posPortal: 'ផ្ទាំងគិតលុយ' }[portalId] || cfg.title;
     const canSwitch = (cfg.views || []).length > 1;
+    // ចំណុចពណ៌ទិដ្ឋភាព (ដូចពណ៌របារចំហៀងនៃទិដ្ឋភាពនោះ)
+    const viewOf = { adminPortal: 'admin', managerPortal: 'manager', posPortal: 'cashier' };
+    const dot = id => `<span class="sb-view-dot view-${id}" aria-hidden="true"></span>`;
     const menuItem = (icon, label, attrs, tone) => `<button type="button" ${attrs}
         class="sb-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-md text-left ${tone || ''}">
         <iconify-icon icon="${icon}" class="text-[18px] flex-shrink-0 opacity-80"></iconify-icon><span class="flex-1">${label}</span></button>`;
@@ -255,13 +258,13 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
         <aside id="portalSidebar" class="w-[272px] text-white flex flex-col flex-shrink-0 select-none z-20 border-r border-white/[0.06]">
             <div class="sb-brand h-[72px] px-6 flex items-center justify-between flex-shrink-0 border-b border-white/[0.06]">
                 <button type="button" data-sb-menu onclick="if(${canSwitch}){openSidebarMenu(this, 'sbRoleMenu', 'down');}" aria-haspopup="${canSwitch ? 'menu' : 'false'}" aria-expanded="false"
-                    class="sb-switcher relative -mx-2 px-2 py-1.5 flex-1 min-w-0 flex items-center gap-3 rounded-lg hover:bg-white/[0.06] text-left transition-colors cursor-pointer" title="${roleLabel}">
+                    class="sb-switcher relative -mx-2 px-2 py-1.5 flex-1 min-w-0 flex items-center gap-3 rounded-lg hover:bg-white/[0.06] text-left transition-colors cursor-pointer" aria-label="${canSwitch ? `ប្តូរទិដ្ឋភាព · ឥឡូវ ${roleLabel}` : roleLabel}">
                     <span class="w-8 h-8 rounded-lg bg-white/[0.08] flex items-center justify-center flex-shrink-0">
                         <img src="${sharedRoot}/assets/logo-mark-transparent.png" alt="DIGITECHKH" class="w-5 h-5 object-contain">
                     </span>
                     <span class="min-w-0 flex-1 sb-brand-text">
                         <span class="block text-[15px] font-semibold text-white leading-tight tracking-wide">DIGITECHKH</span>
-                        <span class="block sb-sub truncate">${roleLabel}</span>
+                        <span class="flex items-center gap-1.5 sb-sub sb-view truncate">${dot(viewOf[portalId] || 'cashier')}${roleLabel}</span>
                     </span>
                     ${canSwitch ? '<iconify-icon icon="mdi:unfold-more-horizontal" class="text-lg sb-muted flex-shrink-0"></iconify-icon>' : ''}
                 </button>
@@ -270,9 +273,9 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
                 <p class="px-3 pt-1.5 pb-1 sb-group">ប្តូរទិដ្ឋភាព</p>
                 ${cfg.views.map(v => v.current
                     ? `<div class="sb-menu-item flex items-center gap-3 px-3 py-2 rounded-md bg-white/[0.06]">
-                        <iconify-icon icon="${v.icon}" class="text-[18px] opacity-80"></iconify-icon><span class="flex-1">${v.label}</span>
-                        <iconify-icon icon="mdi:check" class="text-[18px] text-emerald-400"></iconify-icon></div>`
-                    : menuItem(v.icon, v.label, `onclick="location.href='${roleRoot}/${v.href}'"`)).join('')}
+                        ${dot(v.id)}<span class="flex-1">${v.label}</span>
+                        <iconify-icon icon="mdi:check" class="text-[18px] sb-check"></iconify-icon></div>`
+                    : `<button type="button" role="menuitem" onclick="location.href='${roleRoot}/${v.href}'" class="sb-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-md text-left">${dot(v.id)}<span class="flex-1">${v.label}</span><iconify-icon icon="mdi:arrow-right" class="text-[16px] opacity-60"></iconify-icon></button>`).join('')}
             </div>` : ''}
 
             <div id="sbStatus" class="mx-3 mt-3 px-3 py-2.5 rounded-lg bg-white/[0.04]"></div>
@@ -283,14 +286,14 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
 
             <div class="sb-foot p-2.5 border-t">
                 <button type="button" data-sb-menu onclick="openSidebarMenu(this, 'sbUserMenu', 'up')" aria-haspopup="menu" aria-expanded="false"
-                    class="sb-user sb-row relative w-full !h-auto text-left rounded-xl transition-colors cursor-pointer" title="${cfg.userName} (${cfg.userRole})">
+                    class="sb-user sb-row relative w-full !h-auto text-left rounded-xl transition-colors cursor-pointer" aria-label="គណនី · ${cfg.userName}">
                     <div class="relative flex-shrink-0">
                         ${avatar}
                         <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 sb-presence"></span>
                     </div>
                     <span class="min-w-0 flex-1 user-meta">
                         <span class="block text-[14.5px] font-medium text-white leading-tight truncate">${cfg.userName}</span>
-                        <span class="block sb-sub text-[12px] text-white/70 leading-snug mt-0.5" title="${cfg.userRole}">${cfg.userRole}</span>
+                        <span class="block sb-sub text-[12px] text-white/70 leading-snug mt-0.5">${cfg.userRole}</span>
                     </span>
                     <iconify-icon icon="mdi:dots-horizontal" class="text-lg sb-muted flex-shrink-0"></iconify-icon>
                 </button>
@@ -360,7 +363,7 @@ function updateDarkModeUI(isDark) {
     const icons = document.querySelectorAll('#darkModeIcon, [data-dark-toggle-icon]');
     icons.forEach(icon => {
         icon.setAttribute('icon', isDark ? 'mdi:weather-sunny' : 'mdi:weather-night');
-        icon.className = isDark ? 'text-xl text-amber-400' : 'text-xl text-slate-500';
+        icon.classList.remove('text-amber-400', 'text-slate-500'); // ពណ៌តាមប៊ូតុង (ប្រផេះ) ដូចរូបតំណាងផ្សេងទៀត · រក្សាទំហំដើម
     });
     if (isDark) {
         document.documentElement.classList.add('dark');
@@ -408,53 +411,81 @@ function initDarkMode() {
     updateDarkModeUI(isDarkMode());
 }
 
-const NOTE_TONE_MAP = {
-    info: 'bg-blue-100 text-blue-700',
-    success: 'bg-emerald-100 text-emerald-700',
-    warning: 'bg-amber-100 text-amber-700',
-    danger: 'bg-rose-100 text-rose-700'
-};
+/* ===== ផ្ទាំងជូនដំណឹង =====
+   ក្រុមតាមភាពបន្ទាន់៖ «ត្រូវធ្វើភ្លាម» (danger) → «ត្រូវយកចិត្តទុកដាក់» (warning) → «ព័ត៌មាន» (info · success)
+   រូបតំណាងគ្មានប្រអប់ពណ៌ · ពណ៌តែលើរូបតំណាងនៃការងារបន្ទាន់ ឬត្រូវយកចិត្តទុកដាក់ប៉ុណ្ណោះ
+   ធាតុ kind: 'status' (ឧ. វេនបើកបានប៉ុន្មានម៉ោង) មិនមែនជាដំណឹងទេ — បង្ហាញជាបន្ទាត់ស្ថានភាពខាងក្រោម មិនរាប់ក្នុងចំនួន
+   ផ្ទាំងទាំងមូលគូរនៅទីនេះ ដូច្នេះក្បាលទំព័ររួម និងផ្ទាំងគិតលុយដូចគ្នា 100% */
+const NOTE_GROUPS = [
+    { id: 'danger', label: 'ត្រូវធ្វើភ្លាម', icon: 'text-rose-600' },
+    { id: 'warning', label: 'ត្រូវយកចិត្តទុកដាក់', icon: 'text-amber-600' },
+    { id: 'info', label: 'ព័ត៌មាន', icon: 'text-slate-400' }
+];
+
+function noteGroupOf(n) {
+    return n.tone === 'danger' ? 'danger' : n.tone === 'warning' ? 'warning' : 'info';
+}
 
 /* បង្កើតបញ្ជីជូនដំណឹងឡើងវិញ — ហៅពេលបើកទំព័រ និងពេលឃ្លាំងទិន្នន័យផ្លាស់ប្តូរ (រួមទាំងពីផ្ទាំងរុករកផ្សេង) */
 function refreshPortalNotifications() {
-    const rowsEl = document.getElementById('portalNotifRows');
-    if (!rowsEl) return;
-    const notes = portalNotificationList();
+    const menu = document.getElementById('portalNotifMenu');
+    if (!menu) return;
+    const all = portalNotificationList();
+    const status = all.filter(n => n.kind === 'status');
+    const notes = all.filter(n => n.kind !== 'status');
+    const urgent = notes.filter(n => n.tone === 'danger').length;
 
-    rowsEl.innerHTML = notes.length
-        ? notes.map(n => {
-            const tone = NOTE_TONE_MAP[n.tone] || NOTE_TONE_MAP.info;
-            const inner = `
-                <span class="w-9 h-9 rounded-xl ${tone} flex items-center justify-center flex-shrink-0">
-                    <iconify-icon icon="${n.icon || 'mdi:bell-outline'}" class="text-lg"></iconify-icon>
+    const row = n => {
+        const g = NOTE_GROUPS.find(x => x.id === noteGroupOf(n));
+        const inner = `
+            <iconify-icon icon="${n.icon || 'mdi:bell-outline'}" class="text-[18px] ${g.icon} flex-shrink-0 mt-0.5"></iconify-icon>
+            <span class="min-w-0 flex-1">
+                <span class="flex items-baseline gap-2">
+                    <span class="notif-title text-slate-800 flex-1 min-w-0">${n.title}</span>
+                    ${n.time ? `<span class="notif-time text-slate-500 sm-figure whitespace-nowrap flex-shrink-0">${n.time}</span>` : ''}
                 </span>
-                <div class="min-w-0 flex-1">
-                    <p class="text-[13px] font-semibold text-slate-800 leading-snug">${n.title}</p>
-                    ${n.note ? `<p class="text-[12px] text-slate-500 mt-0.5 leading-relaxed">${n.note}</p>` : ''}
-                    ${n.time ? `<p class="text-[11px] text-slate-400 font-medium mt-1 inline-flex items-center gap-1"><iconify-icon icon="mdi:clock-outline" class="text-[12px]"></iconify-icon>${n.time}</p>` : ''}
-                </div>
-                ${n.href ? '<iconify-icon icon="mdi:chevron-right" class="text-slate-300 text-lg flex-shrink-0 self-center"></iconify-icon>' : ''}`;
-            const cls = 'flex items-start gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition';
-            return n.href ? `<a href="${n.href}" class="${cls}">${inner}</a>` : `<div class="${cls}">${inner}</div>`;
-        }).join('')
-        : `<div class="py-10 text-center">
-               <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-500 flex items-center justify-center mx-auto mb-2">
-                   <iconify-icon icon="mdi:bell-check-outline" class="text-2xl"></iconify-icon>
-               </div>
-               <p class="text-[13px] font-semibold text-slate-700">គ្មានដំណឹងថ្មីទេ</p>
-               <p class="text-[12px] text-slate-400 mt-0.5">អ្វីៗដំណើរការធម្មតា</p>
-           </div>`;
+                ${n.note ? `<span class="notif-note text-slate-500 block mt-0.5">${n.note}</span>` : ''}
+            </span>
+            ${n.href ? '<i class="fas fa-chevron-right text-[10px] text-slate-300 flex-shrink-0 self-center"></i>' : ''}`;
+        const cls = 'flex items-start gap-3 px-4 py-2.5 transition-colors';
+        return n.href ? `<a href="${n.href}" class="${cls} hover:bg-slate-50">${inner}</a>` : `<div class="${cls}">${inner}</div>`;
+    };
 
-    const unread = typeof unreadNotificationCount === 'function' ? unreadNotificationCount() : notes.length;
+    const groups = NOTE_GROUPS.map(g => {
+        const items = notes.filter(n => noteGroupOf(n) === g.id);
+        return items.length ? `<div class="py-1">
+            <p class="notif-group text-slate-500 px-4 pt-2 pb-1">${g.label} · <span class="sm-figure">${items.length}</span></p>
+            ${items.map(row).join('')}
+        </div>` : '';
+    }).join('');
+
+    menu.innerHTML = `
+        <div class="px-4 h-12 border-b border-slate-100 flex items-center justify-between gap-2">
+            <span class="flex items-center gap-2">
+                <span class="notif-head text-slate-800">ការជូនដំណឹង</span>
+                ${notes.length ? `<span class="notif-count sm-figure ${urgent ? 'bg-rose-600 text-white' : 'bg-slate-100 text-slate-600'}">${notes.length}</span>` : ''}
+            </span>
+            ${urgent ? `<span class="notif-time text-rose-600 font-semibold">${urgent} បន្ទាន់</span>` : ''}
+        </div>
+        <div class="max-h-[min(480px,70vh)] overflow-y-auto scrollbar-hide divide-y divide-slate-100">
+            ${notes.length ? groups : `<div class="py-10 px-6 text-center">
+                <iconify-icon icon="mdi:bell-check-outline" class="text-3xl text-slate-300"></iconify-icon>
+                <p class="notif-title text-slate-700 mt-2">គ្មានដំណឹងថ្មីទេ</p>
+                <p class="notif-note text-slate-500 mt-0.5">អ្វីៗដំណើរការធម្មតា</p>
+            </div>`}
+        </div>
+        ${status.map(n => `<div class="px-4 py-2.5 border-t border-slate-100 bg-slate-50/70 flex items-center gap-2.5 rounded-b-xl">
+            <iconify-icon icon="${n.icon || 'mdi:information-outline'}" class="text-[16px] text-slate-400 flex-shrink-0"></iconify-icon>
+            <span class="notif-note text-slate-600 min-w-0 flex-1 truncate">${n.title}${n.note ? ` · ${n.note}` : ''}</span>
+        </div>`).join('')}`;
+
+    // ផ្លាកលេខលើកណ្តឹង៖ ចំនួនដំណឹង · ពណ៌ប្រផេះចាស់ ក្រហមពេលមានការងារបន្ទាន់ (ដូចផ្លាកលេខក្នុងរបារចំហៀង)
     const dot = document.getElementById('portalNotifDot');
-    if (dot) dot.classList.toggle('hidden', !unread);
-    const count = document.getElementById('portalNotifCount');
-    if (count) {
-        count.textContent = notes.length;
-        count.classList.toggle('hidden', !notes.length);
+    if (dot) {
+        dot.textContent = notes.length > 9 ? '9+' : String(notes.length);
+        dot.classList.toggle('hidden', !notes.length);
+        dot.classList.toggle('is-urgent', !!urgent);
     }
-    const readBtn = document.getElementById('portalNotifReadBtn');
-    if (readBtn) readBtn.classList.toggle('hidden', !(unread && typeof markNotificationsRead === 'function'));
 }
 
 function markPortalNotificationsRead() {
@@ -469,7 +500,10 @@ function renderPortalHeader() {
     const cfg = PORTAL_CONFIGS[portalId] || PORTAL_CONFIGS.smPortal;
     const title = host.dataset.title || '';
     const subtitle = host.dataset.subtitle || '';
-    const backHref = host.dataset.back || '';
+    // ?back=… (ផ្លូវទាក់ទងប៉ុណ្ណោះ) ឱ្យទំព័រមើលលម្អិតត្រឡប់ទៅទំព័រដែលបើកវា · ឧ. ពីទំព័របុគ្គលិកទៅវេនមួយ
+    const backParam = new URLSearchParams(location.search).get('back') || '';
+    const safeBack = /^(\.\.\/|[\w-])[\w./?=&%-]*$/.test(backParam) && !backParam.includes('//') ? backParam : '';
+    const backHref = host.dataset.back ? (safeBack || host.dataset.back) : '';
     const avatarSrc = `${getRoleRoot()}/shared/assets/avatars/${portalId}.jpg`;
 
     const notes = portalNotificationList();
@@ -503,18 +537,9 @@ function renderPortalHeader() {
                     <button onclick="toggleRowActionMenu(event, 'portalNotifMenu')" type="button" aria-label="ការជូនដំណឹង"
                         class="relative w-10 h-10 rounded-xl text-slate-500 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition cursor-pointer">
                         <iconify-icon icon="mdi:bell-outline" class="text-xl"></iconify-icon>
-                        <span id="portalNotifDot" class="hidden absolute top-2 right-2.5 w-2.5 h-2.5 rounded-full bg-rose-500 border-2 border-white"></span>
+                        <span id="portalNotifDot" class="hidden sm-figure" aria-hidden="true"></span>
                     </button>
-                    <div id="portalNotifMenu" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 text-left z-50">
-                        <div class="px-3 pt-2 pb-2.5 mb-1 border-b border-slate-100 flex items-center justify-between gap-2">
-                            <span class="flex items-center gap-2">
-                                <span class="text-[14px] font-bold text-slate-800">ការជូនដំណឹង</span>
-                                <span id="portalNotifCount" class="text-[11px] font-bold min-w-[22px] h-[22px] px-1.5 rounded-full bg-rose-500 text-white inline-flex items-center justify-center">0</span>
-                            </span>
-                            <button id="portalNotifReadBtn" onclick="markPortalNotificationsRead()" type="button" class="hidden text-[11px] font-medium text-blue-700 hover:text-blue-900">សម្គាល់ថាបានអានទាំងអស់</button>
-                        </div>
-                        <div id="portalNotifRows" class="max-h-[380px] overflow-y-auto scrollbar-hide space-y-0.5"></div>
-                    </div>
+                    <div id="portalNotifMenu" role="dialog" aria-label="ការជូនដំណឹង" class="hidden bg-white rounded-xl shadow-2xl border border-slate-200 text-left z-50 overflow-hidden"></div>
                 </div>
             </div>
         </header>`;

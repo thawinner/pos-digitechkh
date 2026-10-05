@@ -2784,6 +2784,7 @@ html.dark .bg-slate-300 {
 }
 
 /* Borders & Dividers */
+html.dark .border-slate-50,
 html.dark .border-slate-100,
 html.dark .border-slate-200,
 html.dark .border-slate-200\/70,
@@ -2792,6 +2793,7 @@ html.dark .border-slate-300 {
     border-color: #1e293b !important;
 }
 
+html.dark .divide-slate-50 > :not([hidden]) ~ :not([hidden]),
 html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
 html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
     border-color: #1e293b !important;

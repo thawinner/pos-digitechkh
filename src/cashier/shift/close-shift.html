@@ -52,9 +52,9 @@
 
                 <!-- ជំហានទី 1 — ព័ត៌មានប្រព័ន្ធ -->
                 <section id="step-1" class="space-y-5">
-                    <div class="p-4 rounded-2xl bg-blue-50 border border-blue-200 flex items-start gap-3">
-                        <i class="fas fa-circle-info text-blue-600 mt-0.5 flex-shrink-0"></i>
-                        <p class="sm-card-sub text-blue-900">
+                    <div class="p-4 rounded-2xl bg-white border border-slate-200 flex items-start gap-3">
+                        <i class="fas fa-eye-slash text-slate-400 mt-0.5 flex-shrink-0"></i>
+                        <p class="sm-card-sub text-slate-600">
                             ការរាប់បិទភ្នែក៖ ប្រព័ន្ធមិនបង្ហាញសាច់ប្រាក់ដែលរំពឹងទុកក្នុងថតទេ រហូតដល់លោកអ្នករាប់រួច។ ពិនិត្យតែព័ត៌មានខាងក្រោម រួចបន្តទៅរាប់។
                         </p>
                     </div>
@@ -65,42 +65,7 @@
 
                 <!-- ជំហានទី 2 — រាប់ប្រាក់ -->
                 <section id="step-2" class="hidden space-y-5">
-                    <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-start gap-3">
-                        <i class="fas fa-hand-holding-dollar text-amber-600 mt-0.5 flex-shrink-0"></i>
-                        <p class="sm-card-sub text-amber-900">
-                            សូមរាប់សាច់ប្រាក់ក្នុងថតរបស់លោកអ្នកឥឡូវនេះ ហើយបំពេញចំនួនសន្លឹកតាមប្រភេទក្រដាសប្រាក់។
-                        </p>
-                    </div>
-
-                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-5">
-                        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-                            <div class="p-5 border-b border-slate-100">
-                                <h3 class="sm-card-title text-slate-700">ក្រដាសប្រាក់ដុល្លារ</h3>
-                                <p class="sm-card-sub text-slate-500">បញ្ចូលចំនួនសន្លឹកជាក់ស្តែងក្នុងថតប្រាក់</p>
-                            </div>
-                            <div id="usdNotes" class="p-5 space-y-3"></div>
-                            <div class="px-5 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-                                <span class="sm-card-title text-slate-700">សរុបរាប់បានជាដុល្លារ</span>
-                                <span id="usdCounted" class="sm-kpi-value text-slate-800 sm-figure"></span>
-                            </div>
-                        </div>
-
-                        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-                            <div class="p-5 border-b border-slate-100 flex items-center justify-between gap-2">
-                                <div>
-                                    <h3 class="sm-card-title text-slate-700">ក្រដាសប្រាក់រៀល</h3>
-                                    <p class="sm-card-sub text-slate-500">បញ្ចូលចំនួនសន្លឹកជាក់ស្តែងក្នុងថតប្រាក់</p>
-                                </div>
-                                <button onclick="toggleRiel()" type="button" id="rielToggle"
-                                    class="sm-badge px-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition flex-shrink-0"></button>
-                            </div>
-                            <div id="khrNotes" class="p-5 space-y-3"></div>
-                            <div id="khrFoot" class="px-5 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-                                <span class="sm-card-title text-slate-700">សរុបរាប់បានជារៀល</span>
-                                <span id="khrCounted" class="sm-kpi-value text-slate-800 sm-figure"></span>
-                            </div>
-                        </div>
-                    </div>
+                    <div id="cashCount"></div>
                 </section>
 
                 <!-- ជំហានទី 3 — ភាពខុសគ្នា -->
@@ -379,7 +344,7 @@
             const over = new Date() - shiftEndDate(sh);
             document.getElementById('systemCards').innerHTML =
                 metricCard('ចំនួនវិក្កយបត្រ', `${s.count}`, 'text-slate-800', `${s.qty} ឯកតាទំនិញ`) +
-                metricCard('ទូទាត់តាមបាគង', fmtUSD(s.khqr), 'text-blue-600', `${s.khqrCount} វិក្កយបត្រ · មិនចូលថតប្រាក់`) +
+                metricCard('ទូទាត់តាមបាគង', fmtUSD(s.khqr), 'text-slate-800', `${s.khqrCount} វិក្កយបត្រ · មិនចូលថតប្រាក់`) +
                 metricCard('លុបចោល · ប្រគល់វិញ', `${s.voidCount} · ${s.returnCount}`, s.voidCount + s.returnCount ? 'text-rose-600' : 'text-slate-800', 'អនុម័តដោយអ្នកគ្រប់គ្រង') +
                 metricCard('រយៈពេលវេន', fmtDuration(opened), over > 0 ? 'text-amber-600' : 'text-slate-800',
                     `${sh.templateName} ${sh.start}–${sh.end}${over > 0 ? ` · ហួស ${fmtDuration(over)}` : ''}`);
@@ -436,71 +401,15 @@
 
         /* ===== ជំហានទី 2 ===== */
 
-        function noteRow(currency, note, label) {
-            const map = currency === 'usd' ? countUSD : countKHR;
-            const btn = (delta, icon, aria, skin) => `
-                <button onclick="bumpCount('${currency}', ${note}, ${delta})" type="button" aria-label="${aria} ${label}"
-                    class="w-10 h-10 rounded-xl border ${skin} inline-flex items-center justify-center transition flex-shrink-0">
-                    <i class="fas ${icon} text-xs"></i>
-                </button>`;
-            return `
-                <div class="flex items-center gap-3 py-0.5">
-                    <div class="w-24 flex-shrink-0 min-w-0">
-                        <span class="sm-value text-slate-700 sm-figure block whitespace-nowrap">${label}</span>
-                        <span data-line="${currency}-${note}" class="sm:hidden sm-td-sub sm-figure text-slate-300 block whitespace-nowrap">—</span>
-                    </div>
-                    <div class="flex items-center gap-1.5 flex-shrink-0 ml-auto sm:ml-0">
-                        ${btn(-1, 'fa-minus', 'បន្ថយ', 'border-slate-200 text-slate-500 hover:bg-slate-50')}
-                        <input id="${currency}In-${note}" type="number" inputmode="numeric" min="0" step="1" value="${map[note] || ''}" placeholder="0"
-                            oninput="setCount('${currency}', ${note}, this.value)" onkeydown="countKey(event, this)" onfocus="this.select()" aria-label="ចំនួនសន្លឹក ${label}"
-                            class="pos-num sm-value w-16 h-10 px-1 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-center focus:outline-none focus:border-blue-600 focus:bg-white transition">
-                        ${btn(1, 'fa-plus', 'បន្ថែម', 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100')}
-                    </div>
-                    <span data-line="${currency}-${note}" class="hidden sm:!block sm-value sm-figure flex-1 text-right text-slate-300 whitespace-nowrap">—</span>
-                </div>`;
-        }
-
-        /* Enter = ទៅក្រដាសប្រាក់បន្ទាប់ (ដុល្លារ → រៀល) ដូច្នេះរាប់ដោយក្តារចុចបានលឿន */
-        function countKey(e, el) {
-            if (e.key !== 'Enter') return;
-            e.preventDefault();
-            const all = Array.from(document.querySelectorAll('#usdNotes input, #khrNotes input'));
-            const next = all[all.indexOf(el) + 1];
-            if (next) next.focus(); else nextStep();
-        }
-
-        function bumpCount(currency, note, delta) {
-            const map = currency === 'usd' ? countUSD : countKHR;
-            map[note] = Math.max((map[note] || 0) + delta, 0);
-            const input = document.getElementById(`${currency}In-${note}`);
-            if (input) input.value = map[note] || '';
-            updateLineLabels();
-        }
-
+        // ឧបករណ៍រាប់ក្រដាសប្រាក់រួម (ui-components.js) — ដូចទំព័របើកវេន · Enter លើក្រដាសចុងក្រោយ = ជំហានបន្ទាប់
         function renderNoteInputs() {
-            document.getElementById('usdNotes').innerHTML = USD_NOTES.map(n => noteRow('usd', n, '$' + n)).join('');
-            document.getElementById('khrNotes').innerHTML = KHR_NOTES.map(n => noteRow('khr', n, n.toLocaleString('en-US') + ' ៛')).join('');
-            document.getElementById('rielToggle').classList.add('hidden');
-            updateLineLabels();
-        }
-
-        function setCount(currency, note, value) {
-            const qty = Math.max(parseInt(value, 10) || 0, 0);
-            if (currency === 'usd') countUSD[note] = qty; else countKHR[note] = qty;
-            updateLineLabels();
-        }
-
-        function updateLineLabels() {
-            const paint = (key, qty, text) => document.querySelectorAll(`[data-line="${key}"]`).forEach(el => {
-                el.textContent = qty ? text : '—';
-                el.classList.toggle('text-slate-700', !!qty);
-                el.classList.toggle('text-slate-300', !qty);
+            cashCounter('cashCount', {
+                usd: countUSD, khr: countKHR,
+                title: 'រាប់សាច់ប្រាក់ក្នុងថត',
+                sub: 'រាប់ក្រដាសប្រាក់ទាំងអស់ក្នុងថតឥឡូវនេះ ហើយបញ្ចូលចំនួនសន្លឹក',
+                onChange: () => { if (step === 2) renderWizardNav(); },
+                onDone: () => nextStep()
             });
-            USD_NOTES.forEach(n => paint(`usd-${n}`, countUSD[n], fmtUSD(n * countUSD[n])));
-            KHR_NOTES.forEach(n => paint(`khr-${n}`, countKHR[n], fmtKHR(n * countKHR[n])));
-            document.getElementById('usdCounted').textContent = fmtUSD(totalCountedUSD());
-            document.getElementById('khrCounted').textContent = fmtKHR(totalCountedKHR());
-            if (step === 2) renderWizardNav();
         }
 
         function totalCountedUSD() {
@@ -779,14 +688,11 @@
             if (next) {
                 if (nextCardEl) {
                     nextCardEl.innerHTML = `
-                        <div class="p-5 rounded-2xl bg-blue-50 border border-blue-200 flex flex-wrap items-center justify-between gap-4 no-print shadow-sm">
+                        <div class="p-5 rounded-2xl bg-white border border-slate-200 flex flex-wrap items-center justify-between gap-4 no-print shadow-sm">
                             <div class="flex items-center gap-3.5">
-                                <div class="w-11 h-11 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-lg flex-shrink-0 shadow-sm">
-                                    <i class="fas fa-calendar-day"></i>
-                                </div>
                                 <div>
-                                    <h4 class="sm-card-title text-blue-950">វេនបន្ទាប់របស់អ្នកថ្ងៃនេះ</h4>
-                                    <p class="sm-card-sub text-blue-800 mt-0.5">បន្ទាប់៖ <strong class="font-semibold">${next.template.name}</strong> ${next.template.start}–${next.template.end}${next.register ? ` · ${next.register}` : ''}</p>
+                                    <h4 class="sm-card-title text-slate-800">វេនបន្ទាប់របស់អ្នកថ្ងៃនេះ</h4>
+                                    <p class="sm-card-sub text-slate-600 mt-0.5">បន្ទាប់៖ <strong class="font-semibold">${next.template.name}</strong> ${next.template.start}–${next.template.end}${next.register ? ` · ${next.register}` : ''}</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2">
@@ -828,12 +734,12 @@
             if (!sh) {
                 const last = cashierShift();
                 if (!last) { location.replace('open-shift.html'); return; }
-                setPortalSubtitle(`វេន ${last.id} · ${personName(last.cashierId)}`);
+                setPortalSubtitle(`${last.templateName} · ${last.register} · ${personName(last.cashierId)}`);
                 closed = true;
                 renderClosedScreen(last);
                 return;
             }
-            setPortalSubtitle(`វេន ${sh.id} · ${sh.templateName} · បើកម៉ោង ${fmtTime(sh.openedAt)} · ${personName(sh.cashierId)}`);
+            setPortalSubtitle(`${sh.templateName} · ${sh.register} · បើកម៉ោង ${fmtTime(sh.openedAt)} · ${personName(sh.cashierId)}`);
             renderNoteInputs();
             updatePortalBadges();
             paintStep();

@@ -228,7 +228,7 @@
                     <span class="sm-badge hidden lg:!inline">ព្យួរ</span>
                     <span id="heldCount" class="hidden min-w-[20px] h-5 px-1 rounded-full bg-amber-400 text-amber-950 sm-badge font-bold inline-flex items-center justify-center">0</span>
                 </button>
-                <div id="heldMenu" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 text-left"></div>
+                <div id="heldMenu" class="hidden bg-white rounded-xl shadow-2xl border border-slate-200 p-2 text-left"></div>
             </div>
 
             <a href="../receipts/receipts.html" aria-label="វិក្កយបត្រក្នុងវេន"
@@ -263,25 +263,25 @@
                     class="pos-tap-sm rounded-xl text-slate-300 hover:text-white hover:bg-white/10 inline-flex items-center justify-center transition">
                     <i class="fas fa-ellipsis-vertical"></i>
                 </button>
-                <div id="moreMenu" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 text-left">
-                    <button id="fsBtn" onclick="closeAllFloatingDropdowns(); togglePosFullscreen()" type="button" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition text-left">
-                        <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0"><i id="fsIcon" class="fas fa-expand text-[11px]"></i></span>
+                <div id="moreMenu" class="hidden bg-white rounded-xl shadow-2xl border border-slate-200 p-2 text-left">
+                    <button id="fsBtn" onclick="closeAllFloatingDropdowns(); togglePosFullscreen()" type="button" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-slate-700 hover:bg-slate-50 transition text-left">
+                        <span class="w-5 text-slate-500 flex items-center justify-center flex-shrink-0"><i id="fsIcon" class="fas fa-expand text-sm"></i></span>
                         <span id="fsLabel">ពេញអេក្រង់</span>
                     </button>
-                    <button onclick="closeAllFloatingDropdowns(); toggleDarkMode()" type="button" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition text-left">
-                        <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0"><iconify-icon icon="mdi:theme-light-dark" class="text-sm"></iconify-icon></span>
+                    <button onclick="closeAllFloatingDropdowns(); toggleDarkMode()" type="button" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-slate-700 hover:bg-slate-50 transition text-left">
+                        <span class="w-5 text-slate-500 flex items-center justify-center flex-shrink-0"><iconify-icon icon="mdi:theme-light-dark" class="text-sm"></iconify-icon></span>
                         <span>ប្តូរទម្រង់ភ្លឺ / ងងឹត</span>
                     </button>
-                    <button onclick="closeAllFloatingDropdowns(); openDropDialog()" type="button" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition text-left">
-                        <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0"><i class="fas fa-vault text-[11px]"></i></span>
+                    <button onclick="closeAllFloatingDropdowns(); openDropDialog()" type="button" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-slate-700 hover:bg-slate-50 transition text-left">
+                        <span class="w-5 text-slate-500 flex items-center justify-center flex-shrink-0"><i class="fas fa-vault text-sm"></i></span>
                         ផ្ទេរប្រាក់ចូលទូដែក
                     </button>
-                    <a id="switchToManager" href="../../manager/dashboard/dashboard.html" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition text-left border-t border-slate-100 mt-1">
-                        <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0"><i class="fas fa-user-shield text-[11px]"></i></span>
+                    <a id="switchToManager" href="../../manager/dashboard/dashboard.html" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-slate-700 hover:bg-slate-50 transition text-left border-t border-slate-100 mt-1">
+                        <span class="w-5 text-slate-500 flex items-center justify-center flex-shrink-0"><i class="fas fa-user-shield text-sm"></i></span>
                         ប្តូរទៅតួនាទីអ្នកគ្រប់គ្រង
                     </a>
-                    <button onclick="closeAllFloatingDropdowns(); handleLogout()" type="button" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-rose-700 hover:bg-rose-50 transition text-left border-t border-slate-100 mt-1">
-                        <span class="w-7 h-7 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center flex-shrink-0"><i class="fas fa-right-from-bracket text-[11px]"></i></span>
+                    <button onclick="closeAllFloatingDropdowns(); handleLogout()" type="button" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-rose-700 hover:bg-rose-50 transition text-left border-t border-slate-100 mt-1">
+                        <span class="w-5 flex items-center justify-center flex-shrink-0"><i class="fas fa-right-from-bracket text-sm"></i></span>
                         ចាកចេញ
                     </button>
                 </div>
@@ -291,18 +291,9 @@
                 <button onclick="toggleRowActionMenu(event, 'portalNotifMenu')" type="button" aria-label="ការជូនដំណឹង"
                     class="pos-tap-sm rounded-xl text-slate-300 hover:text-white hover:bg-white/10 inline-flex items-center justify-center transition">
                     <iconify-icon icon="mdi:bell-outline" class="text-xl"></iconify-icon>
-                    <span id="portalNotifDot" class="hidden absolute top-2.5 right-3 w-2.5 h-2.5 rounded-full bg-rose-500 border-2 border-[#0f172a]"></span>
+                    <span id="portalNotifDot" class="hidden sm-figure" aria-hidden="true"></span>
                 </button>
-                <div id="portalNotifMenu" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 text-left z-50">
-                    <div class="px-3 pt-2 pb-2.5 mb-1 border-b border-slate-100 flex items-center justify-between gap-2">
-                        <span class="flex items-center gap-2">
-                            <span class="text-[14px] font-bold text-slate-800">ការជូនដំណឹង</span>
-                            <span id="portalNotifCount" class="text-[11px] font-bold min-w-[22px] h-[22px] px-1.5 rounded-full bg-rose-500 text-white inline-flex items-center justify-center">0</span>
-                        </span>
-                        <button id="portalNotifReadBtn" onclick="markPortalNotificationsRead()" type="button" class="hidden text-[11px] font-medium text-blue-700 hover:text-blue-900">សម្គាល់ថាបានអានទាំងអស់</button>
-                    </div>
-                    <div id="portalNotifRows" class="max-h-[380px] overflow-y-auto scrollbar-hide space-y-0.5"></div>
-                </div>
+                <div id="portalNotifMenu" role="dialog" aria-label="ការជូនដំណឹង" class="hidden bg-white rounded-xl shadow-2xl border border-slate-200 text-left z-50 overflow-hidden"></div>
             </div>
             <span class="flex items-center gap-2 pl-2 ml-1 border-l border-white/10">
                 <span id="meInitials" class="inline-flex"></span>
@@ -325,7 +316,7 @@
                            onkeydown="if(event.key==='Enter'){event.preventDefault();scanBarcode();}"
                            oninput="debouncedSearch()"
                            placeholder="ស្កេនបាកូដ ឬវាយឈ្មោះទំនិញ..."
-                           class="sm-td w-full h-14 pl-12 pr-14 rounded-2xl bg-[#1e293b] border-2 border-white/10 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-[#223047] transition">
+                           class="sm-td w-full h-14 pl-12 pr-14 rounded-xl bg-[#1e293b] border-2 border-white/10 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-[#223047] transition">
                     <kbd class="pos-kbd absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">F2</kbd>
                 </div>
                 <div id="lastAdded" class="hidden"></div>
@@ -336,13 +327,11 @@
                 <!-- ទំនិញញឹកញាប់ — ទំនិញគ្មានបាកូដ (នំប៉័ង នំខេក) ងាយរកបំផុត -->
                 <div id="quickKeys" class="mb-3"></div>
                 <div id="productGrid" class="pos-grid"></div>
-                <div id="gridMore" class="hidden mt-3 p-3 rounded-xl bg-white/5 border border-white/10 text-center">
+                <div id="gridMore" class="hidden mt-3 p-3 rounded-lg border border-white/10 text-center">
                     <p id="gridMoreText" class="sm-td-sub text-slate-300"></p>
                 </div>
                 <div id="productEmpty" class="hidden py-16 text-center">
-                    <div class="w-14 h-14 rounded-2xl bg-white/5 text-slate-500 flex items-center justify-center mx-auto mb-3">
-                        <i class="fas fa-magnifying-glass text-2xl"></i>
-                    </div>
+                    <i class="fas fa-magnifying-glass text-[32px] text-slate-500 mb-3"></i>
                     <h3 class="sm-card-title text-slate-200">រកមិនឃើញទំនិញទេ</h3>
                     <p class="sm-card-sub text-slate-400 mt-1">សូមពិនិត្យបាកូដ ឬជ្រើសរើសប្រភេទផ្សេង។</p>
                 </div>
@@ -367,11 +356,11 @@
                 </div>
                 <div class="flex items-center gap-1.5 flex-shrink-0">
                     <button id="cartHoldBtn" onclick="holdSale()" type="button" aria-label="ព្យួរការលក់"
-                            class="pos-tap-sm px-3 rounded-xl bg-white/5 hover:bg-amber-500/20 text-slate-300 hover:text-amber-200 inline-flex items-center justify-center gap-1.5 transition">
+                            class="pos-tap-sm px-3 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white inline-flex items-center justify-center gap-1.5 transition">
                         <i class="fas fa-pause text-sm"></i><span class="sm-badge">ព្យួរ</span><kbd class="pos-kbd">F4</kbd>
                     </button>
                     <button id="cartClearBtn" onclick="askClearCart()" type="button" aria-label="សម្អាតកន្ត្រក"
-                            class="pos-tap-sm rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 inline-flex items-center justify-center transition">
+                            class="pos-tap-sm rounded-lg hover:bg-white/10 text-slate-400 hover:text-rose-300 inline-flex items-center justify-center transition">
                         <i class="fas fa-trash-can text-sm"></i>
                     </button>
                     <button onclick="closeCartPanel()" type="button" aria-label="បិទផ្ទាំងកន្ត្រក"
@@ -391,7 +380,7 @@
         </div>
 
         <button id="cartFab" onclick="openCartPanel()" type="button"
-                class="lg:hidden fixed bottom-5 right-5 z-20 px-5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white shadow-xl transition inline-flex items-center gap-3">
+                class="lg:hidden fixed bottom-5 right-5 z-20 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-xl transition inline-flex items-center gap-3">
             <span class="relative">
                 <i class="fas fa-cart-shopping text-lg"></i>
                 <span id="fabCount" class="absolute -top-2 -right-2 min-w-[20px] h-5 px-1 rounded-full bg-rose-500 text-white sm-badge font-bold flex items-center justify-center">0</span>
@@ -402,17 +391,17 @@
 
     <!-- ===== ផ្ទាំងទូទាត់តាមកូដស្កេនបាគង (ផែនការកែលម្អ C10) =====
          នៅលើផ្ទាំងគិតលុយផ្ទាល់ ដូច្នេះអ្នកគិតលុយមិនចាកចេញពីបរិបទលក់ឡើយ -->
-    <div id="khqrOverlay" class="hidden fixed inset-0 z-50 bg-[#0b1220]/95 overflow-y-auto">
+    <div id="khqrOverlay" class="hidden fixed inset-0 z-50 bg-[#0f172a] overflow-y-auto">
         <div class="min-h-full flex items-center justify-center p-4 sm:p-6">
             <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                 <div class="flex flex-col items-center">
-                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#e11d2a] text-white mb-4">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#e11d2a] text-white mb-4">
                         <span class="font-bold tracking-wide">KHQR</span>
                         <span class="sm-badge">សូមស្កេនដើម្បីទូទាត់</span>
                     </div>
-                    <div class="relative bg-white rounded-3xl p-5 w-full max-w-[320px] shadow-2xl">
+                    <div class="relative bg-white rounded-xl p-5 w-full max-w-[320px] border border-slate-200 shadow-sm">
                         <div id="khqrBox" class="w-full"></div>
-                        <div id="khqrExpiredMask" class="hidden absolute inset-0 rounded-3xl bg-white/90 flex flex-col items-center justify-center text-center p-6">
+                        <div id="khqrExpiredMask" class="hidden absolute inset-0 rounded-xl bg-white/90 flex flex-col items-center justify-center text-center p-6">
                             <i class="fas fa-clock-rotate-left text-3xl text-rose-500 mb-2"></i>
                             <p class="sm-value text-rose-700">កូដផុតសុពលភាព</p>
                         </div>
@@ -422,7 +411,7 @@
                 </div>
                 <div>
                     <p class="sm-td-sub text-slate-400">ទឹកប្រាក់ត្រូវស្កេន</p>
-                    <p id="khqrAmount" class="text-[46px] leading-tight font-extrabold text-blue-300 sm-figure"></p>
+                    <p id="khqrAmount" class="text-[46px] leading-tight font-bold text-white sm-figure"></p>
                     <p id="khqrAmountKHR" class="sm-card-title text-slate-300 sm-figure"></p>
                     <p id="khqrReceipt" class="sm-td-sub text-slate-500 mt-1 sm-figure"></p>
 
@@ -439,11 +428,11 @@
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-6">
                         <button onclick="cancelKhqr()" type="button"
-                            class="sm-value px-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold transition inline-flex items-center justify-center gap-2">
+                            class="sm-value px-4 rounded-lg border border-white/15 hover:bg-white/10 text-white font-semibold transition inline-flex items-center justify-center gap-2">
                             <i class="fas fa-xmark"></i> បោះបង់
                         </button>
                         <button id="khqrMainBtn" onclick="khqrMainAction()" type="button"
-                            class="sm-value px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition inline-flex items-center justify-center gap-2"></button>
+                            class="sm-value px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition inline-flex items-center justify-center gap-2"></button>
                     </div>
                     <p class="sm-td-sub text-slate-500 mt-3">
                         ប្រព័ន្ធពិតទទួលការជូនដំណឹងពីបាគងដោយស្វ័យប្រវត្តិ។ នៅក្នុងគំរូសាកល្បងនេះ សូមចុចបញ្ជាក់ពេលឃើញការជូនដំណឹងទទួលប្រាក់។
@@ -454,22 +443,20 @@
     </div>
 
     <!-- ===== ផ្ទាំងជោគជ័យ ===== -->
-    <div id="successOverlay" class="hidden fixed inset-0 z-50 bg-[#0f172a]/95 flex items-center justify-center p-6">
-        <div class="w-full max-w-sm text-center">
-            <div class="w-20 h-20 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto mb-5 text-4xl">
-                <i class="fas fa-check"></i>
-            </div>
-            <p class="sm-card-title text-white text-[20px]">ទូទាត់ជោគជ័យ</p>
+    <div id="successOverlay" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-[2px] flex items-center justify-center p-4">
+        <div role="dialog" aria-modal="true" class="w-full max-w-sm rounded-xl bg-[#0f172a] border border-white/10 shadow-2xl p-6 text-center">
+            <i class="fas fa-circle-check text-[44px] text-emerald-400"></i>
+            <p class="sm-card-title text-white text-[20px] mt-3">ទូទាត់ជោគជ័យ</p>
             <p id="successAmount" class="pos-total mt-2"></p>
             <div id="successChange" class="mt-3"></div>
             <p id="successReceipt" class="sm-td-sub text-slate-400 mt-2 sm-figure"></p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-6">
                 <button onclick="printLastReceipt()" type="button"
-                        class="sm-value px-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold transition inline-flex items-center justify-center gap-2">
+                        class="sm-value px-4 rounded-lg border border-white/15 hover:bg-white/10 text-white font-semibold transition inline-flex items-center justify-center gap-2">
                     <i class="fas fa-print"></i> បោះពុម្ពបង្កាន់ដៃ
                 </button>
                 <button onclick="dismissSuccess()" type="button"
-                        class="sm-value px-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition inline-flex items-center justify-center gap-2">
+                        class="sm-value px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition inline-flex items-center justify-center gap-2">
                     <i class="fas fa-forward"></i> បន្តលក់
                 </button>
             </div>
@@ -480,19 +467,17 @@
     <!-- ===== បញ្ជរចាក់សោរពេលសម្រាក ===== -->
     <div id="lockOverlay" class="hidden fixed inset-0 z-[60] bg-[#0f172a] flex items-center justify-center p-6">
         <div class="w-full max-w-md text-center">
-            <div class="w-20 h-20 rounded-2xl bg-blue-500/15 text-blue-300 flex items-center justify-center mx-auto mb-5 text-4xl">
-                <i class="fas fa-user-lock"></i>
-            </div>
-            <p class="sm-card-title text-white text-[20px]">បញ្ជរត្រូវបានចាក់សោរ</p>
+            <i class="fas fa-user-lock text-[40px] text-slate-400"></i>
+            <p class="sm-card-title text-white text-[20px] mt-4">បញ្ជរត្រូវបានចាក់សោរ</p>
             <p id="lockDetail" class="sm-card-sub text-slate-400 mt-2"></p>
-            <div class="mt-5 p-4 rounded-2xl bg-white/5 border border-white/10 text-left">
+            <div class="mt-5 p-4 rounded-lg border border-white/10 text-left">
                 <p class="sm-td-sub text-slate-300">
                     វេននៅបើកដដែល ហើយថតប្រាក់មិនត្រូវបានរាប់ទេ។ មានតែអ្នកគិតលុយដែលបើកវេននេះទេ ដែលអាចដោះសោរបាន។
                     អ្នកគិតលុយផ្សេងត្រូវបើកវេន និងថតប្រាក់ផ្ទាល់ខ្លួន។
                 </p>
             </div>
             <button onclick="unlockTerminal()" type="button"
-                class="mt-5 w-full sm-value px-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition inline-flex items-center justify-center gap-2">
+                class="mt-5 w-full sm-value px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition inline-flex items-center justify-center gap-2">
                 <i class="fas fa-unlock"></i> ដោះសោរដោយលេខសម្ងាត់
             </button>
         </div>
@@ -501,19 +486,17 @@
     <!-- ===== បញ្ជរមានវេនរបស់អ្នកផ្សេង ===== -->
     <div id="foreignOverlay" class="hidden fixed inset-0 z-[61] bg-[#0f172a] flex items-center justify-center p-6">
         <div class="w-full max-w-md text-center">
-            <div class="w-20 h-20 rounded-2xl bg-amber-500/15 text-amber-300 flex items-center justify-center mx-auto mb-5 text-4xl">
-                <i class="fas fa-user-slash"></i>
-            </div>
-            <p class="sm-card-title text-white text-[20px]">បញ្ជរនេះមានវេនរបស់អ្នកផ្សេង</p>
+            <i class="fas fa-user-slash text-[40px] text-amber-400"></i>
+            <p class="sm-card-title text-white text-[20px] mt-4">បញ្ជរនេះមានវេនរបស់អ្នកផ្សេង</p>
             <p id="foreignDetail" class="sm-card-sub text-slate-400 mt-2"></p>
-            <div class="mt-5 p-4 rounded-2xl bg-white/5 border border-white/10 text-left">
+            <div class="mt-5 p-4 rounded-lg border border-white/10 text-left">
                 <p class="sm-td-sub text-slate-300">មួយថតប្រាក់ មួយអ្នកទទួលខុសត្រូវ។ អ្នកគិតលុយម្នាក់នោះត្រូវបិទវេនជាមុនសិន ទើបលោកអ្នកអាចបើកវេនផ្ទាល់ខ្លួនបាន។</p>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-5">
-                <a id="foreignManagerLink" href="../../manager/dashboard/dashboard.html" class="pos-tap sm-value px-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold transition inline-flex items-center justify-center gap-2">
+                <a id="foreignManagerLink" href="../../manager/dashboard/dashboard.html" class="pos-tap sm-value px-4 rounded-lg border border-white/15 hover:bg-white/10 text-white font-semibold transition inline-flex items-center justify-center gap-2">
                     <i class="fas fa-user-shield"></i> អ្នកគ្រប់គ្រង
                 </a>
-                <button onclick="posLogout(); location.href='../../index.html'" type="button" class="sm-value px-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition inline-flex items-center justify-center gap-2">
+                <button onclick="posLogout(); location.href='../../index.html'" type="button" class="sm-value px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition inline-flex items-center justify-center gap-2">
                     <i class="fas fa-right-from-bracket"></i> ចាកចេញ
                 </button>
             </div>
@@ -521,10 +504,9 @@
     </div>
 
     <!-- ===== ផ្ទេរប្រាក់ចូលទូដែក (ផែនការកែលម្អ C13) ===== -->
-    <div id="dropModal" class="hidden fixed inset-0 z-[55] bg-slate-950/75 backdrop-blur-sm items-center justify-center p-4">
-        <div class="w-full max-w-md rounded-3xl bg-[#0f172a] border border-white/10 p-5 sm:p-6" onclick="event.stopPropagation()">
-            <div class="flex items-start gap-3">
-                <div class="w-12 h-12 rounded-2xl bg-blue-500/15 text-blue-300 flex items-center justify-center text-xl flex-shrink-0"><i class="fas fa-vault"></i></div>
+    <div id="dropModal" data-modal="closeDropDialog" onclick="closeDropDialog()" class="hidden fixed inset-0 z-[55] bg-slate-950/60 backdrop-blur-[2px] items-center justify-center p-4">
+        <div role="dialog" aria-modal="true" class="w-full max-w-md rounded-xl bg-[#0f172a] border border-white/10 p-5 sm:p-6" onclick="event.stopPropagation()">
+            <div>
                 <div>
                     <p class="sm-card-title text-white">ផ្ទេរប្រាក់ចូលទូដែក</p>
                     <p class="sm-td-sub text-slate-400 mt-0.5">រាប់ប្រាក់ដែលដកចេញពីថត ដាក់ក្នុងស្រោមសំបុត្រ ហើយកត់ចំនួននៅទីនេះ</p>
@@ -534,25 +516,25 @@
                 <label class="block">
                     <span class="sm-td-sub text-slate-400">ដុល្លារ</span>
                     <input id="dropUSD" type="number" inputmode="decimal" min="0" step="1" placeholder="0"
-                        class="pos-num sm-value w-full mt-1 px-3 rounded-xl bg-[#1e293b] border border-white/10 text-white text-right focus:outline-none focus:border-blue-500">
+                        class="pos-num sm-value sm-figure w-full h-12 mt-1 px-3 rounded-lg bg-[#1e293b] border border-white/10 text-white text-right focus:outline-none focus:border-blue-500">
                 </label>
                 <label class="block">
                     <span class="sm-td-sub text-slate-400">រៀល</span>
                     <input id="dropKHR" type="number" inputmode="numeric" min="0" step="1000" placeholder="0"
-                        class="pos-num sm-value w-full mt-1 px-3 rounded-xl bg-[#1e293b] border border-white/10 text-white text-right focus:outline-none focus:border-blue-500">
+                        class="pos-num sm-value sm-figure w-full h-12 mt-1 px-3 rounded-lg bg-[#1e293b] border border-white/10 text-white text-right focus:outline-none focus:border-blue-500">
                 </label>
             </div>
             <p id="dropErr" class="hidden sm-td-sub text-rose-400 mt-2">សូមបញ្ចូលចំនួនប្រាក់ដែលផ្ទេរ</p>
             <div class="space-y-2.5 mt-5">
                 <button onclick="submitDrop(true)" type="button"
-                    class="w-full sm-value px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition inline-flex items-center justify-center gap-2">
+                    class="w-full sm-value h-12 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition inline-flex items-center justify-center gap-2">
                     <i class="fas fa-user-shield"></i> អ្នកគ្រប់គ្រងទទួលនៅទីនេះ
                 </button>
                 <button onclick="submitDrop(false)" type="button"
-                    class="w-full sm-value px-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold transition inline-flex items-center justify-center gap-2">
+                    class="w-full sm-value h-12 px-4 rounded-lg border border-white/15 hover:bg-white/5 text-white font-semibold transition inline-flex items-center justify-center gap-2">
                     <i class="fas fa-paper-plane"></i> កត់ត្រា ហើយរង់ចាំអ្នកគ្រប់គ្រងទទួល
                 </button>
-                <button onclick="closeDropDialog()" type="button" class="w-full sm-value px-4 rounded-2xl text-slate-400 hover:text-white transition">បោះបង់</button>
+                <button onclick="closeDropDialog()" type="button" class="w-full sm-value h-11 px-4 rounded-lg text-slate-400 hover:text-white transition">បោះបង់</button>
             </div>
         </div>
     </div>
@@ -641,26 +623,21 @@
             const next = nextShiftForCashier(sh.cashierId, sh.templateCode);
             if (passed && next) {
                 host.innerHTML = `
-                    <div class="p-4 rounded-2xl bg-amber-500/20 border border-amber-400/50 text-white shadow-lg space-y-3">
-                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                            <div class="flex items-start gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold text-lg flex-shrink-0">
-                                    <i class="fas fa-calendar-day"></i>
-                                </div>
-                                <div>
-                                    <h4 class="font-bold text-white text-base">វេនរបស់អ្នកថ្ងៃនេះ</h4>
-                                    <p class="text-xs text-amber-200 mt-0.5">វេនបច្ចុប្បន្ន <strong class="font-semibold text-white">${sh.templateName}</strong> ត្រូវបញ្ចប់ម៉ោង ${sh.end}</p>
-                                    <p class="text-xs text-emerald-300 font-semibold mt-0.5">វេនបន្ទាប់ <strong class="text-white">${next.template.name}</strong> ម៉ោង ${next.from || next.template.start}–${next.until || next.template.end}${next.register ? ` · ${next.register}` : ''}</p>
-                                </div>
+                    <div class="p-3 pl-4 rounded-lg bg-[#0f172a] border border-amber-400/60 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <div class="flex items-start gap-3 min-w-0">
+                            <i class="fas fa-clock text-amber-400 mt-1"></i>
+                            <div class="min-w-0">
+                                <p class="sm-td font-semibold text-white">វេន${sh.templateName}ដល់ម៉ោងបិទ ${sh.end}</p>
+                                <p class="sm-td-sub text-slate-400 mt-0.5">វេនបន្ទាប់របស់អ្នក៖ ${next.template.name} ម៉ោង ${next.from || next.template.start}–${next.until || next.template.end}${next.register ? ` · ${next.register}` : ''}</p>
                             </div>
-                            <div class="flex items-center gap-2 flex-shrink-0">
-                                <a href="../shift/close-shift.html?next=${next.template.code}" class="h-10 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold inline-flex items-center gap-1.5 transition shadow">
-                                    <i class="fas fa-lock"></i> បិទវេន... ហើយបន្តវេន${next.template.name}
-                                </a>
-                                <button type="button" onclick="dismissHandoverNotice()" class="h-10 px-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 text-xs font-medium transition">
-                                    បន្តលក់លើវេននេះ
-                                </button>
-                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                            <button type="button" onclick="dismissHandoverNotice()" class="sm-td-sub h-11 px-3.5 rounded-lg border border-white/15 hover:bg-white/10 text-slate-200 font-medium transition">
+                                បន្តលក់លើវេននេះ
+                            </button>
+                            <button type="button" onclick="location.href='../shift/close-shift.html?next=${next.template.code}'" class="sm-td-sub h-11 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-1.5 transition">
+                                <i class="fas fa-lock"></i> បិទវេន ហើយបន្តវេន${next.template.name}
+                            </button>
                         </div>
                     </div>`;
             } else {
@@ -697,14 +674,14 @@
             if (drops) parts.push(`${drops} ការផ្ទេររង់ចាំបញ្ជាក់`);
             const remainText = msToEnd > 0 ? `នៅសល់ ${fmtDuration(msToEnd)}` : 'ហួសម៉ោងវេន';
             host.innerHTML = `
-                <div class="flex items-center justify-between gap-3 p-2.5 pl-3.5 rounded-2xl bg-amber-500/15 border border-amber-400/40 text-amber-200">
-                    <div class="flex items-center gap-2.5 min-w-0">
+                <div class="flex items-center justify-between gap-3 p-2 pl-4 rounded-lg bg-[#0f172a] border border-amber-400/60">
+                    <div class="flex items-center gap-3 min-w-0">
                         <i class="fas fa-triangle-exclamation text-amber-400"></i>
-                        <span class="sm-td text-amber-100 truncate">${remainText} · មាន ${parts.join(' / ')} · ដោះស្រាយមុនបិទវេន</span>
+                        <span class="sm-td text-slate-100 truncate">${remainText} · មាន ${parts.join(' / ')} · ដោះស្រាយមុនបិទវេន</span>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
-                        ${held ? `<button onclick="toggleRowActionMenu(event, 'heldMenu')" type="button" class="sm-badge px-3 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold transition">មើលការលក់ព្យួរ</button>` : ''}
-                        ${drops ? `<button onclick="openDropDialog()" type="button" class="sm-badge px-3 py-1 rounded-xl bg-blue-500 hover:bg-blue-400 text-white font-semibold transition">ពិនិត្យទូដែក</button>` : ''}
+                        ${held ? `<button onclick="toggleRowActionMenu(event, 'heldMenu')" type="button" class="sm-td-sub px-3.5 rounded-lg border border-white/15 hover:bg-white/10 text-slate-100 font-semibold transition">មើលការលក់ព្យួរ</button>` : ''}
+                        ${drops ? `<button onclick="openDropDialog()" type="button" class="sm-td-sub px-3.5 rounded-lg border border-white/15 hover:bg-white/10 text-slate-100 font-semibold transition">ពិនិត្យទូដែក</button>` : ''}
                     </div>
                 </div>`;
         }
@@ -729,11 +706,11 @@
             const nextOnReg = nextAssigneeForRegister(sh.register, sh.templateCode);
 
             if (opened > 12 * 3600000) {
-                tone = 'bg-rose-500/15 border-rose-500/40';
+                tone = 'bg-white/5 border-rose-500/60';
                 iconCls = 'fas fa-triangle-exclamation text-rose-300 text-xs';
                 text = `${sh.templateName} · បើកលើស 12 ម៉ោង · សូមបិទវេន`;
             } else if (over > 0) {
-                tone = 'bg-amber-500/15 border-amber-500/40';
+                tone = 'bg-white/5 border-amber-400/60';
                 iconCls = 'fas fa-clock text-amber-300 text-xs';
                 if (next) {
                     text = `${sh.templateName} · ហួសម៉ោងវេន · បន្ត${next.template.name}`;
@@ -741,7 +718,7 @@
                     text = `${sh.templateName} · ហួសម៉ោងវេន ${fmtDuration(over)}`;
                 }
             } else if (msToEnd <= 30 * 60000) {
-                tone = 'bg-amber-500/15 border-amber-500/40';
+                tone = 'bg-white/5 border-amber-400/60';
                 iconCls = 'fas fa-clock text-amber-300 text-xs';
                 if (next) {
                     text = `បិទម៉ោង ${sh.end} · បន្ត${next.template.name}`;
@@ -751,7 +728,7 @@
                     text = `បិទម៉ោង ${sh.end} (នៅសល់ ${fmtDuration(msToEnd)})`;
                 }
             }
-            wrap.className = `hidden md:!inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border ${tone}`;
+            wrap.className = `hidden md:!inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border ${tone}`;
             icon.className = iconCls;
             chip.innerHTML = text;
             document.getElementById('receiptCount').textContent = shiftSales().filter(s => !isVoided(s)).length;
@@ -814,10 +791,10 @@
             const st = posSettings();
             const over = s.expectedUSD > st.drawerLimitUSD || s.expectedKHR > st.drawerLimitKHR;
             host.innerHTML = over ? `
-                <div class="flex items-center gap-3 p-2.5 pl-3.5 rounded-2xl bg-blue-500/15 border border-blue-400/40">
-                    <i class="fas fa-vault text-blue-300"></i>
-                    <p class="sm-td text-blue-100 flex-1 min-w-0">សាច់ប្រាក់ក្នុងថតលើសកំណត់ · សូមផ្ទេរប្រាក់ខ្លះចូលទូដែក</p>
-                    <button onclick="openDropDialog()" type="button" class="sm-badge px-3.5 rounded-xl bg-blue-500 hover:bg-blue-400 text-white font-semibold transition flex-shrink-0">ផ្ទេរចូលទូដែក</button>
+                <div class="flex items-center gap-3 p-2 pl-4 rounded-lg bg-[#0f172a] border border-amber-400/60">
+                    <i class="fas fa-vault text-amber-400"></i>
+                    <p class="sm-td text-slate-100 flex-1 min-w-0">សាច់ប្រាក់ក្នុងថតលើសកំណត់ · សូមផ្ទេរប្រាក់ខ្លះចូលទូដែក</p>
+                    <button onclick="openDropDialog()" type="button" class="sm-td-sub px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition flex-shrink-0">ផ្ទេរចូលទូដែក</button>
                 </div>` : '';
         }
 
@@ -962,11 +939,11 @@
         let lastAddedTimer = null;
         function showLastAdded(p, qty) {
             const el = document.getElementById('lastAdded');
-            el.className = 'flex items-center gap-3 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/25';
+            el.className = 'flex items-center gap-3 px-3 py-2 rounded-lg bg-[#0f172a] border border-white/10';
             el.innerHTML = `
-                <span class="w-9 h-9 rounded-lg bg-[#0f172a] p-0.5 flex items-center justify-center overflow-hidden flex-shrink-0">${productImgHtml(p, 'text-sm')}</span>
-                <span class="sm-td text-emerald-100 flex-1 min-w-0 truncate"><i class="fas fa-circle-check text-emerald-400 mr-1.5"></i>${p.name}</span>
-                <span class="sm-td-sub text-emerald-200 sm-figure flex-shrink-0">× ${qty} · ${fmtUSD(p.price * qty)}</span>`;
+                <span class="w-9 h-9 rounded-md bg-white/5 p-0.5 flex items-center justify-center overflow-hidden flex-shrink-0">${productImgHtml(p, 'text-sm')}</span>
+                <span class="sm-td text-slate-100 flex-1 min-w-0 truncate"><i class="fas fa-circle-check text-emerald-400 mr-1.5"></i>${p.name}</span>
+                <span class="sm-td-sub text-slate-300 sm-figure flex-shrink-0">× ${qty} · ${fmtUSD(p.price * qty)}</span>`;
             clearTimeout(lastAddedTimer);
             lastAddedTimer = setTimeout(() => { el.className = 'hidden'; }, 4000);
         }
@@ -1102,19 +1079,19 @@
             count.textContent = held.length;
             count.classList.toggle('hidden', !held.length);
             document.getElementById('heldMenu').innerHTML = `
-                <div class="px-3 py-2 mb-1 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
-                    <p class="sm-td-sub text-slate-500">ការលក់ព្យួរក្នុងវេននេះ</p>
+                <div class="px-3 pt-1.5 pb-2 mb-1 border-b border-slate-100 flex items-center justify-between">
+                    <p class="sm-td-sub font-semibold text-slate-500">ការលក់ព្យួរក្នុងវេននេះ</p>
                     <span class="sm-td-sub text-slate-400 sm-figure">${held.length} / ${limit}</span>
                 </div>
                 ${held.length ? held.map(h => {
                     const t = saleTotals(h.items, h.discountPercent);
-                    return `<div class="px-3 py-2.5 rounded-xl hover:bg-slate-50 flex items-center gap-3">
+                    return `<div class="px-3 py-2.5 rounded-lg hover:bg-slate-50 flex items-center gap-3">
                         <div class="min-w-0 flex-1">
                             <p class="sm-value text-slate-700">${h.label} · <span class="sm-figure">${fmtUSD(t.gross)}</span></p>
                             <p class="sm-td-sub text-slate-400">${fmtTime(h.at)} · ${h.items.length} មុខ · ${t.qty} ឯកតា</p>
                         </div>
-                        <button onclick="resumeHeld('${h.id}')" type="button" class="sm-badge !min-h-[40px] px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold">បន្ត</button>
-                        <button onclick="discardHeld('${h.id}')" type="button" aria-label="បោះបង់" class="!min-h-[40px] w-10 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-500 hover:text-rose-600"><i class="fas fa-trash-can text-xs"></i></button>
+                        <button onclick="resumeHeld('${h.id}')" type="button" class="sm-badge !min-h-[40px] px-3.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold">បន្ត</button>
+                        <button onclick="discardHeld('${h.id}')" type="button" aria-label="បោះបង់" class="!min-h-[40px] w-10 rounded-lg border border-slate-200 hover:bg-rose-50 text-slate-500 hover:text-rose-600"><i class="fas fa-trash-can text-xs"></i></button>
                     </div>`;
                 }).join('') : '<p class="px-3 py-6 text-center sm-td-sub text-slate-400">មិនមានការលក់ព្យួរទេ</p>'}`;
         }
@@ -1208,16 +1185,14 @@
                 const sales = shiftSales().filter(s => !isVoided(s));
                 const held = sh ? heldOfShift(sh.id).length : 0;
                 const stat = (label, value) => `
-                    <div class="px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/5">
+                    <div class="px-3 py-2.5 rounded-lg border border-white/10">
                         <p class="sm-td-sub text-slate-500">${label}</p>
                         <p class="sm-value text-slate-300 sm-figure mt-0.5">${value}</p>
                     </div>`;
                 // មិនបង្ហាញទឹកប្រាក់សាច់ប្រាក់សរុបទេ — ការរាប់បិទវេនត្រូវតែបិទភ្នែក (C1)
                 lines.innerHTML = `
                     <div class="h-full flex flex-col items-center justify-center px-5 py-8 text-center">
-                        <div class="w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center mb-3">
-                            <i class="fas fa-barcode text-2xl"></i>
-                        </div>
+                        <i class="fas fa-barcode text-[36px] text-slate-500 mb-3"></i>
                         <p class="sm-card-title text-slate-200">ត្រៀមរួចរាល់</p>
                         <p class="sm-card-sub text-slate-400 mt-1">ស្កេនបាកូដ ឬចុចលើក្រឡាទំនិញ<br>ដើម្បីចាប់ផ្តើមការលក់</p>
                         <div class="w-full grid grid-cols-2 gap-2 mt-6 text-left">
@@ -1231,7 +1206,7 @@
                     const last = l.qty === 1;
                     return `
                         <div class="px-3 py-2.5 flex gap-3">
-                            <div class="w-11 h-11 mt-0.5 rounded-xl bg-[#0f172a] border border-white/10 p-1 flex items-center justify-center overflow-hidden flex-shrink-0">
+                            <div class="w-11 h-11 mt-0.5 rounded-lg bg-[#0f172a] border border-white/10 p-1 flex items-center justify-center overflow-hidden flex-shrink-0">
                                 ${productImgHtml(p, 'text-sm')}
                             </div>
                             <div class="min-w-0 flex-1">
@@ -1243,15 +1218,15 @@
                                     <p class="sm-td-sub text-slate-400 sm-figure truncate">${fmtUSD(p.price)} · ${p.unit}</p>
                                     <div class="flex items-center gap-1 flex-shrink-0">
                                         <button onclick="changeQty('${l.sku}', -1)" type="button" aria-label="${last ? 'ដកចេញពីកន្ត្រក' : 'បន្ថយចំនួន'}"
-                                            class="pos-tap-sm rounded-xl border inline-flex items-center justify-center transition ${last
-                                                ? 'border-rose-500/40 text-rose-300 hover:bg-rose-500/15'
-                                                : 'border-white/15 text-slate-200 hover:bg-white/10'}">
+                                            class="pos-tap-sm rounded-lg border border-white/15 inline-flex items-center justify-center transition ${last
+                                                ? 'text-slate-400 hover:text-rose-300 hover:bg-white/10'
+                                                : 'text-slate-200 hover:bg-white/10'}">
                                             <i class="fas ${last ? 'fa-trash-can' : 'fa-minus'} text-xs"></i>
                                         </button>
                                         <button onclick="editQty('${l.sku}')" type="button" aria-label="កំណត់ចំនួន"
-                                            class="pos-tap-sm min-w-[48px] px-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 sm-value text-white sm-figure">${l.qty}</button>
+                                            class="pos-tap-sm min-w-[48px] px-1 rounded-lg hover:bg-white/10 border border-white/15 sm-value text-white sm-figure">${l.qty}</button>
                                         <button onclick="changeQty('${l.sku}', 1)" type="button" aria-label="បន្ថែមចំនួន"
-                                            class="pos-tap-sm rounded-xl bg-blue-600 hover:bg-blue-500 text-white inline-flex items-center justify-center transition">
+                                            class="pos-tap-sm rounded-lg border border-white/15 text-slate-200 hover:bg-white/10 inline-flex items-center justify-center transition">
                                             <i class="fas fa-plus text-xs"></i>
                                         </button>
                                     </div>
@@ -1291,8 +1266,8 @@
             const ready = cart.length > 0;
             document.getElementById('paymentPanel').innerHTML = `
                 <button onclick="enterCheckout()" type="button" ${ready ? '' : 'disabled'}
-                    class="sm-card-title w-full !min-h-[64px] px-5 rounded-2xl font-bold transition inline-flex items-center justify-between gap-3 ${ready
-                        ? 'bg-blue-600 hover:bg-blue-500 text-white'
+                    class="sm-card-title w-full !min-h-[64px] px-5 rounded-xl font-bold transition inline-flex items-center justify-between gap-3 ${ready
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white'
                         : 'bg-white/5 text-slate-600 cursor-not-allowed'}">
                     <span class="inline-flex items-center gap-2.5"><i class="fas fa-cash-register"></i> គិតលុយ</span>
                     <span class="inline-flex items-center gap-3"><kbd class="pos-kbd">F8</kbd><i class="fas fa-arrow-right"></i></span>
@@ -1310,35 +1285,33 @@
             const limit = discountLimitFor(ME_CASHIER);
             const reasonRow = discountPercent > 0 ? `
                 <button onclick="pickDiscountReason()" type="button"
-                    class="w-full px-3 rounded-xl border text-left inline-flex items-center justify-between gap-2 transition ${discountReason
-                        ? 'bg-amber-500/10 border-amber-500/30 text-amber-100' : 'bg-rose-500/10 border-rose-500/40 text-rose-200'}">
+                    class="w-full px-3 rounded-lg border bg-[#0f172a] text-left inline-flex items-center justify-between gap-2 transition ${discountReason
+                        ? 'border-white/10 text-slate-200 hover:border-blue-600' : 'border-rose-500/60 text-rose-300'}">
                     <span class="sm-td-sub truncate"><i class="fas fa-tag mr-1.5"></i>${discountReason ? `មូលហេតុ៖ ${escapeText(discountReason)}` : 'សូមជ្រើសរើសមូលហេតុនៃការបញ្ចុះតម្លៃ'}</span>
-                    ${discountApproverId ? `<span class="sm-td-sub text-emerald-300 flex-shrink-0"><i class="fas fa-user-shield mr-1"></i>${personName(discountApproverId)}</span>` : '<i class="fas fa-chevron-right text-[10px] opacity-60"></i>'}
+                    ${discountApproverId ? `<span class="sm-td-sub text-slate-400 flex-shrink-0"><i class="fas fa-user-shield mr-1"></i>${personName(discountApproverId)}</span>` : '<i class="fas fa-chevron-right text-[10px] opacity-60"></i>'}
                 </button>` : '';
             document.getElementById('saleOptions').innerHTML = `
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="sm-td-sub text-slate-400 block mb-1">អតិថិជន</label>
                         <button onclick="toggleRowActionMenu(event, 'customerMenu')" type="button"
-                            class="w-full px-3 rounded-xl bg-[#0f172a] border border-white/10 hover:border-blue-600 text-left inline-flex items-center justify-between gap-2 transition">
+                            class="w-full px-3 rounded-lg bg-[#0f172a] border border-white/10 hover:border-blue-600 text-left inline-flex items-center justify-between gap-2 transition">
                             <span class="sm-td ${c ? 'text-slate-100' : 'text-slate-400'} truncate">${c ? c.name : 'អតិថិជនដើរចូល'}</span>
                             <i class="fas fa-chevron-down text-[10px] text-slate-500 flex-shrink-0"></i>
                         </button>
-                        <div id="customerMenu" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 text-left">
-                            <div class="px-3 py-2 mb-1 rounded-xl bg-slate-50 border border-slate-100">
-                                <p class="sm-td-sub text-slate-400">អតិថិជនដែលមានគណនីឥណទាន</p>
-                            </div>
-                            <button onclick="pickCustomer('')" type="button" class="sm-row-menu-item w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition text-left">
+                        <div id="customerMenu" class="hidden bg-white rounded-xl shadow-2xl border border-slate-200 p-2 text-left">
+                            <p class="px-3 pt-1.5 pb-2 mb-1 border-b border-slate-100 sm-td-sub font-semibold text-slate-500">អតិថិជនដែលមានគណនីឥណទាន</p>
+                            <button onclick="pickCustomer('')" type="button" class="sm-row-menu-item w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-slate-700 hover:bg-slate-50 transition text-left">
                                 <span>អតិថិជនដើរចូល</span>
-                                ${!customerId ? '<i class="fas fa-check text-[11px] text-emerald-600"></i>' : ''}
+                                ${!customerId ? '<i class="fas fa-check text-[11px] text-blue-600"></i>' : ''}
                             </button>
                             ${CREDIT_CUSTOMERS.map(x => `
-                                <button onclick="pickCustomer('${x.id}')" type="button" class="sm-row-menu-item w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-50 transition text-left">
+                                <button onclick="pickCustomer('${x.id}')" type="button" class="sm-row-menu-item w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-slate-700 hover:bg-slate-50 transition text-left">
                                     <span class="min-w-0">
                                         <span class="block truncate">${x.name}</span>
                                         <span class="block sm-td-sub text-slate-400 sm-figure">${x.phone} · ពិដាន ${fmtUSD(x.creditLimit)}${x.vattin ? ' · ចុះបញ្ជីអាករ' : ''}</span>
                                     </span>
-                                    ${customerId === x.id ? '<i class="fas fa-check text-[11px] text-emerald-600 flex-shrink-0"></i>' : ''}
+                                    ${customerId === x.id ? '<i class="fas fa-check text-[11px] text-blue-600 flex-shrink-0"></i>' : ''}
                                 </button>`).join('')}
                         </div>
                     </div>
@@ -1348,7 +1321,7 @@
                             <input id="discountInput" type="number" inputmode="decimal" min="0" max="100" step="0.5"
                                 value="${discountPercent || ''}" placeholder="0"
                                 onchange="setDiscount(this.value)"
-                                class="pos-num sm-td w-full px-3 pr-8 rounded-xl bg-[#0f172a] border ${discountPercent > limit ? 'border-emerald-500/50' : 'border-white/10'} text-white text-right focus:outline-none focus:border-blue-600 transition">
+                                class="pos-num sm-td w-full px-3 pr-8 rounded-lg bg-[#0f172a] border ${discountPercent > limit ? 'border-amber-400/70' : 'border-white/10'} text-white text-right focus:outline-none focus:border-blue-600 transition">
                             <span class="absolute right-3 top-1/2 -translate-y-1/2 sm-td text-slate-400">%</span>
                         </div>
                     </div>
@@ -1439,7 +1412,7 @@
             const discountRow = !empty && t.discount > 0.005
                 ? `<div class="flex items-baseline justify-between gap-3">
                        <span class="sm-td-sub text-slate-400">សរុបរង <span class="sm-figure">${fmtUSD(t.list)}</span></span>
-                       <span class="sm-td text-amber-300 sm-figure">ការបញ្ចុះតម្លៃ ${t.discountPercent}% − ${fmtUSD(t.discount)}</span>
+                       <span class="sm-td text-slate-300 sm-figure">ការបញ្ចុះតម្លៃ ${t.discountPercent}% − ${fmtUSD(t.discount)}</span>
                    </div>`
                 : '';
             document.getElementById('cartTotals').innerHTML = discountRow + `
@@ -1554,7 +1527,7 @@
 
             const tabs = TENDERS.map(x => `
                 <button onclick="setTender('${x.id}')" type="button"
-                    class="!min-h-[50px] h-[50px] rounded-xl border flex flex-col items-center justify-center gap-0.5 transition ${tenderMode === x.id
+                    class="!min-h-[50px] h-[50px] rounded-lg border flex flex-col items-center justify-center gap-0.5 transition ${tenderMode === x.id
                         ? 'bg-blue-600 border-blue-500 text-white'
                         : 'bg-[#0f172a] border-white/10 text-slate-300 hover:border-blue-600'}">
                     <i class="fas ${x.icon} text-sm"></i><span class="sm-td-sub font-semibold">${x.label}</span>
@@ -1562,9 +1535,9 @@
 
             const chip = (onclick, label, on) => `
                 <button onclick="${onclick}" type="button"
-                    class="sm-badge !min-h-[40px] h-10 px-3 rounded-xl border font-semibold sm-figure transition ${on
-                        ? 'bg-emerald-500 border-emerald-500 text-white'
-                        : 'bg-white/5 border-white/10 text-slate-100 hover:border-blue-500'}">${label}</button>`;
+                    class="sm-badge !min-h-[40px] h-10 px-3 rounded-lg border font-semibold sm-figure transition ${on
+                        ? 'border-blue-500 text-blue-300 ring-1 ring-blue-500'
+                        : 'border-white/15 text-slate-100 hover:border-blue-500'}">${label}</button>`;
 
             let body = '';
             if (tenderMode === 'usd' || tenderMode === 'khr') {
@@ -1576,7 +1549,7 @@
                     : rielSuggestions(due).map(v => chip(`pickAmount(${v})`, fmtKHR(v), Math.abs(amount - v) < 0.5));
                 const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', usd ? '.' : '000', '0', 'back'];
                 body = `
-                    <div class="rounded-2xl bg-[#0f172a] border ${amount > 0 ? 'border-blue-500/60' : 'border-white/10'} px-4 py-2 flex items-center justify-between gap-3">
+                    <div class="rounded-lg bg-[#0f172a] border ${amount > 0 ? 'border-blue-500/60' : 'border-white/10'} px-4 py-2 flex items-center justify-between gap-3">
                         <span class="sm-td-sub text-slate-400">ទទួលបាន${usd ? 'ជាដុល្លារ' : 'ជារៀល'}</span>
                         <span class="text-[28px] font-bold leading-none sm-figure ${amount > 0 ? 'text-white' : 'text-slate-600'}">${usd
                             ? '$' + (entry || (amount ? amount.toFixed(2) : '0.00'))
@@ -1585,19 +1558,19 @@
                     <div class="flex flex-wrap gap-1.5">${bills.join('')}</div>
                     <div class="grid grid-cols-3 gap-1">
                         ${keys.map(k => `<button onclick="keypad('${k}')" type="button"
-                            class="!min-h-[46px] h-[46px] rounded-xl ${k === 'back' ? 'bg-white/5 text-slate-300' : 'bg-white/[0.07] text-white'} hover:bg-white/15 active:scale-95 text-[20px] font-semibold transition">
+                            class="!min-h-[46px] h-[46px] rounded-lg ${k === 'back' ? 'bg-white/5 text-slate-300' : 'bg-white/[0.07] text-white'} hover:bg-white/15 active:scale-95 text-[20px] font-semibold transition">
                             ${k === 'back' ? '<i class="fas fa-delete-left text-base"></i>' : k}</button>`).join('')}
                     </div>`;
             } else if (tenderMode === 'khqr') {
                 body = `
-                    <div class="rounded-2xl bg-blue-500/10 border border-blue-500/25 p-5 text-center">
-                        <div class="w-14 h-14 rounded-2xl bg-white text-slate-900 flex items-center justify-center mx-auto"><i class="fas fa-qrcode text-2xl"></i></div>
+                    <div class="rounded-lg bg-[#0f172a] border border-white/10 p-5 text-center">
+                        <i class="fas fa-qrcode text-[32px] text-slate-400"></i>
                         <p class="sm-card-title text-white mt-3">ទូទាត់ពេញចំនួនតាមកូដស្កេនបាគង</p>
                         <p class="sm-td-sub text-slate-400 mt-1">ចុច «បង្ហាញកូដស្កេនបាគង» ខាងក្រោម ហើយបង្វែរអេក្រង់ទៅអតិថិជន</p>
                     </div>`;
             } else {
                 const tender = (key, label, icon, step, placeholder) => `
-                    <label class="flex items-center gap-3 rounded-xl bg-[#0f172a] border ${pay[key] > 0.005 ? 'border-blue-600' : 'border-white/10'} px-3">
+                    <label class="flex items-center gap-3 rounded-lg bg-[#0f172a] border ${pay[key] > 0.005 ? 'border-blue-600' : 'border-white/10'} px-3">
                         <i class="fas ${icon} text-slate-400 w-4"></i>
                         <span class="sm-td-sub text-slate-300 w-14">${label}</span>
                         <input type="number" inputmode="decimal" min="0" step="${step}" value="${pay[key] || ''}" placeholder="${placeholder}"
@@ -1611,15 +1584,15 @@
                         ${tender('khrCash', 'រៀល', 'fa-money-bill-1', '100', '0')}
                         ${tender('khqr', 'បាគង', 'fa-qrcode', '0.01', '0.00')}
                     </div>
-                    ${remaining > 0.005 && paid > 0.005 ? `<button onclick="fillRemainder()" type="button" class="sm-badge w-full !min-h-[44px] rounded-xl bg-white/5 border border-white/10 hover:border-blue-500 text-slate-200">
+                    ${remaining > 0.005 && paid > 0.005 ? `<button onclick="fillRemainder()" type="button" class="sm-badge w-full !min-h-[44px] rounded-lg border border-white/15 hover:border-blue-500 text-slate-200">
                         បំពេញនៅខ្វះ ${fmtUSD(remaining)} តាមបាគង</button>` : ''}`;
             }
 
             document.getElementById('cartLines').innerHTML = `
                 <div class="p-3 space-y-2.5">
-                    <div class="rounded-2xl bg-blue-500/10 border border-blue-500/25 px-4 py-2.5 flex items-end justify-between gap-3">
+                    <div class="rounded-lg bg-[#0f172a] border border-white/10 px-4 py-2.5 flex items-end justify-between gap-3">
                         <div>
-                            <p class="sm-td-sub text-blue-200">ទឹកប្រាក់ត្រូវទូទាត់</p>
+                            <p class="sm-td-sub text-slate-400">ទឹកប្រាក់ត្រូវទូទាត់</p>
                             <p class="pos-total mt-0.5">${fmtUSD(due)}</p>
                         </div>
                         <div class="text-right">
@@ -1638,21 +1611,21 @@
             let inner;
             if (state === 'ok' && change > 0.005) {
                 const modeBtn = (m, label) => `<button onclick="setChangeMode('${m}')" type="button"
-                    class="!min-h-[32px] sm-td-sub px-2 rounded-lg border whitespace-nowrap transition ${ch.mode === m
-                        ? 'bg-emerald-500 border-emerald-500 text-white font-semibold' : 'border-emerald-500/30 text-emerald-200 hover:bg-emerald-500/15'}">${label}</button>`;
+                    class="!min-h-[32px] sm-td-sub px-2 rounded-md border whitespace-nowrap transition ${ch.mode === m
+                        ? 'border-blue-500 text-blue-300 font-semibold' : 'border-white/15 text-slate-300 hover:bg-white/10'}">${label}</button>`;
                 inner = `
                     <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0">
-                            <p class="sm-label text-emerald-200 whitespace-nowrap">ប្រាក់អាប់</p>
+                            <p class="sm-label text-slate-300 whitespace-nowrap">ប្រាក់អាប់</p>
                             <div class="flex items-center gap-1 mt-1.5">${modeBtn('mixed', 'ដុល្លារ + រៀល')}${modeBtn('riel', 'រៀលសុទ្ធ')}</div>
                         </div>
                         <div class="text-right min-w-0">
-                            <span class="text-[22px] font-bold leading-none text-emerald-100 sm-figure block whitespace-nowrap">${fmtChange(ch)}</span>
+                            <span class="text-[24px] font-bold leading-none text-white sm-figure block whitespace-nowrap">${fmtChange(ch)}</span>
                             <span class="sm-td-sub text-slate-400 sm-figure block mt-1">ស្មើ ${fmtUSD(change)}${Math.abs(ch.roundingKHR) >= 1 ? ` · បង្គត់ ${fmtSigned(ch.roundingKHR, fmtKHR, 0.5)}` : ''}</span>
                         </div>
                     </div>`;
             } else {
-                const box = { idle: ['text-slate-400', 'text-slate-300', 'នៅត្រូវទទួល'], short: ['text-amber-200', 'text-amber-200', 'នៅខ្វះ'], ok: ['text-emerald-200', 'text-emerald-100', 'ទូទាត់គត់'] }[state];
+                const box = { idle: ['text-slate-400', 'text-slate-300', 'នៅត្រូវទទួល'], short: ['text-amber-300', 'text-white', 'នៅខ្វះ'], ok: ['text-slate-300', 'text-white', 'ទូទាត់គត់'] }[state];
                 const amt = state === 'idle' ? due : Math.max(remaining, 0);
                 inner = `
                     <div class="flex items-center justify-between gap-3">
@@ -1666,13 +1639,13 @@
                         </div>
                     </div>`;
             }
-            const skin = state === 'ok' ? 'bg-emerald-500/10 border-emerald-500/30' : state === 'short' ? 'bg-amber-500/10 border-amber-500/30' : 'bg-white/5 border-white/10';
-            document.getElementById('cartTotals').innerHTML = `<div class="p-3 rounded-xl border ${skin}">${inner}</div>`;
+            const skin = state === 'short' ? 'border-amber-400/60' : 'border-white/10';
+            document.getElementById('cartTotals').innerHTML = `<div class="p-3 rounded-lg bg-[#0f172a] border ${skin}">${inner}</div>`;
 
             document.getElementById('paymentPanel').innerHTML = `
                 <button onclick="finishSale()" type="button" ${canFinish ? '' : 'disabled'}
-                    class="sm-card-title w-full !min-h-[64px] rounded-2xl font-bold transition inline-flex items-center justify-center gap-2 ${canFinish
-                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                    class="sm-card-title w-full !min-h-[64px] rounded-xl font-bold transition inline-flex items-center justify-center gap-2 ${canFinish
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white'
                         : 'bg-[#374151] text-slate-500 cursor-not-allowed'}">
                     <i class="fas ${canFinish && pay.khqr > 0.005 ? 'fa-qrcode' : 'fa-circle-check'}"></i> ${canFinish && pay.khqr > 0.005 ? 'បង្ហាញកូដស្កេនបាគង' : 'បញ្ចប់ការទូទាត់'}
                     <kbd class="pos-kbd ml-1">Enter</kbd>
@@ -1733,8 +1706,8 @@
             document.getElementById('successAmount').textContent = fmtUSD(t.gross);
             document.getElementById('successChange').innerHTML = (ch.usd > 0.005 || ch.khr >= 1)
                 ? `<p class="sm-td-sub text-slate-400">ប្រាក់អាប់ឱ្យអតិថិជន</p>
-                   <p class="text-[28px] font-bold text-emerald-300 sm-figure leading-tight">${fmtChange(ch)}</p>`
-                : '<p class="sm-card-sub text-emerald-300">ទូទាត់គត់ · គ្មានប្រាក់អាប់</p>';
+                   <p class="text-[30px] font-bold text-white sm-figure leading-tight">${fmtChange(ch)}</p>`
+                : '<p class="sm-card-sub text-slate-400">ទូទាត់គត់ · គ្មានប្រាក់អាប់</p>';
             document.getElementById('successReceipt').textContent = sale.id;
             document.getElementById('successOverlay').classList.remove('hidden');
 
@@ -1864,10 +1837,10 @@
             document.getElementById('khqrTimer').textContent = `${Math.floor(secs / 60)}:${pad2(secs % 60)}`;
             document.getElementById('khqrExpiredMask').classList.toggle('hidden', !expired);
             document.getElementById('khqrStatus').innerHTML = expired
-                ? `<div class="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-rose-500/15 border border-rose-500/30">
-                       <i class="fas fa-clock-rotate-left text-rose-300"></i><span class="sm-value text-rose-200">កូដផុតសុពលភាព · សូមបង្កើតកូដថ្មី</span></div>`
-                : `<div class="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-blue-500/10 border border-blue-500/25">
-                       <span class="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse"></span><span class="sm-value text-blue-100">កំពុងរង់ចាំការទូទាត់ពីអតិថិជន...</span></div>`;
+                ? `<div class="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-lg border border-rose-500/60">
+                       <i class="fas fa-clock-rotate-left text-rose-400"></i><span class="sm-value text-rose-300">កូដផុតសុពលភាព · សូមបង្កើតកូដថ្មី</span></div>`
+                : `<div class="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-lg border border-white/10">
+                       <span class="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></span><span class="sm-value text-slate-200">កំពុងរង់ចាំការទូទាត់ពីអតិថិជន...</span></div>`;
             document.getElementById('khqrMainBtn').innerHTML = expired
                 ? '<i class="fas fa-rotate-right"></i> បង្កើតកូដថ្មី'
                 : '<i class="fas fa-circle-check"></i> បានទទួលប្រាក់';

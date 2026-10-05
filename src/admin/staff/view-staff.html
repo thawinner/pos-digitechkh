@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - ព័ត៌មានបុគ្គលិក</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+</head>
+<body id="adminPortal" data-role-root="../.." data-active="staff" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="ព័ត៌មានបុគ្គលិក"
+             data-subtitle=""
+             data-back="staff.html"></div>
+
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <div id="page" class="w-full space-y-5"></div>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/admin-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script src="../../shared/scripts/staff-actions.js"></script>
+    <script>
+        /* មើលបុគ្គលិកម្នាក់ (ឯកសាររចនាលេខ 03 ផ្នែក 5)
+           ព័ត៌មានទំនាក់ទំនង តួនាទី សិទ្ធិ វេន ម៉ោងធ្វើការខែនេះ ប្រាក់ខែ (មិនមែនម្ចាស់ហាង) និងប្រវត្តិកែប្រែគណនី
+           ការកែប្រែទាំងអស់ប្រើសកម្មភាពដដែលនឹងទំព័របញ្ជី (staff-actions.js) */
+
+        const staffId = new URLSearchParams(location.search).get('id');
+        const SELF_URL = `../../admin/staff/view-staff.html?id=${staffId}`;
+
+        function monthStart() {
+            const d = new Date();
+            return isoDate(new Date(d.getFullYear(), d.getMonth(), 1));
+        }
+
+        function shiftsOf(id) {
+            return mgrAllShifts().filter(s => s.cashierId === id && s.openedAt).sort((a, b) => b.openedAt.localeCompare(a.openedAt));
+        }
+
+        function hoursOf(sh) {
+            const end = sh.closedAt ? new Date(sh.closedAt) : new Date();
+            return Math.max(0, (end - new Date(sh.openedAt)) / 3600000);
+        }
+
+        function infoRow(label, value, sub) {
+            return `<div class="py-3 flex items-start justify-between gap-4">
+                <dt class="sm-td-sub text-slate-500 flex-shrink-0">${label}</dt>
+                <dd class="sm-td text-slate-800 text-right min-w-0">${value}${sub ? `<span class="block sm-td-sub text-slate-400">${sub}</span>` : ''}</dd>
+            </div>`;
+        }
+
+        function panel(title, body, action) {
+            return `<section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm">
+                <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex items-center justify-between gap-3">
+                    <h3 class="sm-card-title text-slate-800">${title}</h3>${action || ''}
+                </div>
+                ${body}
+            </section>`;
+        }
+
+        function linkBtn(label, onclick) {
+            return `<button type="button" onclick="${onclick}" class="sm-td-sub font-semibold text-blue-700 hover:underline">${label}</button>`;
+        }
+
+        /* ===== វេន ===== */
+
+        function shiftRows(id) {
+            const list = shiftsOf(id);
+            const pg = pagerSlice('staffShifts', list, { size: 15, render: 'renderAll', sig: id });
+            const go = sh => `location.href='../../manager/shifts/view-shift.html?id=${sh.id}&back=${encodeURIComponent(SELF_URL)}'`;
+            const variance = sh => {
+                if (sh.status === 'open') return '<span class="text-slate-400">—</span>';
+                const v = shiftVariance(sh);
+                if (!v) return '<span class="text-slate-400">—</span>';
+                if (v.level === 'exact') return '<span class="text-slate-500">ត្រូវគត់</span>';
+                return `<span class="sm-figure ${v.level === 'large' ? 'text-rose-600 font-semibold' : 'text-slate-700'}">${fmtSigned(v.diff, fmtUSD)}</span>`;
+            };
+            const rows = pg.rows.map(sh => {
+                const s = summaryOf(sh);
+                return `<tr data-row-id="${sh.id}" onclick="${go(sh)}" class="cursor-pointer hover:bg-slate-50 transition">
+                    <td class="py-2.5 px-5 sm-td"><span class="sm-figure text-slate-800">${fmtDate(sh.openedAt)}</span><span class="block sm-td-sub text-slate-400">ថ្ងៃ${DOW_KH[new Date(sh.openedAt).getDay()]}</span></td>
+                    <td class="py-2.5 px-3 sm-td"><span class="text-slate-700">${sh.templateName}</span><span class="block sm-td-sub text-slate-400">${sh.register}</span></td>
+                    <td class="py-2.5 px-3 sm-td"><span class="sm-figure text-slate-700">${fmtTime(sh.openedAt)}–${sh.closedAt ? fmtTime(sh.closedAt) : 'ឥឡូវ'}</span><span class="block sm-td-sub text-slate-400 sm-figure">${hoursOf(sh).toFixed(1)} ម៉ោង</span></td>
+                    <td class="py-2.5 px-3 sm-td text-right"><span class="sm-figure text-slate-800">${fmtUSD(s.netSales)}</span><span class="block sm-td-sub text-slate-400 sm-figure">${s.count} វិក្កយបត្រ</span></td>
+                    <td class="py-2.5 px-3 sm-td text-right">${variance(sh)}</td>
+                    <td class="py-2.5 px-5">${statusChip(SHIFT_STATUS[sh.status])}</td>
+                </tr>`;
+            }).join('');
+            const cards = pg.rows.map(sh => {
+                const s = summaryOf(sh);
+                return `<div data-row-id="${sh.id}" onclick="${go(sh)}" class="p-4 flex items-start justify-between gap-3 cursor-pointer">
+                    <div class="min-w-0">
+                        <p class="sm-td text-slate-800"><span class="sm-figure">${fmtDate(sh.openedAt)}</span> · ${sh.templateName}</p>
+                        <p class="sm-td-sub text-slate-500 sm-figure">${sh.register} · ${fmtTime(sh.openedAt)}–${sh.closedAt ? fmtTime(sh.closedAt) : 'ឥឡូវ'} · ${fmtUSD(s.netSales)}</p>
+                    </div>
+                    <div class="text-right flex-shrink-0 space-y-1">${statusChip(SHIFT_STATUS[sh.status])}<p class="sm-td-sub">${variance(sh)}</p></div>
+                </div>`;
+            }).join('');
+            if (!list.length) return emptyState('fa-cash-register', 'មិនទាន់មានវេន', 'វេនដែលបើកដោយបុគ្គលិកនេះនឹងបង្ហាញនៅទីនេះ');
+            return `<div class="max-md:hidden overflow-x-auto"><table class="w-full">
+                    <thead><tr class="border-b border-slate-100 bg-slate-50/60">
+                        <th class="sm-th py-2.5 px-5 text-left text-slate-500">កាលបរិច្ឆេទ</th>
+                        <th class="sm-th py-2.5 px-3 text-left text-slate-500">វេន</th>
+                        <th class="sm-th py-2.5 px-3 text-left text-slate-500">ម៉ោងពិត</th>
+                        <th class="sm-th py-2.5 px-3 text-right text-slate-500">លក់សុទ្ធ</th>
+                        <th class="sm-th py-2.5 px-3 text-right text-slate-500">ខុសសាច់ប្រាក់</th>
+                        <th class="sm-th py-2.5 px-5 text-left text-slate-500">ស្ថានភាព</th>
+                    </tr></thead>
+                    <tbody class="divide-y divide-slate-100">${rows}</tbody>
+                </table></div>
+                <div class="md:hidden divide-y divide-slate-100">${cards}</div>
+                <div data-pager="staffShifts">${pg.html}</div>`;
+        }
+
+        /* ===== តួលេខខែនេះ ===== */
+
+        function monthKpis(p) {
+            const from = monthStart();
+            const month = shiftsOf(p.id).filter(s => s.date >= from);
+            const pay = staffOnPayroll(p) && p.active ? calculateStaffPayroll().staffPayrolls.find(x => x.staff.id === p.id) : null;
+            if (!month.length && !pay) return '';
+            const hours = pay ? pay.realHours : Math.round(month.reduce((n, s) => n + hoursOf(s), 0) * 10) / 10;
+            const sums = month.reduce((a, s) => { const x = summaryOf(s); a.sales += x.netSales; a.count += x.count; return a; }, { sales: 0, count: 0 });
+            const vs = month.filter(s => s.status !== 'open').map(shiftVariance).filter(Boolean);
+            const diff = vs.reduce((n, v) => n + v.diff, 0);
+            const large = vs.filter(v => v.level === 'large').length;
+            const att = pay ? `យឺត ${pay.lateCount} ដង` : '—';
+            const attBad = pay && (pay.absentDays > 0 || pay.lateCount > PAY_RULES.bonusMaxLate);
+            return `<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up">
+                ${kpiCard('ម៉ោងធ្វើការខែនេះ', `${hours} ម៉ោង`, `${month.length} វេន${pay && pay.otHours ? ` · បន្ថែម ${pay.otHours} ម៉ោង` : ''}`, '', pay ? '../reports/payroll.html' : '')}
+                ${kpiCard('លក់ខែនេះ', fmtUSD(sums.sales), `${sums.count} វិក្កយបត្រ`)}
+                ${kpiCard('ខុសសាច់ប្រាក់ខែនេះ', vs.length ? fmtSigned(diff, fmtUSD) : '—', vs.length ? (large ? `${large} វេនលើសល្បឹម` : 'គ្មានវេនលើសល្បឹម') : 'មិនទាន់មានវេនបិទ', large ? 'text-rose-600' : '')}
+                ${kpiCard('វត្តមានខែនេះ', att, pay ? (pay.absentDays ? `អវត្តមាន ${pay.absentDays} ថ្ងៃ` : 'គ្មានអវត្តមាន') : 'គ្មានកាលវិភាគ', attBad ? 'text-amber-600' : '')}
+            </div>`;
+        }
+
+        /* ===== ព័ត៌មាន ===== */
+
+        function workPanel(p, comp) {
+            const last = shiftsOf(p.id)[0];
+            const pinAt = adminLogList().find(x => x.type === 'pin' && x.target === p.id);
+            return panel('ការងារ និងសិទ្ធិ', `<dl class="px-5 divide-y divide-slate-100">
+                ${infoRow('តួនាទី', ROLE_NAME[p.role], ROLE_DESC[p.role])}
+                ${infoRow('វេនប្រចាំ', staffShiftText(p))}
+                ${infoRow('បញ្ចុះតម្លៃបាន', p.role === 'cashier' ? `<span class="sm-figure">${discountLimitFor(p.id)}%</span>` : 'គ្មានដែនកំណត់', p.role === 'cashier' ? 'លើសនេះត្រូវការលេខសម្ងាត់អ្នកគ្រប់គ្រង' : '')}
+                ${infoRow('លេខសម្ងាត់', '<span class="tracking-[.3em] text-slate-500">••••</span>', pinAt ? `កំណត់ថ្មីចុងក្រោយ ${fmtDate(pinAt.at)}` : '')}
+                ${infoRow('វេនចុងក្រោយ', last ? `<span class="sm-figure">${fmtDate(last.openedAt)}</span>` : '<span class="text-slate-400">—</span>', last ? `${last.register}${last.status === 'open' ? ' · កំពុងបើក' : ''}` : '')}
+                ${infoRow('ទូរស័ព្ទ', comp.phone ? `<span class="sm-figure">${comp.phone}</span>` : '<span class="text-slate-400">—</span>')}
+                ${infoRow('ចូលធ្វើការ', comp.joinedDate ? `<span class="sm-figure">${fmtDate(comp.joinedDate)}</span>` : '<span class="text-slate-400">—</span>')}
+            </dl>`, p.active ? linkBtn('កំណត់លេខសម្ងាត់ថ្មី', `resetPin('${p.id}')`) : '');
+        }
+
+        function payPanel(p, comp) {
+            if (!staffOnPayroll(p)) return '';
+            const pay = p.active ? calculateStaffPayroll().staffPayrolls.find(x => x.staff.id === p.id) : null;
+            const bank = comp.bankName ? `${comp.bankName}` : '<span class="text-slate-400">មិនទាន់កំណត់</span>';
+            const status = pay ? (pay.status === 'disbursed'
+                ? '<span class="sm-badge inline-flex px-2.5 py-0.5 rounded-full border bg-slate-50 text-slate-600 border-slate-200">បានបើក</span>'
+                : '<span class="sm-badge inline-flex px-2.5 py-0.5 rounded-full border bg-amber-50 text-amber-700 border-amber-200">មិនទាន់បើក</span>') : '';
+            return panel('ប្រាក់ខែ និងធនាគារ', `<dl class="px-5 divide-y divide-slate-100">
+                ${infoRow('ប្រាក់ខែគោល', `<span class="sm-figure font-semibold">${fmtUSD(Number(comp.baseSalaryUSD) || 0)}</span>`, `${fmtUSD(comp.hourlyRateUSD)} / ម៉ោង`)}
+                ${infoRow('ប្រាក់ឧបត្ថម្ភថ្លៃបាយ', `<span class="sm-figure">${fmtUSD(Number(comp.foodAllowanceUSD) || 0)}</span>`)}
+                ${infoRow('ប្រាក់រង្វាន់ឧស្សាហ៍', `<span class="sm-figure">${fmtUSD(Number(comp.attendanceBonusUSD) || 0)}</span>`, 'គ្មានអវត្តមាន និងយឺតមិនលើស 3 ដង')}
+                ${infoRow('ធនាគារ', bank, comp.accountNumber ? `<span class="sm-figure">${comp.accountNumber}</span> · ${comp.accountName || p.name}` : '')}
+                ${pay ? infoRow('ប្រាក់ត្រូវបើកខែនេះ', `<span class="sm-figure font-semibold">${fmtUSD(pay.netUSD)}</span>`, `<span class="inline-flex mt-1">${status}</span>`) : ''}
+            </dl>
+            <div class="px-5 pb-4 pt-1"><a href="../reports/payroll.html" class="sm-td-sub font-semibold text-blue-700 hover:underline">ទៅទំព័របើកប្រាក់បៀវត្សរ៍ <i class="fas fa-arrow-right text-[10px] ml-1"></i></a></div>`,
+                p.active ? linkBtn('កែប្រាក់ខែ', `editCompensation('${p.id}')`) : '');
+        }
+
+        function historyPanel(p) {
+            const list = adminLogList().filter(x => x.target === p.id).slice(0, 12);
+            const body = list.length ? `<ul class="divide-y divide-slate-100">${list.map(x => `<li class="px-5 py-3">
+                    <p class="sm-td text-slate-700">${escapeText(x.note || '')}</p>
+                    <p class="sm-td-sub text-slate-400"><span class="sm-figure">${fmtDate(x.at)} ${fmtTime(x.at)}</span> · ${personName(x.by)}</p>
+                </li>`).join('')}</ul>`
+                : '<p class="px-5 py-6 sm-td-sub text-slate-400 text-center">មិនទាន់មានការកែប្រែគណនីនេះទេ</p>';
+            return panel('ប្រវត្តិកែប្រែគណនី', body, `<a href="../audit/audit.html" class="sm-td-sub font-semibold text-blue-700 hover:underline">កំណត់ហេតុទាំងអស់</a>`);
+        }
+
+        function renderAll() {
+            const host = document.getElementById('page');
+            const p = findStaff(staffId);
+            if (!p) {
+                setPortalTitle('រកមិនឃើញបុគ្គលិក');
+                host.innerHTML = `<div class="bg-white rounded-2xl border border-slate-200 shadow-sm">${emptyState('fa-user-slash', 'រកមិនឃើញបុគ្គលិក', 'គណនីនេះប្រហែលជាត្រូវបានលុប', '<a href="staff.html" class="sm-badge inline-flex mt-4 px-4 h-10 items-center rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold">ត្រឡប់ទៅបញ្ជីបុគ្គលិក</a>')}</div>`;
+                return;
+            }
+            const comp = getStaffCompensation(p.id);
+            const me = p.id === ME_MANAGER;
+            setPortalTitle(p.name);
+            setPortalSubtitle(`${ROLE_NAME[p.role]} · ${p.id}`);
+            const showShifts = p.role !== 'admin' || shiftsOf(p.id).length;
+
+            host.innerHTML = `
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 flex flex-wrap items-center gap-4">
+                    ${staffAvatar(p, 'w-14 h-14')}
+                    <div class="min-w-0 flex-1">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h3 class="text-lg font-semibold text-slate-800">${p.name}</h3>
+                            ${me ? '<span class="sm-badge px-1.5 rounded bg-slate-100 text-slate-600">លោកអ្នក</span>' : ''}
+                            <span class="sm-badge inline-flex px-2.5 py-0.5 rounded-full border bg-slate-50 text-slate-700 border-slate-200">${ROLE_NAME[p.role]}</span>
+                            ${staffStatusChip(p)}
+                        </div>
+                        <p class="sm-td-sub text-slate-500 mt-1 sm-figure">${[comp.employeeCode, p.id, comp.phone].filter(Boolean).join(' · ')}</p>
+                    </div>
+                    <div class="relative">
+                        <button onclick="toggleRowActionMenu(event, 'profileMenu')" type="button"
+                            class="sm-badge h-11 px-4 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center gap-2">
+                            <i class="fas fa-pen text-xs text-slate-500"></i> កែប្រែ <i class="fas fa-chevron-down text-[10px] text-slate-400"></i>
+                        </button>
+                        ${staffMenu(p, 'profileMenu', false)}
+                    </div>
+                </div>
+
+                ${p.active ? '' : `<div class="p-4 rounded-2xl bg-white border border-slate-200 flex flex-wrap items-center gap-3">
+                    <i class="fas fa-user-slash text-slate-400"></i>
+                    <p class="sm-td text-slate-600 flex-1 min-w-0">គណនីនេះត្រូវបានផ្អាក · មិនអាចចូលប្រើបាន តែប្រវត្តិលក់នៅដដែល</p>
+                    <button onclick="reactivate('${p.id}')" type="button" class="sm-badge h-10 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold">បើកគណនីវិញ</button>
+                </div>`}
+
+                ${monthKpis(p)}
+
+                <div class="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-5 items-start">
+                    <div class="space-y-5 min-w-0">
+                        ${showShifts ? panel('វេនទាំងអស់', shiftRows(p.id)) : ''}
+                        ${historyPanel(p)}
+                    </div>
+                    <div class="space-y-5">
+                        ${workPanel(p, comp)}
+                        ${payPanel(p, comp)}
+                    </div>
+                </div>`;
+        }
+
+        window.onStoreChanged = renderAll;
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAll();
+            flashViewedRow();
+            if (staffId) markRecordViewed(staffId);
+        });
+    </script>
+</body>
+</html>

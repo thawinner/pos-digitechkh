@@ -170,13 +170,13 @@
                 const tooMany = sameTpl.length + 1 > REGISTERS.length;
 
                 host.innerHTML = `
-                    <div class="w-full max-w-md rounded-3xl shadow-2xl bg-white text-slate-800 p-5 sm:p-6 space-y-4" onclick="event.stopPropagation()">
+                    <div role="dialog" aria-modal="true" class="w-full max-w-md rounded-xl border border-slate-200 shadow-2xl bg-white text-slate-800 p-5 sm:p-6 space-y-4" onclick="event.stopPropagation()">
                         <div class="flex items-start justify-between border-b border-slate-100 pb-3">
                             <div>
                                 <h3 class="sm-card-title text-slate-800 text-base font-semibold">វេនប្រចាំ · ${personName(id)}</h3>
                                 <p class="sm-td-sub text-slate-500 mt-0.5">កំណត់វេន និងថ្ងៃឈប់សម្រាកប្រចាំសប្តាហ៍ · បញ្ជរជ្រើសពេលបើកវេន</p>
                             </div>
-                            <button type="button" data-act="cancel" class="text-slate-400 hover:text-slate-600 p-1"><i class="fas fa-xmark"></i></button>
+                            <button type="button" data-act="cancel" aria-label="បិទ" class="w-9 h-9 -mr-1.5 -mt-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 inline-flex items-center justify-center"><i class="fas fa-xmark"></i></button>
                         </div>
 
                         <div class="space-y-3.5">
@@ -184,12 +184,12 @@
                                 <label class="text-xs font-semibold text-slate-600 block mb-1.5">វេន</label>
                                 <div class="flex flex-wrap gap-1.5">
                                     ${shiftTemplates().map(tItem => `
-                                        <button type="button" data-tpl="${tItem.code}" class="h-9 px-3 rounded-xl border text-xs font-semibold transition ${selTpl === tItem.code ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'}">
-                                            ${tItem.name} ${tItem.start}–${tItem.end} ${selTpl === tItem.code ? '✓' : ''}
+                                        <button type="button" data-tpl="${tItem.code}" class="h-9 px-3 rounded-lg border text-xs font-semibold transition ${selTpl === tItem.code ? 'bg-white text-blue-700 border-blue-600' : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'}">
+                                            ${tItem.name} ${tItem.start}–${tItem.end} ${selTpl === tItem.code ? '<i class="fas fa-check text-[10px] ml-1"></i>' : ''}
                                         </button>
                                     `).join('')}
-                                    <button type="button" data-tpl="" class="h-9 px-3 rounded-xl border text-xs font-semibold transition ${!selTpl ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'}">
-                                        គ្មាន ${!selTpl ? '✓' : ''}
+                                    <button type="button" data-tpl="" class="h-9 px-3 rounded-lg border text-xs font-semibold transition ${!selTpl ? 'bg-white text-blue-700 border-blue-600' : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'}">
+                                        គ្មាន ${!selTpl ? '<i class="fas fa-check text-[10px] ml-1"></i>' : ''}
                                     </button>
                                 </div>
                             </div>
@@ -198,7 +198,7 @@
                                 <label class="text-xs font-semibold text-slate-600 block mb-1.5">ថ្ងៃឈប់សម្រាកប្រចាំសប្តាហ៍</label>
                                 <div class="grid grid-cols-7 gap-1">
                                     ${DOW_SHORT.map((dName, dIdx) => `
-                                        <button type="button" data-dayoff="${dIdx}" class="h-9 rounded-xl border text-xs font-semibold transition ${selDayOff === dIdx ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'}">
+                                        <button type="button" data-dayoff="${dIdx}" class="h-9 rounded-lg border text-xs font-semibold transition ${selDayOff === dIdx ? 'bg-white text-blue-700 border-blue-600' : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'}">
                                             ${dName}
                                         </button>
                                     `).join('')}
@@ -214,15 +214,15 @@
                         </div>
 
                         <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
-                            <button type="button" data-act="cancel" class="sm-value h-11 px-5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition">បោះបង់</button>
-                            <button type="button" data-act="save" class="sm-value h-11 px-6 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition shadow-sm">រក្សាទុក</button>
+                            <button type="button" data-act="cancel" class="sm-value h-11 px-5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold transition">បោះបង់</button>
+                            <button type="button" data-act="save" class="sm-value h-11 px-6 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition">រក្សាទុក</button>
                         </div>
                     </div>
                 `;
 
                 host.querySelectorAll('[data-tpl]').forEach(b => b.onclick = () => { selTpl = b.dataset.tpl; renderModal(); });
                 host.querySelectorAll('[data-dayoff]').forEach(b => b.onclick = () => { selDayOff = Number(b.dataset.dayoff); renderModal(); });
-                host.querySelector('[data-act="cancel"]').onclick = () => finish(false);
+                host.querySelectorAll('[data-act="cancel"]').forEach(b => { b.onclick = () => finish(false); });
                 host.querySelector('[data-act="save"]').onclick = async () => {
                     const ok = await showPinConfirm({ title: 'រក្សាទុកវេនប្រចាំ', message: personName(id), userId: ME_MANAGER, confirmText: 'រក្សាទុក' });
                     if (!ok) return;
@@ -610,13 +610,13 @@
 
             const renderModal = () => {
                 host.innerHTML = `
-                    <div class="w-full max-w-xl rounded-3xl shadow-2xl bg-white text-slate-800 p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+                    <div role="dialog" aria-modal="true" class="w-full max-w-xl rounded-xl border border-slate-200 shadow-2xl bg-white text-slate-800 p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
                         <div class="flex items-start justify-between border-b border-slate-100 pb-3">
                             <div>
                                 <h3 class="sm-card-title text-slate-800 text-base font-semibold">ពិនិត្យ និងបំពេញវេនដោយស្វ័យប្រវត្តិ</h3>
                                 <p class="sm-td-sub text-slate-500 mt-0.5">ប្រព័ន្ធបានណែនាំបេក្ខជនដែលទំនេរ និងស័ក្តិសមបំផុតសម្រាប់ចន្លោះនីមួយៗ</p>
                             </div>
-                            <button type="button" data-act="cancel" class="text-slate-400 hover:text-slate-600 p-1"><i class="fas fa-xmark"></i></button>
+                            <button type="button" data-act="cancel" aria-label="បិទ" class="w-9 h-9 -mr-1.5 -mt-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 inline-flex items-center justify-center"><i class="fas fa-xmark"></i></button>
                         </div>
 
                         <div class="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
@@ -624,12 +624,12 @@
                                 const currentAssign = assignments[idx];
                                 const candList = rankCandidates(g.date, g.template.code).filter(c => !c.blocked);
                                 return `
-                                    <div class="p-3 rounded-2xl border border-slate-200 bg-slate-50/50 flex flex-wrap items-center justify-between gap-2">
+                                    <div class="px-3 py-2.5 rounded-lg border border-slate-200 bg-white flex flex-wrap items-center justify-between gap-2">
                                         <div>
                                             <p class="text-xs font-semibold text-slate-800">${DOW_KH[g.dow]} ${fmtDate(g.date + 'T12:00')} · ${g.template.name}</p>
                                             <p class="text-[11px] text-slate-500 sm-figure">${g.template.start}–${g.template.end}</p>
                                         </div>
-                                        <button type="button" data-idx="${idx}" ${candList.length ? '' : 'disabled'} class="h-9 pl-1.5 pr-2.5 rounded-xl border border-slate-200 bg-white hover:border-blue-300 text-xs font-semibold text-slate-700 inline-flex items-center gap-2">
+                                        <button type="button" data-idx="${idx}" ${candList.length ? '' : 'disabled'} class="h-9 pl-1.5 pr-2.5 rounded-lg border border-slate-200 bg-white hover:border-slate-300 text-xs font-semibold text-slate-700 inline-flex items-center gap-2">
                                             ${currentAssign.personId ? `${avatarHtml(currentAssign.personId, 'w-6 h-6')}<span>${personName(currentAssign.personId)}</span>` : '<span class="pl-1 text-slate-400">គ្មានអ្នកទំនេរ</span>'}
                                             <i class="fas fa-chevron-down text-[10px] text-slate-400"></i>
                                         </button>
@@ -639,8 +639,8 @@
                         </div>
 
                         <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
-                            <button type="button" data-act="cancel" class="sm-value h-11 px-5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition">បោះបង់</button>
-                            <button type="button" data-act="ok" class="sm-value h-11 px-6 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition shadow-sm">ចាត់តាំងទាំងអស់ (${gaps.length})</button>
+                            <button type="button" data-act="cancel" class="sm-value h-11 px-5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold transition">បោះបង់</button>
+                            <button type="button" data-act="ok" class="sm-value h-11 px-6 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition">ចាត់តាំងទាំងអស់ (${gaps.length})</button>
                         </div>
                     </div>
                 `;
@@ -658,7 +658,11 @@
                     };
                 });
 
-                host.querySelector('[data-act="cancel"]').onclick = () => posDialogClose(host);
+                host.querySelectorAll('[data-act="cancel"]').forEach(b => { b.onclick = () => posDialogClose(host); });
+                host.onclick = () => posDialogClose(host);
+                host.__keyHandler = host.__keyHandler || (e => { if (e.key === 'Escape') { e.stopPropagation(); posDialogClose(host); } });
+                document.removeEventListener('keydown', host.__keyHandler, true);
+                document.addEventListener('keydown', host.__keyHandler, true);
                 host.querySelector('[data-act="ok"]').onclick = () => {
                     assignments.forEach(a => {
                         if (a.personId) {

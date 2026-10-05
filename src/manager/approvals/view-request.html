@@ -94,9 +94,8 @@
                         <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5">
                             <div class="flex flex-wrap items-start justify-between gap-3">
                                 <div class="flex items-start gap-3">
-                                    <span class="w-12 h-12 rounded-2xl bg-${t.tone}-50 text-${t.tone}-600 flex items-center justify-center text-xl"><i class="fas ${t.icon}"></i></span>
                                     <div>
-                                        <p class="sm-card-title text-slate-800">${t.label}</p>
+                                        <p class="sm-card-title text-slate-800"><i class="fas ${t.icon} text-slate-400 mr-1.5"></i>${t.label}</p>
                                         <p class="sm-kpi-value text-slate-800 sm-figure">${fmtUSD(a.amount)}</p>
                                     </div>
                                 </div>
@@ -122,8 +121,8 @@
                             ${a.status === 'pending' ? (self
                                 ? '<div class="mt-5 p-3 rounded-xl bg-amber-50 border border-amber-200 sm-td-sub text-amber-800">សំណើនេះមកពីការលក់របស់លោកអ្នកផ្ទាល់ · អ្នកគ្រប់គ្រងម្នាក់ទៀតត្រូវសម្រេច</div>'
                                 : `<div class="grid grid-cols-2 gap-3 mt-5">
-                                    <button onclick="decide(false)" type="button" class="sm-value h-12 rounded-xl bg-white border border-rose-200 text-rose-700 hover:bg-rose-50 font-semibold inline-flex items-center justify-center gap-2"><i class="fas fa-xmark"></i> បដិសេធ</button>
-                                    <button onclick="decide(true)" type="button" class="sm-value h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold inline-flex items-center justify-center gap-2"><i class="fas fa-check"></i> អនុម័ត</button>
+                                    <button onclick="decide(false)" type="button" class="sm-value h-12 rounded-xl bg-white border border-slate-200 text-slate-700 hover:border-rose-300 hover:text-rose-700 hover:bg-rose-50 font-semibold inline-flex items-center justify-center gap-2"><i class="fas fa-xmark"></i> បដិសេធ</button>
+                                    <button onclick="decide(true)" type="button" class="sm-value h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center justify-center gap-2"><i class="fas fa-check"></i> អនុម័ត</button>
                                 </div>`) : ''}
                         </div>
 

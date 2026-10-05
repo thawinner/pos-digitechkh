@@ -66,7 +66,7 @@ function numInput(key, unit, opts) {
         ${o.prefix ? `<span class="absolute left-3.5 top-1/2 -translate-y-1/2 sm-value text-slate-400">${o.prefix}</span>` : ''}
         <input type="text" inputmode="decimal" value="${v === '' || v == null || (o.blankZero && !v) ? '' : fmtInt(v)}" placeholder="${o.placeholder || '0'}"
             oninput="numChanged('${key}', this)" onblur="this.value = draft['${key}'] || ${o.blankZero ? "''" : 0} ? fmtInt(draft['${key}']) : ''"
-            class="sm-value w-full h-12 ${o.prefix ? 'pl-8' : 'pl-3.5'} pr-16 rounded-xl border ${isChanged(key) ? 'border-amber-300 bg-amber-50/40' : 'border-slate-200 bg-slate-50'} text-right sm-figure focus:outline-none focus:border-blue-500 focus:bg-white transition">
+            class="sm-value w-full h-12 ${o.prefix ? 'pl-8' : 'pl-3.5'} pr-16 rounded-xl border bg-white ${isChanged(key) ? 'border-amber-400' : 'border-slate-200'} text-right sm-figure focus:outline-none focus:border-blue-500 transition">
         <span class="absolute right-3.5 top-1/2 -translate-y-1/2 sm-td-sub text-slate-400">${unit}</span>
     </div>`;
 }
@@ -107,7 +107,7 @@ function sectionHead(s, sub) {
     const keys = s.keys.filter(isChanged);
     return `<div class="px-5 sm:px-6 py-5 border-b border-slate-100 flex flex-wrap items-start justify-between gap-3">
         <div><h3 class="sm-card-title text-slate-800">${s.label}</h3><p class="sm-card-sub text-slate-500">${sub}</p></div>
-        ${s.keys.length ? `<button onclick="resetSection('${s.id}')" type="button" class="sm-badge h-9 px-3.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 font-semibold inline-flex items-center gap-2"><i class="fas fa-rotate-left text-[11px]"></i> លំនាំដើម</button>` : ''}
+        ${s.keys.length ? `<button onclick="resetSection('${s.id}')" type="button" class="sm-badge h-9 px-3.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 font-semibold inline-flex items-center gap-2"><i class="fas fa-rotate-left text-[11px]"></i> ដាក់តម្លៃលំនាំដើម</button>` : ''}
     </div>`;
 }
 
@@ -138,7 +138,7 @@ function fxHistory() {
         const diff = byDay[d] - byDay[days[i - 1]];
         return `<tr class="border-t border-slate-100"><td class="py-1.5 text-slate-600">${fmtDate(d + 'T12:00')}</td>
             <td class="text-right font-semibold text-slate-700">${fmtInt(byDay[d])} ៛</td>
-            <td class="text-right ${diff > 0 ? 'text-emerald-700' : diff < 0 ? 'text-rose-600' : 'text-slate-400'}">${diff ? (diff > 0 ? '+' : '−') + Math.abs(diff) : '0'}</td></tr>`;
+            <td class="text-right ${diff ? 'text-slate-600' : 'text-slate-400'}">${diff ? (diff > 0 ? '+' : '−') + Math.abs(diff) : '0'}</td></tr>`;
     }).join('');
 }
 
@@ -192,15 +192,15 @@ function nightHours(t) {
 
 /* របារពេលវេលា 24 ម៉ោង — ឃើញភ្លាមថាម៉ោងណាគ្មានវេន ឬវេនជាន់គ្នា */
 function timeline() {
-    const colors = ['bg-amber-500', 'bg-blue-500', 'bg-blue-700', 'bg-emerald-500'];
+    const colors = ['bg-blue-600', 'bg-blue-400', 'bg-blue-700', 'bg-blue-500'];
     const segs = draft.shiftTemplates.flatMap((t, i) => {
         const s = minutesOf(t.start) / 1440 * 100;
         const e = minutesOf(t.end) / 1440 * 100;
-        const bar = (l, w) => `<div class="absolute top-0 bottom-0 ${colors[i % 4]} rounded-md opacity-90 flex items-center justify-center overflow-hidden" style="left:${l}%;width:${w}%"><span class="text-[11px] text-white font-semibold truncate px-1">${escapeText(t.name)}</span></div>`;
+        const bar = (l, w) => `<div class="absolute top-0 bottom-0 ${colors[i % 4]} border-x border-white flex items-center justify-center overflow-hidden" style="left:${l}%;width:${w}%"><span class="text-[11px] text-white font-semibold truncate px-1">${escapeText(t.name)}</span></div>`;
         return e > s ? [bar(s, e - s)] : [bar(s, 100 - s), bar(0, e)];
     }).join('');
     return `<div class="mt-2">
-        <div class="relative h-10 rounded-xl bg-slate-100 overflow-hidden">${segs}</div>
+        <div class="relative h-10 rounded-lg bg-slate-100 overflow-hidden">${segs}</div>
         <div class="flex justify-between mt-1 text-[11px] text-slate-400 sm-figure">${[0, 3, 6, 9, 12, 15, 18, 21, 24].map(h => `<span>${pad2(h)}:00</span>`).join('')}</div>
     </div>`;
 }
@@ -369,21 +369,21 @@ function renderShifts(s) {
     const rows = draft.shiftTemplates.map((t, i) => {
         const h = templateHours(t);
         const valid = /^([01]\d|2[0-3]):[0-5]\d$/.test(t.start) && /^([01]\d|2[0-3]):[0-5]\d$/.test(t.end);
-        const tone = !valid || h > 12 ? 'text-rose-600' : h > 8 ? 'text-amber-700' : 'text-emerald-700';
+        const tone = !valid || h > 12 ? 'text-rose-600' : h > 8 ? 'text-amber-700' : 'text-slate-500';
         return `<div class="grid grid-cols-[1fr_auto_auto_44px] gap-2 items-center py-3 border-b border-slate-100">
-            <input value="${escapeText(t.name)}" oninput="draft.shiftTemplates[${i}].name=this.value; renderSaveBar()" onblur="render()" class="sm-td h-11 px-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-blue-500">
-            <div class="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl px-1 h-11">
-                <button type="button" onclick="stepTime(${i}, 'start', -30)" class="w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs"><i class="fas fa-minus text-[10px]"></i></button>
+            <input value="${escapeText(t.name)}" oninput="draft.shiftTemplates[${i}].name=this.value; renderSaveBar()" onblur="render()" class="sm-td h-11 px-3 rounded-xl bg-white border border-slate-200 focus:outline-none focus:border-blue-500">
+            <div class="flex items-center gap-1 bg-white border border-slate-200 rounded-xl px-1 h-11">
+                <button type="button" onclick="stepTime(${i}, 'start', -30)" class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-xs"><i class="fas fa-minus text-[10px]"></i></button>
                 <input value="${t.start}" inputmode="numeric" maxlength="5" oninput="draft.shiftTemplates[${i}].start=this.value" onblur="draft.shiftTemplates[${i}].start=normalizeTime(this.value); renderSaveBar(); render()" class="sm-value w-16 h-8 bg-transparent text-center sm-figure focus:outline-none">
-                <button type="button" onclick="stepTime(${i}, 'start', 30)" class="w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs"><i class="fas fa-plus text-[10px]"></i></button>
+                <button type="button" onclick="stepTime(${i}, 'start', 30)" class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-xs"><i class="fas fa-plus text-[10px]"></i></button>
             </div>
-            <div class="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl px-1 h-11">
-                <button type="button" onclick="stepTime(${i}, 'end', -30)" class="w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs"><i class="fas fa-minus text-[10px]"></i></button>
+            <div class="flex items-center gap-1 bg-white border border-slate-200 rounded-xl px-1 h-11">
+                <button type="button" onclick="stepTime(${i}, 'end', -30)" class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-xs"><i class="fas fa-minus text-[10px]"></i></button>
                 <input value="${t.end}" inputmode="numeric" maxlength="5" oninput="draft.shiftTemplates[${i}].end=this.value" onblur="draft.shiftTemplates[${i}].end=normalizeTime(this.value); renderSaveBar(); render()" class="sm-value w-16 h-8 bg-transparent text-center sm-figure focus:outline-none">
-                <button type="button" onclick="stepTime(${i}, 'end', 30)" class="w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs"><i class="fas fa-plus text-[10px]"></i></button>
+                <button type="button" onclick="stepTime(${i}, 'end', 30)" class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-xs"><i class="fas fa-plus text-[10px]"></i></button>
             </div>
-            <button onclick="removeTemplate(${i})" type="button" aria-label="លុបវេន" class="w-11 h-11 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-500 hover:text-rose-600 ${draft.shiftTemplates.length <= 1 ? 'invisible' : ''}"><i class="fas fa-trash-can text-xs"></i></button>
-            <p class="col-span-4 sm-td-sub ${tone} -mt-1"><i class="fas ${!valid || h > 12 ? 'fa-circle-exclamation' : h > 8 ? 'fa-triangle-exclamation' : 'fa-circle-check'} mr-1"></i>${!valid ? 'ម៉ោងត្រូវសរសេរជា 24 ម៉ោង ឧ. 07:00' : `${h} ម៉ោង${h > 12 ? ' · លើសកំណត់ច្បាប់ 12 ម៉ោង' : h > 8 ? ' · លើស 8 ម៉ោងធម្មតា ត្រូវគិតម៉ោងបន្ថែម' : ' · ក្នុងម៉ោងធម្មតា'}${nightHours(t) ? ` · ម៉ោងយប់ ${nightHours(t)} ម៉ោង (ប្រាក់ឈ្នួល 200%)` : ''}`}</p>
+            <button onclick="removeTemplate(${i})" type="button" aria-label="លុបវេន" class="w-11 h-11 rounded-xl hover:bg-rose-50 text-slate-400 hover:text-rose-600 ${draft.shiftTemplates.length <= 1 ? 'invisible' : ''}"><i class="fas fa-trash-can text-xs"></i></button>
+            <p class="col-span-4 sm-td-sub ${tone} -mt-1">${!valid || h > 12 ? '<i class="fas fa-circle-exclamation mr-1"></i>' : h > 8 ? '<i class="fas fa-triangle-exclamation mr-1"></i>' : ''}${!valid ? 'ម៉ោងត្រូវសរសេរជា 24 ម៉ោង ឧ. 07:00' : `${h} ម៉ោង${h > 12 ? ' · លើសកំណត់ច្បាប់ 12 ម៉ោង' : h > 8 ? ' · លើស 8 ម៉ោងធម្មតា ត្រូវគិតម៉ោងបន្ថែម' : ' · ក្នុងម៉ោងធម្មតា'}${nightHours(t) ? ` · ម៉ោងយប់ ${nightHours(t)} ម៉ោង (ប្រាក់ឈ្នួល 200%)` : ''}`}</p>
         </div>`;
     }).join('');
 
@@ -393,9 +393,9 @@ function renderShifts(s) {
         try {
             const not = JSON.parse(noticeRaw);
             noticeHtml = `
-                <div class="mb-4 p-3 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-between gap-3">
-                    <p class="sm-td text-blue-900"><i class="fas fa-circle-info mr-1 text-blue-600"></i>${escapeText(not.name)} មិនទាន់មានអ្នកគិតលុយ 7 ថ្ងៃខាងមុខ</p>
-                    <a href="../roster/roster.html?template=${not.code}" class="sm-badge h-8 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs inline-flex items-center gap-1.5 flex-shrink-0">
+                <div class="mb-4 p-3 pl-4 rounded-xl bg-white border border-amber-300 flex items-center justify-between gap-3">
+                    <p class="sm-td text-slate-700"><i class="fas fa-user-clock mr-1.5 text-amber-500"></i>${escapeText(not.name)} មិនទាន់មានអ្នកគិតលុយ 7 ថ្ងៃខាងមុខ</p>
+                    <a href="${IS_ADMIN_PAGE ? '../../manager/roster/roster.html' : '../roster/roster.html'}?template=${not.code}" class="sm-badge h-9 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-1.5 flex-shrink-0">
                         ចាត់តាំងឥឡូវ <i class="fas fa-arrow-right text-[10px]"></i>
                     </a>
                 </div>
@@ -406,9 +406,9 @@ function renderShifts(s) {
     return sectionHead(s, 'ចំនួនវេនក្នុងមួយថ្ងៃ = ម៉ោងបើកហាង ÷ ប្រមាណ 8 ម៉ោង · វេនមួយអាចមានអ្នកគិតលុយច្រើននាក់') + `<div class="px-5 sm:px-6 pb-5">
         ${noticeHtml}
         <div class="flex flex-wrap items-center gap-2 mb-3">
-            <span class="text-xs text-slate-400">គំរូរហ័ស៖</span>
+            <span class="sm-td-sub text-slate-500">គំរូរហ័ស៖</span>
             ${SHIFT_PRESETS.map((p, pIdx) => `
-                <button type="button" onclick="applyShiftPreset(${pIdx})" class="sm-badge h-8 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition">
+                <button type="button" onclick="applyShiftPreset(${pIdx})" class="sm-badge h-9 px-3 rounded-full bg-white border border-slate-200 hover:border-blue-500 text-slate-700 font-medium transition">
                     ${p.label}
                 </button>
             `).join('')}
@@ -424,10 +424,10 @@ function renderShifts(s) {
         <div class="flex flex-wrap items-center justify-between gap-3 mt-4">
             <div class="flex items-center gap-2">
                 ${draft.shiftTemplates.length < 4
-                    ? `<button onclick="addTemplate()" type="button" class="sm-badge h-10 px-4 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold"><i class="fas fa-plus mr-1"></i> បន្ថែមវេន</button>`
-                    : `<button disabled type="button" class="sm-badge h-10 px-4 rounded-xl bg-slate-100 text-slate-400 cursor-not-allowed font-semibold"><i class="fas fa-plus mr-1"></i> បន្ថែមវេន</button><span class="sm-td-sub text-slate-400">អតិបរមា 4 វេនក្នុងមួយថ្ងៃ</span>`}
+                    ? `<button onclick="addTemplate()" type="button" class="sm-badge h-10 px-4 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold"><i class="fas fa-plus mr-1.5 text-slate-500"></i>បន្ថែមវេន</button>`
+                    : `<button disabled type="button" class="sm-badge h-10 px-4 rounded-xl bg-slate-100 text-slate-400 cursor-not-allowed font-semibold"><i class="fas fa-plus mr-1.5"></i>បន្ថែមវេន</button><span class="sm-td-sub text-slate-400">អតិបរមា 4 វេនក្នុងមួយថ្ងៃ</span>`}
             </div>
-            <a href="../roster/roster.html" class="sm-badge text-blue-700 hover:text-blue-900 font-semibold">ចាត់តាំងអ្នកគិតលុយក្នុងកាលវិភាគវេន <i class="fas fa-arrow-right text-[10px]"></i></a>
+            <a href="${IS_ADMIN_PAGE ? '../../manager/roster/roster.html' : '../roster/roster.html'}" class="sm-badge text-blue-700 hover:underline font-semibold">ចាត់តាំងអ្នកគិតលុយក្នុងកាលវិភាគវេន <i class="fas fa-arrow-right text-[10px]"></i></a>
         </div>
     </div>`;
 }
@@ -440,37 +440,100 @@ function renderTill(s) {
             <div class="flex items-center gap-3">${avatarHtml(c.id, 'w-8 h-8')}<span class="sm-td text-slate-700 flex-1 truncate">${c.name}</span>
                 <div class="relative w-28"><input type="text" inputmode="decimal" value="${draft.discountLimits[c.id] != null ? draft.discountLimits[c.id] : 5}"
                     oninput="draft.discountLimits['${c.id}'] = Number(this.value.replace(/[^0-9.]/g, '')) || 0; renderSaveBar()"
-                    class="sm-value w-full h-11 pl-3 pr-8 rounded-xl bg-slate-50 border border-slate-200 text-right focus:outline-none focus:border-blue-500"><span class="absolute right-3 top-1/2 -translate-y-1/2 sm-td-sub text-slate-400">%</span></div></div>`).join('')}</div>`)}
+                    class="sm-value w-full h-11 pl-3 pr-8 rounded-xl bg-white border ${draft.discountLimits[c.id] !== posSettings().discountLimits[c.id] ? 'border-amber-400' : 'border-slate-200'} text-right sm-figure focus:outline-none focus:border-blue-500"><span class="absolute right-3 top-1/2 -translate-y-1/2 sm-td-sub text-slate-400">%</span></div></div>`).join('')}</div>`)}
     </div>`;
+}
+
+/* ប៊ូតុងបិទ/បើក (switch) — ពណ៌ខៀវពេលបើក */
+function switchControl(key, on, onLabel, offLabel) {
+    return `<button type="button" role="switch" aria-checked="${on}" onclick="draft['${key}'] = ${!on}; renderSaveBar(); render()"
+        class="w-full h-12 px-3.5 rounded-xl border bg-white ${isChanged(key) ? 'border-amber-400' : 'border-slate-200'} hover:border-slate-300 flex items-center justify-between gap-3 transition">
+        <span class="sm-td font-medium text-slate-700">${on ? onLabel : offLabel}</span>
+        <span class="relative w-11 h-6 rounded-full transition flex-shrink-0 ${on ? 'bg-blue-600' : 'bg-slate-300'}"><span class="absolute top-0.5 ${on ? 'left-[22px]' : 'left-0.5'} w-5 h-5 rounded-full bg-white shadow transition-all"></span></span>
+    </button>`;
+}
+
+/* ជម្រើសមួយក្នុងចំណោមច្រើន (segmented) */
+function segmented(key, value, options) {
+    return `<div class="grid grid-cols-${options.length} gap-1 p-1 rounded-xl border ${isChanged(key) ? 'border-amber-400' : 'border-slate-200'} bg-white">${options.map(([v, label, sub]) => `
+        <button type="button" onclick="draft['${key}'] = '${v}'; renderSaveBar(); render()" aria-pressed="${value === v}"
+            class="min-h-[44px] px-2 rounded-lg text-center transition ${value === v ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-50'}">
+            <span class="sm-td font-semibold block leading-tight">${label}</span>${sub ? `<span class="text-[12px] block ${value === v ? 'text-blue-100' : 'text-slate-400'}">${sub}</span>` : ''}
+        </button>`).join('')}</div>`;
 }
 
 function renderStock(s) {
-    const neg = draft.allowNegativeStock;
-    const sched = draft.countSchedule || 'weekly';
-    return sectionHead(s, 'ដែនកំណត់នៃការកែតម្រូវស្តុក កាលវិភាគរាប់ស្តុក និងការលក់ពេលអស់ស្តុក') + `<div class="px-5 sm:px-6">
-        ${row('allowNegativeStock', 'អនុញ្ញាតលក់ពេលស្តុកមិនគ្រប់', 'បើក៖ អនុញ្ញាតឱ្យអ្នកគិតលុយបន្តលក់ទោះបីស្តុកអស់ ឬអវិជ្ជមាន · បិទ៖ បញ្ឈប់ការលក់ពេលអស់ស្តុក', `
-            <div class="flex items-center gap-2">
-                <button type="button" onclick="draft.allowNegativeStock = true; renderSaveBar(); render()" class="sm-badge h-11 px-4 rounded-xl border font-semibold transition ${neg ? 'bg-blue-600 border-blue-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}"><i class="fas fa-check mr-1.5"></i>អនុញ្ញាត</button>
-                <button type="button" onclick="draft.allowNegativeStock = false; renderSaveBar(); render()" class="sm-badge h-11 px-4 rounded-xl border font-semibold transition ${!neg ? 'bg-blue-600 border-blue-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}"><i class="fas fa-ban mr-1.5"></i>មិនអនុញ្ញាត</button>
-            </div>
-        `)}
-        ${row('adjustLimitQty', 'ដែនកំណត់ចំនួនកែតម្រូវ', 'ចំនួនឯកតាអតិបរមាដែលអាចកែតម្រូវក្នុងមួយលើកដោយគ្មានការត្រួតពិនិត្យបន្ថែម', numInput('adjustLimitQty', 'ឯកតា'), noteFor('adjustLimitQty'))}
-        ${row('adjustLimitUSD', 'ដែនកំណត់ទឹកប្រាក់កែតម្រូវ', 'ទឹកប្រាក់អតិបរមាគិតជាដុល្លារដែលអាចកែតម្រូវស្តុកក្នុងមួយលើក', numInput('adjustLimitUSD', 'ដុល្លារ', { prefix: '$' }), noteFor('adjustLimitUSD'))}
-        ${row('countSchedule', 'កាលវិភាគរាប់ស្តុកទៀងទាត់', 'កំណត់ពេលវេលាដែលអ្នកគ្រប់គ្រងត្រូវរាប់ស្តុកជាក់ស្តែង', `
-            <div class="flex items-center gap-2">
-                <button type="button" onclick="draft.countSchedule = 'weekly'; renderSaveBar(); render()" class="sm-badge h-11 px-4 rounded-xl border font-semibold transition ${sched === 'weekly' ? 'bg-blue-600 border-blue-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}"><i class="fas fa-calendar-week mr-1.5"></i>រៀងរាល់សប្តាហ៍ (7 ថ្ងៃ)</button>
-                <button type="button" onclick="draft.countSchedule = 'monthly'; renderSaveBar(); render()" class="sm-badge h-11 px-4 rounded-xl border font-semibold transition ${sched === 'monthly' ? 'bg-blue-600 border-blue-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}"><i class="fas fa-calendar-days mr-1.5"></i>រៀងរាល់ខែ (30 ថ្ងៃ)</button>
-            </div>
-        `)}
+    return sectionHead(s, 'ការលក់ពេលអស់ស្តុក ដែនកំណត់កែតម្រូវស្តុក និងកាលវិភាគរាប់ស្តុក') + `<div class="px-5 sm:px-6">
+        ${row('allowNegativeStock', 'លក់ពេលស្តុកក្នុងប្រព័ន្ធអស់', 'បើក៖ អ្នកគិតលុយលក់បាន ទោះប្រព័ន្ធបង្ហាញថាអស់ (ទំនិញមាននៅលើធ្នើ) · បិទ៖ ផ្ទាំងគិតលុយមិនឱ្យលក់ទំនិញដែលអស់',
+            switchControl('allowNegativeStock', !!draft.allowNegativeStock, 'អនុញ្ញាតឱ្យលក់', 'មិនឱ្យលក់'))}
+        ${row('adjustLimitQty', 'ដែនកំណត់ចំនួនកែតម្រូវ', 'ចំនួនឯកតាអតិបរមាក្នុងមួយលើក ដោយមិនចាំបាច់ពន្យល់បន្ថែម', numInput('adjustLimitQty', 'ឯកតា'), noteFor('adjustLimitQty'))}
+        ${row('adjustLimitUSD', 'ដែនកំណត់ទឹកប្រាក់កែតម្រូវ', 'តម្លៃស្តុកអតិបរមាដែលកែតម្រូវបានក្នុងមួយលើក', numInput('adjustLimitUSD', 'ដុល្លារ', { prefix: '$' }), noteFor('adjustLimitUSD'))}
+        ${row('countSchedule', 'រាប់ស្តុកទៀងទាត់', 'ផ្ទាំងគ្រប់គ្រងរំលឹកអ្នកគ្រប់គ្រងពេលដល់ថ្ងៃរាប់',
+            segmented('countSchedule', draft.countSchedule || 'weekly', [['weekly', 'រៀងរាល់សប្តាហ៍', '7 ថ្ងៃម្តង'], ['monthly', 'រៀងរាល់ខែ', '30 ថ្ងៃម្តង']]))}
     </div>`;
 }
 
+/* ទំនិញញឹកញាប់៖ ជួរដែលបានជ្រើស (តាមលំដាប់បង្ហាញនៅបញ្ជរ) + បញ្ជីទំនិញដែលស្វែងរកបាន */
+let quickQuery = '';
+function quickPickList() {
+    const q = quickQuery.trim().toLowerCase();
+    const list = PRODUCTS.filter(p => !draft.quickKeys.includes(p.sku) && (!q || p.name.toLowerCase().includes(q) || String(p.barcode || '').includes(q)));
+    if (!list.length) return '<p class="sm-td-sub text-slate-400 py-6 text-center">រកមិនឃើញទំនិញ</p>';
+    const full = draft.quickKeys.length >= 8;
+    return list.map(p => `<button type="button" onclick="toggleKey('${p.sku}')" ${full ? 'disabled' : ''}
+        class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition ${full ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-50'}">
+        <span class="w-8 h-8 rounded-md border border-slate-200 overflow-hidden inline-flex items-center justify-center flex-shrink-0">${productImgHtml(p, 'text-[11px]')}</span>
+        <span class="sm-td text-slate-700 flex-1 min-w-0 truncate">${p.name}</span>
+        <span class="sm-td-sub text-slate-400 sm-figure">${fmtUSD(p.price)}</span>
+        <i class="fas fa-plus text-[11px] text-slate-400"></i>
+    </button>`).join('');
+}
+
+function quickFilter(v) {
+    quickQuery = v;
+    const el = document.getElementById('quickPick');
+    if (el) el.innerHTML = quickPickList();
+}
+
+function moveKey(i, d) {
+    const k = draft.quickKeys;
+    const j = i + d;
+    if (j < 0 || j >= k.length) return;
+    [k[i], k[j]] = [k[j], k[i]];
+    render();
+}
+
 function renderQuick(s) {
-    return sectionHead(s, 'បង្ហាញខាងលើក្រឡាទំនិញនៅផ្ទាំងគិតលុយ · ចុចដើម្បីជ្រើស ឬដកចេញ') + `<div class="px-5 sm:px-6">
-        ${row('quickKeys', 'ទំនិញញឹកញាប់', `អតិបរមា 8 មុខ · បានជ្រើស ${draft.quickKeys.length}`, `<div class="flex flex-wrap gap-1.5">${PRODUCTS.map(p => {
-            const on = draft.quickKeys.includes(p.sku);
-            return `<button onclick="toggleKey('${p.sku}')" type="button" class="sm-td-sub pl-1 pr-2.5 py-1 rounded-full border inline-flex items-center gap-1.5 transition ${on ? 'bg-amber-500 border-amber-500 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-amber-400'}">
-                <span class="w-6 h-6 rounded-full bg-white/80 overflow-hidden inline-flex items-center justify-center">${productImgHtml(p, 'text-[10px]')}</span>${p.name.split(' ')[0]}</button>`; }).join('')}</div>`)}
+    const keys = draft.quickKeys;
+    const slots = Array.from({ length: 8 }, (_, i) => {
+        const p = keys[i] && PRODUCTS.find(x => x.sku === keys[i]);
+        if (!p) return `<div class="h-12 rounded-xl border border-dashed border-slate-300 flex items-center gap-2 pl-2 sm-td-sub text-slate-400"><span class="w-6 sm-figure text-center">${i + 1}</span>កន្លែងទំនេរ</div>`;
+        return `<div class="h-12 rounded-xl border border-slate-200 bg-white flex items-center gap-2 pl-2 pr-1">
+            <span class="w-6 sm-td-sub text-slate-400 sm-figure text-center flex-shrink-0">${i + 1}</span>
+            <span class="w-9 h-9 rounded-md border border-slate-100 overflow-hidden inline-flex items-center justify-center flex-shrink-0">${productImgHtml(p, 'text-[11px]')}</span>
+            <span class="sm-td text-slate-700 flex-1 min-w-0 truncate">${p.name}</span>
+            <span class="flex items-center flex-shrink-0">
+                <button type="button" onclick="moveKey(${i}, -1)" aria-label="ផ្លាស់ទៅមុខ" ${i === 0 ? 'disabled' : ''} class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent"><i class="fas fa-arrow-up text-[11px]"></i></button>
+                <button type="button" onclick="moveKey(${i}, 1)" aria-label="ផ្លាស់ទៅក្រោយ" ${i === keys.length - 1 ? 'disabled' : ''} class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent"><i class="fas fa-arrow-down text-[11px]"></i></button>
+                <button type="button" onclick="toggleKey('${p.sku}')" aria-label="ដកចេញ" class="w-8 h-8 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50"><i class="fas fa-xmark text-xs"></i></button>
+            </span>
+        </div>`;
+    }).join('');
+    return sectionHead(s, 'ទំនិញគ្មានបាកូដ ឬលក់ញឹកញាប់ បង្ហាញខាងលើក្រឡាទំនិញនៅផ្ទាំងគិតលុយ') + `<div class="px-5 sm:px-6 py-5 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div>
+            <p class="sm-value text-slate-800">លំដាប់នៅបញ្ជរ${changedDot('quickKeys')}</p>
+            <p class="sm-td-sub text-slate-500 mb-3">បានជ្រើស <span class="sm-figure">${keys.length}</span> ក្នុងចំណោម 8 · ប្រើព្រួញដើម្បីប្តូរលំដាប់</p>
+            <div class="space-y-1.5">${slots}</div>
+        </div>
+        <div>
+            <p class="sm-value text-slate-800">បន្ថែមទំនិញ</p>
+            <p class="sm-td-sub text-slate-500 mb-3">${keys.length >= 8 ? 'ពេញ 8 មុខហើយ · ដកមួយចេញសិន ទើបបន្ថែមបាន' : 'ចុចលើទំនិញដើម្បីបន្ថែមទៅកន្លែងទំនេរបន្ទាប់'}</p>
+            <label class="relative block">
+                <i class="fas fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input value="${escapeText(quickQuery)}" oninput="quickFilter(this.value)" placeholder="ស្វែងរកឈ្មោះ ឬបាកូដ" class="sm-td w-full h-11 pl-8 pr-3 rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-blue-500">
+            </label>
+            <div id="quickPick" class="mt-2 max-h-[372px] overflow-y-auto rounded-xl border border-slate-200 p-1">${quickPickList()}</div>
+        </div>
     </div>`;
 }
 
@@ -495,12 +558,15 @@ function renderRules(s) {
 }
 
 function renderReasons(s) {
-    return sectionHead(s, 'ជម្រើសដែលអ្នកគិតលុយ និងអ្នកគ្រប់គ្រងឃើញ · ចុច Enter ដើម្បីបន្ថែម') + `<div class="px-5 sm:px-6">
-        ${REASON_GROUPS.map(([k, label, icon]) => row(null, `<i class="fas ${icon} text-slate-400 mr-1.5"></i>${label}`, `${draft.reasons[k].length} ជម្រើស`, `
-            <div class="flex flex-wrap gap-1.5">${draft.reasons[k].map((r, i) => `<span class="sm-td-sub inline-flex items-center gap-1 pl-3 pr-1 py-1 rounded-full bg-slate-100 text-slate-700">${escapeText(r)}
-                <button onclick="draft.reasons['${k}'].splice(${i},1); render()" type="button" aria-label="លុប" class="w-6 h-6 rounded-full hover:bg-rose-100 hover:text-rose-600"><i class="fas fa-xmark text-[10px]"></i></button></span>`).join('')}</div>
-            <input placeholder="+ បន្ថែមមូលហេតុ" onkeydown="if(event.key==='Enter'&&this.value.trim()){draft.reasons['${k}'].push(this.value.trim()); render(); setTimeout(()=>document.querySelector('[data-r=${k}]').focus(),0)}" data-r="${k}"
-                class="sm-td w-full h-10 mt-2 px-3 rounded-xl bg-white border border-dashed border-slate-300 focus:outline-none focus:border-blue-500">`)).join('')}
+    return sectionHead(s, 'ជម្រើសរហ័សដែលអ្នកគិតលុយ និងអ្នកគ្រប់គ្រងឃើញពេលត្រូវដាក់មូលហេតុ') + `<div class="px-5 sm:px-6">
+        ${REASON_GROUPS.map(([k, label, icon]) => row(null, `<i class="fas ${icon} text-slate-400 mr-1.5"></i>${label}${JSON.stringify(posSettings().reasons[k]) !== JSON.stringify(draft.reasons[k]) ? '<span class="w-2 h-2 rounded-full bg-amber-500 inline-block ml-1.5 align-middle" aria-label="បានកែ"></span>' : ''}`, `${draft.reasons[k].length} ជម្រើស`, `
+            <div class="flex flex-wrap gap-1.5">${draft.reasons[k].map((r, i) => `<span class="sm-td-sub inline-flex items-center gap-1 pl-3 pr-1 py-1 rounded-full border border-slate-200 bg-white text-slate-700">${escapeText(r)}
+                <button onclick="removeReason('${k}', ${i})" type="button" aria-label="លុប" class="w-6 h-6 rounded-full text-slate-400 hover:bg-rose-50 hover:text-rose-600"><i class="fas fa-xmark text-[10px]"></i></button></span>`).join('')}</div>
+            <div class="flex gap-2 mt-2">
+                <input placeholder="មូលហេតុថ្មី" onkeydown="if(event.key==='Enter'){event.preventDefault(); addReason('${k}')}" data-r="${k}"
+                    class="sm-td flex-1 min-w-0 h-10 px-3 rounded-xl bg-white border border-slate-200 focus:outline-none focus:border-blue-500">
+                <button type="button" onclick="addReason('${k}')" class="sm-badge h-10 px-3.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold flex-shrink-0"><i class="fas fa-plus mr-1 text-slate-500"></i>បន្ថែម</button>
+            </div>`)).join('')}
     </div>`;
 }
 
@@ -517,7 +583,7 @@ function renderHistory(s) {
             ${avatarHtml(x.by, 'w-9 h-9')}
             <div class="min-w-0 flex-1">
                 <p class="sm-td text-slate-700">${personName(x.by)} <span class="sm-td-sub text-slate-400 sm-figure ml-1">${fmtDate(x.at)} ${fmtTime(x.at)}</span></p>
-                ${x.changes.map(c => c.key === 'pin' ? `<p class="sm-td-sub text-slate-600 mt-1"><i class="fas fa-key text-amber-500 mr-1"></i>កំណត់លេខសម្ងាត់ថ្មីឱ្យ ${personName(c.who)}</p>`
+                ${x.changes.map(c => c.key === 'pin' ? `<p class="sm-td-sub text-slate-600 mt-1"><i class="fas fa-key text-slate-400 mr-1"></i>កំណត់លេខសម្ងាត់ថ្មីឱ្យ ${personName(c.who)}</p>`
                     : `<p class="sm-td-sub text-slate-600 mt-1"><span class="font-semibold text-slate-700">${SETTING_LABELS[c.key] || c.key}</span>៖ <span class="text-slate-400 line-through">${escapeText(fmtVal(c.from))}</span> <i class="fas fa-arrow-right text-[10px] text-slate-400 mx-1"></i> ${escapeText(fmtVal(c.to))}</p>`).join('')}
             </div>
         </div>`).join('') : emptyState('fa-clock-rotate-left', 'មិនទាន់មានការកែប្រែ', 'ការកំណត់ទាំងអស់នៅតម្លៃលំនាំដើម')}</div>`;
@@ -591,6 +657,22 @@ function toggleKey(sku) {
     if (i >= 0) draft.quickKeys.splice(i, 1);
     else if (draft.quickKeys.length >= 8) return showToast('ទំនិញញឹកញាប់អតិបរមា 8 មុខ', 'warning');
     else draft.quickKeys.push(sku);
+    render();
+}
+
+function addReason(k) {
+    const el = document.querySelector(`[data-r="${k}"]`);
+    const v = el ? el.value.trim() : '';
+    if (!v) { if (el) el.focus(); return showToast('សូមវាយមូលហេតុជាមុនសិន', 'warning'); }
+    if (draft.reasons[k].some(x => x === v)) return showToast('មូលហេតុនេះមានរួចហើយ', 'warning');
+    draft.reasons[k].push(v);
+    render();
+    setTimeout(() => { const n = document.querySelector(`[data-r="${k}"]`); if (n) n.focus(); }, 0);
+}
+
+function removeReason(k, i) {
+    if (draft.reasons[k].length <= 1) return showToast('ត្រូវទុកមូលហេតុយ៉ាងហោចណាស់មួយ', 'warning');
+    draft.reasons[k].splice(i, 1);
     render();
 }
 

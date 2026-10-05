@@ -287,19 +287,43 @@
 }
 
 
-/* ===== របារចំហៀង៖ ពណ៌តែមួយសម្រាប់គ្រប់តួនាទី =====
-   ផ្ទៃប្រផេះងងឹតអព្យាក្រឹត និងពណ៌ខៀវតែមួយលើធាតុសកម្ម ដូច្នេះតួនាទីទាំងបីមើលទៅជាផលិតផលតែមួយ
-   តួនាទីបង្ហាញដោយស្លាកក្រោមឈ្មោះម៉ាក មិនមែនដោយពណ៌របារចំហៀងទេ */
+/* ===== របារចំហៀង៖ ពណ៌តាមទិដ្ឋភាព =====
+   ផ្ទៃងងឹតស្រាលពណ៌ (មិនឆ្អៅ) ដើម្បីឱ្យបុគ្គលិកដឹងភ្លាមថាកំពុងនៅផ្នែកណា · ពណ៌ទាំងបីសុខដុមជាមួយពណ៌ខៀវមេ និងផ្ទៃប្រផេះ
+   • ផ្ទាំងគិតលុយ៖ ប្រផេះខ្មៅ (អព្យាក្រឹត មិនរំខានការលក់)
+   • អ្នកគ្រប់គ្រង៖ ខៀវចាស់ (ស៊ីគ្នានឹងពណ៌ខៀវមេ)
+   • ម្ចាស់ហាង៖ បៃតងចាស់ (ពណ៌និមិត្តសញ្ញា DIGITECHKH)
+   ពណ៌ទិដ្ឋភាពប្រើតែលើផ្ទៃរបារ ធាតុសកម្ម និងចំណុចតួនាទី · ផ្លាកលេខនៅតែប្រផេះ/ក្រហមដដែល */
 #portalSidebar {
-    --sb-bg: #111827;
-    --sb-menu-bg: #0b111d;
+    --sb-bg: #18181b;
+    --sb-menu-bg: #111113;
     --sb-line: rgba(255, 255, 255, .07);
     --sb-accent: #60a5fa;
     --sb-accent-icon: #93c5fd;
     --sb-accent-text: #bfdbfe;
-    --sb-active-bg: rgba(255, 255, 255, .08);
+    --sb-active-bg: rgba(96, 165, 250, .14);
+    --sb-hover-bg: rgba(255, 255, 255, .06);
 }
-html.dark #portalSidebar { --sb-bg: #0b111d; --sb-menu-bg: #070c15; --sb-line: rgba(255, 255, 255, .09); }
+body#managerPortal #portalSidebar {
+    --sb-bg: #0f1d36;
+    --sb-menu-bg: #0a1529;
+    --sb-line: rgba(147, 197, 253, .10);
+    --sb-active-bg: rgba(96, 165, 250, .18);
+    --sb-hover-bg: rgba(147, 197, 253, .08);
+}
+body#adminPortal #portalSidebar {
+    --sb-bg: #0d2620;
+    --sb-menu-bg: #081b16;
+    --sb-line: rgba(110, 231, 183, .10);
+    --sb-accent: #34d399;
+    --sb-accent-icon: #6ee7b7;
+    --sb-accent-text: #a7f3d0;
+    --sb-active-bg: rgba(52, 211, 153, .15);
+    --sb-hover-bg: rgba(110, 231, 183, .07);
+}
+/* ទម្រង់ងងឹត៖ ងងឹតជាងផ្ទៃទំព័របន្តិច ប៉ុន្តែរក្សាពណ៌ទិដ្ឋភាព */
+html.dark #portalSidebar { --sb-bg: #0e0e10; --sb-menu-bg: #09090b; --sb-line: rgba(255, 255, 255, .09); }
+html.dark body#managerPortal #portalSidebar { --sb-bg: #0a1426; --sb-menu-bg: #070f1d; --sb-line: rgba(147, 197, 253, .11); }
+html.dark body#adminPortal #portalSidebar { --sb-bg: #091b17; --sb-menu-bg: #061310; --sb-line: rgba(110, 231, 183, .11); }
 
 /* custom.css បង្ខំ <aside> ទាំងអស់ទៅពណ៌បៃតង ដោយ !important */
 aside#portalSidebar,
@@ -328,7 +352,7 @@ html.dark aside#portalSidebar {
     display: flex; align-items: center; gap: 12px; height: 36px; padding: 0 12px; border-radius: 6px;
     color: rgba(255, 255, 255, .74); transition: background-color .12s ease, color .12s ease; white-space: nowrap;
 }
-#portalSidebar .sb-row:hover { background: rgba(255, 255, 255, .06); color: #fff; }
+#portalSidebar .sb-row:hover { background: var(--sb-hover-bg); color: #fff; }
 #portalSidebar .sb-row .sb-icon { color: rgba(255, 255, 255, .52); font-size: 18px; transition: color .12s ease; }
 #portalSidebar .sb-row:hover .sb-icon { color: rgba(255, 255, 255, .85); }
 #portalSidebar .sb-nav-item[aria-current="page"],
@@ -364,7 +388,15 @@ html.dark aside#portalSidebar {
 .sb-menu { background: var(--sb-menu-bg); }
 .sb-menu .sb-group { font-size: 12.5px; font-weight: 500; color: rgba(255, 255, 255, .5); }
 .sb-menu .sb-menu-item { font-size: 14.5px; color: rgba(255, 255, 255, .84); }
-.sb-menu button.sb-menu-item:hover { background: rgba(255, 255, 255, .07); color: #fff; }
+.sb-menu button.sb-menu-item:hover { background: var(--sb-hover-bg, rgba(255, 255, 255, .07)); color: #fff; }
+
+/* ចំណុចពណ៌ទិដ្ឋភាពក្រោមឈ្មោះម៉ាក និងក្នុងម៉ឺនុយប្តូរទិដ្ឋភាព */
+.sb-view-dot { width: 7px; height: 7px; border-radius: 9999px; flex-shrink: 0; display: inline-block; }
+.sb-view-dot.view-cashier { background: #a1a1aa; }
+.sb-view-dot.view-manager { background: #60a5fa; }
+.sb-view-dot.view-admin   { background: #34d399; }
+#portalSidebar .sb-view { color: var(--sb-accent-text); font-weight: 500; }
+#portalSidebar .sb-check { color: var(--sb-accent); }
 
 
 /* ជួរដែលទើបមើល ឬទើបកែ — បន្លិចពណ៌ខៀវស្រាល រួចរសាត់បាត់ (flashViewedRow) */
@@ -386,3 +418,108 @@ html:not(.dark) #loginPortal .bg-white :is(.text-slate-400, .text-gray-400) {
 html:not(.dark) body:is(#managerPortal, #adminPortal, .bg-slate-50) .text-slate-300:not(#portalSidebar *, .sb-menu *) {
     color: #94a3b8 !important;
 }
+
+/* ===== ផ្ទាំងជូនដំណឹង (refreshPortalNotifications ក្នុង portal.js) — ទំហំអក្សរថេរ មិនរងឥទ្ធិពល custom.css ===== */
+#portalNotifMenu { padding: 0 !important; }
+#portalNotifMenu .notif-head  { font-size: 15px; font-weight: 600; }
+#portalNotifMenu .notif-title { font-size: 14px; font-weight: 600; line-height: 1.45; }
+#portalNotifMenu .notif-note  { font-size: 13px; line-height: 1.5; }
+#portalNotifMenu .notif-time  { font-size: 12.5px; }
+#portalNotifMenu .notif-group { font-size: 12px; font-weight: 600; }
+#portalNotifMenu .notif-count {
+    min-width: 22px; height: 20px; padding: 0 6px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    display: inline-flex; align-items: center; justify-content: center;
+}
+html.dark #portalNotifMenu .border-slate-100,
+html.dark #portalNotifMenu .divide-slate-100 > * + * { border-color: #1e293b !important; }
+html.dark #portalNotifMenu a:hover { background-color: rgba(255, 255, 255, .04) !important; }
+html.dark #portalNotifMenu .bg-slate-50\/70 { background-color: rgba(255, 255, 255, .03) !important; }
+html.dark #portalNotifMenu .bg-slate-100 { background-color: #1e293b !important; color: #cbd5e1 !important; }
+html.dark #portalNotifMenu .text-slate-800 { color: #f1f5f9 !important; }
+html.dark #portalNotifMenu :is(.text-slate-500, .text-slate-600) { color: #94a3b8 !important; }
+html.dark #portalNotifMenu .text-rose-600 { color: #fb7185 !important; }
+html.dark #portalNotifMenu .text-amber-600 { color: #fbbf24 !important; }
+
+/* ===== សារជូនដំណឹងខ្លី (showToast) ===== */
+#bmsToastContainer .bms-toast-text { font-size: 14.5px; font-weight: 500; line-height: 1.5; }
+#bmsToastContainer .bms-toast-action { font-size: 14px; }
+html.dark #bmsToastContainer .bms-toast { background-color: #1e293b !important; border-color: #334155 !important; box-shadow: 0 10px 30px rgba(0, 0, 0, .45) !important; }
+html.dark #bmsToastContainer .bms-toast-text { color: #f1f5f9 !important; }
+html.dark #bmsToastContainer .bms-toast-action { color: #93c5fd !important; }
+html.dark #bmsToastContainer .bms-toast-action:hover,
+html.dark #bmsToastContainer button:hover { background-color: rgba(255, 255, 255, .06) !important; }
+
+/* ប៊ូតុងបិទ (disabled:bg-slate-100) ក្នុងទម្រង់ងងឹត */
+html.dark button:disabled[class*="disabled:bg-slate-100"] { background-color: #1e293b !important; color: #64748b !important; }
+
+/* ===== រាប់ក្រដាសប្រាក់ (cashCounter ក្នុង ui-components.js) — ពណ៌ទម្រង់ភ្លឺ និងងឹតនៅកន្លែងតែមួយ ===== */
+.cc-card { background: #fff; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(15, 23, 42, .04); }
+.cc-header, .cc-hint { border-color: #f1f5f9; }
+.cc-header { border-bottom: 1px solid #f1f5f9; }
+.cc-hint { border-top: 1px solid #f1f5f9; color: #64748b; }
+.cc-split > section + section { border-left: 1px solid #f1f5f9; }
+@media (max-width: 1023px) { .cc-split > section + section { border-left: 0; border-top: 1px solid #f1f5f9; } }
+.cc-title { color: #1e293b; }
+.cc-sub, .cc-head { color: #64748b; }
+.cc-head { border-bottom: 1px solid #f1f5f9; }
+.cc-row + .cc-row { border-top: 1px solid #f1f5f9; }
+.cc-row.cc-on { background: #f8fafc; }
+.cc-note { color: #334155; font-weight: 600; }
+.cc-row.cc-on .cc-note { color: #0f172a; }
+.cc-line { color: #334155; font-weight: 600; }
+.cc-btn { border: 1px solid #e2e8f0; background: #fff; color: #475569; }
+.cc-btn:hover { background: #f1f5f9; color: #0f172a; }
+.cc-btn:active { background: #e2e8f0; }
+.cc-in { border: 1px solid #e2e8f0; background: #fff; color: #0f172a; }
+.cc-in::placeholder { color: #cbd5e1; font-weight: 500; }
+.cc-in:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, .18); }
+.cc-foot { border-top: 1px solid #e2e8f0; background: #f8fafc; color: #64748b; }
+.cc-total { color: #0f172a; }
+.cc-clear { color: #64748b; }
+.cc-clear:hover { color: #0f172a; }
+html.dark .cc-card { background: #111a2b !important; border-color: rgba(255, 255, 255, .08) !important; }
+html.dark :is(.cc-header, .cc-hint, .cc-head, .cc-row + .cc-row) { border-color: rgba(255, 255, 255, .06) !important; }
+html.dark .cc-split > section + section { border-color: rgba(255, 255, 255, .06) !important; }
+html.dark .cc-title, html.dark .cc-total, html.dark .cc-row.cc-on .cc-note { color: #f1f5f9 !important; }
+html.dark :is(.cc-sub, .cc-head, .cc-hint, .cc-clear, .cc-foot) { color: #94a3b8 !important; }
+html.dark .cc-note, html.dark .cc-line { color: #cbd5e1 !important; }
+html.dark .cc-row.cc-on { background: rgba(255, 255, 255, .03) !important; }
+html.dark .cc-btn { background: transparent !important; border-color: rgba(255, 255, 255, .1) !important; color: #cbd5e1 !important; }
+html.dark .cc-btn:hover { background: rgba(255, 255, 255, .06) !important; color: #fff !important; }
+html.dark .cc-in { background: #0b1220 !important; border-color: rgba(255, 255, 255, .1) !important; color: #fff !important; }
+html.dark .cc-in::placeholder { color: #475569 !important; }
+html.dark .cc-foot { background: rgba(0, 0, 0, .15) !important; border-color: rgba(255, 255, 255, .08) !important; }
+
+/* ប្រអប់ចាត់តាំងវេន៖ អ្នកដែលបានជ្រើស = ស៊ុមខៀវ (ទម្រង់ងងឹតត្រូវកំណត់ផ្ទាល់ ព្រោះ custom.css ប្តូរ border ទៅប្រផេះ) */
+html.dark #posAssignModal [data-cand][aria-checked="true"] { border-color: #3b82f6 !important; }
+
+/* ===== ប្រអប់សន្ទនារួម (showCustomConfirm · showReasonPrompt) — ទំហំអក្សរថេរ និងទម្រង់ងងឹត ===== */
+.bms-dialog-title { font-size: 17px; font-weight: 600; line-height: 1.4; }
+.bms-dialog-msg { font-size: 14.5px; line-height: 1.6; }
+.bms-dialog-label { font-size: 14px; font-weight: 600; }
+.bms-dialog-input { font-size: 15px; }
+.bms-dialog-chip { font-size: 13.5px; }
+.bms-dialog button { font-size: 15px; }
+html.dark .bms-dialog { background: #0f172a !important; border-color: rgba(255, 255, 255, .1) !important; }
+html.dark .bms-dialog .bms-dialog-title { color: #f8fafc !important; }
+html.dark .bms-dialog :is(.bms-dialog-msg, .bms-dialog-label) { color: #cbd5e1 !important; }
+html.dark .bms-dialog .bms-dialog-msg.text-rose-600 { color: #fb7185 !important; }
+html.dark .bms-dialog .bms-dialog-input { background: #1e293b !important; border-color: rgba(255, 255, 255, .1) !important; color: #f1f5f9 !important; }
+html.dark .bms-dialog :is(#bmsConfirmCancelBtn, #bmsReasonCancelBtn, [data-quick]) { background: transparent !important; border-color: rgba(255, 255, 255, .15) !important; color: #e2e8f0 !important; }
+html.dark .bms-dialog :is(#bmsConfirmCancelBtn, #bmsReasonCancelBtn, [data-quick]):hover { background: rgba(255, 255, 255, .05) !important; }
+
+/* ===== ផ្លាកលេខលើកណ្តឹង =====
+   ពណ៌ពេញ អក្សរស មានរង្វង់ពណ៌ផ្ទៃក្បាលទំព័រជុំវិញ ដូច្នេះមើលឃើញច្បាស់ទាំងទម្រង់ភ្លឺ និងងងឹត
+   ប្រផេះចាស់ = មានដំណឹង · ក្រហម = មានការងារបន្ទាន់ */
+#portalNotifDot {
+    position: absolute; top: 1px; right: 0;
+    min-width: 19px; height: 19px; padding: 0 5px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 9999px; background: #334155; color: #fff;
+    font-size: 11px !important; font-weight: 700 !important; line-height: 1; letter-spacing: 0;
+    box-shadow: 0 0 0 2px #fff; pointer-events: none;
+}
+#portalNotifDot.is-urgent { background: #e11d48; }
+#posPortal #portalNotifDot { top: 3px; right: 2px; }
+html.dark #portalNotifDot { background: #e2e8f0; color: #0f172a; box-shadow: 0 0 0 2px #1e293b; }
+html.dark #portalNotifDot.is-urgent { background: #f43f5e; color: #fff; }

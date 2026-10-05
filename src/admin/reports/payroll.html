@@ -349,19 +349,19 @@
     </div>
 
     <!-- ផ្ទាំង Modal បង្ហាញប័ណ្ណបើកប្រាក់បៀវត្សរ៍ (Payslip) -->
-    <div id="payslipModalBackdrop" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
-        <div id="payslipModalContent" class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden my-auto" onclick="event.stopPropagation()">
+    <div id="payslipModalBackdrop" data-modal="closePayslipModal" onclick="closePayslipModal()" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+        <div id="payslipModalContent" class="bg-white w-full max-w-2xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden my-auto" role="dialog" aria-modal="true" onclick="event.stopPropagation()">
             <!-- ក្បាល Modal -->
             <div class="px-6 py-4 bg-slate-50 border-b border-slate-200/80 flex items-center justify-between no-print">
                 <div class="flex items-center gap-2 text-slate-800 font-semibold">
-                    <i class="fas fa-file-invoice-dollar text-emerald-600"></i>
+                    <i class="fas fa-file-invoice-dollar text-slate-400"></i>
                     <span>ប័ណ្ណបើកប្រាក់បៀវត្សរ៍ផ្លូវការ</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="printCurrentPayslip()" type="button" class="sm-badge h-8 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium inline-flex items-center gap-1.5">
+                    <button onclick="printCurrentPayslip()" type="button" class="sm-badge h-9 px-3 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium inline-flex items-center gap-1.5">
                         <i class="fas fa-print text-xs"></i> បោះពុម្ពប័ណ្ណ
                     </button>
-                    <button onclick="closePayslipModal()" type="button" class="w-8 h-8 rounded-xl bg-slate-200/70 hover:bg-slate-200 text-slate-600 inline-flex items-center justify-center">
+                    <button onclick="closePayslipModal()" type="button" aria-label="បិទ" class="w-9 h-9 rounded-lg hover:bg-slate-200/70 text-slate-500 hover:text-slate-800 inline-flex items-center justify-center">
                         <i class="fas fa-xmark text-sm"></i>
                     </button>
                 </div>
@@ -373,8 +373,8 @@
     </div>
 
     <!-- ផ្ទាំង Modal បង្ហាញម៉ោងការងារលម្អិត (Timesheet Detail) -->
-    <div id="timesheetModalBackdrop" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
-        <div id="timesheetModalContent" class="bg-white w-full max-w-5xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden my-auto" onclick="event.stopPropagation()">
+    <div id="timesheetModalBackdrop" data-modal="closeTimesheetModal" onclick="closeTimesheetModal()" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+        <div id="timesheetModalContent" class="bg-white w-full max-w-5xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden my-auto" role="dialog" aria-modal="true" onclick="event.stopPropagation()">
             <!-- ក្បាល Modal -->
             <div class="px-6 py-4 bg-slate-50 border-b border-slate-200/80 flex items-center justify-between no-print">
                 <div class="flex items-center gap-3">
@@ -385,10 +385,10 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="printCurrentTimesheet()" type="button" class="sm-badge h-8 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium inline-flex items-center gap-1.5">
+                    <button onclick="printCurrentTimesheet()" type="button" class="sm-badge h-9 px-3 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium inline-flex items-center gap-1.5">
                         <i class="fas fa-print text-xs"></i> បោះពុម្ព
                     </button>
-                    <button onclick="closeTimesheetModal()" type="button" class="w-8 h-8 rounded-xl bg-slate-200/70 hover:bg-slate-200 text-slate-600 inline-flex items-center justify-center">
+                    <button onclick="closeTimesheetModal()" type="button" aria-label="បិទ" class="w-9 h-9 rounded-lg hover:bg-slate-200/70 text-slate-500 hover:text-slate-800 inline-flex items-center justify-center">
                         <i class="fas fa-xmark text-sm"></i>
                     </button>
                 </div>

@@ -23,6 +23,9 @@
     </script>
     <link rel="stylesheet" href="../../shared/styles/custom.css">
     <link rel="stylesheet" href="../../shared/styles/portal.css">
+    <style>
+        #managerPortal .mv-step { font-size: 15.5px; font-weight: 600; }
+    </style>
 </head>
 <body id="managerPortal" data-role-root="../.." data-active="cash" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
 
@@ -30,40 +33,64 @@
 
     <div class="flex-1 flex flex-col h-full overflow-hidden">
         <div id="headerHost" data-title="កត់ត្រាចលនាសាច់ប្រាក់"
-             data-subtitle="ទម្រង់ថ្មី"
+             data-subtitle="ប្រាក់បាតថត ចំណាយ បញ្ចូលប្រាក់ ឬដាក់ធនាគារ"
              data-back="cash.html"></div>
         <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
-            <div class="w-full grid grid-cols-1 xl:grid-cols-3 gap-5">
-                <section class="xl:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 sm:p-6 space-y-5">
-                    <div>
-                        <p class="sm-label text-slate-700 font-semibold mb-2">ប្រភេទចលនា <span class="text-rose-500">*</span></p>
-                        <div id="typeChips" class="grid grid-cols-2 lg:grid-cols-4 gap-2"></div>
-                        <p id="typeHelp" class="sm-td-sub text-slate-500 mt-2"></p>
+            <div class="w-full grid grid-cols-1 xl:grid-cols-3 gap-5 items-start">
+                <section class="xl:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm divide-y divide-slate-100">
+                    <div class="p-5 sm:p-6">
+                        <p class="mv-step text-slate-800">1. ប្រភេទ</p>
+                        <div id="typeChips" role="radiogroup" aria-label="ប្រភេទ" class="mt-3 grid grid-cols-2 lg:grid-cols-4 gap-2"></div>
+                        <p id="typeHelp" class="sm-td-sub text-slate-500 mt-2.5"></p>
                     </div>
-                    <div id="registerRow">
-                        <p class="sm-label text-slate-700 font-semibold mb-2">បញ្ជរ <span class="text-rose-500">*</span></p>
-                        <div id="registerChips" class="flex flex-wrap gap-2"></div>
-                        <p id="registerHelp" class="sm-td-sub mt-2"></p>
+                    <div id="registerRow" class="p-5 sm:p-6">
+                        <p class="mv-step text-slate-800">2. បញ្ជរ</p>
+                        <div id="registerChips" role="radiogroup" aria-label="បញ្ជរ" class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2"></div>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <label class="block"><span class="sm-label text-slate-700 font-semibold">ដុល្លារ</span>
-                            <input id="amtUSD" type="number" min="0" step="1" placeholder="0" oninput="renderSummary()" class="sm-value w-full h-12 mt-1.5 px-3 rounded-xl bg-slate-50 border border-slate-200 text-right focus:outline-none focus:border-blue-500"></label>
-                        <label class="block"><span class="sm-label text-slate-700 font-semibold">រៀល</span>
-                            <input id="amtKHR" type="number" min="0" step="1000" placeholder="0" oninput="renderSummary()" class="sm-value w-full h-12 mt-1.5 px-3 rounded-xl bg-slate-50 border border-slate-200 text-right focus:outline-none focus:border-blue-500"></label>
+                    <div class="p-5 sm:p-6">
+                        <p class="mv-step text-slate-800"><span data-n="amount"></span>. ចំនួនប្រាក់</p>
+                        <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="amtUSD" class="sm-td-sub text-slate-500">ដុល្លារ</label>
+                                <div class="relative mt-1.5">
+                                    <span class="absolute left-3.5 top-1/2 -translate-y-1/2 sm-value text-slate-400">$</span>
+                                    <input id="amtUSD" type="text" inputmode="decimal" autocomplete="off" placeholder="0" oninput="cleanAmt(this, true)" class="sm-value sm-figure w-full h-12 pl-8 pr-3.5 rounded-xl bg-white border border-slate-200 text-right font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+                                </div>
+                                <div id="quickUSD" class="mt-2 flex flex-wrap gap-1.5"></div>
+                            </div>
+                            <div>
+                                <label for="amtKHR" class="sm-td-sub text-slate-500">រៀល</label>
+                                <div class="relative mt-1.5">
+                                    <span class="absolute right-3.5 top-1/2 -translate-y-1/2 sm-value text-slate-400">៛</span>
+                                    <input id="amtKHR" type="text" inputmode="numeric" autocomplete="off" placeholder="0" oninput="cleanAmt(this, false)" class="sm-value sm-figure w-full h-12 pl-3.5 pr-9 rounded-xl bg-white border border-slate-200 text-right font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+                                </div>
+                                <div id="quickKHR" class="mt-2 flex flex-wrap gap-1.5"></div>
+                            </div>
+                        </div>
+                        <p id="safeNote" class="hidden sm-td-sub text-slate-500 mt-3"></p>
                     </div>
-                    <div>
-                        <p class="sm-label text-slate-700 font-semibold mb-2">មូលហេតុ <span id="reasonStar" class="text-rose-500">*</span></p>
-                        <div id="reasonChips" class="flex flex-wrap gap-2 mb-2"></div>
-                        <input id="reasonText" type="text" oninput="renderSummary()" placeholder="ឬវាយមូលហេតុ..." class="sm-td w-full h-12 px-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-blue-500">
+                    <div class="p-5 sm:p-6">
+                        <p class="mv-step text-slate-800"><span data-n="reason"></span>. មូលហេតុ <span id="reasonOptional" class="sm-td-sub font-normal text-slate-500">(ស្រេចចិត្ត)</span></p>
+                        <div id="reasonChips" class="mt-3 flex flex-wrap gap-1.5"></div>
+                        <input id="reasonText" type="text" oninput="reason=''; renderReasons(); renderSummary()" placeholder="ឬវាយមូលហេតុ..." class="sm-td w-full h-12 mt-2.5 px-3.5 rounded-xl bg-white border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+                        <label for="refText" class="sm-td-sub text-slate-500 block mt-4"><span id="refLabel">លេខបង្កាន់ដៃ</span></label>
+                        <input id="refText" type="text" oninput="renderSummary()" class="sm-td w-full h-12 mt-1.5 px-3.5 rounded-xl bg-white border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
                     </div>
-                    <label class="block"><span class="sm-label text-slate-700 font-semibold">លេខយោង · បង្កាន់ដៃ</span>
-                        <input id="refText" type="text" placeholder="ឧទាហរណ៍៖ លេខបង្កាន់ដៃទិញ ឬលេខប្រតិបត្តិការធនាគារ" class="sm-td w-full h-12 mt-1.5 px-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-blue-500"></label>
                 </section>
-                <div class="space-y-4 self-start">
-                    <div id="summary" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5"></div>
-                    <div class="grid grid-cols-2 gap-2.5">
-                        <a href="cash.html" class="sm-value h-12 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center justify-center">បោះបង់</a>
-                        <button id="saveBtn" onclick="save()" type="button" class="sm-value h-12 rounded-xl font-semibold"></button>
+
+                <div class="xl:sticky xl:top-0 bg-white rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div class="px-5 py-4 border-b border-slate-100">
+                        <h3 class="sm-card-title text-slate-800">សង្ខេប</h3>
+                        <p class="sm-card-sub text-slate-500">ពិនិត្យមុនរក្សាទុក</p>
+                    </div>
+                    <div id="summary" class="p-5"></div>
+                    <div class="px-5 pb-5">
+                        <button id="saveBtn" onclick="save()" type="button" disabled
+                            class="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center justify-center gap-2 transition disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed">
+                            <i class="fas fa-check text-xs"></i> <span id="saveLabel"></span>
+                        </button>
+                        <p id="saveHint" class="sm-td-sub text-slate-500 text-center mt-2"></p>
+                        <a href="cash.html" class="mt-1 w-full h-10 rounded-xl text-slate-600 hover:bg-slate-50 font-medium inline-flex items-center justify-center transition sm-td">បោះបង់</a>
                     </div>
                 </div>
             </div>
@@ -76,7 +103,8 @@
     <script src="../../shared/scripts/portal.js"></script>
     <script>
         /* កត់ត្រាចលនាសាច់ប្រាក់ — ទំព័រពេញ មិនមែនផ្ទាំងលោត (បញ្ជីពិនិត្យលេខ 06 ផ្នែក ខ)
-           float៖ ចេញឱ្យបញ្ជរដែលមិនទាន់មានវេនបើក · payout / payin៖ ពីថតនៃវេនដែលកំពុងបើក · bank៖ ពីទូដែក */
+           float៖ ចេញឱ្យបញ្ជរដែលមិនទាន់មានវេនបើក · payout / payin៖ ពីថតនៃវេនដែលកំពុងបើក · bank៖ ពីទូដែក
+           ប៊ូតុងរក្សាទុកបិទរហូតដល់គ្រប់ព័ត៌មាន ហើយប្រាប់ថាខ្វះអ្វី */
 
         const q = new URLSearchParams(location.search);
         let type = ['float', 'payout', 'payin', 'bank'].includes(q.get('type')) ? q.get('type') : 'float';
@@ -84,46 +112,112 @@
         let reason = '';
 
         const HELP = {
-            float: 'ប្រាក់បាតថតសម្រាប់វេនបន្ទាប់។ អ្នកគិតលុយរាប់ចូលពេលបើកវេន ហើយភាពខុសគ្នាត្រូវបានកត់ត្រា។',
-            payout: 'ដកប្រាក់ពីថតនៃវេនដែលកំពុងបើក សម្រាប់ចំណាយក្រៅការលក់។ កាត់បន្ថយសាច់ប្រាក់រំពឹងទុករបស់វេននោះ។',
-            payin: 'បញ្ចូលប្រាក់ (ឧ. ក្រដាសប្រាក់តូចសម្រាប់អាប់) ទៅថតនៃវេនដែលកំពុងបើក។',
-            bank: 'យកប្រាក់ពីទូដែកទៅដាក់ធនាគារ។ ត្រូវមានលេខប្រតិបត្តិការធនាគារ។'
+            float: 'ប្រាក់បាតថតសម្រាប់វេនបន្ទាប់ · អ្នកគិតលុយរាប់ និងបញ្ជាក់ពេលបើកវេន',
+            payout: 'ដកប្រាក់ពីថតនៃវេនដែលកំពុងបើក សម្រាប់ចំណាយក្រៅការលក់',
+            payin: 'បញ្ចូលប្រាក់ (ឧ. ក្រដាសប្រាក់តូចសម្រាប់អាប់) ទៅថតនៃវេនដែលកំពុងបើក',
+            bank: 'យកប្រាក់ពីទូដែកទៅដាក់ធនាគារ · ត្រូវមានលេខប្រតិបត្តិការធនាគារ'
+        };
+        const SAVE_LABEL = { float: 'ចេញប្រាក់បាតថត', payout: 'ដកប្រាក់ចំណាយ', payin: 'បញ្ចូលប្រាក់', bank: 'ដាក់ប្រាក់ចូលធនាគារ' };
+        const QUICK = {
+            float: { usd: [50, 100, 200], khr: [100000, 200000, 400000] },
+            payout: { usd: [5, 10, 20], khr: [10000, 20000, 50000] },
+            payin: { usd: [20, 50], khr: [50000, 100000, 200000] },
+            bank: { usd: [], khr: [] }
         };
 
         function openShiftOn(r) {
             return mgrAllShifts().find(s => s.register === r && s.status === 'open') || null;
         }
 
+        const allowedOn = r => type === 'float' ? !openShiftOn(r) : !!openShiftOn(r);
+
+        // ចំនួនប្រាក់៖ លេខតែប៉ុណ្ណោះ · រៀលបង្ហាញសញ្ញាក្បៀស
+        function cleanAmt(el, usd) {
+            const raw = el.value.replace(usd ? /[^\d.]/g : /[^\d]/g, '');
+            el.value = usd ? raw : (raw ? Number(raw).toLocaleString('en-US') : '');
+            renderSummary();
+        }
+        function setAmt(id, v) {
+            const el = document.getElementById(id);
+            el.value = id === 'amtKHR' ? Number(v).toLocaleString('en-US') : v;
+            renderSummary();
+        }
+
+        function pickType(t) {
+            type = t;
+            reason = '';
+            if (register && !allowedOn(register)) register = '';
+            document.getElementById('amtUSD').value = '';
+            document.getElementById('amtKHR').value = '';
+            render();
+        }
+
         function render() {
-            document.getElementById('typeChips').innerHTML = ['float', 'payout', 'payin', 'bank'].map(t => `
-                <button onclick="type='${t}'; reason=''; render()" type="button" class="p-3 rounded-xl border-2 text-left transition ${type === t ? 'border-blue-600 bg-blue-50' : 'border-slate-200 hover:border-blue-300'}">
-                    <i class="fas ${MOVEMENT_TYPE[t].icon} text-${MOVEMENT_TYPE[t].tone}-600"></i>
-                    <span class="sm-value ${type === t ? 'text-blue-800' : 'text-slate-700'} block mt-1">${MOVEMENT_TYPE[t].label}</span>
-                </button>`).join('');
-            document.getElementById('typeHelp').textContent = HELP[type];
-            document.getElementById('registerRow').classList.toggle('hidden', type === 'bank');
-            document.getElementById('registerChips').innerHTML = REGISTERS.map(r => {
-                const open = openShiftOn(r);
-                const allowed = type === 'float' ? !open : !!open;
-                return `<button onclick="${allowed ? `register='${r}'; render()` : ''}" type="button" ${allowed ? '' : 'disabled'} class="px-4 py-2.5 rounded-xl border-2 text-left transition ${!allowed ? 'border-slate-100 text-slate-300 cursor-not-allowed' : register === r ? 'border-blue-600 bg-blue-50 text-blue-800' : 'border-slate-200 hover:border-blue-300 text-slate-700'}">
-                    <span class="sm-value block">${r}</span>
-                    <span class="sm-td-sub block">${open ? `${personName(open.cashierId)} · ${open.templateName}` : 'មិនមានវេនបើក'}</span>
+            document.getElementById('typeChips').innerHTML = ['float', 'payout', 'payin', 'bank'].map(t => {
+                const sel = type === t;
+                return `<button onclick="pickType('${t}')" type="button" role="radio" aria-checked="${sel}"
+                    class="relative h-[64px] pl-3 pr-7 rounded-xl border text-left transition flex items-center gap-2.5 ${sel ? 'border-blue-600 ring-1 ring-blue-600 bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}">
+                    <i class="fas ${MOVEMENT_TYPE[t].icon} w-5 text-center ${sel ? 'text-blue-600' : 'text-slate-400'}"></i>
+                    <span class="sm-td font-semibold ${sel ? 'text-slate-900' : 'text-slate-700'} leading-snug">${MOVEMENT_TYPE[t].label}</span>
+                    ${sel ? '<i class="fas fa-circle-check text-blue-600 text-[13px] absolute top-2 right-2"></i>' : ''}
                 </button>`;
             }).join('');
-            const reasons = type === 'payout' ? posSettings().reasons.payout : type === 'bank' ? ['ដាក់ប្រាក់ប្រចាំថ្ងៃ'] : type === 'payin' ? ['ក្រដាសប្រាក់តូចសម្រាប់អាប់'] : [];
-            document.getElementById('reasonChips').innerHTML = reasons.map((r, i) => `<button onclick="reason=${JSON.stringify(r).replace(/"/g, '&quot;')}; document.getElementById('reasonText').value=''; render()" type="button" class="sm-badge px-3 py-2 rounded-xl border transition ${reason === r ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-blue-400'}">${r}</button>`).join('');
-            document.getElementById('reasonStar').classList.toggle('hidden', type === 'float');
+            document.getElementById('typeHelp').textContent = HELP[type];
+
+            // ជំហានបញ្ជរលាក់ពេលដាក់ធនាគារ · លេខជំហានរៀបតាមលំដាប់
+            const bank = type === 'bank';
+            document.getElementById('registerRow').classList.toggle('hidden', bank);
+            document.querySelector('[data-n="amount"]').textContent = bank ? 2 : 3;
+            document.querySelector('[data-n="reason"]').textContent = bank ? 3 : 4;
+            // បើមានបញ្ជរតែមួយដែលអាចជ្រើសបាន ជ្រើសឱ្យស្រាប់
+            const ok = REGISTERS.filter(allowedOn);
+            if (!bank && !register && ok.length === 1) register = ok[0];
+            document.getElementById('registerChips').innerHTML = REGISTERS.map(r => {
+                const open = openShiftOn(r);
+                const allowed = allowedOn(r);
+                const sel = register === r;
+                const sub = open ? `${personName(open.cashierId)} · ${open.templateName}` : 'ទំនេរ';
+                const why = allowed ? '' : type === 'float' ? 'មានវេនបើករួច' : 'មិនមានវេនបើក';
+                return `<button onclick="${allowed ? `register='${r}'; render()` : ''}" type="button" role="radio" aria-checked="${sel}" ${allowed ? '' : 'disabled'}
+                    class="relative pl-3.5 pr-8 py-2.5 rounded-xl border text-left transition ${!allowed ? 'border-slate-200 bg-slate-50 cursor-not-allowed' : sel ? 'border-blue-600 ring-1 ring-blue-600 bg-white' : 'border-slate-200 bg-white hover:border-slate-300'}">
+                    <span class="sm-td font-semibold block ${allowed ? 'text-slate-800' : 'text-slate-400'}">${r}</span>
+                    <span class="sm-td-sub block truncate ${allowed ? 'text-slate-500' : 'text-slate-400'}">${why ? `${why} · ` : ''}${sub}</span>
+                    ${sel ? '<i class="fas fa-circle-check text-blue-600 text-[13px] absolute top-2 right-2"></i>' : ''}
+                </button>`;
+            }).join('');
+
+            const chip = (id, v, label) => `<button type="button" onclick="setAmt('${id}', ${v})" class="sm-td-sub sm-figure h-8 px-3 rounded-full border border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50 transition">${label}</button>`;
+            document.getElementById('quickUSD').innerHTML = QUICK[type].usd.map(v => chip('amtUSD', v, fmtUSD(v))).join('');
+            document.getElementById('quickKHR').innerHTML = QUICK[type].khr.map(v => chip('amtKHR', v, fmtKHR(v))).join('');
+            const safe = safeBalance();
+            document.getElementById('safeNote').classList.toggle('hidden', !bank);
+            document.getElementById('safeNote').innerHTML = `ក្នុងទូដែក <span class="sm-figure font-semibold text-slate-700">${fmtUSD(safe.usd)} · ${fmtKHR(safe.khr)}</span> · <button type="button" onclick="setAmt('amtUSD', ${safe.usd}); setAmt('amtKHR', ${safe.khr})" class="text-blue-700 hover:text-blue-900 font-semibold">ដាក់ទាំងអស់</button>`;
+
+            document.getElementById('reasonOptional').classList.toggle('hidden', type !== 'float');
+            document.getElementById('refLabel').textContent = bank ? 'លេខប្រតិបត្តិការធនាគារ' : 'លេខបង្កាន់ដៃ (ស្រេចចិត្ត)';
+            document.getElementById('refText').placeholder = bank ? 'ឧ. លេខយោងលើបង្កាន់ដៃធនាគារ' : 'ឧ. លេខបង្កាន់ដៃទិញ';
+            document.getElementById('saveLabel').textContent = SAVE_LABEL[type];
             if (type === 'float' && !document.getElementById('amtUSD').value && !document.getElementById('amtKHR').value) {
-                document.getElementById('amtUSD').value = posSettings().defaultFloatUSD;
-                document.getElementById('amtKHR').value = posSettings().defaultFloatKHR;
+                setAmt('amtUSD', posSettings().defaultFloatUSD);
+                setAmt('amtKHR', posSettings().defaultFloatKHR);
             }
+            renderReasons();
             renderSummary();
+        }
+
+        function renderReasons() {
+            const list = type === 'payout' ? posSettings().reasons.payout : type === 'bank' ? ['ដាក់ប្រាក់ប្រចាំថ្ងៃ'] : type === 'payin' ? ['ក្រដាសប្រាក់តូចសម្រាប់អាប់'] : [];
+            document.getElementById('reasonChips').innerHTML = list.map(r => {
+                const sel = reason === r;
+                return `<button onclick="reason=${JSON.stringify(r).replace(/"/g, '&quot;')}; document.getElementById('reasonText').value=''; renderReasons(); renderSummary()" type="button"
+                    class="sm-td-sub h-8 px-3 rounded-full border transition ${sel ? 'border-blue-600 text-blue-700 bg-white font-semibold' : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}">${sel ? '<i class="fas fa-check text-[10px] mr-1"></i>' : ''}${r}</button>`;
+            }).join('');
         }
 
         function values() {
             return {
                 usd: Math.max(parseFloat(document.getElementById('amtUSD').value) || 0, 0),
-                khr: Math.max(parseInt(document.getElementById('amtKHR').value, 10) || 0, 0),
+                khr: Math.max(parseInt(document.getElementById('amtKHR').value.replace(/,/g, ''), 10) || 0, 0),
                 reason: (document.getElementById('reasonText').value.trim() || reason),
                 ref: document.getElementById('refText').value.trim()
             };
@@ -131,7 +225,7 @@
 
         function blocker() {
             const v = values();
-            if (type !== 'bank' && !register) return 'សូមជ្រើសរើសបញ្ជរ';
+            if (type !== 'bank' && !register) return 'សូមជ្រើសបញ្ជរ';
             if (type !== 'bank') {
                 const open = openShiftOn(register);
                 if (type === 'float' && open) return `${register} មានវេនបើករួចហើយ`;
@@ -151,20 +245,24 @@
             const v = values();
             const why = blocker();
             const open = register ? openShiftOn(register) : null;
+            const rows = [
+                ['ពី · ទៅ', type === 'bank' ? 'ទូដែក → ធនាគារ' : type === 'payout' ? `${register || '—'} → ចំណាយ` : type === 'payin' ? `ទូដែក → ${register || '—'}` : `ទូដែក → ${register || '—'}`],
+                type === 'bank' ? null : ['វេន', open ? `${open.templateName} · ${personName(open.cashierId)}` : type === 'float' ? 'វេនបន្ទាប់' : '—'],
+                ['មូលហេតុ', escapeText(v.reason) || '—'],
+                type === 'bank' || v.ref ? ['លេខយោង', escapeText(v.ref) || '—'] : null,
+                ['ធ្វើដោយ', personName(ME_MANAGER)]
+            ].filter(Boolean);
             document.getElementById('summary').innerHTML = `
-                <p class="sm-eyebrow text-slate-400">សង្ខេប</p>
-                <p class="sm-card-title text-slate-800 mt-1">${MOVEMENT_TYPE[type].label}</p>
-                <div class="mt-3 space-y-1.5">
-                    ${[['បញ្ជរ', type === 'bank' ? 'ទូដែក' : (register || '—')], ['វេន', open ? open.id : type === 'float' ? 'វេនបន្ទាប់' : '—'],
-                       ['ដុល្លារ', fmtUSD(v.usd)], ['រៀល', fmtKHR(v.khr)], ['មូលហេតុ', escapeText(v.reason) || '—'], ['ធ្វើដោយ', personName(ME_MANAGER)]]
-                       .map(([l, x]) => `<div class="flex justify-between gap-3"><span class="sm-td-sub text-slate-500">${l}</span><span class="sm-td text-slate-700 text-right sm-figure">${x}</span></div>`).join('')}
-                </div>
-                ${type === 'bank' ? `<p class="sm-td-sub text-slate-400 mt-3">សមតុល្យទូដែក ${fmtUSD(safeBalance().usd)} · ${fmtKHR(safeBalance().khr)}</p>` : ''}
-                <p class="sm-td-sub mt-3 ${why ? 'text-amber-700' : 'text-emerald-700'}">${why || 'រួចរាល់ · ត្រូវបញ្ជាក់ដោយលេខសម្ងាត់'}</p>`;
-            const btn = document.getElementById('saveBtn');
-            btn.disabled = !!why;
-            btn.className = `sm-value h-12 rounded-xl font-semibold transition inline-flex items-center justify-center gap-2 ${why ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'}`;
-            btn.innerHTML = '<i class="fas fa-check"></i> រក្សាទុក';
+                <p class="sm-td-sub text-slate-500">${MOVEMENT_TYPE[type].label}</p>
+                <p class="sm-kpi-value sm-figure text-slate-900 mt-0.5">${fmtUSD(v.usd)}</p>
+                <p class="sm-td sm-figure text-slate-600">${fmtKHR(v.khr)}</p>
+                <dl class="mt-4 divide-y divide-slate-100 sm-td">${rows.map(([l, x]) => `
+                    <div class="flex justify-between gap-3 py-2.5"><dt class="text-slate-500">${l}</dt><dd class="font-medium text-slate-800 text-right min-w-0 truncate">${x}</dd></div>`).join('')}
+                </dl>`;
+            document.getElementById('saveBtn').disabled = !!why;
+            const hint = document.getElementById('saveHint');
+            hint.textContent = why || 'ត្រូវការលេខសម្ងាត់អ្នកគ្រប់គ្រងដើម្បីបញ្ជាក់';
+            hint.className = `sm-td-sub text-center mt-2 ${why && /លើស/.test(why) ? 'text-rose-600' : 'text-slate-500'}`;
         }
 
         async function save() {

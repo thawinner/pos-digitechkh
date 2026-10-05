@@ -159,7 +159,7 @@
             empty.classList.add('hidden');
             const typeChip = a => {
                 const t = APPROVAL_TYPE[a.type];
-                return `<span class="sm-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border bg-${t.tone}-50 text-${t.tone}-700 border-${t.tone}-200"><i class="fas ${t.icon} text-[10px]"></i>${t.label}</span>`;
+                return `<span class="sm-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border bg-slate-50 text-slate-700 border-slate-200"><i class="fas ${t.icon} text-[10px] text-slate-400"></i>${t.label}</span>`;
             };
             document.getElementById('rows').innerHTML = rows.map(a => `
                 <tr data-row-id="${a.id}" onclick="if (!event.target.closest('button, a, [id^=m-]')) location.href='view-request.html?id=${a.id}'" class="cursor-pointer hover:bg-slate-50 transition">

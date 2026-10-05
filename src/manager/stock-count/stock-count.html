@@ -72,9 +72,9 @@
         </main>
 
         <!-- ផ្ទាំងបង្ហាញលម្អិតនៃវគ្គរាប់ស្តុក (Session Detail Modal) -->
-        <div id="detailModal" class="hidden fixed inset-0 z-[9990] bg-slate-900/60 backdrop-blur-sm items-center justify-center p-4">
-            <div class="w-full max-w-3xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]" onclick="event.stopPropagation()">
-                <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 flex-shrink-0">
+        <div id="detailModal" data-modal="closeModal" onclick="closeModal()" class="hidden fixed inset-0 z-[9990] bg-slate-950/60 backdrop-blur-[2px] items-center justify-center p-4">
+            <div role="dialog" aria-modal="true" class="w-full max-w-3xl bg-white rounded-xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]" onclick="event.stopPropagation()">
+                <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
                     <div>
                         <h3 id="modalTitle" class="sm-card-title text-slate-800 font-bold">លម្អិតវគ្គរាប់ស្តុក</h3>
                         <p id="modalSub" class="sm-td-sub text-slate-500 mt-0.5"></p>
@@ -94,7 +94,7 @@
                     </div>
                     <div class="bg-slate-50 rounded-xl p-2.5">
                         <p class="text-xs text-slate-400">តម្លៃខុសគ្នាសរុប</p>
-                        <p id="modalDiffUSD" class="sm-value font-bold text-blue-700 mt-0.5">$0.00</p>
+                        <p id="modalDiffUSD" class="sm-value font-bold text-slate-800 mt-0.5">$0.00</p>
                     </div>
                 </div>
                 <div class="flex-1 overflow-y-auto p-4">
@@ -134,12 +134,9 @@
                 banner = `
                 <div class="bg-rose-50 border border-rose-200 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-triangle-exclamation text-lg"></i>
-                        </div>
                         <div>
                             <h4 class="font-bold text-rose-900 leading-snug">ការរាប់ស្តុកហួសកាលបរិច្ឆេទកំណត់ ${st.overdueDays} ថ្ងៃ</h4>
-                            <p class="text-xs text-rose-700 mt-0.5">តាមកាលវិភាគ${st.schedule === 'monthly' ? 'ប្រចាំខែ' : 'ប្រចាំសប្តាហ៍'} ត្រូវធ្វើនៅថ្ងៃទី ${fmtDate(st.nextDueDate)}។ ករណីនេះត្រូវបានកត់ត្រាក្នុងករណីមិនប្រក្រតី (Exceptions)។</p>
+                            <p class="text-xs text-rose-700 mt-0.5">តាមកាលវិភាគ${st.schedule === 'monthly' ? 'ប្រចាំខែ' : 'ប្រចាំសប្តាហ៍'} ត្រូវធ្វើនៅថ្ងៃទី ${fmtDate(st.nextDueDate)}។ ករណីនេះត្រូវបានកត់ត្រាក្នុងករណីមិនប្រក្រតី។</p>
                         </div>
                     </div>
                     <a href="create-count.html" class="sm-badge px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold inline-flex items-center gap-2 transition">
@@ -150,15 +147,12 @@
                 banner = `
                 <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-clock text-lg"></i>
-                        </div>
                         <div>
                             <h4 class="font-bold text-amber-900 leading-snug">ដល់កាលបរិច្ឆេទរាប់ស្តុកហើយ</h4>
                             <p class="text-xs text-amber-700 mt-0.5">តាមកាលវិភាគ${st.schedule === 'monthly' ? 'ប្រចាំខែ' : 'ប្រចាំសប្តាហ៍'} ដល់ពេលរាប់ស្តុកជាក់ស្តែងប្រចាំវគ្គ។</p>
                         </div>
                     </div>
-                    <a href="create-count.html" class="sm-badge px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold inline-flex items-center gap-2 transition">
+                    <a href="create-count.html" class="sm-badge px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2 transition">
                         <i class="fas fa-clipboard-check"></i> រាប់ស្តុកឥឡូវនេះ
                     </a>
                 </div>`;
@@ -166,15 +160,12 @@
                 banner = `
                 <div class="bg-white border border-slate-200/80 rounded-2xl p-4 flex items-center justify-between gap-3 shadow-sm">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-calendar-check text-lg"></i>
-                        </div>
                         <div>
                             <h4 class="font-bold text-slate-800 leading-snug">កាលវិភាគរាប់ស្តុកដំណើរការធម្មតា</h4>
                             <p class="text-xs text-slate-500 mt-0.5">កាលវិភាគ${st.schedule === 'monthly' ? 'ប្រចាំខែ (រៀងរាល់ 30 ថ្ងៃ)' : 'ប្រចាំសប្តាហ៍ (រៀងរាល់ 7 ថ្ងៃ)'} · វគ្គបន្ទាប់នៅថ្ងៃ ${fmtDate(st.nextDueDate)}</p>
                         </div>
                     </div>
-                    <span class="sm-badge px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold text-xs">ស្ថានភាពល្អ</span>
+                    <span class="sm-td-sub text-slate-500">ធម្មតា</span>
                 </div>`;
             }
             host.innerHTML = banner;

@@ -87,6 +87,20 @@
     <script src="../../shared/scripts/manager-data.js"></script>
     <script src="../../shared/scripts/portal.js"></script>
     <script>
+        /* ផ្ទាំងដំណាក់កាលរាប់៖ ផ្ទៃស ពណ៌តែលើរូបតំណាងពេលត្រូវយកចិត្តទុកដាក់ */
+        function stageBanner(icon, iconTone, title, note, step) {
+            return `<div class="bg-white border border-slate-200 rounded-2xl p-4 flex items-center justify-between gap-3">
+                <div class="flex items-start gap-3 min-w-0">
+                    <i class="fas ${icon} ${iconTone} mt-1"></i>
+                    <div class="min-w-0">
+                        <h4 class="sm-card-title text-slate-800">${title}</h4>
+                        <p class="sm-td-sub text-slate-500 mt-0.5">${note}</p>
+                    </div>
+                </div>
+                <span class="sm-badge px-3 py-1 rounded-full bg-slate-50 text-slate-600 border border-slate-200 font-semibold flex-shrink-0">${step}</span>
+            </div>`;
+        }
+
         // ដំណាក់កាល៖ 1 = count (រាប់លើកទី 1), 2 = recount (រាប់ឡើងវិញមុខខុស), 3 = verified (ផ្ទៀងផ្ទាត់រួចរង់ចាំ save)
         let stage = 1;
         let selectedCat = 'all';
@@ -105,47 +119,14 @@
         function renderBanner() {
             const host = document.getElementById('stageBanner');
             if (stage === 1) {
-                host.innerHTML = `
-                <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-center justify-between gap-3">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-eye-slash text-lg"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-blue-950">ការរាប់ដោយលាក់ចំនួនក្នុងប្រព័ន្ធ — ដំណាក់កាលទី 1</h4>
-                            <p class="text-xs text-blue-700 mt-0.5">ចំនួនស្តុកក្នុងប្រព័ន្ធត្រូវបានលាក់។ សូមបញ្ចូលចំនួនដែលបានរាប់ឃើញជាក់ស្តែងនៅលើធ្នើ។</p>
-                        </div>
-                    </div>
-                    <span class="sm-badge px-3 py-1 rounded-full bg-white text-blue-700 border border-blue-200 font-semibold text-xs shadow-sm">ជំហាន 1 នៃ 2</span>
-                </div>`;
+                host.innerHTML = stageBanner('fa-eye-slash', 'text-slate-400', 'ដំណាក់កាលទី 1 · រាប់ដោយមិនឃើញចំនួនក្នុងប្រព័ន្ធ',
+                    'សូមបញ្ចូលចំនួនដែលរាប់ឃើញជាក់ស្តែងនៅលើធ្នើ', 'ជំហាន 1 នៃ 2');
             } else if (stage === 2) {
-                host.innerHTML = `
-                <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center justify-between gap-3">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-rotate-right text-lg"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-amber-950">រាប់ឡើងវិញលើមុខទំនិញដែលមានភាពខុសគ្នា — ដំណាក់កាលទី 2</h4>
-                            <p class="text-xs text-amber-800 mt-0.5">រកឃើញភាពខុសគ្នាលើ <strong>${diffSkus.size} មុខទំនិញ</strong>។ ប្រព័ន្ធអនុញ្ញាតឱ្យរាប់ផ្ទៀងផ្ទាត់ឡើងវិញម្តងគត់សម្រាប់តែមុខទំនិញទាំងនេះ។</p>
-                        </div>
-                    </div>
-                    <span class="sm-badge px-3 py-1 rounded-full bg-white text-amber-800 border border-amber-200 font-semibold text-xs shadow-sm">រាប់ឡើងវិញ (ម្តងគត់)</span>
-                </div>`;
+                host.innerHTML = stageBanner('fa-rotate-right', 'text-amber-500', 'ដំណាក់កាលទី 2 · រាប់ឡើងវិញតែមុខដែលខុស',
+                    `ខុសគ្នា <strong class="font-semibold text-slate-800">${diffSkus.size} មុខ</strong> · រាប់ឡើងវិញបានតែម្តងគត់`, 'ជំហាន 2 នៃ 2');
             } else {
-                host.innerHTML = `
-                <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-center justify-between gap-3">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-check-double text-lg"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-emerald-950">ការរាប់ត្រូវបានផ្ទៀងផ្ទាត់រួចរាល់</h4>
-                            <p class="text-xs text-emerald-800 mt-0.5">ភាពខុសគ្នាទាំងអស់ត្រូវបានគណនា។ សូមចុច «បញ្ជាក់ និងរក្សាទុក» ដោយប្រើលេខសម្ងាត់អ្នកគ្រប់គ្រង។</p>
-                        </div>
-                    </div>
-                    <span class="sm-badge px-3 py-1 rounded-full bg-white text-emerald-800 border border-emerald-200 font-semibold text-xs shadow-sm">រួចរាល់សម្រាប់រក្សាទុក</span>
-                </div>`;
+                host.innerHTML = stageBanner('fa-check-double', 'text-slate-400', 'រាប់រួចរាល់',
+                    'ពិនិត្យភាពខុសគ្នា រួចចុច «បញ្ជាក់ និងរក្សាទុក» ដោយលេខសម្ងាត់អ្នកគ្រប់គ្រង', 'រួចរាល់');
             }
         }
 

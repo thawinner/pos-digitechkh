@@ -12,45 +12,42 @@ function showToast(message, type = 'success', duration = 3200, options = null) {
         duration = 6000;
     }
 
+    /* ទីតាំង៖ ខាងក្រោមស្តាំ (មិនបាំងប៊ូតុងក្បាលទំព័រ) · ផ្ទាំងគិតលុយ៖ ខាងក្រោមឆ្វេង (មិនបាំងសរុប និងប៊ូតុងទូទាត់)
+       ទូរស័ព្ទ៖ ពេញទទឹងខាងក្រោម · សារថ្មីនៅខាងក្រោមគេ */
     let container = document.getElementById('bmsToastContainer');
     if (!container) {
         container = document.createElement('div');
         container.id = 'bmsToastContainer';
-        container.className = 'fixed top-5 right-5 z-[9999] flex flex-col gap-2.5 pointer-events-none select-none';
+        container.setAttribute('role', 'status');
+        container.setAttribute('aria-live', 'polite');
+        const terminal = document.body.classList.contains('pos-shell');
+        container.className = `fixed bottom-5 ${terminal ? 'left-5' : 'right-5'} max-sm:left-3 max-sm:right-3 max-sm:bottom-3 z-[9999] flex flex-col items-stretch gap-2 pointer-events-none select-none`;
         document.body.appendChild(container);
     }
 
     const toast = document.createElement('div');
-    toast.className = 'pointer-events-auto bg-white rounded-2xl p-3.5 px-4 shadow-2xl border flex items-center gap-3 text-sm min-w-[280px] max-w-md transition-all duration-300 transform translate-y-0 opacity-100';
+    toast.className = 'bms-toast pointer-events-auto bg-white rounded-xl pl-4 pr-2 py-3 shadow-lg border border-slate-200 flex items-center gap-3 sm:w-[360px] transition-all duration-200 ease-out opacity-0 translate-y-2';
 
-    let iconHtml = '';
-    let borderClass = 'border-slate-100';
-
-    if (type === 'success') {
-        iconHtml = '<div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 text-base"><i class="fas fa-circle-check"></i></div>';
-        borderClass = 'border-emerald-100';
-    } else if (type === 'error' || type === 'danger') {
-        iconHtml = '<div class="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center flex-shrink-0 text-base"><i class="fas fa-circle-xmark"></i></div>';
-        borderClass = 'border-rose-100';
-    } else if (type === 'warning') {
-        iconHtml = '<div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0 text-base"><i class="fas fa-triangle-exclamation"></i></div>';
-        borderClass = 'border-amber-100';
-    } else {
-        iconHtml = '<div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 text-base"><i class="fas fa-circle-info"></i></div>';
-        borderClass = 'border-blue-100';
-    }
+    const TOAST_ICON = {
+        success: ['fa-circle-check', 'text-emerald-600'],
+        error: ['fa-circle-xmark', 'text-rose-600'],
+        danger: ['fa-circle-xmark', 'text-rose-600'],
+        warning: ['fa-triangle-exclamation', 'text-amber-600'],
+        info: ['fa-circle-info', 'text-slate-400']
+    };
+    const [icon, tone] = TOAST_ICON[type] || TOAST_ICON.info;
+    const iconHtml = `<i class="fas ${icon} ${tone} text-[17px] flex-shrink-0"></i>`;
 
     const actionHtml = (options && options.action && options.action.label)
-        ? `<button type="button" data-toast-action class="px-2.5 py-1 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg ml-2 transition flex-shrink-0 cursor-pointer">${options.action.label}</button>`
+        ? `<button type="button" data-toast-action class="bms-toast-action px-2.5 h-8 font-semibold text-blue-700 hover:bg-blue-50 rounded-lg transition flex-shrink-0 cursor-pointer">${options.action.label}</button>`
         : '';
 
-    toast.classList.add(borderClass);
     toast.innerHTML = `
         ${iconHtml}
-        <div class="flex-1 font-medium text-slate-800 text-xs leading-relaxed">${message}</div>
+        <div class="bms-toast-text flex-1 min-w-0 text-slate-800">${message}</div>
         ${actionHtml}
-        <button onclick="this.parentElement.remove()" class="text-slate-300 hover:text-slate-600 p-1 rounded-lg transition ml-auto flex-shrink-0 cursor-pointer">
-            <i class="fas fa-xmark text-xs"></i>
+        <button type="button" aria-label="បិទ" onclick="this.parentElement.remove()" class="w-8 h-8 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition flex-shrink-0 inline-flex items-center justify-center cursor-pointer">
+            <i class="fas fa-xmark text-[13px]"></i>
         </button>
     `;
 
@@ -66,6 +63,13 @@ function showToast(message, type = 'success', duration = 3200, options = null) {
     }
 
     container.appendChild(toast);
+    // ចូលពីក្រោម · ច្រើនបំផុត 3 សារ (សារចាស់បំផុតចេញមុន)
+    requestAnimationFrame(() => toast.classList.remove('opacity-0', 'translate-y-2'));
+    while (container.children.length > 3) container.firstElementChild.remove();
+    // ដាក់កណ្តុរលើ = មិនបាត់ (អានសារវែងទាន់)
+    let hovered = false;
+    toast.addEventListener('mouseenter', () => { hovered = true; });
+    toast.addEventListener('mouseleave', () => { hovered = false; });
 
     // Auto-record user action in BMSActionTracker if it's a recorded action
     if (window.BMSActionTracker && typeof window.BMSActionTracker.record === 'function') {
@@ -79,15 +83,57 @@ function showToast(message, type = 'success', duration = 3200, options = null) {
         }
     }
 
-    setTimeout(() => {
-        toast.classList.add('opacity-0', '-translate-y-2');
+    const leave = () => {
+        if (hovered) return setTimeout(leave, 800);
+        toast.classList.add('opacity-0', 'translate-y-2');
         setTimeout(() => {
             if (toast.parentElement) toast.remove();
-        }, 300);
-    }, duration);
+        }, 220);
+    };
+    setTimeout(leave, duration);
 }
 
 // 2. Custom Confirm Dialog (Replaces window.confirm)
+/* ===== ស្តង់ដារប្រអប់សន្ទនា (គ្រប់ប្រអប់ក្នុងប្រព័ន្ធ) =====
+   ផ្ទៃសតម្រឹមឆ្វេង · ចំណងជើង + សារ · ប៊ូតុងពីរស្មើគ្នា៖ បោះបង់ (ស៊ុម) | សកម្មភាពមេ (ខៀវ · ក្រហមតែពេលមិនអាចត្រឡប់វិញ)
+   Esc = បោះបង់ · Enter = បញ្ជាក់ · ចុចខាងក្រៅ = បោះបង់ · បិទរួច ការផ្តោតត្រឡប់ទៅកន្លែងដើម (ឧ. ប្រអប់ស្កេនបាកូដ) */
+const BMS_DIALOG = {
+    backdrop: 'fixed inset-0 z-[9999] bg-slate-950/60 backdrop-blur-[2px] flex items-center justify-center p-4 overflow-y-auto',
+    panel: 'bms-dialog w-full bg-white rounded-xl shadow-2xl border border-slate-200 p-5 sm:p-6 text-left',
+    title: 'bms-dialog-title text-slate-900',
+    message: 'bms-dialog-msg text-slate-600 mt-1.5',
+    cancel: 'h-11 px-4 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold transition',
+    primary: 'h-11 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition',
+    danger: 'h-11 px-4 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold transition'
+};
+
+function bmsDialogOpen(id) {
+    let modal = document.getElementById(id);
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = id;
+        document.body.appendChild(modal);
+    }
+    modal.__returnFocus = document.activeElement;
+    modal.className = BMS_DIALOG.backdrop;
+    modal.style.display = 'flex';
+    return modal;
+}
+
+function bmsDialogClose(modal) {
+    modal.style.display = 'none';
+    modal.innerHTML = '';
+    if (modal.__keyHandler) {
+        document.removeEventListener('keydown', modal.__keyHandler, true);
+        modal.__keyHandler = null;
+    }
+    const back = modal.__returnFocus;
+    modal.__returnFocus = null;
+    if (back && typeof back.focus === 'function' && document.contains(back)) {
+        try { back.focus({ preventScroll: true }); } catch (e) { /* មិនអាចផ្តោត */ }
+    }
+}
+
 function showCustomConfirm(options = {}) {
     return new Promise((resolve) => {
         const title = options.title || 'បញ្ជាក់ការប្រតិបត្តិ';
@@ -95,83 +141,41 @@ function showCustomConfirm(options = {}) {
         const confirmText = options.confirmText || options.okText || 'យល់ព្រម';
         const cancelText = options.cancelText || 'បោះបង់';
         const isDanger = options.danger === true || options.type === 'danger' || options.type === 'error';
-        const onConfirm = options.onConfirm || null;
-        const onCancel = options.onCancel || null;
-
-        let modal = document.getElementById('bmsCustomConfirmModal');
-        if (!modal) {
-            modal = document.createElement('div');
-            modal.id = 'bmsCustomConfirmModal';
-            document.body.appendChild(modal);
-        }
-
-        modal.className = 'fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 select-none';
-        modal.style.position = 'fixed';
-        modal.style.top = '0';
-        modal.style.left = '0';
-        modal.style.right = '0';
-        modal.style.bottom = '0';
-        modal.style.width = '100vw';
-        modal.style.height = '100vh';
-        modal.style.display = 'flex';
-        modal.style.alignItems = 'center';
-        modal.style.justifyContent = 'center';
-        modal.style.zIndex = '9999';
-
-        const iconHtml = isDanger
-            ? '<div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center text-xl mx-auto mb-3"><i class="fas fa-triangle-exclamation"></i></div>'
-            : '<div class="w-12 h-12 rounded-2xl bg-emerald-50 text-primary flex items-center justify-center text-xl mx-auto mb-3"><i class="fas fa-circle-question"></i></div>';
-
-        const confirmBtnClass = isDanger
-            ? 'bg-rose-600 hover:bg-rose-700 text-white'
-            : 'bg-primary hover:bg-primary-dark text-white';
+        const modal = bmsDialogOpen('bmsCustomConfirmModal');
 
         modal.innerHTML = `
-            <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-sm w-full p-6 text-center transform transition-all animate-[bmsModalIn_0.18s_ease-out]">
-                ${iconHtml}
-                <h4 class="text-base font-bold text-slate-900 mb-1.5">${title}</h4>
-                <p class="text-xs text-slate-500 leading-relaxed mb-6">${message}</p>
-                <div class="flex items-center justify-center gap-2.5">
-                    <button id="bmsConfirmCancelBtn" type="button" class="${options.hideCancel ? 'hidden ' : ''}flex-1 py-2.5 px-4 rounded-xl text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 transition cursor-pointer">
-                        ${cancelText}
-                    </button>
-                    <button id="bmsConfirmOkBtn" type="button" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-medium ${confirmBtnClass} shadow-sm transition cursor-pointer">
-                        ${confirmText}
-                    </button>
+            <div role="alertdialog" aria-modal="true" aria-labelledby="bmsConfirmTitle" class="${BMS_DIALOG.panel} max-w-sm" onclick="event.stopPropagation()">
+                <h4 id="bmsConfirmTitle" class="${BMS_DIALOG.title}">${title}</h4>
+                <p class="${BMS_DIALOG.message}">${message}</p>
+                <div class="grid ${options.hideCancel ? 'grid-cols-1' : 'grid-cols-2'} gap-2.5 mt-5">
+                    ${options.hideCancel ? '' : `<button id="bmsConfirmCancelBtn" type="button" class="${BMS_DIALOG.cancel}">${cancelText}</button>`}
+                    <button id="bmsConfirmOkBtn" type="button" class="${isDanger ? BMS_DIALOG.danger : BMS_DIALOG.primary}">${confirmText}</button>
                 </div>
-            </div>
-        `;
+            </div>`;
 
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-
-        const closeConfirm = (confirmed) => {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            modal.style.display = 'none';
-            if (confirmed) {
-                if (typeof onConfirm === 'function') {
-                    onConfirm();
-                }
-                resolve(true);
-            } else {
-                if (typeof onCancel === 'function') {
-                    onCancel();
-                }
-                resolve(false);
-            }
+        const close = confirmed => {
+            bmsDialogClose(modal);
+            if (confirmed && typeof options.onConfirm === 'function') options.onConfirm();
+            if (!confirmed && typeof options.onCancel === 'function') options.onCancel();
+            resolve(confirmed);
         };
-
         const cancelBtn = document.getElementById('bmsConfirmCancelBtn');
         const okBtn = document.getElementById('bmsConfirmOkBtn');
-
-        if (cancelBtn) cancelBtn.onclick = () => closeConfirm(false);
-        if (okBtn) okBtn.onclick = () => closeConfirm(true);
+        if (cancelBtn) cancelBtn.onclick = () => close(false);
+        okBtn.onclick = () => close(true);
+        modal.onclick = () => { if (!options.hideCancel) close(false); };
+        modal.__keyHandler = e => {
+            if (e.key === 'Escape' && !options.hideCancel) { e.preventDefault(); e.stopPropagation(); close(false); }
+            else if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); (document.activeElement === cancelBtn ? cancelBtn : okBtn).click(); }
+        };
+        document.addEventListener('keydown', modal.__keyHandler, true);
+        // សកម្មភាពគ្រោះថ្នាក់៖ ផ្តោតលើបោះបង់ (ចុច Enter ដោយចៃដន្យមិនលុប)
+        (isDanger && cancelBtn ? cancelBtn : okBtn).focus();
     });
 }
 
 // 2b. Reason Prompt — ប្រអប់សួរមូលហេតុ (ប្រើសម្រាប់បដិសេធ លុបចោល ដែលតម្រូវឱ្យមានមូលហេតុ — ឯកសារ 15)
-// ត្រឡប់ Promise<string|null>: អត្ថបទមូលហេតុ ឬ null បើអ្នកប្រើបោះបង់
+// ត្រឡប់ Promise<string|null>: អត្ថបទមូលហេតុ ឬ null បើអ្នកប្រើបោះបង់ · options.reasons = ឃ្លាដែលប្រើញឹកញាប់ (ស្រេចចិត្ត)
 function showReasonPrompt(options = {}) {
     return new Promise((resolve) => {
         const title = options.title || 'បញ្ចូលមូលហេតុ';
@@ -180,52 +184,46 @@ function showReasonPrompt(options = {}) {
         const confirmText = options.confirmText || 'បញ្ជាក់';
         const cancelText = options.cancelText || 'បោះបង់';
         const isDanger = options.danger === true;
-
-        let modal = document.getElementById('bmsReasonModal');
-        if (!modal) {
-            modal = document.createElement('div');
-            modal.id = 'bmsReasonModal';
-            document.body.appendChild(modal);
-        }
-
-        modal.className = 'fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 select-none';
-        modal.style.display = 'flex';
-
-        const iconClass = isDanger ? 'bg-rose-50 text-rose-500' : 'bg-emerald-50 text-primary';
-        const btnClass = isDanger ? 'bg-rose-600 hover:bg-rose-700 text-white' : 'bg-primary hover:bg-primary-dark text-white';
+        const quick = options.reasons || [];
+        const modal = bmsDialogOpen('bmsReasonModal');
 
         modal.innerHTML = `
-            <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-md w-full p-6 text-center">
-                <div class="w-12 h-12 rounded-2xl ${iconClass} flex items-center justify-center text-xl mx-auto mb-3"><i class="fas fa-pen-to-square"></i></div>
-                <h4 class="text-base font-bold text-slate-900 mb-1.5">${title}</h4>
-                ${message ? `<p class="text-xs text-slate-500 leading-relaxed mb-4">${message}</p>` : ''}
+            <div role="dialog" aria-modal="true" aria-labelledby="bmsReasonTitle" class="${BMS_DIALOG.panel} max-w-md" onclick="event.stopPropagation()">
+                <h4 id="bmsReasonTitle" class="${BMS_DIALOG.title}">${title}</h4>
+                ${message ? `<p class="${BMS_DIALOG.message}">${message}</p>` : ''}
+                <label for="bmsReasonInput" class="block bms-dialog-label text-slate-700 mt-4 mb-1.5">មូលហេតុ <span class="text-rose-600">*</span></label>
+                ${quick.length ? `<div class="flex flex-wrap gap-1.5 mb-2">${quick.map(r => `<button type="button" data-quick class="h-8 px-3 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 bms-dialog-chip">${r}</button>`).join('')}</div>` : ''}
                 <textarea id="bmsReasonInput" rows="3" placeholder="${placeholder}"
-                    class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-700 text-left focus:outline-none focus:border-primary transition resize-none select-text"></textarea>
-                <p id="bmsReasonError" class="hidden text-[11px] text-rose-600 text-left mt-1.5">សូមបញ្ចូលមូលហេតុជាមុនសិន</p>
-                <div class="flex items-center justify-center gap-2.5 mt-5">
-                    <button id="bmsReasonCancelBtn" type="button" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 transition cursor-pointer">${cancelText}</button>
-                    <button id="bmsReasonOkBtn" type="button" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-medium ${btnClass} shadow-sm transition cursor-pointer">${confirmText}</button>
+                    class="bms-dialog-input w-full bg-white border border-slate-200 rounded-lg p-3 text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition resize-none"></textarea>
+                <p id="bmsReasonError" class="hidden bms-dialog-msg text-rose-600 font-semibold mt-1.5"><i class="fas fa-circle-exclamation mr-1"></i>សូមសរសេរមូលហេតុជាមុនសិន</p>
+                <div class="grid grid-cols-2 gap-2.5 mt-5">
+                    <button id="bmsReasonCancelBtn" type="button" class="${BMS_DIALOG.cancel}">${cancelText}</button>
+                    <button id="bmsReasonOkBtn" type="button" class="${isDanger ? BMS_DIALOG.danger : BMS_DIALOG.primary}">${confirmText}</button>
                 </div>
             </div>`;
 
         const input = document.getElementById('bmsReasonInput');
         const error = document.getElementById('bmsReasonError');
-        const close = value => {
-            modal.style.display = 'none';
-            modal.innerHTML = '';
-            resolve(value);
-        };
-
-        document.getElementById('bmsReasonCancelBtn').onclick = () => close(null);
-        document.getElementById('bmsReasonOkBtn').onclick = () => {
+        const close = value => { bmsDialogClose(modal); resolve(value); };
+        const submit = () => {
             const text = input.value.trim();
-            if (!text) {
-                error.classList.remove('hidden');
-                input.focus();
-                return;
-            }
+            if (!text) { error.classList.remove('hidden'); input.focus(); return; }
             close(text);
         };
+        document.getElementById('bmsReasonCancelBtn').onclick = () => close(null);
+        document.getElementById('bmsReasonOkBtn').onclick = submit;
+        modal.querySelectorAll('[data-quick]').forEach(b => b.onclick = () => {
+            input.value = input.value.trim() ? `${input.value.trim()} · ${b.textContent}` : b.textContent;
+            error.classList.add('hidden');
+            input.focus();
+        });
+        modal.onclick = () => close(null);
+        // Enter = បញ្ជាក់ · Shift+Enter = បន្ទាត់ថ្មី · Esc = បោះបង់
+        modal.__keyHandler = e => {
+            if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(null); }
+            else if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); e.stopPropagation(); submit(); }
+        };
+        document.addEventListener('keydown', modal.__keyHandler, true);
         input.oninput = () => error.classList.add('hidden');
         input.focus();
     });
@@ -1169,27 +1167,31 @@ const POS_DIALOG_THEME = {
         title: 'text-white',
         sub: 'text-slate-400',
         box: 'bg-white/5 border border-white/10',
-        chip: 'bg-white/5 border-white/15 text-slate-200 hover:border-blue-500',
-        chipOn: 'bg-blue-600 border-blue-600 text-white',
-        key: 'bg-white/5 hover:bg-white/10 text-white border border-white/10',
+        chip: 'bg-transparent border-white/15 text-slate-200 hover:border-white/30',
+        chipOn: 'bg-transparent border-blue-500 text-blue-300',
+        key: 'bg-white/5 hover:bg-white/10 active:bg-white/15 text-white border border-white/10',
         input: 'bg-[#1e293b] border-white/10 text-white placeholder-slate-500 focus:border-blue-500',
-        ghost: 'bg-white/10 hover:bg-white/20 text-white',
+        ghost: 'bg-transparent border border-white/15 hover:bg-white/5 text-slate-200',
         primary: 'bg-blue-600 hover:bg-blue-500 text-white',
+        disabled: 'bg-white/5 text-slate-500 cursor-not-allowed',
+        pinBox: 'bg-[#0b1220] border-white/10',
         dot: 'bg-blue-400',
         dotOff: 'bg-white/15'
     },
     light: {
-        panel: 'bg-white border border-slate-100 text-slate-800',
+        panel: 'bg-white border border-slate-200 text-slate-800',
         title: 'text-slate-900',
         sub: 'text-slate-500',
         box: 'bg-slate-50 border border-slate-200',
-        chip: 'bg-white border-slate-200 text-slate-700 hover:border-blue-400',
-        chipOn: 'bg-blue-600 border-blue-600 text-white',
-        key: 'bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200',
-        input: 'bg-slate-50 border-slate-200 text-slate-700 placeholder-slate-400 focus:border-blue-500',
-        ghost: 'bg-slate-100 hover:bg-slate-200 text-slate-700',
+        chip: 'bg-white border-slate-200 text-slate-700 hover:border-slate-300',
+        chipOn: 'bg-white border-blue-600 text-blue-700',
+        key: 'bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-800 border border-slate-200',
+        input: 'bg-white border-slate-200 text-slate-700 placeholder-slate-400 focus:border-blue-500',
+        ghost: 'bg-white border border-slate-200 hover:bg-slate-50 text-slate-700',
         primary: 'bg-blue-600 hover:bg-blue-700 text-white',
-        dot: 'bg-blue-600',
+        disabled: 'bg-slate-100 text-slate-400 cursor-not-allowed',
+        pinBox: 'bg-white border-slate-300',
+        dot: 'bg-slate-900',
         dotOff: 'bg-slate-200'
     }
 };
@@ -1211,7 +1213,8 @@ function posDialogHost(id) {
         host.id = id;
         document.body.appendChild(host);
     }
-    host.className = 'fixed inset-0 z-[9998] bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto';
+    host.__returnFocus = document.activeElement;
+    host.className = 'fixed inset-0 z-[9998] bg-slate-950/60 backdrop-blur-[2px] flex items-center justify-center p-4 overflow-y-auto';
     host.style.display = 'flex';
     return host;
 }
@@ -1222,6 +1225,11 @@ function posDialogClose(host) {
     if (host.__keyHandler) {
         document.removeEventListener('keydown', host.__keyHandler, true);
         host.__keyHandler = null;
+    }
+    const back = host.__returnFocus;
+    host.__returnFocus = null;
+    if (back && typeof back.focus === 'function' && document.contains(back)) {
+        try { back.focus({ preventScroll: true }); } catch (e) { /* មិនអាចផ្តោត */ }
     }
 }
 
@@ -1236,9 +1244,22 @@ const POS_PIN_GUARD = { fails: 0, lockedUntil: 0 };
 function posKeypadHtml(th) {
     const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '⌫'];
     return `<div class="grid grid-cols-3 gap-2 mt-3">
-        ${keys.map(k => `<button type="button" data-key="${k}"
-            class="h-14 rounded-2xl ${th.key} text-xl font-semibold transition select-none">${k === 'C' ? '<i class="fas fa-eraser text-base"></i>' : k === '⌫' ? '<i class="fas fa-delete-left text-base"></i>' : k}</button>`).join('')}
+        ${keys.map(k => `<button type="button" data-key="${k}" aria-label="${k === 'C' ? 'សម្អាតទាំងអស់' : k === '⌫' ? 'លុបមួយខ្ទង់' : k}"
+            class="h-14 rounded-lg ${th.key} ${k === 'C' || k === '⌫' ? 'sm-td-sub font-semibold' : 'text-xl font-semibold'} transition select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">${k === 'C' ? 'សម្អាត' : k === '⌫' ? '<i class="fas fa-delete-left text-lg"></i>' : k}</button>`).join('')}
     </div>`;
+}
+
+/* ប្រអប់លេខសម្ងាត់ (ចំណុច) — ដូចទំព័រចូលប្រើ៖ 4 ចំណុច បន្ថែមដល់ 6 · ខៀវពេលកំពុងវាយ · ក្រហមពេលខុស */
+function posPinFieldHtml(th, pin, err, msg) {
+    const n = Math.max(4, pin.length);
+    return `<div class="h-14 rounded-lg border flex items-center justify-center gap-3.5 transition-colors ${err ? 'border-rose-400' : pin.length ? 'border-blue-500 ring-2 ring-blue-500/15 ' + th.pinBox.split(' ')[0] : th.pinBox}">
+            ${Array.from({ length: n }, (_, i) => `<span class="w-3.5 h-3.5 rounded-full ${i < pin.length ? (err ? 'bg-rose-500' : th.dot) : th.dotOff}"></span>`).join('')}
+        </div>
+        <p class="sm-td-sub mt-1.5 min-h-[22px] ${err ? 'text-rose-600 font-semibold' : th.sub}" aria-live="polite">${msg}</p>`;
+}
+
+function posKbdHint(th) {
+    return `<p class="sm-td-sub ${th.sub} text-center mt-3 max-md:hidden"><span class="kbd">Enter</span> បញ្ជាក់ · <span class="kbd">Esc</span> បោះបង់</p>`;
 }
 
 /*
@@ -1262,52 +1283,46 @@ function showManagerOverride(opts = {}) {
             const ready = !locked && state.approverId && !needReason && state.pin.length >= 4;
 
             host.innerHTML = `
-                <div class="w-full max-w-md rounded-3xl shadow-2xl ${th.panel} p-5 sm:p-6" onclick="event.stopPropagation()">
-                    <div class="flex items-start gap-3">
-                        <div class="w-12 h-12 rounded-2xl bg-amber-500/15 text-amber-400 flex items-center justify-center text-xl flex-shrink-0"><i class="fas fa-user-shield"></i></div>
-                        <div class="min-w-0">
-                            <p class="sm-card-title ${th.title}">${posEsc(opts.title || 'ទាមទារការអនុម័តពីអ្នកគ្រប់គ្រង')}</p>
-                            <p class="sm-td-sub ${th.sub} mt-0.5">អ្នកគ្រប់គ្រងវាយលេខសម្ងាត់ផ្ទាល់ខ្លួន · ប្រព័ន្ធកត់ត្រាអ្នកអនុម័ត និងពេលវេលា</p>
-                        </div>
+                <div role="dialog" aria-modal="true" class="w-full max-w-md rounded-xl shadow-2xl ${th.panel} p-5 sm:p-6" onclick="event.stopPropagation()">
+                    <div>
+                        <p class="sm-card-title ${th.title}">${posEsc(opts.title || 'ទាមទារការអនុម័តពីអ្នកគ្រប់គ្រង')}</p>
+                        <p class="sm-td-sub ${th.sub} mt-0.5">អ្នកគ្រប់គ្រងវាយលេខសម្ងាត់ផ្ទាល់ខ្លួន</p>
                     </div>
 
-                    ${(opts.lines || []).length ? `<div class="mt-4 rounded-2xl ${th.box} p-3 space-y-1">
+                    ${(opts.lines || []).length ? `<div class="mt-4 rounded-lg ${th.box} px-3 py-2.5 space-y-1">
                         ${opts.lines.map(([l, v]) => `<div class="flex justify-between gap-3"><span class="sm-td-sub ${th.sub}">${l}</span><span class="sm-td ${th.title} sm-figure text-right">${v}</span></div>`).join('')}
                     </div>` : ''}
 
                     ${reasons.length ? `<div class="mt-4">
                         <p class="sm-td-sub ${th.sub} mb-1.5">មូលហេតុ</p>
                         <div class="flex flex-wrap gap-2">
-                            ${reasons.map((r, i) => `<button type="button" data-reason="${i}" class="sm-badge px-3 py-2 rounded-xl border transition ${state.reason === r ? th.chipOn : th.chip}">${posEsc(r)}</button>`).join('')}
+                            ${reasons.map((r, i) => `<button type="button" data-reason="${i}" class="sm-badge h-9 px-3 rounded-full border transition ${state.reason === r ? th.chipOn + ' font-semibold' : th.chip}">${posEsc(r)}</button>`).join('')}
                         </div>
                         <input id="posOvOther" type="text" value="${posEsc(state.other)}" placeholder="ឬវាយមូលហេតុផ្សេង..."
-                            class="sm-td w-full mt-2 px-3 h-11 rounded-xl border ${th.input} focus:outline-none transition">
+                            class="sm-td w-full mt-2 px-3 h-11 rounded-lg border ${th.input} focus:outline-none transition">
                     </div>` : opts.reason ? `<p class="sm-td-sub ${th.sub} mt-3">មូលហេតុ៖ <span class="${th.title}">${posEsc(opts.reason)}</span></p>` : ''}
 
                     <div class="mt-4">
                         <p class="sm-td-sub ${th.sub} mb-1.5">អ្នកអនុម័ត</p>
                         <div class="flex flex-wrap gap-2">
-                            ${managers.map(m => `<button type="button" data-approver="${m.id}" class="sm-badge px-3 py-2 rounded-xl border transition inline-flex items-center gap-2 ${state.approverId === m.id ? th.chipOn : th.chip}">
+                            ${managers.map(m => `<button type="button" data-approver="${m.id}" role="radio" aria-checked="${state.approverId === m.id}" class="sm-badge h-11 pl-1.5 pr-3 rounded-lg border transition inline-flex items-center gap-2 ${state.approverId === m.id ? th.chipOn + ' font-semibold' : th.chip}">
                                 ${typeof avatarHtml === 'function' ? avatarHtml(m.id, 'w-7 h-7') : ''}${m.name}</button>`).join('')}
                         </div>
                     </div>
 
                     <div class="mt-4">
-                        <div class="flex items-center justify-center gap-3 h-6">
-                            ${[0, 1, 2, 3, 4, 5].map(i => `<span class="w-3.5 h-3.5 rounded-full ${i < state.pin.length ? th.dot : th.dotOff} ${i >= 4 && i >= state.pin.length ? 'opacity-40' : ''}"></span>`).join('')}
-                        </div>
-                        <p class="sm-td-sub text-center mt-1 min-h-[22px] ${locked ? 'text-rose-400' : state.msg ? 'text-rose-400' : th.sub}">
-                            ${locked ? `វាយខុស 3 ដង · សូមរង់ចាំ ${lockedFor} វិនាទី` : state.msg || 'លេខសម្ងាត់ 4 ទៅ 6 ខ្ទង់'}
-                        </p>
+                        <div class="flex items-baseline justify-between mb-1.5"><p class="sm-td-sub font-semibold ${th.title}">លេខសម្ងាត់</p><p class="sm-td-sub ${th.sub}">4 ទៅ 6 ខ្ទង់</p></div>
+                        ${posPinFieldHtml(th, state.pin, locked || !!state.msg, locked ? `<i class="fas fa-lock mr-1.5"></i>វាយខុស 3 ដង · សូមរង់ចាំ ${lockedFor} វិនាទី` : state.msg ? `<i class="fas fa-circle-exclamation mr-1.5"></i>${state.msg}` : '')}
                         ${posKeypadHtml(th)}
                     </div>
 
                     <div class="grid grid-cols-2 gap-2.5 mt-4">
-                        <button type="button" data-act="cancel" class="sm-value h-12 rounded-2xl ${th.ghost} font-semibold transition">បោះបង់</button>
-                        <button type="button" data-act="ok" ${ready ? '' : 'disabled'} class="sm-value h-12 rounded-2xl font-semibold transition inline-flex items-center justify-center gap-2 ${ready ? th.primary : 'bg-slate-500/30 text-slate-400 cursor-not-allowed'}">
-                            <i class="fas fa-check"></i> ${posEsc(opts.confirmText || 'អនុម័ត')}
+                        <button type="button" data-act="cancel" class="sm-value h-12 rounded-lg ${th.ghost} font-semibold transition">បោះបង់</button>
+                        <button type="button" data-act="ok" ${ready ? '' : 'disabled'} class="sm-value h-12 rounded-lg font-semibold transition inline-flex items-center justify-center gap-2 ${ready ? th.primary : th.disabled}">
+                            ${posEsc(opts.confirmText || 'អនុម័ត')}
                         </button>
                     </div>
+                    ${posKbdHint(th)}
                 </div>`;
 
             host.querySelectorAll('[data-reason]').forEach(b => b.onclick = () => {
@@ -1323,9 +1338,9 @@ function showManagerOverride(opts = {}) {
                 const okNow = !locked && state.approverId && (state.reason || state.other.trim()) && state.pin.length >= 4;
                 if (okBtn) {
                     okBtn.disabled = !okNow;
-                    okBtn.className = `sm-value h-12 rounded-2xl font-semibold transition inline-flex items-center justify-center gap-2 ${okNow ? th.primary : 'bg-slate-500/30 text-slate-400 cursor-not-allowed'}`;
+                    okBtn.className = `sm-value h-12 rounded-lg font-semibold transition inline-flex items-center justify-center gap-2 ${okNow ? th.primary : th.disabled}`;
                 }
-                host.querySelectorAll('[data-reason]').forEach(b => b.className = `sm-badge px-3 py-2 rounded-xl border transition ${th.chip}`);
+                host.querySelectorAll('[data-reason]').forEach(b => b.className = `sm-badge h-9 px-3 rounded-full border transition ${th.chip}`);
             };
             host.querySelectorAll('[data-approver]').forEach(b => b.onclick = () => {
                 state.approverId = b.dataset.approver;
@@ -1333,7 +1348,7 @@ function showManagerOverride(opts = {}) {
                 render();
             });
             host.querySelectorAll('[data-key]').forEach(b => b.onclick = () => press(b.dataset.key));
-            host.querySelector('[data-act="cancel"]').onclick = () => finish(null);
+            host.querySelectorAll('[data-act="cancel"]').forEach(b => { b.onclick = () => finish(null); });
             host.querySelector('[data-act="ok"]').onclick = submit;
 
             clearTimeout(state.tick);
@@ -1407,29 +1422,24 @@ function showPinConfirm(opts = {}) {
             const locked = lockedFor > 0;
             const ready = !locked && state.pin.length >= 4;
             host.innerHTML = `
-                <div class="w-full max-w-sm rounded-3xl shadow-2xl ${th.panel} p-5 sm:p-6" onclick="event.stopPropagation()">
-                    <div class="text-center">
-                        <div class="w-12 h-12 rounded-2xl ${opts.danger ? 'bg-rose-500/15 text-rose-500' : 'bg-blue-500/15 text-blue-500'} flex items-center justify-center text-xl mx-auto mb-3"><i class="fas fa-key"></i></div>
-                        <p class="sm-card-title ${th.title}">${posEsc(opts.title || 'បញ្ជាក់ដោយលេខសម្ងាត់')}</p>
-                        ${opts.message ? `<p class="sm-td-sub ${th.sub} mt-1">${opts.message}</p>` : ''}
-                        ${person ? `<p class="sm-td ${th.title} mt-3 inline-flex items-center gap-2">${avatarHtml(person.id, 'w-9 h-9')}${person.name}</p>` : ''}
-                    </div>
+                <div role="dialog" aria-modal="true" class="w-full max-w-sm rounded-xl shadow-2xl ${th.panel} p-5 sm:p-6" onclick="event.stopPropagation()">
+                    <p class="sm-card-title ${th.title}">${posEsc(opts.title || 'បញ្ជាក់ដោយលេខសម្ងាត់')}</p>
+                    ${opts.message ? `<p class="sm-td-sub ${th.sub} mt-1 leading-relaxed">${opts.message}</p>` : ''}
+                    ${person ? `<div class="mt-4 rounded-lg ${th.box} px-3 py-2.5 flex items-center gap-3">${avatarHtml(person.id, 'w-9 h-9')}
+                        <span class="min-w-0"><span class="sm-td font-semibold ${th.title} block truncate">${person.name}</span><span class="sm-td-sub ${th.sub} block">វាយលេខសម្ងាត់របស់អ្នក</span></span></div>` : ''}
                     <div class="mt-4">
-                        <div class="flex items-center justify-center gap-3 h-6">
-                            ${[0, 1, 2, 3, 4, 5].map(i => `<span class="w-3.5 h-3.5 rounded-full ${i < state.pin.length ? th.dot : th.dotOff} ${i >= 4 && i >= state.pin.length ? 'opacity-40' : ''}"></span>`).join('')}
-                        </div>
-                        <p class="sm-td-sub text-center mt-1 min-h-[22px] ${locked || state.msg ? 'text-rose-500' : th.sub}">
-                            ${locked ? `វាយខុស 3 ដង · សូមរង់ចាំ ${lockedFor} វិនាទី` : state.msg || 'លេខសម្ងាត់ 4 ទៅ 6 ខ្ទង់'}
-                        </p>
+                        <div class="flex items-baseline justify-between mb-1.5"><p class="sm-td-sub font-semibold ${th.title}">លេខសម្ងាត់</p><p class="sm-td-sub ${th.sub}">4 ទៅ 6 ខ្ទង់</p></div>
+                        ${posPinFieldHtml(th, state.pin, locked || !!state.msg, locked ? `<i class="fas fa-lock mr-1.5"></i>វាយខុស 3 ដង · សូមរង់ចាំ ${lockedFor} វិនាទី` : state.msg ? `<i class="fas fa-circle-exclamation mr-1.5"></i>${state.msg}` : '')}
                         ${posKeypadHtml(th)}
                     </div>
                     <div class="grid grid-cols-2 gap-2.5 mt-4">
-                        <button type="button" data-act="cancel" class="sm-value h-12 rounded-2xl ${th.ghost} font-semibold transition">បោះបង់</button>
-                        <button type="button" data-act="ok" ${ready ? '' : 'disabled'} class="sm-value h-12 rounded-2xl font-semibold transition ${ready ? (opts.danger ? 'bg-rose-600 hover:bg-rose-700 text-white' : th.primary) : 'bg-slate-500/30 text-slate-400 cursor-not-allowed'}">${posEsc(opts.confirmText || 'បញ្ជាក់')}</button>
+                        <button type="button" data-act="cancel" class="sm-value h-12 rounded-lg ${th.ghost} font-semibold transition">បោះបង់</button>
+                        <button type="button" data-act="ok" ${ready ? '' : 'disabled'} class="sm-value h-12 rounded-lg font-semibold transition ${ready ? (opts.danger ? 'bg-rose-600 hover:bg-rose-700 text-white' : th.primary) : th.disabled}">${posEsc(opts.confirmText || 'បញ្ជាក់')}</button>
                     </div>
+                    ${posKbdHint(th)}
                 </div>`;
             host.querySelectorAll('[data-key]').forEach(b => b.onclick = () => press(b.dataset.key));
-            host.querySelector('[data-act="cancel"]').onclick = () => finish(false);
+            host.querySelectorAll('[data-act="cancel"]').forEach(b => { b.onclick = () => finish(false); });
             host.querySelector('[data-act="ok"]').onclick = submit;
             clearTimeout(state.tick);
             if (locked) state.tick = setTimeout(render, 1000);
@@ -1489,23 +1499,22 @@ function showReasonPicker(opts = {}) {
         let picked = '';
 
         host.innerHTML = `
-            <div class="w-full max-w-md rounded-3xl shadow-2xl ${th.panel} p-5 sm:p-6" onclick="event.stopPropagation()">
-                <div class="flex items-start gap-3">
-                    <div class="w-12 h-12 rounded-2xl ${opts.danger ? 'bg-rose-500/15 text-rose-500' : 'bg-amber-500/15 text-amber-500'} flex items-center justify-center text-xl flex-shrink-0"><i class="fas fa-pen-to-square"></i></div>
+            <div role="dialog" aria-modal="true" class="w-full max-w-md rounded-xl shadow-2xl ${th.panel} p-5 sm:p-6" onclick="event.stopPropagation()">
+                <div>
                     <div class="min-w-0">
                         <p class="sm-card-title ${th.title}">${posEsc(opts.title || 'ជ្រើសរើសមូលហេតុ')}</p>
                         ${opts.message ? `<p class="sm-td-sub ${th.sub} mt-0.5">${opts.message}</p>` : ''}
                     </div>
                 </div>
                 <div class="flex flex-wrap gap-2 mt-4" id="posRpChips">
-                    ${reasons.map((r, i) => `<button type="button" data-i="${i}" class="sm-badge px-3 py-2 rounded-xl border transition ${th.chip}">${posEsc(r)}</button>`).join('')}
+                    ${reasons.map((r, i) => `<button type="button" data-i="${i}" class="sm-badge h-9 px-3 rounded-full border transition ${th.chip}">${posEsc(r)}</button>`).join('')}
                 </div>
                 <textarea id="posRpOther" rows="2" placeholder="${reasons.length ? 'ឬវាយមូលហេតុផ្សេង / ព័ត៌មានបន្ថែម...' : 'សូមបញ្ចូលមូលហេតុ...'}"
                     class="sm-td w-full mt-3 px-3 py-2.5 rounded-xl border ${th.input} focus:outline-none transition resize-none"></textarea>
                 <p id="posRpErr" class="hidden sm-td-sub text-rose-500 mt-1">សូមជ្រើសរើស ឬវាយមូលហេតុជាមុនសិន</p>
                 <div class="grid grid-cols-2 gap-2.5 mt-4">
-                    <button type="button" data-act="cancel" class="sm-value h-12 rounded-2xl ${th.ghost} font-semibold transition">បោះបង់</button>
-                    <button type="button" data-act="ok" class="sm-value h-12 rounded-2xl font-semibold transition ${opts.danger ? 'bg-rose-600 hover:bg-rose-700 text-white' : th.primary}">${posEsc(opts.confirmText || 'បន្ត')}</button>
+                    <button type="button" data-act="cancel" class="sm-value h-12 rounded-lg ${th.ghost} font-semibold transition">បោះបង់</button>
+                    <button type="button" data-act="ok" class="sm-value h-12 rounded-lg font-semibold transition ${opts.danger ? 'bg-rose-600 hover:bg-rose-700 text-white' : th.primary}">${posEsc(opts.confirmText || 'បន្ត')}</button>
                 </div>
             </div>`;
 
@@ -1513,12 +1522,12 @@ function showReasonPicker(opts = {}) {
         const err = host.querySelector('#posRpErr');
         host.querySelectorAll('[data-i]').forEach(b => b.onclick = () => {
             picked = reasons[Number(b.dataset.i)];
-            host.querySelectorAll('[data-i]').forEach(x => x.className = `sm-badge px-3 py-2 rounded-xl border transition ${x === b ? th.chipOn : th.chip}`);
+            host.querySelectorAll('[data-i]').forEach(x => x.className = `sm-badge h-9 px-3 rounded-full border transition ${x === b ? th.chipOn : th.chip}`);
             err.classList.add('hidden');
         });
         other.oninput = () => err.classList.add('hidden');
         const finish = v => { posDialogClose(host); resolve(v); };
-        host.querySelector('[data-act="cancel"]').onclick = () => finish(null);
+        host.querySelectorAll('[data-act="cancel"]').forEach(b => { b.onclick = () => finish(null); });
         host.querySelector('[data-act="ok"]').onclick = () => {
             const extra = other.value.trim();
             const text = picked && extra ? `${picked} · ${extra}` : (picked || extra);
@@ -1537,12 +1546,12 @@ function showOptionDialog(opts = {}) {
         const th = getPosDialogTheme(opts);
         const host = posDialogHost('posOptionModal');
         host.innerHTML = `
-            <div class="w-full max-w-md rounded-3xl shadow-2xl ${th.panel} p-5 sm:p-6" onclick="event.stopPropagation()">
+            <div role="dialog" aria-modal="true" class="w-full max-w-md rounded-xl shadow-2xl ${th.panel} p-5 sm:p-6" onclick="event.stopPropagation()">
                 <p class="sm-card-title ${th.title}">${posEsc(opts.title || 'ជ្រើសរើស')}</p>
                 ${opts.message ? `<p class="sm-td-sub ${th.sub} mt-1">${opts.message}</p>` : ''}
                 <div class="space-y-2.5 mt-4">
                     ${(opts.options || []).map((o, i) => `
-                        <button type="button" data-i="${i}" class="w-full text-left p-4 rounded-2xl border transition flex items-start gap-3 ${th.chip}">
+                        <button type="button" data-i="${i}" class="w-full text-left px-4 py-3 rounded-lg border transition flex items-start gap-3 ${th.chip}">
                             <span class="w-10 h-10 rounded-xl ${th.box} flex items-center justify-center flex-shrink-0"><i class="fas ${o.icon || 'fa-circle'}"></i></span>
                             <span class="min-w-0">
                                 <span class="sm-value block">${posEsc(o.label)}</span>
@@ -1550,11 +1559,11 @@ function showOptionDialog(opts = {}) {
                             </span>
                         </button>`).join('')}
                 </div>
-                <button type="button" data-act="cancel" class="sm-value w-full h-12 mt-4 rounded-2xl ${th.ghost} font-semibold transition">បោះបង់</button>
+                <button type="button" data-act="cancel" class="sm-value w-full h-12 mt-4 rounded-lg ${th.ghost} font-semibold transition">បោះបង់</button>
             </div>`;
         const finish = v => { posDialogClose(host); resolve(v); };
         host.querySelectorAll('[data-i]').forEach(b => b.onclick = () => finish(opts.options[Number(b.dataset.i)].value));
-        host.querySelector('[data-act="cancel"]').onclick = () => finish(null);
+        host.querySelectorAll('[data-act="cancel"]').forEach(b => { b.onclick = () => finish(null); });
         host.onclick = () => finish(null);
         host.__keyHandler = e => { if (e.key === 'Escape') { finish(null); e.stopPropagation(); } };
         document.addEventListener('keydown', host.__keyHandler, true);
@@ -1583,7 +1592,7 @@ function showFormDialog(opts = {}) {
             </label>`;
         };
         host.innerHTML = `
-            <div class="w-full max-w-md rounded-3xl shadow-2xl ${th.panel} p-5 sm:p-6" onclick="event.stopPropagation()">
+            <div role="dialog" aria-modal="true" class="w-full max-w-md rounded-xl shadow-2xl ${th.panel} p-5 sm:p-6" onclick="event.stopPropagation()">
                 <div class="flex items-start gap-3">
                     ${opts.icon ? `<div class="w-11 h-11 rounded-xl ${th.box} flex items-center justify-center flex-shrink-0"><i class="fas ${opts.icon}"></i></div>` : ''}
                     <div class="min-w-0">
@@ -1595,8 +1604,8 @@ function showFormDialog(opts = {}) {
                 <div id="posFormPreview" class="mt-3"></div>
                 <p id="posFormErr" class="hidden sm-td-sub text-rose-500 mt-2"></p>
                 <div class="grid grid-cols-2 gap-2.5 mt-4">
-                    <button type="button" data-act="cancel" class="sm-value h-12 rounded-2xl ${th.ghost} font-semibold transition">បោះបង់</button>
-                    <button type="button" data-act="ok" class="sm-value h-12 rounded-2xl font-semibold transition ${th.primary}">${posEsc(opts.confirmText || 'រក្សាទុក')}</button>
+                    <button type="button" data-act="cancel" class="sm-value h-12 rounded-lg ${th.ghost} font-semibold transition">បោះបង់</button>
+                    <button type="button" data-act="ok" class="sm-value h-12 rounded-lg font-semibold transition ${th.primary}">${posEsc(opts.confirmText || 'រក្សាទុក')}</button>
                 </div>
             </div>`;
         const err = host.querySelector('#posFormErr');
@@ -1614,7 +1623,7 @@ function showFormDialog(opts = {}) {
             i.onkeydown = e => { if (e.key === 'Enter') host.querySelector('[data-act="ok"]').click(); };
         });
         const finish = v => { posDialogClose(host); resolve(v); };
-        host.querySelector('[data-act="cancel"]').onclick = () => finish(null);
+        host.querySelectorAll('[data-act="cancel"]').forEach(b => { b.onclick = () => finish(null); });
         host.querySelector('[data-act="ok"]').onclick = () => {
             const v = values();
             const msg = opts.validate ? opts.validate(v) : '';
@@ -1646,22 +1655,22 @@ function showNumberPad(opts = {}) {
             const n = Number(val || initial || 0);
             const bad = val && (n < min || n > max);
             host.innerHTML = `
-                <div class="w-full max-w-xs rounded-3xl shadow-2xl ${th.panel} p-5" onclick="event.stopPropagation()">
+                <div role="dialog" aria-modal="true" class="w-full max-w-xs rounded-xl shadow-2xl ${th.panel} p-5" onclick="event.stopPropagation()">
                     <p class="sm-card-title ${th.title} text-center">${posEsc(opts.title || 'បញ្ចូលចំនួន')}</p>
                     ${opts.subtitle ? `<p class="sm-td-sub ${th.sub} text-center mt-0.5">${opts.subtitle}</p>` : ''}
-                    <div class="mt-4 rounded-2xl ${th.box} px-4 py-3 flex items-baseline justify-center gap-2">
+                    <div class="mt-4 rounded-lg ${th.box} px-4 py-3 flex items-baseline justify-center gap-2">
                         <span class="text-[36px] font-bold leading-none sm-figure ${val ? th.title : 'opacity-40 ' + th.title}">${shown}</span>
                         ${opts.unit ? `<span class="sm-td-sub ${th.sub}">${posEsc(opts.unit)}</span>` : ''}
                     </div>
                     <p class="sm-td-sub text-center mt-1 min-h-[20px] ${bad ? 'text-rose-500' : th.sub}">${bad ? `ចន្លោះ ${min} ទៅ ${max}` : `អតិបរមា ${max}`}</p>
                     ${posKeypadHtml(th)}
                     <div class="grid grid-cols-2 gap-2 mt-3">
-                        <button type="button" data-act="cancel" class="sm-value h-12 rounded-2xl ${th.ghost} font-semibold">បោះបង់</button>
-                        <button type="button" data-act="ok" class="sm-value h-12 rounded-2xl font-semibold ${bad ? 'bg-slate-500/30 text-slate-400' : th.primary}">យល់ព្រម</button>
+                        <button type="button" data-act="cancel" class="sm-value h-12 rounded-lg ${th.ghost} font-semibold">បោះបង់</button>
+                        <button type="button" data-act="ok" class="sm-value h-12 rounded-lg font-semibold ${bad ? th.disabled : th.primary}">យល់ព្រម</button>
                     </div>
                 </div>`;
             host.querySelectorAll('[data-key]').forEach(b => b.onclick = () => press(b.dataset.key));
-            host.querySelector('[data-act="cancel"]').onclick = () => finish(null);
+            host.querySelectorAll('[data-act="cancel"]').forEach(b => { b.onclick = () => finish(null); });
             host.querySelector('[data-act="ok"]').onclick = submit;
         };
         const press = k => {
@@ -1722,6 +1731,8 @@ function showAssignDialog(opts = {}) {
         const reasonsList = (posSettings().reasons && posSettings().reasons.cover) || ['ឈប់សម្រាក', 'ឈឺ', 'ប្តូរវេនគ្នា', 'ពេលមមាញឹក', 'ផ្សេងៗ'];
         let selReason = '';
         let isPartial = !!(selCand && selCand.partialAllowed);
+        let showBlocked = false;
+        let showMore = false;
 
         const renderDialog = () => {
             const prevList = host.querySelector('[data-list]');
@@ -1734,8 +1745,8 @@ function showAssignDialog(opts = {}) {
             const blockedList = candidates.filter(c => c.blocked);
 
             const toneMap = {
-                emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                indigo: 'bg-blue-50 text-blue-700 border-blue-200',
+                emerald: 'bg-white text-slate-600 border-slate-200',
+                indigo: 'bg-white text-slate-600 border-slate-200',
                 amber: 'bg-amber-50 text-amber-700 border-amber-200',
                 rose: 'bg-rose-50 text-rose-700 border-rose-200'
             };
@@ -1744,14 +1755,14 @@ function showAssignDialog(opts = {}) {
                 const isSelected = c.id === selId;
                 const isBlocked = c.blocked;
                 return `
-                    <div data-cand="${c.id}" class="flex items-center gap-3 p-2.5 rounded-2xl border transition cursor-pointer ${isBlocked ? 'opacity-50 cursor-not-allowed border-slate-100 bg-slate-50/50' : (isSelected ? 'border-blue-600 bg-blue-50/40 ring-1 ring-blue-500' : 'border-slate-200 hover:border-slate-300 bg-white')}">
+                    <div data-cand="${c.id}" role="radio" aria-checked="${isSelected}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg border transition ${isBlocked ? 'cursor-not-allowed border-slate-100 bg-slate-50' : (isSelected ? 'cursor-pointer border-blue-600 bg-white' : 'cursor-pointer border-slate-200 hover:border-slate-300 bg-white')}">
                         <div class="flex items-center justify-center w-5 flex-shrink-0">
-                            ${isBlocked ? '<span class="text-rose-400 text-xs font-bold">⊘</span>' : `<span class="w-4 h-4 rounded-full border flex items-center justify-center ${isSelected ? 'border-blue-600 bg-blue-600' : 'border-slate-300'}">${isSelected ? '<span class="w-1.5 h-1.5 rounded-full bg-white"></span>' : ''}</span>`}
+                            ${isBlocked ? '<i class="fas fa-ban text-slate-300 text-xs"></i>' : `<span class="w-4 h-4 rounded-full border flex items-center justify-center ${isSelected ? 'border-blue-600 bg-blue-600' : 'border-slate-300'}">${isSelected ? '<span class="w-1.5 h-1.5 rounded-full bg-white"></span>' : ''}</span>`}
                         </div>
                         ${avatarHtml(c.id, 'w-8 h-8')}
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-2">
-                                <span class="sm-td text-slate-800 truncate">${c.name}</span>
+                                <span class="sm-td font-medium ${isBlocked ? 'text-slate-400' : 'text-slate-800'} truncate">${c.name}</span>
                                 <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap ${toneMap[c.tone] || 'border-slate-200 text-slate-600'}">${c.chip}</span>
                             </div>
                             <div class="text-[12px] text-slate-500 mt-0.5 sm-figure flex flex-wrap items-center gap-x-2">
@@ -1771,7 +1782,7 @@ function showAssignDialog(opts = {}) {
                 const workedPct = Math.min(100, (worked / 12) * 100);
                 const shiftPct = Math.min(100 - workedPct, (Math.max(0, shiftH) / 12) * 100);
                 dayBarHtml = `
-                    <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
+                    <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
                         <div class="flex items-center justify-between gap-2 text-[13px]">
                             <span class="font-semibold text-slate-700">${selCand.name} · ថ្ងៃនេះ</span>
                             <span class="text-slate-600 sm-figure font-semibold">${Math.round((worked + shiftH) * 10) / 10} / 12 ម៉ោង</span>
@@ -1785,7 +1796,7 @@ function showAssignDialog(opts = {}) {
                             <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-blue-500"></span>វេននេះ ${Math.round(shiftH * 10) / 10} ម៉ោង</span>
                         </div>
                         ${isPartial ? `
-                            <p class="text-[13px] font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                            <p class="text-[13px] font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                                 <i class="fas fa-scissors mr-1.5 text-amber-600"></i>វេនខ្លី ${tpl.start}–${selCand.capTime} ដើម្បីកុំឱ្យលើស 12 ម៉ោង · ${selCand.capTime}–${tpl.end} នៅខ្វះអ្នក
                             </p>` : ''}
                     </div>
@@ -1794,12 +1805,12 @@ function showAssignDialog(opts = {}) {
 
             const warningLines = [];
             if (selCand && selCand.over48) {
-                warningLines.push(`<p class="text-xs font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 flex items-center gap-2"><i class="fas fa-clock text-amber-600"></i><span>បុគ្គលិកនេះធ្វើការ ${selCand.hoursAfter} ម៉ោងក្នុងសប្តាហ៍នេះ · លើស 48 ម៉ោង ត្រូវបង់ម៉ោងបន្ថែម</span></p>`);
+                warningLines.push(`<p class="text-xs font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 flex items-center gap-2"><i class="fas fa-clock text-amber-600"></i><span>បុគ្គលិកនេះធ្វើការ ${selCand.hoursAfter} ម៉ោងក្នុងសប្តាហ៍នេះ · លើស 48 ម៉ោង ត្រូវបង់ម៉ោងបន្ថែម</span></p>`);
             }
             if (selCand && selCand.leavesGap) {
-                warningLines.push(`<p class="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2"><i class="fas fa-triangle-exclamation mr-1.5"></i>${selCand.leavesGap} ថ្ងៃនេះនឹងគ្មានអ្នកគិតលុយ</p>`);
+                warningLines.push(`<p class="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2"><i class="fas fa-triangle-exclamation mr-1.5"></i>${selCand.leavesGap} ថ្ងៃនេះនឹងគ្មានអ្នកគិតលុយ</p>`);
             } else if (isReplacing) {
-                warningLines.push(`<p class="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2"><i class="fas fa-triangle-exclamation mr-1.5"></i>${personName(selReplace)} នឹងត្រូវដកចេញពី${tpl.name}</p>`);
+                warningLines.push(`<p class="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2"><i class="fas fa-triangle-exclamation mr-1.5"></i>${personName(selReplace)} នឹងត្រូវដកចេញពី${tpl.name}</p>`);
             }
             const warningLine = warningLines.join('');
 
@@ -1808,16 +1819,16 @@ function showAssignDialog(opts = {}) {
             const takenRegs = rosterTakenRegisters(date, code, selId);
             const pinOwner = r => takenRegs[r] && takenRegs[r] !== selReplace ? takenRegs[r] : '';
             if (selReg && pinOwner(selReg)) selReg = '';
-            const chipCls = on => `h-9 px-3 rounded-xl border text-xs font-semibold transition flex items-center gap-1.5 ${on ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'}`;
+            const chipCls = on => `h-9 px-3 rounded-lg border text-xs font-semibold transition flex items-center gap-1.5 ${on ? 'bg-white text-blue-700 border-blue-600' : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'}`;
 
             host.innerHTML = `
-                <div class="w-full max-w-lg rounded-3xl shadow-2xl bg-white text-slate-800 p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+                <div role="dialog" aria-modal="true" class="w-full max-w-lg rounded-xl shadow-2xl bg-white text-slate-800 p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
                     <div class="flex items-start justify-between border-b border-slate-100 pb-3">
                         <div>
                             <h3 class="sm-card-title text-slate-800 text-base font-semibold">បន្ថែមអ្នកគិតលុយ · ${tpl.name}</h3>
                             <p class="sm-td-sub text-slate-500 mt-0.5">${DOW_KH[dow]} ${fmtDate(date + 'T12:00')} · ${tpl.start}–${tpl.end}</p>
                         </div>
-                        <button type="button" data-act="cancel" class="text-slate-400 hover:text-slate-600 p-1"><i class="fas fa-xmark"></i></button>
+                        <button type="button" data-act="cancel" aria-label="បិទ" class="w-9 h-9 -mr-1.5 -mt-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 inline-flex items-center justify-center"><i class="fas fa-xmark"></i></button>
                     </div>
 
                     <div class="space-y-3">
@@ -1831,8 +1842,10 @@ function showAssignDialog(opts = {}) {
                                 ${others.map(candRow).join('')}
                             ` : ''}
                             ${blockedList.length ? `
-                                <p class="text-[12px] font-semibold text-slate-500 pt-2">មិនអាចចាត់តាំង</p>
-                                ${blockedList.map(candRow).join('')}
+                                <button type="button" data-toggle-blocked class="w-full flex items-center justify-between pt-2 text-[12px] font-semibold text-slate-500 hover:text-slate-700">
+                                    <span>មិនអាចចាត់តាំង · ${blockedList.length} នាក់</span><i class="fas fa-chevron-${showBlocked ? 'up' : 'down'} text-[10px]"></i>
+                                </button>
+                                ${showBlocked ? blockedList.map(candRow).join('') : ''}
                             ` : ''}
                         </div>
 
@@ -1849,6 +1862,7 @@ function showAssignDialog(opts = {}) {
                             </div>
                         </div>` : ''}
 
+                        ${showMore || selReg || selReason ? `<div class="space-y-4">
                         <div>
                             <p class="text-[13px] font-semibold text-slate-600 mb-1.5">បញ្ជរ <span class="font-normal text-slate-400">· អ្នកគិតលុយជ្រើសពេលបើកវេន</span></p>
                             <div class="flex flex-wrap gap-2">
@@ -1856,7 +1870,7 @@ function showAssignDialog(opts = {}) {
                                 ${REGISTERS.map(r => {
                                     const owner = pinOwner(r);
                                     return owner
-                                        ? `<span class="h-9 px-3 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-400 flex items-center gap-1.5 cursor-not-allowed">
+                                        ? `<span class="h-9 px-3 rounded-lg border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-400 flex items-center gap-1.5 cursor-not-allowed">
                                             <i class="fas fa-lock text-[10px]"></i><span>${r}</span><span class="font-medium">· ${personName(owner)}</span></span>`
                                         : `<button type="button" data-reg="${r}" class="${chipCls(r === selReg)}">
                                             ${r === selReg ? '<i class="fas fa-thumbtack text-[10px]"></i>' : ''}<span>${r}</span>
@@ -1869,19 +1883,21 @@ function showAssignDialog(opts = {}) {
                             <p class="text-[13px] font-semibold text-slate-600 mb-1.5">មូលហេតុ <span class="font-normal text-slate-400">· មិនចាំបាច់</span></p>
                             <div class="flex flex-wrap gap-1.5">
                                 ${reasonsList.map(re => `
-                                    <button type="button" data-reason="${re}" class="h-8 px-2.5 rounded-lg border text-xs transition ${selReason === re ? 'bg-blue-100 text-blue-700 border-blue-300 font-semibold' : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border-slate-200'}">
-                                        ${re}
+                                    <button type="button" data-reason="${re}" class="h-8 px-3 rounded-full border text-xs transition ${selReason === re ? 'bg-white text-blue-700 border-blue-600 font-semibold' : 'bg-white hover:bg-slate-50 text-slate-600 border-slate-200'}">
+                                        ${selReason === re ? '<i class="fas fa-check text-[10px] mr-1"></i>' : ''}${re}
                                     </button>
                                 `).join('')}
                             </div>
                         </div>
 
+                        </div>` : `<button type="button" data-more class="sm-td-sub font-semibold text-blue-700 hover:text-blue-900"><i class="fas fa-plus text-[10px] mr-1"></i>ភ្ជាប់បញ្ជរ ឬដាក់មូលហេតុ</button>`}
+
                         ${warningLine}
                     </div>
 
                     <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
-                        <button type="button" data-act="cancel" class="sm-value h-11 px-5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition">បោះបង់</button>
-                        <button type="button" data-act="ok" ${canSubmit ? '' : 'disabled'} class="sm-value h-11 px-6 rounded-2xl font-semibold transition ${canSubmit ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}">
+                        <button type="button" data-act="cancel" class="sm-value h-11 px-5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold transition">បោះបង់</button>
+                        <button type="button" data-act="ok" ${canSubmit ? '' : 'disabled'} class="sm-value h-11 px-6 rounded-lg font-semibold transition ${canSubmit ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}">
                             ${isReplacing ? `ជំនួស ${personName(selReplace)}` : 'ចាត់តាំង'}
                         </button>
                     </div>
@@ -1902,6 +1918,11 @@ function showAssignDialog(opts = {}) {
                     }
                 };
             });
+
+            const more = host.querySelector('[data-more]');
+            if (more) more.onclick = () => { showMore = true; renderDialog(); };
+            const tg = host.querySelector('[data-toggle-blocked]');
+            if (tg) tg.onclick = () => { showBlocked = !showBlocked; renderDialog(); };
 
             host.querySelectorAll('[data-reg]').forEach(el => {
                 el.onclick = () => {
@@ -1925,7 +1946,8 @@ function showAssignDialog(opts = {}) {
             });
 
 
-            host.querySelector('[data-act="cancel"]').onclick = () => finish(null);
+            // ប៊ូតុងបោះបង់មានពីរ (× និង «បោះបង់») — ភ្ជាប់ទាំងពីរ
+            host.querySelectorAll('[data-act="cancel"]').forEach(b => { b.onclick = () => finish(null); });
             const okBtn = host.querySelector('[data-act="ok"]');
             if (okBtn) {
                 okBtn.onclick = () => {
@@ -2004,8 +2026,15 @@ function pagerSave(st) {
     try { sessionStorage.setItem('pos_pager', JSON.stringify(st)); } catch (e) { /* មិនអាចរក្សាទុក */ }
 }
 
+/* ចំនួនជួរក្នុងមួយទំព័រដែលអ្នកប្រើជ្រើស — ចងចាំតាមបញ្ជីនីមួយៗ (localStorage ព្រោះជាចំណូលចិត្ត) */
+const PAGER_SIZES = [10, 25, 50, 100];
+function pagerSizes() {
+    try { return JSON.parse(localStorage.getItem('pos_pager_size')) || {}; } catch (e) { return {}; }
+}
+
 function pagerSlice(key, list, opts = {}) {
-    const size = opts.size || 25;
+    const defSize = opts.size || 25;
+    const size = +pagerSizes()[key] || defSize;
     const total = list.length;
     const pages = Math.max(1, Math.ceil(total / size));
     const st = pagerState();
@@ -2016,43 +2045,244 @@ function pagerSlice(key, list, opts = {}) {
     const saved = st[key] || {};
     let cur = saved.sig === sig ? saved.page : 1;
     cur = Math.min(Math.max(cur || 1, 1), pages);
-    st[key] = Object.assign({}, saved, { render: opts.render || '', curSig: sig });
+    st[key] = Object.assign({}, saved, { render: opts.render || '', curSig: sig, pages, cur });
     pagerSave(st);
     const from = (cur - 1) * size;
     const rows = list.slice(from, from + size);
-    if (total <= size) return { rows, html: '', page: cur, pages };
+    const sizes = [...new Set([...PAGER_SIZES, defSize])].sort((x, y) => x - y);
+    // បាតតារាងបង្ហាញតែពេលមានជួរលើសជម្រើសតូចបំផុត (ដូច្នេះអ្នកប្រើអាចប្តូរចំនួនជួរត្រឡប់វិញបានជានិច្ច)
+    if (total <= Math.min(size, sizes[0])) return { rows, html: '', page: cur, pages };
 
-    // ប៊ូតុងលេខទំព័រ៖ ទី 1 · ជុំវិញទំព័របច្ចុប្បន្ន · ចុងក្រោយ (ចន្លោះជា «…»)
+    const fmt = n => n.toLocaleString('en-US');
+    // ប៊ូតុងលេខទំព័រ៖ ទី 1 · ±2 ជុំវិញទំព័របច្ចុប្បន្ន · ចុងក្រោយ (ចន្លោះជា «…»; ចន្លោះតែមួយលេខ បង្ហាញលេខនោះតែម្តង)
     const nums = [];
     for (let n = 1; n <= pages; n++) {
-        if (n === 1 || n === pages || Math.abs(n - cur) <= 1) nums.push(n);
+        const near = n === 1 || n === pages || Math.abs(n - cur) <= 2
+            || (n === 2 && cur <= 5) || (n === pages - 1 && cur >= pages - 4);
+        if (near) nums.push(n);
         else if (nums[nums.length - 1] !== '…') nums.push('…');
     }
-    const btn = (label, n, on, disabled) => `<button type="button" ${disabled ? 'disabled' : `onclick="pagerGo('${key}', ${n})"`}
-        class="sm-badge min-w-[36px] h-9 px-2.5 rounded-lg inline-flex items-center justify-center transition ${on
-            ? 'bg-blue-600 text-white font-semibold'
-            : disabled ? 'text-slate-300 cursor-not-allowed' : 'text-slate-600 hover:bg-slate-100 font-medium'}" ${on ? 'aria-current="page"' : ''}>${label}</button>`;
-    const html = `<div class="pager flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-slate-100">
-        <p class="sm-td-sub text-slate-500 sm-figure">បង្ហាញ ${from + 1}–${Math.min(from + size, total)} នៃ ${total}</p>
-        <nav class="flex items-center gap-1" aria-label="ទំព័រ">
-            ${btn('<i class="fas fa-chevron-left text-[11px]"></i>', cur - 1, false, cur === 1)}
-            ${nums.map(n => n === '…' ? '<span class="sm-badge px-1 text-slate-400">…</span>' : btn(n, n, n === cur, false)).join('')}
-            ${btn('<i class="fas fa-chevron-right text-[11px]"></i>', cur + 1, false, cur === pages)}
-        </nav>
+    const base = 'sm-badge h-9 rounded-lg inline-flex items-center justify-center gap-1.5 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500';
+    const num = n => `<button type="button" onclick="pagerGo('${key}', ${n})" ${n === cur ? 'aria-current="page"' : ''} aria-label="ទំព័រ ${n}"
+        class="${base} min-w-[36px] px-2.5 sm-figure ${n === cur ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100 font-medium'}">${n}</button>`;
+    const step = (dir, label) => {
+        const n = cur + dir;
+        const off = n < 1 || n > pages;
+        const icon = `<i class="fas fa-chevron-${dir < 0 ? 'left' : 'right'} text-[11px]"></i>`;
+        return `<button type="button" data-pg="${dir < 0 ? 'prev' : 'next'}" ${off ? 'disabled' : `onclick="pagerGo('${key}', ${n}, '${dir < 0 ? 'prev' : 'next'}')"`} aria-label="${label}"
+            class="${base} px-2.5 ${off ? 'text-slate-300 cursor-not-allowed' : 'text-slate-600 hover:bg-slate-100 font-medium'}">${dir < 0 ? icon : ''}<span class="max-md:hidden">${label}</span>${dir > 0 ? icon : ''}</button>`;
+    };
+    const menuId = `pagerSize-${key}`;
+    const sizeMenu = `<div class="relative inline-flex items-center gap-2">
+        <span class="sm-td-sub text-slate-500 max-md:hidden">ជួរក្នុងមួយទំព័រ</span>
+        <button type="button" onclick="pagerToggleSize(this, '${menuId}')" aria-label="ជួរក្នុងមួយទំព័រ"
+            class="${base} px-2.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium sm-figure">${size}<i class="fas fa-chevron-down text-[10px] text-slate-400"></i></button>
+        <div id="${menuId}" class="hidden bg-white rounded-xl shadow-2xl border border-slate-200 p-1.5 min-w-[96px]">
+            ${sizes.map(n => `<button type="button" onclick="pagerSetSize('${key}', ${n})" class="sm-row-menu-item w-full flex items-center justify-between gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 text-left sm-figure ${n === size ? 'text-blue-700 font-semibold' : 'text-slate-700'}">${n}${n === size ? '<i class="fas fa-check text-[11px]"></i>' : ''}</button>`).join('')}
+        </div>
+    </div>`;
+    // លោតទៅទំព័រ — តែបញ្ជីវែង (លើស 7 ទំព័រ) ប៉ុណ្ណោះ
+    const jump = pages > 7 ? `<label class="inline-flex items-center gap-2 max-md:hidden">
+        <span class="sm-td-sub text-slate-500">ទៅទំព័រ</span>
+        <input type="text" inputmode="numeric" autocomplete="off" aria-label="ទៅទំព័រ" placeholder="${cur}"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();pagerJump('${key}', this.value)}" onblur="if(this.value)pagerJump('${key}', this.value)"
+            class="sm-badge sm-figure w-14 h-9 px-2 rounded-lg border border-slate-200 bg-white text-slate-700 text-center focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500">
+    </label>` : '';
+    const html = `<div class="pager flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 border-t border-slate-100">
+        <div class="flex items-center gap-4 min-w-0">
+            <p class="sm-td-sub text-slate-500 sm-figure whitespace-nowrap">${total > size ? `${fmt(from + 1)}–${fmt(Math.min(from + size, total))} នៃ ` : 'សរុប '}${fmt(total)}</p>
+            ${sizeMenu}
+        </div>
+        ${pages > 1 ? `<div class="flex items-center gap-3">
+            ${jump}
+            <nav class="flex items-center gap-1" aria-label="ទំព័រ">
+                ${step(-1, 'មុន')}
+                <span class="max-md:hidden flex items-center gap-1">${nums.map(n => n === '…' ? '<span class="sm-badge px-1 text-slate-400">…</span>' : num(n)).join('')}</span>
+                <span class="md:hidden sm-td-sub text-slate-600 sm-figure px-2 whitespace-nowrap">${cur} / ${pages}</span>
+                ${step(1, 'បន្ទាប់')}
+            </nav>
+        </div>` : ''}
     </div>`;
     return { rows, html, page: cur, pages };
 }
 
-function pagerGo(key, page) {
+function pagerGo(key, page, focus) {
     const st = pagerState();
     if (!st[key]) return;
+    const pages = st[key].pages || 1;
+    page = Math.min(Math.max(Math.round(page) || 1, 1), pages);
     st[key].page = page;
     st[key].sig = st[key].curSig;
     pagerSave(st);
     const fn = window[st[key].render];
     if (typeof fn === 'function') fn();
-    // ត្រឡប់ទៅក្បាលតារាងវិញ ដើម្បីអានទំព័រថ្មីពីដើម
+    // ត្រឡប់ទៅក្បាលតារាងវិញ ដើម្បីអានទំព័រថ្មីពីដើម · រក្សាការផ្តោតលើប៊ូតុងដដែល (សម្រាប់ក្តារចុច)
     const pager = document.querySelector(`[data-pager="${key}"]`);
     const box = pager && (pager.closest('section, .bg-white') || pager);
     if (box) box.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    const target = pager && (pager.querySelector(`[data-pg="${focus}"]:not([disabled])`) || pager.querySelector('[aria-current="page"]'));
+    if (target) target.focus({ preventScroll: true });
 }
+
+function pagerJump(key, value) {
+    const n = parseInt(String(value).replace(/[^\d]/g, ''), 10);
+    if (!n) return;
+    const st = pagerState();
+    if (st[key] && n === st[key].cur) return;
+    pagerGo(key, n);
+}
+
+function pagerToggleSize(btn, menuId) {
+    const menu = document.getElementById(menuId);
+    if (!menu) return;
+    if (menu.dataset.floatingActive === 'true' && !menu.classList.contains('hidden')) closeFloatingDropdown(menu);
+    else openFloatingDropdown(btn, menu);
+}
+
+function pagerSetSize(key, n) {
+    closeAllFloatingDropdowns();
+    const sizes = pagerSizes();
+    sizes[key] = n;
+    try { localStorage.setItem('pos_pager_size', JSON.stringify(sizes)); } catch (e) { /* មិនអាចរក្សាទុក */ }
+    // ចំនួនជួរថ្មី → ត្រឡប់ទៅទំព័រទី 1 (ទំព័រចាស់គ្មានន័យទៀតទេ)
+    pagerGo(key, 1);
+}
+
+
+/* ===== រាប់ក្រដាសប្រាក់ (cashCounter) — ប្រើរួមគ្នាលើទំព័របើកវេន និងបិទវេន =====
+   cashCounter('hostId', { usd: countUSD, khr: countKHR, onChange, onDone, title, sub, action })
+   • usd / khr៖ វត្ថុ { ក្រដាស: ចំនួនសន្លឹក } — កែតម្លៃផ្ទាល់ក្នុងវត្ថុនោះ ដូច្នេះទំព័រអានសរុបពីវត្ថុដដែល
+   • កាតតែមួយ៖ ក្បាល (ចំណងជើង · ព័ត៌មាន · ប៊ូតុង) → តារាងពីរ ដុល្លារ | រៀល (ក្រដាស · ចំនួនសន្លឹក · ទឹកប្រាក់)
+     កម្ពស់ស្មើគ្នា សរុបតម្រឹមគ្នានៅខាងក្រោម → បន្ទាត់ជំនួយក្តារចុច
+   • ក្តារចុច៖ Enter / ↓ = ក្រដាសបន្ទាប់ · ↑ = មុន · + / − = បន្ថែម / បន្ថយ · Enter លើក្រដាសចុងក្រោយ = onDone
+   • ប៊ូតុង 44px សម្រាប់អេក្រង់ប៉ះ · ពណ៌ស្របទម្រង់ភ្លឺ/ងងឹតតាម portal.css (.cc-*) */
+function cashCounter(hostId, opts = {}) {
+    const host = document.getElementById(hostId);
+    if (!host) return;
+    const maps = { usd: opts.usd || {}, khr: opts.khr || {} };
+    const notes = c => c === 'usd' ? USD_NOTES : KHR_NOTES;
+    const label = (c, n) => c === 'usd' ? '$' + n : n.toLocaleString('en-US') + ' ៛';
+    const money = (c, v) => c === 'usd' ? fmtUSD(v) : fmtKHR(v);
+    const total = c => notes(c).reduce((s, n) => s + n * (maps[c][n] || 0), 0);
+    const sheets = c => notes(c).reduce((s, n) => s + (maps[c][n] || 0), 0);
+    const cols = 'grid grid-cols-[minmax(84px,1fr)_auto_minmax(96px,1fr)] items-center gap-3';
+    const stepBtn = (c, n, d) => `<button type="button" tabindex="-1" data-cc-bump="${c}:${n}:${d}" aria-label="${d > 0 ? 'បន្ថែម' : 'បន្ថយ'} ${label(c, n)}"
+        class="cc-btn w-11 h-11 rounded-lg inline-flex items-center justify-center flex-shrink-0 transition"><i class="fas fa-${d > 0 ? 'plus' : 'minus'} text-[12px]"></i></button>`;
+    const row = (c, n) => `<div data-cc-row="${c}:${n}" class="cc-row ${cols} px-5 h-[60px]">
+        <span class="cc-note sm-value sm-figure">${label(c, n)}</span>
+        <div class="flex items-center gap-1">
+            ${stepBtn(c, n, -1)}
+            <input data-cc-in="${c}:${n}" type="text" inputmode="numeric" autocomplete="off" placeholder="0" value="${maps[c][n] || ''}" aria-label="ចំនួនសន្លឹក ${label(c, n)}"
+                class="cc-in sm-value sm-figure w-16 h-11 rounded-lg text-center font-semibold focus:outline-none">
+            ${stepBtn(c, n, 1)}
+        </div>
+        <span data-cc-line="${c}:${n}" class="cc-line sm-td sm-figure text-right truncate"></span>
+    </div>`;
+    const panel = (c, title) => `<section class="flex flex-col min-w-0">
+        <div class="px-5 pt-4 pb-2 flex items-center justify-between gap-3">
+            <h3 class="cc-title sm-card-title">${title}</h3>
+            <button type="button" data-cc-clear="${c}" class="hidden cc-clear sm-td-sub font-medium"><i class="fas fa-rotate-left text-[11px] mr-1"></i>សម្អាត</button>
+        </div>
+        <div class="cc-head ${cols} px-5 pb-2 sm-td-sub">
+            <span>ក្រដាសប្រាក់</span><span class="text-center">ចំនួនសន្លឹក</span><span class="text-right">ទឹកប្រាក់</span>
+        </div>
+        <div class="cc-rows">${notes(c).map(n => row(c, n)).join('')}</div>
+        <div class="cc-foot mt-auto px-5 py-3.5 flex items-baseline justify-between gap-3">
+            <span class="sm-td-sub" data-cc-sheets="${c}"></span>
+            <span class="cc-total sm-kpi-value sm-figure" data-cc-total="${c}"></span>
+        </div>
+    </section>`;
+
+    host.innerHTML = `<div class="cash-counter cc-card rounded-xl overflow-hidden">
+        ${opts.title ? `<div class="cc-header px-5 py-3.5 flex flex-wrap items-center justify-between gap-3">
+            <div class="min-w-0">
+                <p class="cc-title sm-card-title">${opts.title}</p>
+                ${opts.sub ? `<p class="cc-sub sm-td-sub">${opts.sub}</p>` : ''}
+            </div>
+            ${opts.action || ''}
+        </div>` : ''}
+        <div class="cc-split grid grid-cols-1 lg:grid-cols-2">${panel('usd', 'ដុល្លារ')}${panel('khr', 'រៀល')}</div>
+        <p class="cc-hint px-5 py-2.5 sm-td-sub max-md:hidden"><span class="kbd">Enter</span> ក្រដាសបន្ទាប់ · <span class="kbd">+</span> <span class="kbd">−</span> បន្ថែម ឬបន្ថយ</p>
+    </div>`;
+
+    const paint = () => {
+        ['usd', 'khr'].forEach(c => {
+            notes(c).forEach(n => {
+                const q = maps[c][n] || 0;
+                host.querySelector(`[data-cc-line="${c}:${n}"]`).textContent = q ? money(c, n * q) : '';
+                host.querySelector(`[data-cc-row="${c}:${n}"]`).classList.toggle('cc-on', !!q);
+            });
+            host.querySelector(`[data-cc-total="${c}"]`).textContent = money(c, total(c));
+            const sh = sheets(c);
+            host.querySelector(`[data-cc-sheets="${c}"]`).textContent = sh ? `សរុប ${sh} សន្លឹក` : 'មិនទាន់រាប់';
+            host.querySelector(`[data-cc-clear="${c}"]`).classList.toggle('hidden', !sh);
+        });
+        if (typeof opts.onChange === 'function') opts.onChange();
+    };
+    const set = (c, n, q) => {
+        maps[c][n] = Math.max(0, Math.min(9999, q | 0));
+        const input = host.querySelector(`[data-cc-in="${c}:${n}"]`);
+        if (input && document.activeElement !== input) input.value = maps[c][n] || '';
+        paint();
+    };
+    const inputs = () => [...host.querySelectorAll('[data-cc-in]')];
+
+    host.onclick = e => {
+        const b = e.target.closest('[data-cc-bump]');
+        if (b) {
+            const [c, n, d] = b.dataset.ccBump.split(':');
+            set(c, +n, (maps[c][n] || 0) + (+d));
+            host.querySelector(`[data-cc-in="${c}:${n}"]`).value = maps[c][n] || '';
+            return;
+        }
+        const clr = e.target.closest('[data-cc-clear]');
+        if (clr) {
+            const c = clr.dataset.ccClear;
+            notes(c).forEach(n => { maps[c][n] = 0; host.querySelector(`[data-cc-in="${c}:${n}"]`).value = ''; });
+            paint();
+        }
+    };
+    host.oninput = e => {
+        const el = e.target.closest('[data-cc-in]');
+        if (!el) return;
+        el.value = el.value.replace(/[^\d]/g, '').slice(0, 4);
+        const [c, n] = el.dataset.ccIn.split(':');
+        set(c, +n, parseInt(el.value, 10) || 0);
+    };
+    host.onfocusin = e => { if (e.target.matches('[data-cc-in]')) e.target.select(); };
+    host.onkeydown = e => {
+        const el = e.target.closest('[data-cc-in]');
+        if (!el) return;
+        const all = inputs();
+        const i = all.indexOf(el);
+        const [c, n] = el.dataset.ccIn.split(':');
+        if (e.key === 'Enter' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (all[i + 1]) all[i + 1].focus();
+            else if (e.key === 'Enter' && typeof opts.onDone === 'function') opts.onDone();
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (all[i - 1]) all[i - 1].focus();
+        } else if (e.key === '+' || e.key === '-') {
+            e.preventDefault();
+            set(c, +n, (maps[c][n] || 0) + (e.key === '+' ? 1 : -1));
+            el.value = maps[c][n] || '';
+        }
+    };
+    paint();
+}
+
+
+/* ===== ផ្ទាំងលោតក្នុងទំព័រ៖ Esc បិទផ្ទាំងខាងលើបំផុត =====
+   ផ្ទាំងដាក់ data-modal="ឈ្មោះអនុគមន៍បិទ" (ឧ. data-modal="closeReceive") និង onclick នៅផ្ទៃខាងក្រោយ
+   ប្រអប់រួម (posDialogHost / bmsDialogOpen) មានការគ្រប់គ្រង Esc ផ្ទាល់ខ្លួនរួចហើយ */
+document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    const open = [...document.querySelectorAll('[data-modal]')].filter(m => getComputedStyle(m).display !== 'none');
+    const top = open[open.length - 1];
+    if (top && typeof window[top.dataset.modal] === 'function') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        window[top.dataset.modal]();
+    }
+});

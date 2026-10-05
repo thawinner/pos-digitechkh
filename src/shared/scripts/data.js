@@ -986,7 +986,7 @@ function applyApprovalToSale(req, approverId, updateFn) {
 const MOVEMENT_TYPE = {
     float: { label: 'ចេញប្រាក់បាតថត', icon: 'fa-hand-holding-dollar', tone: 'slate' },
     drop: { label: 'ផ្ទេរចូលទូដែក', icon: 'fa-vault', tone: 'slate' },
-    payout: { label: 'ដកប្រាក់ចំណាយ', icon: 'fa-money-bill-transfer', tone: 'rose' },
+    payout: { label: 'ដកប្រាក់ចំណាយ', icon: 'fa-money-bill-transfer', tone: 'slate' },
     payin: { label: 'បញ្ចូលប្រាក់បន្ថែម', icon: 'fa-circle-plus', tone: 'slate' },
     bank: { label: 'ដាក់ប្រាក់ចូលធនាគារ', icon: 'fa-building-columns', tone: 'slate' }
 };
@@ -1807,29 +1807,28 @@ function portalNotifications() {
             note: 'សូមផ្ទេរប្រាក់ខ្លះចូលទូដែក ហើយឱ្យអ្នកគ្រប់គ្រងទទួល' });
     }
 
-    // អ្នកគិតលុយឃើញតែស្ថានភាព (អស់ · ជិតអស់) មិនឃើញចំនួនស្តុកឡើយ
+    // អ្នកគិតលុយឃើញតែស្ថានភាព (អស់ · ជិតអស់) មិនឃើញចំនួនស្តុកឡើយ · រួមជាដំណឹងមួយក្នុងមួយស្ថានភាព
     const levels = onHandLevels();
-    const rank = { out: 0, low: 1 };
-    sellableProducts()
-        .map(p => ({ p, status: stockStatus(p.sku, levels) }))
-        .filter(x => x.status !== 'ok')
-        .sort((a, b) => rank[a.status] - rank[b.status])
-        .slice(0, 3)
-        .forEach(x => list.push({
-            icon: x.status === 'out' ? 'mdi:package-variant-remove' : 'mdi:alert-outline',
-            tone: x.status === 'out' ? 'danger' : 'warning',
-            title: x.status === 'out' ? `${x.p.name} អស់ស្តុក` : `${x.p.name} ជិតអស់ស្តុក`,
-            note: x.status === 'out'
-                ? (allowNegativeStock() ? 'នៅតែលក់បាន ប៉ុន្តែប្រព័ន្ធនឹងជូនដំណឹងអ្នកគ្រប់គ្រង' : 'មិនអាចលក់បានទេ')
-                : 'សូមជូនដំណឹងដល់អ្នកគ្រប់គ្រង'
-        }));
+    const byStatus = { out: [], low: [] };
+    sellableProducts().forEach(p => { const st = stockStatus(p.sku, levels); if (byStatus[st]) byStatus[st].push(p.name); });
+    const names = arr => arr.slice(0, 3).join(' · ') + (arr.length > 3 ? ` និង ${arr.length - 3} ទៀត` : '');
+    if (byStatus.out.length) list.push({
+        icon: 'mdi:package-variant-remove', tone: allowNegativeStock() ? 'warning' : 'danger',
+        title: `ទំនិញ ${byStatus.out.length} មុខអស់ស្តុក`,
+        note: `${names(byStatus.out)} · ${allowNegativeStock() ? 'នៅតែលក់បាន ប្រព័ន្ធជូនដំណឹងអ្នកគ្រប់គ្រងរួចហើយ' : 'មិនអាចលក់បានទេ'}`
+    });
+    if (byStatus.low.length) list.push({
+        icon: 'mdi:package-variant', tone: 'warning',
+        title: `ទំនិញ ${byStatus.low.length} មុខជិតអស់ស្តុក`,
+        note: `${names(byStatus.low)} · សូមប្រាប់អ្នកគ្រប់គ្រង`
+    });
 
+    // ស្ថានភាពវេន — មិនមែនជាដំណឹងទេ បង្ហាញជាបន្ទាត់ខាងក្រោមផ្ទាំង
     list.push({
+        kind: 'status',
         icon: 'mdi:clock-outline',
-        tone: 'info',
         title: `${sh.templateName} · ${sh.register} បើកបាន ${fmtDuration(opened)}`,
-        note: `បើកម៉ោង ${fmtTime(sh.openedAt)} · លក់បាន ${s.count} វិក្កយបត្រ`,
-        time: fmtKhDate(sh.openedAt)
+        note: `${s.count} វិក្កយបត្រ`
     });
 
     return list;

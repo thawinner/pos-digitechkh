@@ -952,9 +952,9 @@ function portalNotifications() {
     const list = [];
     pendingApprovals().slice(0, 4).forEach(a => list.push({
         icon: 'mdi:shield-alert-outline', tone: 'warning',
-        title: `${APPROVAL_TYPE[a.type].label} ${a.saleId} · ${fmtUSD(a.amount)}`,
+        title: `${APPROVAL_TYPE[a.type].label} · ${fmtUSD(a.amount)}`,
         note: `${personName(a.cashierId)} · ${a.register} · ${escapeText(a.reason)}`,
-        time: `${fmtDate(a.raisedAt)} ${fmtTime(a.raisedAt)}`,
+        time: `${fmtDuration(new Date() - new Date(a.raisedAt))}មុន`,
         href: `${root}/manager/approvals/view-request.html?id=${a.id}`
     }));
     mgrAllMovements().filter(m => m.type === 'drop' && m.status === 'pending').slice(0, 2).forEach(m => list.push({
@@ -985,7 +985,6 @@ function portalNotifications() {
             tone: 'warning',
             title: `ទំនិញ ${lowCount} មុខជិតអស់ ឬអស់ស្តុក`,
             note: 'ពិនិត្យបញ្ជីត្រូវបញ្ជាទិញឡើងវិញ',
-            time: 'ពេលនេះ',
             href: `${root}/manager/stock/stock.html`
         });
     }

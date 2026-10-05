@@ -30,7 +30,7 @@ src/
 ├── cashier/receipts/receipts       shift receipts, void / return requests (manager PIN on the spot or queued)
 ├── cashier/shift/{open,close}-shift  float count + manager PIN · blind close with one recount + Z-report
 ├── manager/{dashboard,approvals,shifts,roster,cash,stock,stock-count,stock-history,exceptions,reports,settings}/…  (view-request, view-shift, create-movement, create-stock-in, create-adjustment, create-count)
-├── admin/{dashboard,reports,staff,products,settings,audit,stock}/…   owner: profit, stock value, shrinkage, stock-in cost, staff, prices, rules, audit log (view-stock-in)
+├── admin/{dashboard,reports,staff,products,settings,audit,stock}/…   owner: profit, stock value, shrinkage, stock-in cost, staff, prices, rules, audit log (view-stock-in, view-staff)
 └── shared/{scripts,styles,assets}  assets/avatars/<personId>.svg = profile images
 ```
 
@@ -44,21 +44,29 @@ src/
 ## How a page is assembled
 
 - Cashier: `<body id="posPortal" …>`; manager: `<body id="managerPortal" …>` (`badgeFn` nav badges); owner:
-  `<body id="adminPortal" …>`. All three share one neutral dark sidebar (`portal.css`); the role shows in the label
-  under the logo, not in colour. The sidebar brand block switches views
+  `<body id="adminPortal" …>`. Each view has its own muted dark sidebar (`portal.css`
+  `--sb-*` per body id): cashier graphite, manager navy, owner deep brand green (owner accent emerald); a matching dot
+  sits next to the view name under the logo and in the view switcher. Page content keeps the single blue accent; nav
+  badges stay neutral (red when urgent). No `title=` tooltips in the sidebar. The sidebar brand block switches views
   (`ROLE_VIEW`): owner ⇄ manager, manager ⇄ cashier. The sidebar is never collapsible.
   `data-active` picks the highlighted nav item. Change nav in `PORTAL_CONFIGS`, never in pages.
 - Script order: `ui-components.js` → `data.js` → (`manager-data.js`, manager + owner pages) → (`admin-data.js`, owner
   pages only) → `portal.js` → (`echarts.min.js` from cdnjs + `charts.js`, chart pages) → (`settings-page.js`, both
-  settings pages) → inline script.
+  settings pages) → (`staff-actions.js`, staff list + view-staff) → inline script.
 - Charts: always ECharts through `posChart(el, option)` in `charts.js` (owner override of the eBMS «no ECharts on
   dashboards» rule). Steppers: always `bmsStepper()` with `variant: 'icon'`, `tone: 'accent'`, `doneTone: 'accent'` (round icons;
   `dark: true` on dark pages) so login, open-shift and close-shift look the same.
 - Manager pages are generated from a shared shell (head, sidebar host, header host, script tags); keep that shell
-  identical when adding one. View/create pages are full pages with `data-back`, never modals.
+  identical when adding one. View/create pages are full pages with `data-back`, never modals. A
+  `?back=<relative path>` parameter overrides `data-back` (e.g. a shift opened from a staff profile returns to it).
 - Shared dialogs in `ui-components.js`: `showManagerOverride` (manager PIN on the cashier's screen), `showPinConfirm`,
   `showReasonPicker`, `showOptionDialog`, `showFormDialog` (short inputs with validate + live preview), plus the inherited
-  `showToast` / `showCustomConfirm` (`hideCancel` for one button) / `showReasonPrompt`.
+  `showToast` / `showCustomConfirm` (`hideCancel` for one button) / `showReasonPrompt`. Toasts sit bottom-right (bottom-left
+  on the terminal, clear of the cart and pay button; full width on phones), max 3, and stay while hovered.
+- Cash counting: open-shift and close-shift both use `cashCounter(hostId, { usd, khr, onChange, onDone })`
+  (`ui-components.js`); never build a separate note counter.
+- Notifications: `portalNotifications()` items `{ icon, tone, title, note, time, href }` are grouped by tone (danger →
+  warning → info) in `refreshPortalNotifications()`; `kind: 'status'` items show as a footer line, not a notification.
 - List memory (`ui-components.js`): a list page saves its tab / filters / search with `saveListState(key, …)` (only
   after it restored them; guard with a `listReady` flag, because custom selects fire `onchange` at init) and restores
   them with `loadListState(key)`; a URL parameter from a dashboard link wins. View pages call `markRecordViewed(id)`;
@@ -68,7 +76,9 @@ src/
 - Pagination (`ui-components.js`): any list that grows over time uses `pagerSlice(key, rows, { size, render, sig })`
   and puts `pg.html` in a `data-pager="key"` box under the table (25 rows; receipts 20, audit 50, detail lists 15).
   `sig` is the filter string (use `dateRangeKey()` for date ranges); the page is remembered per tab only after the
-  user changes page, and resets when the filters change. Small fixed lists (staff, payroll, dashboards) are not paged.
+  user changes page, and resets when the filters change. The footer offers rows per page (10/25/50/100, remembered per
+  list in `pos_pager_size`), «go to page» above 7 pages, and a compact `‹ 3 / 55 ›` on phones. Small fixed lists (staff,
+  payroll, dashboards) are not paged.
 
 ## Data
 
@@ -83,7 +93,9 @@ src/
   live data (`mgrAllShifts/Sales/Movements/Approvals/Events`), stores manager decisions on generated records as
   overlays (`pos_overlay`), and computes exceptions, sales aggregates and the safe balance.
 - **`admin-data.js` (owner pages only)** holds unit costs (`COST_SEED`, `pos_costs`), profit maths (`saleProfit`,
-  `profitOf`, `adminDays`), staff / catalogue / cost edits that write `pos_admin_log`, and `auditTrail()`.
+  `profitOf`, `adminDays`), staff / catalogue / cost edits that write `pos_admin_log`, and `auditTrail()`. Pay data
+  (`getStaffCompensation`, `calculateStaffPayroll`) covers cashiers and managers only: the owner has no salary, no bank
+  details and no payroll record (`staffOnPayroll()` in `staff-actions.js`).
 - Staff: `STAFF_SEED` + `pos_staff` `{ added, changes }` → `ALL_STAFF` (includes deactivated); `CASHIERS` / `MANAGERS` /
   `ADMINS` are active only. Use `loadStaff()` for a fresh list after an edit on the same page. Catalogue edits
   (`pos_catalog`: price, active) apply at load; `sellableProducts()` hides paused products.

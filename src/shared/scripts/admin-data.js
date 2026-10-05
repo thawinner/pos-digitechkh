@@ -543,10 +543,11 @@ const DEFAULT_STAFF_COMPENSATION = {
         payType: 'monthly', baseSalaryUSD: 450, foodAllowanceUSD: 30, attendanceBonusUSD: 15,
         bankName: 'ABA Bank', accountName: 'MAO SREYNANG', accountNumber: '000 567 890'
     },
+    // ម្ចាស់ហាង៖ មិនស្ថិតក្នុងតារាងបៀវត្សរ៍ · គ្មានប្រាក់ខែ ឬគណនីធនាគារ
     'ADM-01': {
         employeeCode: 'EMP-006', phone: '012 999 000', joinedDate: '2025-08-01',
-        payType: 'monthly', baseSalaryUSD: 800, foodAllowanceUSD: 30, attendanceBonusUSD: 0,
-        bankName: 'ABA Bank', accountName: 'HENG CHANTHA', accountNumber: '000 678 901'
+        payType: 'none', baseSalaryUSD: 0, foodAllowanceUSD: 0, attendanceBonusUSD: 0,
+        bankName: '', accountName: '', accountNumber: ''
     }
 };
 
@@ -583,24 +584,12 @@ const SEED_PAYROLL_DISBURSEMENTS = [
         baseSalaryUSD: 450, grossUSD: 520.92, deductionsUSD: 0, netUSD: 520.92,
         method: 'ABA Bank (ផ្ទេរ)', at: '2026-09-30T17:25:00', by: 'ADM-01'
     },
-    {
-        id: 'PAY-ADM-01-202609', staffId: 'ADM-01', staffName: 'ហេង ចាន់ថា', role: 'admin',
-        periodKey: '2026-09-01_2026-09-30', periodLabel: '01/09/2026 ដល់ 30/09/2026',
-        baseSalaryUSD: 800, grossUSD: 830.00, deductionsUSD: 0, netUSD: 830.00,
-        method: 'ABA Bank (ផ្ទេរ)', at: '2026-09-30T17:30:00', by: 'ADM-01'
-    },
-    // ខែតុលា 2026 (ខែបច្ចុប្បន្ន)៖ បានបើកជូនអ្នកគ្រប់គ្រង និងម្ចាស់ហាងរួចរាល់
+    // ខែតុលា 2026 (ខែបច្ចុប្បន្ន)៖ បានបើកជូនអ្នកគ្រប់គ្រងម្នាក់រួចរាល់
     {
         id: 'PAY-MGR-01-202610', staffId: 'MGR-01', staffName: 'សុខ វណ្ណា', role: 'manager',
         periodKey: '2026-10-01_2026-10-31', periodLabel: '01/10/2026 ដល់ 31/10/2026',
         baseSalaryUSD: 450, grossUSD: 495.00, deductionsUSD: 0, netUSD: 495.00,
         method: 'ABA Bank (ផ្ទេរ)', at: '2026-10-01T09:30:00', by: 'ADM-01'
-    },
-    {
-        id: 'PAY-ADM-01-202610', staffId: 'ADM-01', staffName: 'ហេង ចាន់ថា', role: 'admin',
-        periodKey: '2026-10-01_2026-10-31', periodLabel: '01/10/2026 ដល់ 31/10/2026',
-        baseSalaryUSD: 800, grossUSD: 830.00, deductionsUSD: 0, netUSD: 830.00,
-        method: 'ABA Bank (ផ្ទេរ)', at: '2026-10-01T09:35:00', by: 'ADM-01'
     }
 ];
 
@@ -615,9 +604,9 @@ function getStaffCompensation(id) {
         phone: '012 345 678',
         joinedDate: '2026-01-01',
         payType: 'monthly',
-        baseSalaryUSD: id.startsWith('CAS') ? 250 : id.startsWith('MGR') ? 450 : 800,
-        foodAllowanceUSD: 30,
-        attendanceBonusUSD: 15,
+        baseSalaryUSD: id.startsWith('CAS') ? 250 : id.startsWith('MGR') ? 450 : 0,
+        foodAllowanceUSD: id.startsWith('ADM') ? 0 : 30,
+        attendanceBonusUSD: id.startsWith('ADM') ? 0 : 15,
         bankName: 'ABA Bank',
         accountName: '',
         accountNumber: ''
@@ -641,8 +630,8 @@ function saveStaffCompensation(id, patch, note) {
 }
 
 function getPayrollDisbursements() {
-    const stored = posRead(PAYROLL_DISBURSEMENTS_KEY, null);
-    if (!Array.isArray(stored) || stored.length === 0) {
+    const stored = (posRead(PAYROLL_DISBURSEMENTS_KEY, null) || []).filter(d => d.role !== 'admin'); // ម្ចាស់ហាងមិនបើកប្រាក់ខែ
+    if (!stored.length) {
         return SEED_PAYROLL_DISBURSEMENTS.slice();
     }
     const map = {};

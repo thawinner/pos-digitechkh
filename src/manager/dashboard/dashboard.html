@@ -41,10 +41,10 @@
                     <section id="todo" class="xl:col-span-2"></section>
                     <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
                         <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between gap-3">
-                            <h3 class="sm-card-title text-slate-800">សំណើរង់ចាំអនុម័ត</h3>
-                            <a href="../approvals/approvals.html" class="sm-badge text-blue-700 hover:text-blue-900 font-semibold whitespace-nowrap">ទាំងអស់ <i class="fas fa-arrow-right text-[10px]"></i></a>
+                            <h3 class="sm-card-title text-slate-800">ករណីមិនប្រក្រតីថ្ងៃនេះ</h3>
+                            <a href="../exceptions/exceptions.html" class="sm-badge text-blue-700 hover:text-blue-900 font-semibold whitespace-nowrap">មើលលម្អិត <i class="fas fa-arrow-right text-[10px]"></i></a>
                         </div>
-                        <div id="approvalList" class="divide-y divide-slate-100"></div>
+                        <div id="exceptionList" class="divide-y divide-slate-100"></div>
                     </section>
                 </div>
 
@@ -72,13 +72,6 @@
                     </section>
                 </div>
 
-                <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-                    <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between gap-3">
-                        <h3 class="sm-card-title text-slate-800">ករណីមិនប្រក្រតីថ្ងៃនេះ</h3>
-                        <a href="../exceptions/exceptions.html" class="sm-badge text-blue-700 hover:text-blue-900 font-semibold whitespace-nowrap">មើលលម្អិត <i class="fas fa-arrow-right text-[10px]"></i></a>
-                    </div>
-                    <div id="exceptionStrip" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-x divide-y lg:divide-y-0 divide-slate-100"></div>
-                </section>
             </div>
         </main>
     </div>
@@ -108,12 +101,20 @@
             const cut = s => addDays(new Date(s.time), 1) <= now;
             const agg = aggregateSales(salesInRange(today));
             const prev = aggregateSales(salesInRange({ start: yd, end: yd }).filter(cut));
-            const pend = pendingApprovals().length;
+            // សាច់ប្រាក់ក្នុងថតដែលកំពុងបើក · ក្រហមពេលថតណាមួយលើសកំណត់ (ត្រូវផ្ទេរចូលទូដែក)
+            const st = posSettings();
+            const open = mgrAllShifts().filter(x => x.status === 'open').map(summaryOf);
+            const cashUSD = open.reduce((n, x) => n + x.expectedUSD, 0);
+            const cashKHR = open.reduce((n, x) => n + x.expectedKHR, 0);
+            const over = open.filter(x => x.expectedUSD > st.drawerLimitUSD || x.expectedKHR > st.drawerLimitKHR).length;
             document.getElementById('kpiRow').innerHTML =
                 kpiCard('លក់សុទ្ធថ្ងៃនេះ', fmtUSD(agg.netSales), delta(agg.netSales, prev.netSales, true), '', '../reports/sales-report.html') +
                 kpiCard('វិក្កយបត្រ', `${agg.tx}`, delta(agg.tx, prev.tx), '', '../reports/sales-report.html') +
                 kpiCard('មធ្យមក្នុងមួយវិក្កយបត្រ', fmtUSD(agg.avg), delta(agg.avg, prev.avg, true), '', '../reports/sales-report.html') +
-                kpiCard('សំណើរង់ចាំអនុម័ត', `${pend}`, pend ? 'ត្រូវការការសម្រេចរបស់អ្នក' : 'គ្មានសំណើរង់ចាំ', pend ? 'text-amber-600' : 'text-slate-800', '../approvals/approvals.html');
+                kpiCard('សាច់ប្រាក់ក្នុងថត', fmtUSD(cashUSD),
+                    over ? `<span class="text-rose-600 font-semibold">${over} ថតលើសកំណត់</span> · ត្រូវផ្ទេរចូលទូដែក`
+                         : open.length ? `${fmtKHR(cashKHR)} · ក្នុង ${open.length} ថតកំពុងបើក` : 'គ្មានថតកំពុងបើក',
+                    over ? 'text-rose-600' : '', '../cash/cash.html');
         }
 
         /* «ការងាររបស់អ្នក» — អ្វីៗដែលរង់ចាំអ្នកគ្រប់គ្រង ប្រមូលនៅកន្លែងតែមួយ ជាមួយប៊ូតុងទៅធ្វើភ្លាម */
@@ -122,8 +123,14 @@
             const items = [];
             const pend = pendingApprovals();
             if (pend.length) {
-                items.push({ icon: 'fa-shield-halved', tone: 'amber', title: `សំណើ ${pend.length} រង់ចាំអនុម័ត`,
-                    note: `ចាស់បំផុត ${fmtDuration(now - new Date(pend[0].raisedAt))}មុន`, href: '../approvals/approvals.html', cta: 'សម្រេច' });
+                const late = now - new Date(pend[0].raisedAt) > 10 * 60000;
+                items.push({ icon: 'fa-shield-halved', tone: late ? 'rose' : 'amber', title: `សំណើ ${pend.length} រង់ចាំអនុម័ត`,
+                    note: `ចាស់បំផុត ${fmtDuration(now - new Date(pend[0].raisedAt))}មុន`, href: '../approvals/approvals.html', cta: 'សម្រេចទាំងអស់',
+                    subs: pend.slice(0, 3).map(a => ({ href: `../approvals/view-request.html?id=${a.id}`,
+                        title: `${APPROVAL_TYPE[a.type].label} · <span class="sm-figure">${fmtUSD(a.amount)}</span>`,
+                        note: `${personName(a.cashierId)} · ${a.register}`,
+                        age: now - new Date(a.raisedAt) })),
+                    more: Math.max(0, pend.length - 3) });
             }
             const review = mgrAllShifts().filter(x => x.status === 'closed');
             if (review.length) {
@@ -158,7 +165,14 @@
                     note: `កាលវិភាគ${sched.schedule === 'monthly' ? 'ប្រចាំខែ' : 'ប្រចាំសប្តាហ៍'}`,
                     href: '../stock-count/stock-count.html', cta: 'រាប់ស្តុក' });
             }
-            // ជួរធម្មតា៖ រូបតំណាងប្រផេះ · ពណ៌ក្រហមតែលើការងារបន្ទាន់ (tone rose) ប៉ុណ្ណោះ
+            // ការងារបន្ទាន់ (ក្រហម) នៅខាងលើ · ជួរធម្មតា៖ រូបតំណាងប្រផេះ · ប៊ូតុងសកម្មភាពមើលឃើញជានិច្ច
+            items.sort((a, b) => (b.tone === 'rose') - (a.tone === 'rose'));
+            const sub = x => `
+                <a href="${x.href}" class="group flex items-center gap-3 pl-12 max-md:pl-5 pr-5 py-2 hover:bg-slate-50 transition">
+                    <span class="min-w-0 flex-1"><span class="sm-td text-slate-700 block truncate">${x.title}</span><span class="sm-td-sub text-slate-500 block truncate">${x.note}</span></span>
+                    <span class="sm-td-sub sm-figure flex-shrink-0 ${x.age > 10 * 60000 ? 'text-rose-600 font-semibold' : 'text-slate-500'}">${fmtDuration(x.age)}</span>
+                    <span class="max-md:hidden sm-badge text-blue-700 group-hover:text-blue-900 font-semibold flex-shrink-0 inline-flex items-center gap-1.5">មើល<i class="fas fa-chevron-right text-[10px]"></i></span>
+                </a>`;
             document.getElementById('todo').innerHTML = `
                 <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
                     <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between gap-3">
@@ -166,12 +180,15 @@
                         <span class="sm-badge text-slate-500">${items.length ? `${items.length} ត្រូវធ្វើ` : 'រួចរាល់ទាំងអស់'}</span>
                     </div>
                     ${items.length ? `<div class="divide-y divide-slate-100">${items.map(i => `
+                        <div>
                         <a href="${i.href}" class="group flex items-center gap-3 px-5 py-3 hover:bg-slate-50 transition">
                             <i class="fas ${i.icon} w-4 text-center ${i.tone === 'rose' ? 'text-rose-600' : 'text-slate-400'} flex-shrink-0"></i>
                             <span class="min-w-0 flex-1"><span class="sm-value text-slate-800 block truncate">${i.title}</span><span class="sm-td-sub ${i.tone === 'rose' ? 'text-rose-600' : 'text-slate-500'} block truncate">${i.note}</span></span>
-                            <span class="sm-badge text-slate-500 font-medium flex-shrink-0 group-hover:text-blue-700 inline-flex items-center gap-1.5">${i.cta}<i class="fas fa-chevron-right text-[10px]"></i></span>
-                        </a>`).join('')}</div>`
-                    : '<p class="sm-card-sub text-slate-500 px-5 py-4">គ្មានអ្វីរង់ចាំអ្នកទេ · បញ្ជរទាំងអស់ដំណើរការធម្មតា</p>'}
+                            <span class="sm-badge text-blue-700 group-hover:text-blue-900 font-semibold flex-shrink-0 inline-flex items-center gap-1.5">${i.cta}<i class="fas fa-chevron-right text-[10px]"></i></span>
+                        </a>
+                        ${i.subs ? `<div class="pb-2">${i.subs.map(sub).join('')}${i.more ? `<a href="${i.href}" class="block pl-12 pr-5 py-1.5 sm-td-sub text-blue-700 hover:text-blue-900 font-semibold">និង ${i.more} សំណើទៀត</a>` : ''}</div>` : ''}
+                        </div>`).join('')}</div>`
+                    : '<div class="px-5 py-8 text-center"><i class="fas fa-circle-check text-slate-300 text-2xl"></i><p class="sm-value text-slate-700 mt-2">គ្មានអ្វីរង់ចាំអ្នកទេ</p><p class="sm-td-sub text-slate-500">បញ្ជរទាំងអស់ដំណើរការធម្មតា</p></div>'}
                 </div>`;
         }
 
@@ -231,9 +248,23 @@
                 } else {
                     const v = last && shiftVariance(last);
                     status = statusDot('មិនទាន់បើក', 'slate');
-                    body = `<p class="sm-td text-slate-500 mt-4">${last ? `វេនចុងក្រោយ ${last.templateName} · ${personName(last.cashierId)}` : 'មិនទាន់មានវេន'}</p>
-                        ${last ? `<p class="sm-td-sub text-slate-500">${fmtDate(last.openedAt)}${v ? ` · <span class="${v.level === 'large' ? 'text-rose-600' : v.level === 'small' ? 'text-amber-700' : ''}">${DIRECTION_LABEL[v.direction]} ${fmtUSD(v.abs)}</span>` : ''}</p>` : ''}`;
-                    footer = `<button type="button" onclick="location.href='../cash/create-movement.html?type=float&register=${register}'" class="sm-badge h-9 w-full rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium inline-flex items-center justify-center">ចេញប្រាក់បាតថតសម្រាប់វេនបន្ទាប់</button>`;
+                    if (last) {
+                        const s = summaryOf(last);
+                        const diff = !v ? '—' : v.direction === 'exact' ? 'ត្រូវគ្នា' : `${DIRECTION_LABEL[v.direction]} ${fmtUSD(v.abs)}`;
+                        body = `
+                        <div class="flex items-center gap-2.5 mt-4">${avatarHtml(last.cashierId, 'w-8 h-8')}<div class="min-w-0"><p class="sm-td text-slate-800 truncate">${personName(last.cashierId)}</p><p class="sm-td-sub text-slate-500 truncate">${last.templateName}${last.date === businessDate() ? '' : ` ${fmtDate(last.openedAt)}`}${last.closedAt ? ` · បិទម៉ោង ${fmtTime(last.closedAt)}` : ''}</p></div></div>
+                        <div class="grid grid-cols-2 gap-x-4 gap-y-3 mt-4 pt-4 border-t border-slate-100">
+                            ${stat('លក់', fmtUSD(s.netSales))}
+                            ${stat('វិក្កយបត្រ', s.count)}
+                            ${stat('ពេលរាប់ប្រាក់បិទវេន', diff, v && v.level === 'large' ? 'text-rose-600' : v && v.level === 'small' ? 'text-amber-700' : '')}
+                            ${stat('ស្ថានភាព', SHIFT_STATUS[last.status] ? SHIFT_STATUS[last.status].label : '—', last.status === 'closed' ? 'text-amber-700' : '')}
+                        </div>`;
+                    } else {
+                        body = '<p class="sm-td text-slate-500 mt-4">មិនទាន់មានវេននៅបញ្ជរនេះទេ</p>';
+                    }
+                    footer = last && last.status === 'closed'
+                        ? `<a href="../shifts/view-shift.html?id=${last.id}" class="sm-badge h-9 w-full rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-blue-700 font-semibold inline-flex items-center justify-center">ត្រួតពិនិត្យវេនចុងក្រោយ</a>`
+                        : `<button type="button" onclick="location.href='../cash/create-movement.html?type=float&register=${register}'" class="sm-badge h-9 w-full rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium inline-flex items-center justify-center">ចេញប្រាក់បាតថតសម្រាប់វេនបន្ទាប់</button>`;
                 }
                 return `<div data-row-id="${register}" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 flex flex-col min-w-0">
                     <div class="flex items-start justify-between gap-2">
@@ -246,41 +277,23 @@
             }).join('');
         }
 
-        function renderApprovals() {
-            const list = pendingApprovals().slice(0, 6);
-            const host = document.getElementById('approvalList');
-            if (!list.length) {
-                host.innerHTML = '<p class="sm-card-sub text-slate-500 px-5 py-4">គ្មានសំណើរង់ចាំ</p>';
-                return;
-            }
-            host.innerHTML = list.map(a => {
-                const age = new Date() - new Date(a.raisedAt);
-                const t = APPROVAL_TYPE[a.type];
-                return `<a href="../approvals/view-request.html?id=${a.id}" class="flex items-start gap-3 px-5 py-3 hover:bg-slate-50">
-                    <span class="min-w-0 flex-1">
-                        <span class="sm-value text-slate-800 block truncate">${t.label} · <span class="sm-figure">${fmtUSD(a.amount)}</span></span>
-                        <span class="sm-td-sub text-slate-500 block truncate">${personName(a.cashierId)} · ${a.register} · ${a.saleId}</span>
-                    </span>
-                    <span class="sm-td-sub sm-figure flex-shrink-0 ${age > 10 * 60000 ? 'text-rose-600 font-semibold' : 'text-slate-500'}">${fmtDuration(age)}</span>
-                </a>`;
-            }).join('');
-        }
-
         function renderExceptions() {
             const { rows } = exceptionStats(mgrToday());
             const sum = k => rows.reduce((n, r) => n + r[k], 0);
-            const item = (label, value, filter) => `
-                <a href="../exceptions/exceptions.html${filter ? '?type=' + filter : ''}" class="px-5 py-3.5 hover:bg-slate-50 transition">
-                    <p class="sm-td-sub text-slate-500 truncate">${label}</p>
-                    <p class="sm-card-title sm-figure ${value ? 'text-amber-700' : 'text-slate-400'}">${value}</p>
+            const item = (icon, label, value, amount, filter) => `
+                <a href="../exceptions/exceptions.html${filter ? '?type=' + filter : ''}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-slate-50 transition">
+                    <i class="fas ${icon} w-4 text-center text-slate-400 flex-shrink-0"></i>
+                    <span class="sm-td text-slate-700 flex-1 min-w-0 truncate">${label}</span>
+                    ${amount ? `<span class="sm-td-sub text-slate-500 sm-figure">${fmtUSD(amount)}</span>` : ''}
+                    <span class="sm-td-strong sm-figure w-8 text-right ${value ? 'text-amber-700' : 'text-slate-400'}">${value}</span>
                 </a>`;
-            document.getElementById('exceptionStrip').innerHTML =
-                item('លុបចោល', sum('voids'), 'voids') +
-                item('ប្រគល់វិញ', sum('returns'), 'returns') +
-                item('បញ្ចុះលើសកំណត់', sum('overrides'), 'overrides') +
-                item('ដកទំនិញមុនទូទាត់', sum('lineRemovals'), 'lineRemovals') +
-                item('លេខសម្ងាត់ខុស', sum('wrongPins'), 'wrongPins') +
-                item('ភាពខុសគ្នាធំ', sum('largeVariances'), '');
+            document.getElementById('exceptionList').innerHTML =
+                item('fa-ban', 'លុបចោលវិក្កយបត្រ', sum('voids'), sum('voidAmount'), 'voids') +
+                item('fa-rotate-left', 'ប្រគល់ទំនិញវិញ', sum('returns'), sum('returnAmount'), 'returns') +
+                item('fa-percent', 'បញ្ចុះលើសកំណត់', sum('overrides'), sum('overrideAmount'), 'overrides') +
+                item('fa-cart-arrow-down', 'ដកទំនិញមុនទូទាត់', sum('lineRemovals'), 0, 'lineRemovals') +
+                item('fa-key', 'លេខសម្ងាត់ខុស', sum('wrongPins'), 0, 'wrongPins') +
+                item('fa-scale-unbalanced', 'ខុសគ្នាធំពេលបិទវេន', sum('largeVariances'), 0, '');
         }
 
         function renderHours() {
@@ -588,7 +601,6 @@
             renderKpis();
             renderTodo();
             renderRegisters();
-            renderApprovals();
             renderExceptions();
             renderHours();
             renderPaySplit();
