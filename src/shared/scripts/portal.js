@@ -1427,10 +1427,8 @@ function bmsRenderStepper(hostId) {
         // បន្ទាត់ «កំពុងដំណើរការ» រត់ម្តងហើយម្តងទៀត — width ក្នុងជួរជាតម្លៃបម្រុង
         // សម្រាប់អ្នកប្រើដែលបិទចលនា (ចលនា CSS មានអាទិភាពលើ width ក្នុងជួរ)
         if (n === current && inProgress) {
-            const head = compact ? '' : `<span class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-3 h-3 rounded-full bg-white"
-                style="box-shadow:0 0 0 3px rgba(${skin.rgb},1),0 0 12px 3px rgba(${skin.rgb},.55)"></span>`;
             return `<span class="bms-step-run relative block h-full rounded-full ${skin.bar}"
-                style="width:${partial}%;animation-duration:${duration}s;box-shadow:0 0 8px rgba(${skin.rgb},.45)">${head}</span>`;
+                style="width:${partial}%;animation-duration:${duration}s;box-shadow:0 0 8px rgba(${skin.rgb},.45)"></span>`;
         }
         return `<span data-bms-fill="${fillFor(n, current)}" class="block h-full rounded-full ${doneSkin.bar}"
             style="width:${fillFor(n, animate ? from : current)}%;transition:width .7s cubic-bezier(.4,0,.2,1)"></span>`;
