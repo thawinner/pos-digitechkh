@@ -426,8 +426,8 @@ function safeBalance() {
 function inRange(iso, range) {
     if (!range || !range.start) return true;
     const d = iso.slice(0, 10);
-    const s = isoDate(range.start);
-    const e = isoDate(range.end || range.start);
+    const s = toIsoDateStr(range.start);
+    const e = toIsoDateStr(range.end || range.start);
     return d >= s && d <= e;
 }
 
@@ -1113,13 +1113,13 @@ function rosterCheck(personId, dateStr, code) {
         }
     }
 
-    const blocked = over48 || (over12 && !partialAllowed) || (openDrawerNow && openDrawerNow.templateCode !== code);
+    const blocked = (over12 && !partialAllowed) || (openDrawerNow && openDrawerNow.templateCode !== code);
 
     let reason = '';
-    if (over48) reason = `លើស 48 ម៉ោង/សប្តាហ៍ (${newWeekHrs} ម៉ោង)`;
-    else if (openDrawerNow && openDrawerNow.templateCode !== code) reason = `កំពុងបើកថតប្រាក់${openDrawerNow.templateName} លើ ${openDrawerNow.register}`;
+    if (openDrawerNow && openDrawerNow.templateCode !== code) reason = `កំពុងបើកថតប្រាក់${openDrawerNow.templateName} លើ ${openDrawerNow.register}`;
     else if (over12 && !partialAllowed) reason = `ធ្វើការ ${todayTotal} ម៉ោងថ្ងៃនេះ · លើស 12 ម៉ោង`;
     else if (backToBack) reason = 'ធ្វើការជាប់គ្នា · សម្រាកមិនគ្រប់ 11 ម៉ោង';
+    else if (over48) reason = `ថែមម៉ោង (OT) ${newWeekHrs} ម៉ោង/សប្តាហ៍`;
 
     return {
         ok: !blocked,
@@ -1156,15 +1156,19 @@ function rankCandidates(dateStr, code) {
 
         if (check.blocked) {
             rank = 99;
-            chip = check.over48 ? 'លើស 48 ម៉ោង' : (check.openDrawerNow ? 'កំពុងធ្វើការ' : 'លើស 12 ម៉ោង');
+            chip = check.openDrawerNow ? 'កំពុងធ្វើការ' : 'លើស 12 ម៉ោង';
             tone = 'rose';
         } else if (check.partialAllowed) {
-            rank = 5;
+            rank = 6;
             chip = `ជំនួសត្រឹម ${t ? t.start : '14:00'}–${check.capTime}`;
             tone = 'amber';
         } else if (check.leavesGap) {
-            rank = 4;
+            rank = 5;
             chip = `ផ្លាស់ពី${check.leavesGap} · បង្កើតចន្លោះ`;
+            tone = 'amber';
+        } else if (check.over48) {
+            rank = check.isDayOff ? 4 : 3;
+            chip = 'ថែមម៉ោង (OT)';
             tone = 'amber';
         } else if (check.isDayOff) {
             rank = 3;

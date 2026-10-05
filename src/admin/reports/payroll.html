@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITECHKH - ម៉ោងការងារ និងប្រាក់បៀវត្សរ៍</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#059669", 'primary-dark': "#047857", accent: "#34d399" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            #payslipModalBackdrop { position: static !important; background: transparent !important; }
+            #payslipModalContent { box-shadow: none !important; border: none !important; max-width: 100% !important; padding: 0 !important; width: 100% !important; }
+            body { background: white !important; overflow: visible !important; height: auto !important; }
+            main { padding: 0 !important; overflow: visible !important; }
+            @page { size: A4; margin: 10mm; }
+        }
+    </style>
+</head>
+<body id="adminPortal" data-role-root="../.." data-active="payroll" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="ម៉ោងការងារ និងប្រាក់បៀវត្សរ៍"
+             data-subtitle="ស្រង់ម៉ោងធ្វើការ ថែមម៉ោង (OT) ម៉ោងយប់ និងបើកប្រាក់បៀវត្សរ៍ប្រចាំខែ · មើលឃើញតែម្ចាស់ហាង"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+
+            <div class="w-full space-y-5">
+                <!-- របារឧបករណ៍ និងតម្រង -->
+                <div class="bg-white rounded-2xl p-2 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-3 no-print">
+                    <div id="viewTabs" class="flex flex-wrap gap-1"></div>
+                    <div class="flex items-center gap-2">
+                        <div id="dateRange" class="flex items-center"></div>
+                        <button onclick="disburseAll()" type="button" class="sm-badge h-9 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold inline-flex items-center gap-2 whitespace-nowrap shadow-sm">
+                            <i class="fas fa-check-double"></i> បើកប្រាក់ខែទាំងអស់
+                        </button>
+                        <button onclick="window.print()" type="button" class="sm-badge h-9 px-3.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center gap-2">
+                            <i class="fas fa-print"></i> បោះពុម្ពតារាង
+                        </button>
+                        <button onclick="resetSampleData()" type="button" title="កំណត់ទិន្នន័យគំរូឡើងវិញ" class="sm-badge h-9 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium inline-flex items-center gap-1.5 text-xs">
+                            <i class="fas fa-rotate-right"></i> ទិន្នន័យគំរូ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- កាតសង្ខេបស្ថិតិ KPI -->
+                <div id="kpiRow" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
+
+                <!-- តារាងសង្ខេបប្រាក់បៀវត្សរ៍ -->
+                <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                            <p id="tableTitle" class="sm-card-title text-slate-800">តារាងសង្ខេបម៉ោងធ្វើការ និងប្រាក់បៀវត្សរ៍</p>
+                            <p id="tableSub" class="sm-card-sub text-slate-500"></p>
+                        </div>
+                        <div class="flex items-center gap-2 no-print">
+                            <span class="sm-badge inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs">
+                                <i class="fas fa-scale-balanced"></i> ស្តង់ដារច្បាប់ការងារ 48 ម៉ោង/សប្តាហ៍
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full min-w-[960px]">
+                            <thead>
+                                <tr class="border-b border-slate-100 bg-slate-50/60">
+                                    <th class="sm-th py-3 px-5 text-left text-slate-500">បុគ្គលិក</th>
+                                    <th class="sm-th py-3 px-3 text-left text-slate-500">តួនាទី</th>
+                                    <th class="sm-th py-3 px-3 text-right text-slate-500">ប្រាក់ខែគោល</th>
+                                    <th class="sm-th py-3 px-3 text-right text-slate-500">ម៉ោងធម្មតា</th>
+                                    <th class="sm-th py-3 px-3 text-right text-slate-500">ថែមម៉ោង (OT)</th>
+                                    <th class="sm-th py-3 px-3 text-right text-slate-500">ម៉ោងយប់</th>
+                                    <th class="sm-th py-3 px-3 text-right text-slate-500">ឧបត្ថម្ភ</th>
+                                    <th class="sm-th py-3 px-3 text-right text-slate-500">កាត់កង</th>
+                                    <th class="sm-th py-3 px-3 text-right text-slate-500">ប្រាក់ជាក់ស្តែង</th>
+                                    <th class="sm-th py-3 px-3 text-left text-slate-500">គណនីធនាគារ</th>
+                                    <th class="sm-th py-3 px-3 text-center text-slate-500">ស្ថានភាព</th>
+                                    <th class="sm-th py-3 px-5 text-right text-slate-500 no-print w-24"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="rows" class="divide-y divide-slate-100"></tbody>
+                            <tfoot id="foot" class="border-t-2 border-slate-200 bg-slate-50/80 font-semibold text-slate-800"></tfoot>
+                        </table>
+                    </div>
+                    <div id="empty" class="hidden p-8 text-center"></div>
+                </section>
+
+                <p class="sm-td-sub text-slate-500 px-1 no-print">
+                    <i class="fas fa-circle-info mr-1 text-slate-400"></i>ប្រាក់ម៉ោងថែម (OT) គុណ 150% · ម៉ោងយប់ (22:00–05:00) និងថ្ងៃសម្រាកគុណ 200% · ការកាត់កងរួមបញ្ចូលទាំងការខ្វះសាច់ប្រាក់ថតលើសកម្រិតអនុញ្ញាត។
+                </p>
+            </div>
+        </main>
+    </div>
+
+    <!-- ផ្ទាំង Modal បង្ហាញប័ណ្ណបើកប្រាក់បៀវត្សរ៍ (Payslip) -->
+    <div id="payslipModalBackdrop" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+        <div id="payslipModalContent" class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden my-auto" onclick="event.stopPropagation()">
+            <!-- ក្បាល Modal -->
+            <div class="px-6 py-4 bg-slate-50 border-b border-slate-200/80 flex items-center justify-between no-print">
+                <div class="flex items-center gap-2 text-slate-800 font-semibold">
+                    <i class="fas fa-file-invoice-dollar text-emerald-600"></i>
+                    <span>ប័ណ្ណបើកប្រាក់បៀវត្សរ៍ផ្លូវការ</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="printCurrentPayslip()" type="button" class="sm-badge h-8 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium inline-flex items-center gap-1.5">
+                        <i class="fas fa-print text-xs"></i> បោះពុម្ពប័ណ្ណ
+                    </button>
+                    <button onclick="closePayslipModal()" type="button" class="w-8 h-8 rounded-xl bg-slate-200/70 hover:bg-slate-200 text-slate-600 inline-flex items-center justify-center">
+                        <i class="fas fa-xmark text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- តួប័ណ្ណបើកប្រាក់ខែ (Printable A4 Component) -->
+            <div id="payslipBody" class="p-6 sm:p-8 space-y-6"></div>
+        </div>
+    </div>
+
+    <!-- ផ្ទាំង Modal បង្ហាញម៉ោងការងារលម្អិត (Timesheet Detail) -->
+    <div id="timesheetModalBackdrop" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+        <div id="timesheetModalContent" class="bg-white w-full max-w-3xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden my-auto" onclick="event.stopPropagation()">
+            <!-- ក្បាល Modal -->
+            <div class="px-6 py-4 bg-slate-50 border-b border-slate-200/80 flex items-center justify-between no-print">
+                <div class="flex items-center gap-3">
+                    <div id="timesheetAvatar"></div>
+                    <div>
+                        <p id="timesheetStaffName" class="font-semibold text-slate-800 text-base"></p>
+                        <p id="timesheetStaffSub" class="sm-td-sub text-slate-500"></p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="closeTimesheetModal()" type="button" class="w-8 h-8 rounded-xl bg-slate-200/70 hover:bg-slate-200 text-slate-600 inline-flex items-center justify-center">
+                        <i class="fas fa-xmark text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- តារាងវេនធ្វើការ -->
+            <div class="p-6 space-y-4">
+                <div id="timesheetPills" class="grid grid-cols-4 gap-2 text-center"></div>
+                <div class="max-h-[380px] overflow-y-auto border border-slate-200 rounded-2xl">
+                    <table class="w-full text-sm">
+                        <thead class="sticky top-0 bg-slate-50 border-b border-slate-200 text-slate-500 text-xs">
+                            <tr>
+                                <th class="py-2.5 px-4 text-left">កាលបរិច្ឆេទ</th>
+                                <th class="py-2.5 px-3 text-left">វេនការងារ</th>
+                                <th class="py-2.5 px-3 text-left">បញ្ជរ</th>
+                                <th class="py-2.5 px-3 text-right">ម៉ោង</th>
+                                <th class="py-2.5 px-3 text-center">ចំណាត់ថ្នាក់</th>
+                                <th class="py-2.5 px-3 text-right">សាច់ប្រាក់ថត</th>
+                                <th class="py-2.5 px-4 text-center">ស្ថានភាព</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timesheetRows" class="divide-y divide-slate-100 font-medium text-slate-700"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/admin-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        const TABS = [
+            { id: 'all', label: 'ទាំងអស់' },
+            { id: 'cashier', label: 'អ្នកគិតលុយ' },
+            { id: 'manager', label: 'អ្នកគ្រប់គ្រង' },
+            { id: 'pending', label: 'រង់ចាំបើក' },
+            { id: 'disbursed', label: 'បានបើករួច' }
+        ];
+        let currentTab = 'all';
+        let currentPayrollData = null;
+        let selectedStaffPayroll = null;
+
+        function avatarOf(p, cls) {
+            return `<span class="${cls || 'w-9 h-9'} rounded-full overflow-hidden inline-flex items-center justify-center flex-shrink-0 bg-slate-200 text-slate-600 font-semibold text-[11px] relative">${p.initials}<img src="${avatarSrc(p.id)}" alt="${p.name}" class="absolute inset-0 w-full h-full object-cover" onerror="this.remove()"></span>`;
+        }
+
+        function renderTabs(summary) {
+            const counts = {
+                all: summary.staffCount,
+                cashier: currentPayrollData.staffPayrolls.filter(p => p.role === 'cashier').length,
+                manager: currentPayrollData.staffPayrolls.filter(p => p.role === 'manager').length,
+                pending: summary.pendingCount,
+                disbursed: summary.disbursedCount
+            };
+            document.getElementById('viewTabs').innerHTML = TABS.map(t => `
+                <button type="button" onclick="currentTab='${t.id}'; renderList()"
+                    class="sm-badge h-9 px-3.5 rounded-xl transition inline-flex items-center gap-2 ${currentTab === t.id ? 'bg-emerald-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">
+                    ${t.label}
+                    <span class="text-[12px] sm-figure ${currentTab === t.id ? 'text-emerald-100' : 'text-slate-400'}">${counts[t.id] || 0}</span>
+                </button>
+            `).join('');
+        }
+
+        function renderKPIs(summary) {
+            document.getElementById('kpiRow').innerHTML = `
+                <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-start justify-between">
+                    <div>
+                        <p class="sm-td-sub text-slate-500">ចំណាយប្រាក់ខែសរុប</p>
+                        <p class="text-2xl font-semibold text-slate-800 sm-figure mt-1">$${summary.totalNet.toFixed(2)}</p>
+                        <p class="sm-td-sub text-slate-400 mt-1">ដុល $${summary.totalGross.toFixed(2)} · កាត់ $${summary.totalDeductions.toFixed(2)}</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg flex-shrink-0">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-start justify-between">
+                    <div>
+                        <p class="sm-td-sub text-slate-500">ម៉ោងការងារសរុប</p>
+                        <p class="text-2xl font-semibold text-slate-800 sm-figure mt-1">${summary.totalHours} <span class="text-sm font-normal text-slate-500">ម៉ោង</span></p>
+                        <p class="sm-td-sub text-slate-400 mt-1">${summary.staffCount} នាក់ · ស្តង់ដារ 208 ម៉/ខែ</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center text-lg flex-shrink-0">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-start justify-between">
+                    <div>
+                        <p class="sm-td-sub text-slate-500">ម៉ោងថែម (OT) & យប់</p>
+                        <p class="text-2xl font-semibold text-slate-800 sm-figure mt-1">${summary.totalOT + summary.totalNight} <span class="text-sm font-normal text-slate-500">ម៉ោង</span></p>
+                        <p class="sm-td-sub text-amber-600 mt-1">ថែមម៉ោង ${summary.totalOT} ម៉ · ម៉ោងយប់ ${summary.totalNight} ម៉</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg flex-shrink-0">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-start justify-between">
+                    <div>
+                        <p class="sm-td-sub text-slate-500">ស្ថានភាពបើកប្រាក់ខែ</p>
+                        <p class="text-2xl font-semibold text-slate-800 sm-figure mt-1">${summary.disbursedCount} <span class="text-sm font-normal text-slate-500">/ ${summary.staffCount} នាក់</span></p>
+                        <p class="sm-td-sub ${summary.pendingCount > 0 ? 'text-amber-600' : 'text-emerald-600'} mt-1">
+                            ${summary.pendingCount > 0 ? `នៅសល់ ${summary.pendingCount} នាក់រង់ចាំបើក` : 'បានបើកគ្រប់ចំនួន 100%'}
+                        </p>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg flex-shrink-0">
+                        <i class="fas fa-circle-check"></i>
+                    </div>
+                </div>
+            `;
+        }
+
+        function filterList() {
+            if (!currentPayrollData) return [];
+            return currentPayrollData.staffPayrolls.filter(p => {
+                if (currentTab === 'cashier') return p.role === 'cashier';
+                if (currentTab === 'manager') return p.role === 'manager';
+                if (currentTab === 'pending') return p.status === 'pending';
+                if (currentTab === 'disbursed') return p.status === 'disbursed';
+                return true;
+            });
+        }
+
+        function renderList() {
+            const list = filterList();
+            const empty = document.getElementById('empty');
+            const tbody = document.getElementById('rows');
+            const tfoot = document.getElementById('foot');
+
+            if (!list.length) {
+                tbody.innerHTML = '';
+                tfoot.innerHTML = '';
+                empty.classList.remove('hidden');
+                empty.innerHTML = emptyState('fa-money-bill-wave', 'គ្មានទិន្នន័យប្រាក់បៀវត្សរ៍', 'សូមជ្រើសរើសចន្លោះកាលបរិច្ឆេទ ឬប្រភេទបុគ្គលិកផ្សេង');
+                return;
+            }
+
+            empty.classList.add('hidden');
+
+            const ROLE_CHIP = {
+                admin: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                manager: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+                cashier: 'bg-slate-50 text-slate-700 border-slate-200'
+            };
+
+            tbody.innerHTML = list.map(item => {
+                const s = item.staff;
+                const statusChip = item.status === 'disbursed'
+                    ? '<span class="sm-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>បានបើករួច</span>'
+                    : '<span class="sm-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border bg-amber-50 text-amber-700 border-amber-200"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>រង់ចាំបើក</span>';
+
+                const allowancesTotal = +(item.foodAllowance + item.attendanceBonus).toFixed(2);
+                const otDisplay = item.otHours > 0
+                    ? `<span class="sm-figure text-amber-700 font-medium">${item.otHours} ម៉</span><span class="block sm-td-sub text-amber-600 sm-figure">+$${item.otPay.toFixed(2)}</span>`
+                    : '<span class="text-slate-400">0 ម៉</span>';
+
+                const nightDisplay = item.nightHours > 0
+                    ? `<span class="sm-figure text-indigo-700 font-medium">${item.nightHours} ម៉</span><span class="block sm-td-sub text-indigo-600 sm-figure">+$${item.nightPay.toFixed(2)}</span>`
+                    : '<span class="text-slate-400">0 ម៉</span>';
+
+                const deductionDisplay = item.deductionsUSD > 0
+                    ? `<span class="sm-figure text-rose-600 font-medium">-$${item.deductionsUSD.toFixed(2)}</span><span class="block sm-td-sub text-rose-400">${item.cashShortage > 0 ? 'ខ្វះថត' : 'ប.ស.ស'}</span>`
+                    : '<span class="text-slate-400">$0.00</span>';
+
+                return `
+                    <tr class="hover:bg-slate-50/60 transition">
+                        <td class="py-3 px-5">
+                            <div class="flex items-center gap-3 min-w-0">
+                                ${avatarOf(s)}
+                                <div class="min-w-0">
+                                    <p class="font-medium text-slate-700 truncate">${s.name}</p>
+                                    <p class="sm-td-sub text-slate-400 sm-figure">${s.id}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3 px-3">
+                            <span class="sm-badge inline-flex px-2.5 py-0.5 rounded-full border ${ROLE_CHIP[item.role]}">${ROLE_NAME[item.role]}</span>
+                        </td>
+                        <td class="py-3 px-3 text-right sm-td">
+                            <span class="sm-figure font-medium text-slate-700">$${item.baseSalaryUSD.toFixed(2)}</span>
+                            <span class="block sm-td-sub text-slate-400 sm-figure">$${item.hourlyRateUSD}/ម៉</span>
+                        </td>
+                        <td class="py-3 px-3 text-right sm-td">
+                            <span class="sm-figure font-medium text-slate-700">${item.regularHours} ម៉</span>
+                            <span class="block sm-td-sub text-slate-400 sm-figure">$${item.regularPay.toFixed(2)}</span>
+                        </td>
+                        <td class="py-3 px-3 text-right sm-td">${otDisplay}</td>
+                        <td class="py-3 px-3 text-right sm-td">${nightDisplay}</td>
+                        <td class="py-3 px-3 text-right sm-td">
+                            <span class="sm-figure font-medium text-emerald-700">+$${allowancesTotal.toFixed(2)}</span>
+                            <span class="block sm-td-sub text-slate-400">បាយ+រង្វាន់</span>
+                        </td>
+                        <td class="py-3 px-3 text-right sm-td">${deductionDisplay}</td>
+                        <td class="py-3 px-3 text-right sm-td">
+                            <span class="sm-figure font-semibold text-emerald-700 text-base">$${item.netUSD.toFixed(2)}</span>
+                        </td>
+                        <td class="py-3 px-3 sm-td">
+                            <span class="font-medium text-slate-700 block">${item.banking.bankName}</span>
+                            <span class="sm-td-sub text-slate-400 sm-figure block truncate max-w-[130px]">${item.banking.accountNumber}</span>
+                        </td>
+                        <td class="py-3 px-3 text-center">${statusChip}</td>
+                        <td class="py-3 px-5 text-right no-print">
+                            <div class="flex items-center justify-end gap-1.5">
+                                <button onclick="openTimesheet('${s.id}')" type="button" title="មើលម៉ោងការងារលម្អិត" class="w-8 h-8 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 inline-flex items-center justify-center">
+                                    <i class="fas fa-calendar-days text-xs"></i>
+                                </button>
+                                <button onclick="openPayslip('${s.id}')" type="button" title="មើលប័ណ្ណបើកប្រាក់ខែ" class="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 inline-flex items-center justify-center">
+                                    <i class="fas fa-file-invoice text-xs"></i>
+                                </button>
+                                ${item.status === 'pending' ? `
+                                    <button onclick="disburseSingle('${s.id}')" type="button" title="បើកប្រាក់បៀវត្សរ៍" class="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 inline-flex items-center justify-center">
+                                        <i class="fas fa-check text-xs"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // ជួរបូកសរុបខាងក្រោម (Footer Summary)
+            const sumBase = list.reduce((n, p) => n + p.baseSalaryUSD, 0);
+            const sumReg = list.reduce((n, p) => n + p.regularHours, 0);
+            const sumOT = list.reduce((n, p) => n + p.otHours, 0);
+            const sumOTPay = list.reduce((n, p) => n + p.otPay, 0);
+            const sumNight = list.reduce((n, p) => n + p.nightHours, 0);
+            const sumNightPay = list.reduce((n, p) => n + p.nightPay, 0);
+            const sumAllowances = list.reduce((n, p) => n + p.foodAllowance + p.attendanceBonus, 0);
+            const sumDeductions = list.reduce((n, p) => n + p.deductionsUSD, 0);
+            const sumNet = list.reduce((n, p) => n + p.netUSD, 0);
+
+            tfoot.innerHTML = `
+                <tr>
+                    <td class="py-3 px-5 text-slate-700 font-semibold" colspan="2">សរុបរួម (${list.length} នាក់)</td>
+                    <td class="py-3 px-3 text-right sm-figure">$${sumBase.toFixed(2)}</td>
+                    <td class="py-3 px-3 text-right sm-figure">${sumReg} ម៉</td>
+                    <td class="py-3 px-3 text-right sm-figure text-amber-700">${sumOT} ម៉ (+$${sumOTPay.toFixed(2)})</td>
+                    <td class="py-3 px-3 text-right sm-figure text-indigo-700">${sumNight} ម៉ (+$${sumNightPay.toFixed(2)})</td>
+                    <td class="py-3 px-3 text-right sm-figure text-emerald-700">+$${sumAllowances.toFixed(2)}</td>
+                    <td class="py-3 px-3 text-right sm-figure text-rose-600">-$${sumDeductions.toFixed(2)}</td>
+                    <td class="py-3 px-3 text-right sm-figure text-emerald-700 text-lg">$${sumNet.toFixed(2)}</td>
+                    <td colspan="3" class="py-3 px-3"></td>
+                </tr>
+            `;
+        }
+
+        function renderAll() {
+            const range = typeof getSelectedRange === 'function' ? getSelectedRange() : null;
+            currentPayrollData = calculateStaffPayroll(range);
+
+            document.getElementById('tableSub').textContent = `គិតចាប់ពីថ្ងៃទី ${currentPayrollData.summary.periodLabel}`;
+
+            renderKPIs(currentPayrollData.summary);
+            renderTabs(currentPayrollData.summary);
+            renderList();
+        }
+
+        /* ===== សកម្មភាពបើកប្រាក់បៀវត្សរ៍ ===== */
+
+        async function disburseSingle(staffId) {
+            const item = currentPayrollData.staffPayrolls.find(p => p.staff.id === staffId);
+            if (!item) return;
+
+            const ok = await showCustomConfirm({
+                title: `បើកប្រាក់បៀវត្សរ៍ ${item.staff.name}`,
+                message: `ទឹកប្រាក់ត្រូវបើកជាក់ស្តែង៖ <strong class="text-emerald-700 sm-figure text-xl">$${item.netUSD.toFixed(2)}</strong><br>តាមរយៈ៖ ${item.banking.bankName} (${item.banking.accountNumber})`,
+                confirmText: 'បញ្ជាក់ការបើក',
+                type: 'success'
+            });
+            if (!ok) return;
+
+            recordPayrollDisbursement({
+                staffId: item.staff.id,
+                staffName: item.staff.name,
+                role: item.staff.role,
+                periodKey: currentPayrollData.summary.periodKey,
+                periodLabel: currentPayrollData.summary.periodLabel,
+                baseSalaryUSD: item.baseSalaryUSD,
+                grossUSD: item.grossUSD,
+                deductionsUSD: item.deductionsUSD,
+                netUSD: item.netUSD,
+                method: `${item.banking.bankName} (ផ្ទេរ)`
+            });
+
+            showToast(`បានបើកប្រាក់បៀវត្សរ៍ជូន ${item.staff.name} រួចរាល់`, 'success');
+            renderAll();
+        }
+
+        async function disburseAll() {
+            const pendingList = currentPayrollData.staffPayrolls.filter(p => p.status === 'pending');
+            if (!pendingList.length) {
+                showToast('បុគ្គលិកទាំងអស់បានបើកប្រាក់បៀវត្សរ៍រួចរាល់ហើយ', 'info');
+                return;
+            }
+
+            const totalAmount = pendingList.reduce((sum, p) => sum + p.netUSD, 0);
+            const ok = await showCustomConfirm({
+                title: `បើកប្រាក់បៀវត្សរ៍ទាំងអស់ (${pendingList.length} នាក់)`,
+                message: `ទឹកប្រាក់សរុបត្រូវបើក៖ <strong class="text-emerald-700 sm-figure text-xl">$${totalAmount.toFixed(2)}</strong><br>សម្រាប់ចន្លោះកាលបរិច្ឆេទ ${currentPayrollData.summary.periodLabel}`,
+                confirmText: 'អនុម័ត និងបើកទាំងអស់',
+                type: 'success'
+            });
+            if (!ok) return;
+
+            disburseAllPendingPayroll(currentPayrollData.staffPayrolls, currentPayrollData.summary.periodKey, currentPayrollData.summary.periodLabel);
+            showToast(`បានបើកប្រាក់បៀវត្សរ៍ជូនបុគ្គលិកទាំង ${pendingList.length} នាក់រួចរាល់`, 'success');
+            renderAll();
+        }
+
+        /* ===== ប័ណ្ណបើកប្រាក់បៀវត្សរ៍ (Payslip Modal & Print) ===== */
+
+        function openPayslip(staffId) {
+            const item = currentPayrollData.staffPayrolls.find(p => p.staff.id === staffId);
+            if (!item) return;
+            selectedStaffPayroll = item;
+
+            const s = item.staff;
+            const khrRate = typeof currentRate === 'function' ? currentRate() : 4100;
+            const netKHR = Math.round(item.netUSD * khrRate / 100) * 100;
+
+            const modal = document.getElementById('payslipModalBackdrop');
+            const body = document.getElementById('payslipBody');
+
+            body.innerHTML = `
+                <!-- ក្បាលប័ណ្ណផ្លូវការ -->
+                <div class="border-b border-slate-200 pb-5">
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center p-2 shadow-sm overflow-hidden flex-shrink-0">
+                                <img src="../../shared/assets/logo-mark-transparent.png" alt="DIGITECHKH" class="w-full h-full object-contain" onerror="this.remove()">
+                            </div>
+                            <div>
+                                <h1 class="text-xl font-bold text-slate-800 tracking-wide">DIGITECHKH POS</h1>
+                                <p class="text-xs text-slate-500">ប្រព័ន្ធគ្រប់គ្រងការលក់ និងអាជីវកម្មលក់រាយ</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-block px-3 py-1 rounded-xl bg-slate-100 text-slate-700 font-semibold text-xs tracking-wider uppercase">ប័ណ្ណបើកប្រាក់បៀវត្សរ៍</span>
+                            <p class="sm-td-sub text-slate-400 mt-1 sm-figure">កាលបរិច្ឆេទចេញ៖ ${fmtDate(isoDate(new Date()))}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ព័ត៌មានបុគ្គលិក និងវេនការងារ -->
+                <div class="grid grid-cols-2 gap-4 p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 text-sm">
+                    <div>
+                        <p class="sm-td-sub text-slate-400">ឈ្មោះបុគ្គលិក / Employee Name</p>
+                        <p class="font-semibold text-slate-800 text-base mt-0.5">${s.name} <span class="text-xs text-slate-500 font-normal sm-figure">(${item.employeeCode || s.id})</span></p>
+                        <p class="sm-td-sub text-slate-500 mt-1">តួនាទី៖ <strong class="text-slate-700">${ROLE_NAME[item.role]}</strong> · <span class="sm-figure text-slate-500">ទូរស័ព្ទ៖ ${item.phone || '012 345 678'}</span></p>
+                    </div>
+                    <div>
+                        <p class="sm-td-sub text-slate-400">ការទូទាត់ប្រាក់ / Payment Details</p>
+                        <p class="font-semibold text-slate-800 mt-0.5">${item.banking.bankName}</p>
+                        <p class="sm-td-sub text-slate-600 sm-figure mt-0.5">គណនី៖ ${item.banking.accountNumber} (${item.banking.accountName || s.name})</p>
+                        <p class="sm-td-sub text-slate-400 mt-0.5 sm-figure">ចូលបម្រើការ៖ ${fmtDate(item.joinedDate || '2026-01-15')} · ចន្លោះ៖ ${currentPayrollData.summary.periodLabel}</p>
+                    </div>
+                </div>
+
+                <!-- តារាងបែងចែកចំណូល និងការកាត់កង (2 ជួរឈរ) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <!-- ជួរខាងឆ្វេង៖ ចំណូល (Earnings) -->
+                    <div class="rounded-2xl border border-slate-200 p-4 space-y-3">
+                        <p class="font-semibold text-slate-800 text-sm border-b border-slate-100 pb-2 flex items-center justify-between">
+                            <span>ប្រាក់ចំណូល (Earnings)</span>
+                            <span class="text-xs text-slate-400">ចំនួន</span>
+                        </p>
+                        <div class="space-y-2 text-sm text-slate-600">
+                            <div class="flex justify-between">
+                                <span>ប្រាក់ខែគោល (Base Salary):</span>
+                                <span class="font-medium text-slate-800 sm-figure">$${item.regularPay.toFixed(2)}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>ថែមម៉ោង OT (${item.otHours} ម៉ោង):</span>
+                                <span class="font-medium text-slate-800 sm-figure">+$${item.otPay.toFixed(2)}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>ម៉ោងយប់ (${item.nightHours} ម៉ោង):</span>
+                                <span class="font-medium text-slate-800 sm-figure">+$${item.nightPay.toFixed(2)}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>ឧបត្ថម្ភថ្លៃបាយ (Food Allowance):</span>
+                                <span class="font-medium text-slate-800 sm-figure">+$${item.foodAllowance.toFixed(2)}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>រង្វាន់ឧស្សាហ៍ (Attendance):</span>
+                                <span class="font-medium text-slate-800 sm-figure">+$${item.attendanceBonus.toFixed(2)}</span>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-200/80 pt-2 flex justify-between font-semibold text-slate-800 text-sm">
+                            <span>សរុបចំណូលដុល (Gross):</span>
+                            <span class="text-emerald-700 sm-figure">$${item.grossUSD.toFixed(2)}</span>
+                        </div>
+                    </div>
+
+                    <!-- ជួរខាងស្តាំ៖ ការកាត់កង (Deductions) -->
+                    <div class="rounded-2xl border border-slate-200 p-4 space-y-3">
+                        <p class="font-semibold text-slate-800 text-sm border-b border-slate-100 pb-2 flex items-center justify-between">
+                            <span>ការកាត់កង (Deductions)</span>
+                            <span class="text-xs text-slate-400">ចំនួន</span>
+                        </p>
+                        <div class="space-y-2 text-sm text-slate-600">
+                            <div class="flex justify-between">
+                                <span>ខ្វះសាច់ប្រាក់ថត (Shortage):</span>
+                                <span class="font-medium text-slate-800 sm-figure">-$${item.cashShortage.toFixed(2)}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>វិភាគទាន ប.ស.ស (NSSF 2%):</span>
+                                <span class="font-medium text-slate-800 sm-figure">-$0.00</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>ពន្ធលើប្រាក់បៀវត្សរ៍ (Tax):</span>
+                                <span class="font-medium text-slate-800 sm-figure">-$0.00</span>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-200/80 pt-2 flex justify-between font-semibold text-slate-800 text-sm">
+                            <span>សរុបការកាត់កង:</span>
+                            <span class="text-rose-600 sm-figure">-$${item.deductionsUSD.toFixed(2)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ប្រអប់ប្រាក់បៀវត្សរ៍ជាក់ស្តែង (Net Pay Highlight) -->
+                <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-emerald-800 font-semibold uppercase tracking-wider">ប្រាក់បៀវត្សរ៍ជាក់ស្តែង / Net Take-Home Pay</p>
+                        <p class="text-xs text-emerald-600 mt-0.5">បានទូទាត់ផ្ទេរតាមរយៈ ${item.banking.bankName}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-2xl font-bold text-emerald-700 sm-figure">$${item.netUSD.toFixed(2)}</p>
+                        <p class="text-xs text-emerald-700 font-medium sm-figure">≈ ${netKHR.toLocaleString()} ៛</p>
+                    </div>
+                </div>
+
+                <!-- ហត្ថលេខាត្រួតពិនិត្យ 3 ផ្នែក -->
+                <div class="grid grid-cols-3 gap-4 pt-6 border-t border-slate-200 text-center text-xs text-slate-500">
+                    <div class="space-y-12">
+                        <p class="font-medium text-slate-700">អ្នករៀបចំ</p>
+                        <p class="border-t border-slate-300 pt-1">ហត្ថលេខា និងកាលបរិច្ឆេទ</p>
+                    </div>
+                    <div class="space-y-12">
+                        <p class="font-medium text-slate-700">អ្នកអនុម័ត (ម្ចាស់ហាង)</p>
+                        <p class="border-t border-slate-300 pt-1">ហេង ចាន់ថា</p>
+                    </div>
+                    <div class="space-y-12">
+                        <p class="font-medium text-slate-700">អ្នកទទួលប្រាក់ (បុគ្គលិក)</p>
+                        <p class="border-t border-slate-300 pt-1">${s.name}</p>
+                    </div>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+        }
+
+        function closePayslipModal() {
+            document.getElementById('payslipModalBackdrop').classList.add('hidden');
+        }
+
+        function printCurrentPayslip() {
+            window.print();
+        }
+
+        function openTimesheet(staffId) {
+            const item = currentPayrollData.staffPayrolls.find(p => p.staff.id === staffId);
+            if (!item) return;
+            const range = typeof getSelectedRange === 'function' ? getSelectedRange() : null;
+            const shifts = typeof getStaffTimesheet === 'function' ? getStaffTimesheet(staffId, range) : [];
+
+            const modal = document.getElementById('timesheetModalBackdrop');
+            document.getElementById('timesheetAvatar').innerHTML = avatarOf(item.staff, 'w-10 h-10');
+            document.getElementById('timesheetStaffName').textContent = `${item.staff.name} (${item.employeeCode || item.staff.id})`;
+            document.getElementById('timesheetStaffSub').textContent = `${ROLE_NAME[item.role]} · ចន្លោះកាលបរិច្ឆេទ ${currentPayrollData.summary.periodLabel}`;
+
+            document.getElementById('timesheetPills').innerHTML = `
+                <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                    <p class="text-[11px] text-slate-400">វេនសរុប</p>
+                    <p class="font-semibold text-slate-800 sm-figure text-base">${shifts.length} វេន</p>
+                </div>
+                <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                    <p class="text-[11px] text-slate-400">ម៉ោងធម្មតា</p>
+                    <p class="font-semibold text-slate-800 sm-figure text-base">${item.regularHours} ម៉ោង</p>
+                </div>
+                <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700">
+                    <p class="text-[11px] text-amber-600">ថែមម៉ោង OT</p>
+                    <p class="font-semibold sm-figure text-base">${item.otHours} ម៉ោង</p>
+                </div>
+                <div class="p-2.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700">
+                    <p class="text-[11px] text-indigo-600">ម៉ោងយប់</p>
+                    <p class="font-semibold sm-figure text-base">${item.nightHours} ម៉ោង</p>
+                </div>
+            `;
+
+            const TONE_BADGE = {
+                slate: 'bg-slate-100 text-slate-700 border-slate-200',
+                amber: 'bg-amber-50 text-amber-700 border-amber-200',
+                indigo: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+                emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200'
+            };
+
+            document.getElementById('timesheetRows').innerHTML = shifts.map(s => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="py-2.5 px-4 whitespace-nowrap">
+                        <span class="sm-figure text-slate-800 font-semibold">${fmtDate(s.date)}</span>
+                        <span class="block text-[11px] text-slate-400">${s.dayName}</span>
+                    </td>
+                    <td class="py-2.5 px-3">
+                        <span class="text-slate-800">${s.templateName}</span>
+                        <span class="block text-[11px] text-slate-400 sm-figure">${s.timeRange}</span>
+                    </td>
+                    <td class="py-2.5 px-3 sm-figure text-slate-600">${s.register}</td>
+                    <td class="py-2.5 px-3 text-right sm-figure font-medium text-slate-800">${s.hours} ម៉</td>
+                    <td class="py-2.5 px-3 text-center">
+                        <span class="sm-badge inline-flex px-2 py-0.5 rounded-full border text-[11px] ${TONE_BADGE[s.tone] || TONE_BADGE.slate}">
+                            ${s.typeLabel}
+                        </span>
+                    </td>
+                    <td class="py-2.5 px-3 text-right sm-figure ${s.variance < 0 ? 'text-rose-600 font-semibold' : 'text-slate-400'}">
+                        ${s.variance < 0 ? `-$${Math.abs(s.variance).toFixed(2)}` : '$0.00'}
+                    </td>
+                    <td class="py-2.5 px-4 text-center text-xs text-slate-500 whitespace-nowrap">${s.status}</td>
+                </tr>
+            `).join('');
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeTimesheetModal() {
+            document.getElementById('timesheetModalBackdrop').classList.add('hidden');
+        }
+
+        async function resetSampleData() {
+            const ok = await showCustomConfirm({
+                title: 'កំណត់ទិន្នន័យគំរូឡើងវិញ',
+                message: 'តើលោកអ្នកចង់កំណត់ប្រវត្តិបើកប្រាក់បៀវត្សរ៍គំរូឡើងវិញដែរឬទេ? (ខែកញ្ញា: បានបើកទាំងអស់, ខែតុលា: បានបើក 2 នាក់ និងរង់ចាំ 4 នាក់)',
+                confirmText: 'កំណត់ឡើងវិញ',
+                type: 'warning'
+            });
+            if (!ok) return;
+
+            localStorage.removeItem('pos_payroll_disbursements');
+            showToast('បានកំណត់ទិន្នន័យគំរូឡើងវិញរួចរាល់', 'success');
+            renderAll();
+        }
+
+        window.onDateRangeApplied = renderAll;
+        window.onThemeChanged = renderAll;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDateRangePicker('dateRange');
+            selectPreset('ខែនេះ');
+            renderAll();
+        });
+    </script>
+</body>
+</html>

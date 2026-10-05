@@ -520,136 +520,218 @@
             const templates = shiftTemplates();
             const allLiveOpen = liveShifts().filter(s => s.status === 'open');
 
+            // គណនាទិន្នន័យបុគ្គលិកតាមវេននីមួយៗ (យ៉ាងតិច 1 នាក់ក្នុងមួយវេន)
+            const templateData = templates.map(t => {
+                const roster = rosterFor(bd, t.code);
+                const openShifts = allLiveOpen.filter(s => s.templateCode === t.code || (s.template && s.template.code === t.code));
+                const start = dateAt(bd, t.start);
+                const end = shiftEndDate({ date: bd, start: t.start, end: t.end });
+                const isCurrent = now >= start && now <= end;
+                const isPast = now > end;
+                const isFuture = now < start;
+                const msToStart = start - now;
+
+                const hasPendingFloat = REGISTERS.some(r => !!pendingFloatFor(r));
+                let floatBadge = '';
+                if (hasPendingFloat) {
+                    floatBadge = '<span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium inline-flex items-center gap-1"><i class="fas fa-coins text-[10px]"></i>បាតថតត្រៀមរួច</span>';
+                } else if (isFuture && msToStart <= 30 * 60000 && msToStart > 0) {
+                    floatBadge = '<span class="text-[11px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-medium inline-flex items-center gap-1"><i class="fas fa-triangle-exclamation text-[10px]"></i>មិនទាន់ចេញបាតថត</span>';
+                }
+
+                const crew = [];
+                roster.forEach(a => {
+                    const active = openShifts.find(s => s.cashierId === a.cashierId);
+                    const worked = hoursWorkedToday(a.cashierId, bd);
+                    const willExceed12 = worked > 8 && (worked + templateHours(t) > 12);
+
+                    let statusText = '';
+                    let statusTone = '';
+                    if (active) {
+                        if (active.register === a.register) {
+                            statusText = 'កំពុងធ្វើការ';
+                            statusTone = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                        } else {
+                            statusText = `ជំនួស (${active.register})`;
+                            statusTone = 'bg-amber-50 text-amber-700 border-amber-200';
+                        }
+                    } else if (isPast) {
+                        statusText = 'បានបញ្ចប់';
+                        statusTone = 'bg-slate-100 text-slate-500 border-slate-200';
+                    } else if (now > start) {
+                        statusText = 'យឺត / មិនទាន់មក';
+                        statusTone = 'bg-rose-50 text-rose-700 border-rose-200';
+                    } else {
+                        statusText = 'ត្រៀមចូលវេន';
+                        statusTone = 'bg-slate-50 text-slate-600 border-slate-200';
+                    }
+
+                    crew.push({
+                        cashierId: a.cashierId,
+                        register: a.register,
+                        statusText,
+                        statusTone,
+                        willExceed12,
+                        cover: a.cover
+                    });
+                });
+
+                openShifts.forEach(sh => {
+                    if (!roster.some(a => a.cashierId === sh.cashierId)) {
+                        crew.push({
+                            cashierId: sh.cashierId,
+                            register: sh.register,
+                            statusText: 'ជំនួសវេន',
+                            statusTone: 'bg-amber-50 text-amber-700 border-amber-200',
+                            willExceed12: false,
+                            cover: true
+                        });
+                    }
+                });
+
+                const isCovered = crew.length >= 1;
+
+                return {
+                    t,
+                    crew,
+                    isCovered,
+                    isCurrent,
+                    isPast,
+                    isFuture,
+                    floatBadge
+                };
+            });
+
+            const coveredCount = templateData.filter(d => d.isCovered).length;
+            const totalCount = templateData.length;
+            const allCovered = coveredCount === totalCount;
+
             host.innerHTML = `
                 <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
                     <div>
-                        <h3 class="sm-card-title text-slate-800">វេនថ្ងៃនេះ · ផ្ទាំងគ្រប់គ្រងវត្តមាន (Shift Coverage)</h3>
-                        <p class="sm-card-sub text-slate-500">ផែនការកាលវិភាគ ធៀបនឹងវត្តមានជាក់ស្តែង</p>
+                        <div class="flex items-center gap-2">
+                            <h3 class="sm-card-title text-slate-800">វេនថ្ងៃនេះ · ផ្ទាំងគ្រប់គ្រងវត្តមាន (Shift Coverage)</h3>
+                            ${allCovered
+                                ? '<span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold inline-flex items-center gap-1"><i class="fas fa-circle-check text-[10px]"></i> គ្រប់វេនមានបុគ្គលិក</span>'
+                                : `<span class="text-xs px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-semibold inline-flex items-center gap-1"><i class="fas fa-triangle-exclamation text-[10px]"></i> ខ្វះ ${totalCount - coveredCount} វេន</span>`}
+                        </div>
+                        <p class="sm-card-sub text-slate-500 mt-0.5">វត្តមានជាក់ស្តែងធៀបនឹងកាលវិភាគ · តម្រូវការយ៉ាងតិច 1 នាក់ក្នុងមួយវេន (${coveredCount}/${totalCount} វេនពេញលេញ)</p>
                     </div>
                     <a href="../roster/roster.html" class="sm-badge px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition inline-flex items-center gap-1.5">
                         <i class="fas fa-calendar-week"></i> កាលវិភាគពេញលេញ <i class="fas fa-arrow-right text-[10px]"></i>
                     </a>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-${Math.min(templates.length, 4)} gap-4">
-                    ${templates.map(t => {
-                        const roster = rosterFor(bd, t.code);
-                        const openShifts = allLiveOpen.filter(s => s.templateCode === t.code || (s.template && s.template.code === t.code));
-                        const start = dateAt(bd, t.start);
-                        const end = shiftEndDate({ date: bd, start: t.start, end: t.end });
-                        const isCurrent = now >= start && now <= end;
-                        const isPast = now > end;
-                        const isFuture = now < start;
-                        const msToStart = start - now;
+                    ${templateData.map(d => {
+                        const { t, crew, isCovered, isCurrent, isPast, isFuture, floatBadge } = d;
 
-                        const hasPendingFloat = REGISTERS.some(r => !!pendingFloatFor(r));
-                        let floatBadge = '';
-                        if (hasPendingFloat) {
-                            floatBadge = '<span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium"><i class="fas fa-coins text-[10px] mr-1"></i>ប្រាក់បាតថតត្រៀមរួច</span>';
-                        } else if (isFuture && msToStart <= 30 * 60000 && msToStart > 0) {
-                            floatBadge = '<span class="text-[11px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-medium"><i class="fas fa-triangle-exclamation text-[10px] mr-1"></i>មិនទាន់ចេញប្រាក់បាតថត</span>';
-                        }
-
-                        const crew = [];
-                        roster.forEach(a => {
-                            const active = openShifts.find(s => s.cashierId === a.cashierId);
-                            const worked = hoursWorkedToday(a.cashierId, bd);
-                            const willExceed12 = worked > 8 && (worked + templateHours(t) > 12);
-
-                            let statusText = '';
-                            let statusTone = '';
-                            if (active) {
-                                if (active.register === a.register) {
-                                    statusText = 'កំពុងធ្វើការ';
-                                    statusTone = 'bg-emerald-50 text-emerald-700 border-emerald-200';
-                                } else {
-                                    statusText = `ជំនួស (${active.register})`;
-                                    statusTone = 'bg-amber-50 text-amber-700 border-amber-200';
-                                }
-                            } else if (isPast) {
-                                statusText = 'មិនបានមក';
-                                statusTone = 'bg-slate-100 text-slate-500 border-slate-200';
-                            } else if (now > start) {
-                                statusText = 'យឺត / មិនទាន់មក';
-                                statusTone = 'bg-rose-50 text-rose-700 border-rose-200';
-                            } else {
-                                statusText = 'មិនទាន់មក';
-                                statusTone = 'bg-slate-50 text-slate-600 border-slate-200';
-                            }
-
-                            crew.push({
-                                cashierId: a.cashierId,
-                                register: a.register,
-                                statusText,
-                                statusTone,
-                                willExceed12,
-                                cover: a.cover
-                            });
-                        });
-
-                        openShifts.forEach(sh => {
-                            if (!roster.some(a => a.cashierId === sh.cashierId)) {
-                                crew.push({
-                                    cashierId: sh.cashierId,
-                                    register: sh.register,
-                                    statusText: 'ជំនួសវេន',
-                                    statusTone: 'bg-amber-50 text-amber-700 border-amber-200',
-                                    willExceed12: false,
-                                    cover: true
-                                });
-                            }
-                        });
-
-                        const missing = REGISTERS.filter(r => !crew.some(c => c.register === r));
-
-                        return `<div class="p-4 rounded-xl border ${isCurrent ? 'border-cyan-400 bg-cyan-50/20' : 'border-slate-200 bg-white'} space-y-3">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <div class="flex items-center gap-1.5">
-                                        <h4 class="font-bold text-slate-800 text-sm">${t.name}</h4>
-                                        ${isCurrent ? '<span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>' : ''}
-                                    </div>
-                                    <p class="text-xs text-slate-400 sm-figure">${t.start}–${t.end} · ${templateHours(t)} ម៉ោង</p>
-                                </div>
-                                <div class="text-right flex flex-col items-end gap-1">
-                                    <span class="text-xs font-semibold ${isCurrent ? 'text-cyan-700' : isPast ? 'text-slate-400' : 'text-slate-600'}">
-                                        ${isCurrent ? 'កំពុងដំណើរការ' : isPast ? 'បានបញ្ចប់' : 'មិនទាន់ដល់'}
-                                    </span>
-                                    ${floatBadge}
-                                </div>
-                            </div>
-
-                            <div class="space-y-2 pt-1 border-t border-slate-100">
-                                ${crew.length ? crew.map(c => `
-                                    <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200/60 flex items-center justify-between gap-2">
-                                        <div class="flex items-center gap-2 min-w-0">
-                                            ${avatarHtml(c.cashierId, 'w-6 h-6')}
+                        const registersListHtml = REGISTERS.map(regName => {
+                            const assigned = crew.find(c => c.register === regName);
+                            if (assigned) {
+                                return `
+                                    <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/70 hover:border-slate-300 transition flex items-center justify-between gap-2.5">
+                                        <div class="flex items-center gap-2.5 min-w-0">
+                                            ${avatarHtml(assigned.cashierId, 'w-7 h-7')}
                                             <div class="min-w-0">
-                                                <p class="text-xs font-semibold text-slate-800 truncate">${personName(c.cashierId)}</p>
-                                                <p class="text-[10px] text-slate-400">${c.register}</p>
+                                                <div class="flex items-center gap-1.5">
+                                                    <p class="text-xs font-semibold text-slate-800 truncate">${personName(assigned.cashierId)}</p>
+                                                    ${assigned.cover ? '<span class="text-[10px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-medium">ជំនួស</span>' : ''}
+                                                </div>
+                                                <p class="text-[11px] text-slate-400 font-medium sm-figure">${assigned.register}</p>
                                             </div>
                                         </div>
                                         <div class="flex flex-col items-end gap-1 flex-shrink-0">
-                                            <span class="text-[10px] px-2 py-0.5 rounded-full border ${c.statusTone} font-medium">${c.statusText}</span>
-                                            ${c.willExceed12 ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 font-semibold">នឹងលើស 12 ម៉ោង</span>' : ''}
+                                            <span class="text-[10px] px-2 py-0.5 rounded-full border ${assigned.statusTone} font-medium">${assigned.statusText}</span>
+                                            ${assigned.willExceed12 ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 font-semibold">នឹងលើស 12 ម៉ោង</span>' : ''}
                                         </div>
                                     </div>
-                                `).join('') : '<p class="text-xs text-slate-400 py-1">គ្មានអ្នកចាត់តាំងក្នុងកាលវិភាគ</p>'}
+                                `;
+                            }
 
-                                ${missing.map(r => `
-                                    <div class="p-2 rounded-lg border border-dashed border-rose-300 bg-rose-50/40 flex items-center justify-between gap-2">
-                                        <span class="text-xs text-rose-700 font-medium"><i class="fas fa-user-xmark mr-1"></i>ខ្វះអ្នក (${r})</span>
-                                        <a href="../roster/roster.html?template=${t.code}" class="text-[11px] font-semibold text-rose-700 hover:text-rose-900">រកអ្នកជំនួស</a>
+                            if (isCovered) {
+                                // វេននេះមានអ្នកគិតលុយរួចហើយ (យ៉ាងតិច 1 នាក់) -> បញ្ជរដែលទំនេរដាក់ «មិនមានវេន»
+                                return `
+                                    <div class="p-2.5 rounded-xl bg-slate-50/60 border border-slate-200/60 flex items-center justify-between gap-2">
+                                        <div class="flex items-center gap-2 min-w-0">
+                                            <span class="w-6 h-6 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center text-[10px] flex-shrink-0">
+                                                <i class="fas fa-minus text-slate-300"></i>
+                                            </span>
+                                            <span class="text-xs font-medium text-slate-600 sm-figure">${regName}</span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-medium">មិនមានវេន</span>
+                                            <a href="../roster/roster.html?template=${t.code}&register=${regName}" class="text-[11px] text-indigo-600 hover:text-indigo-800 font-medium transition">ចាត់តាំង</a>
+                                        </div>
                                     </div>
-                                `).join('')}
+                                `;
+                            } else {
+                                // វេននេះគ្មានអ្នកគិតលុយទាល់តែសោះ (no one cashier for a shift) -> បង្ហាញជា «ខ្វះអ្នក» ជាមួយប៊ូតុង «រកអ្នកជំនួស»
+                                return `
+                                    <div class="p-2.5 rounded-xl border border-dashed border-rose-300 bg-rose-50/50 flex items-center justify-between gap-2">
+                                        <span class="text-xs text-rose-700 font-medium flex items-center gap-1.5">
+                                            <i class="fas fa-user-xmark text-rose-500 text-[11px]"></i> ខ្វះអ្នក (${regName})
+                                        </span>
+                                        <a href="../roster/roster.html?template=${t.code}&register=${regName}" class="text-[11px] font-semibold text-rose-700 hover:text-rose-900 transition">រកអ្នកជំនួស</a>
+                                    </div>
+                                `;
+                            }
+                        }).join('');
+
+                        const overflowCrewHtml = crew.filter(c => !REGISTERS.includes(c.register)).map(c => `
+                            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/70 hover:border-slate-300 transition flex items-center justify-between gap-2.5">
+                                <div class="flex items-center gap-2.5 min-w-0">
+                                    ${avatarHtml(c.cashierId, 'w-7 h-7')}
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-semibold text-slate-800 truncate">${personName(c.cashierId)}</p>
+                                        <p class="text-[11px] text-slate-400 font-medium sm-figure">${c.register}</p>
+                                    </div>
+                                </div>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full border ${c.statusTone} font-medium">${c.statusText}</span>
+                            </div>
+                        `).join('');
+
+                        return `
+                        <div class="p-4 rounded-2xl border ${!isCovered ? 'border-rose-300 bg-rose-50/20 shadow-sm ring-1 ring-rose-200' : isCurrent ? 'border-cyan-400 bg-cyan-50/20 shadow-sm' : 'border-slate-200 bg-white shadow-sm'} flex flex-col justify-between space-y-3">
+                            <div class="space-y-3">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div>
+                                        <div class="flex items-center gap-1.5">
+                                            <h4 class="font-bold text-slate-800 text-sm">${t.name}</h4>
+                                            ${isCurrent ? '<span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>' : ''}
+                                        </div>
+                                        <p class="text-xs text-slate-400 sm-figure">${t.start}–${t.end} · ${templateHours(t)} ម៉ោង</p>
+                                    </div>
+                                    <div class="text-right flex flex-col items-end gap-1">
+                                        <span class="text-xs font-semibold ${!isCovered ? 'text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full inline-flex items-center gap-1' : isCurrent ? 'text-cyan-700 bg-cyan-100/70 px-2 py-0.5 rounded-full' : isPast ? 'text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full' : 'text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full'}">
+                                            ${!isCovered ? '<i class="fas fa-triangle-exclamation text-[10px]"></i>ខ្វះអ្នកគិតលុយ' : isCurrent ? 'កំពុងដំណើរការ' : isPast ? 'បានបញ្ចប់' : 'មិនទាន់ដល់'}
+                                        </span>
+                                        ${floatBadge}
+                                    </div>
+                                </div>
+
+                                <div class="space-y-2 pt-2 border-t border-slate-100">
+                                    ${registersListHtml}
+                                    ${overflowCrewHtml}
+                                </div>
                             </div>
 
-                            <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
-                                <a href="../roster/roster.html?template=${t.code}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1">
-                                    <i class="fas fa-pen text-[10px]"></i> ចាត់តាំង
-                                </a>
-                                ${missing.length ? `<a href="../roster/roster.html?template=${t.code}" class="text-xs font-semibold text-rose-600 hover:text-rose-800 inline-flex items-center gap-1">
-                                    <i class="fas fa-user-plus text-[10px]"></i> រកអ្នកជំនួស (${missing.length})
-                                </a>` : ''}
+                            <div class="pt-2 border-t ${!isCovered ? 'border-rose-200' : 'border-slate-100'} flex items-center justify-between gap-2 text-xs">
+                                ${isCovered ? `
+                                    <span class="text-[11px] text-slate-500 font-medium inline-flex items-center gap-1.5">
+                                        <i class="fas fa-circle-check text-emerald-500 text-[10px]"></i>
+                                        <span>${crew.length} នាក់ក្នុងវេន</span>
+                                    </span>
+                                    <a href="../roster/roster.html?template=${t.code}" class="font-semibold text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1 transition">
+                                        <i class="fas fa-pen-to-square text-[11px]"></i> ចាត់តាំង
+                                    </a>
+                                ` : `
+                                    <span class="text-xs text-rose-600 font-semibold inline-flex items-center gap-1">
+                                        <i class="fas fa-circle-exclamation text-[10px]"></i> គ្មានអ្នកគិតលុយក្នុងវេន
+                                    </span>
+                                    <a href="../roster/roster.html?template=${t.code}" class="text-xs font-bold text-rose-700 hover:text-rose-900 inline-flex items-center gap-1 transition">
+                                        <i class="fas fa-user-plus text-[10px]"></i> រកអ្នកជំនួស
+                                    </a>
+                                `}
                             </div>
                         </div>`;
                     }).join('')}

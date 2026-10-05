@@ -42,6 +42,7 @@
                             <input id="search" oninput="renderList()" type="text" placeholder="ស្វែងរកឈ្មោះ ឬលេខសម្គាល់"
                                 class="sm-td w-full h-9 pl-8 pr-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:outline-none">
                         </label>
+                        <a href="../reports/payroll.html" class="sm-badge h-9 px-3.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center gap-2 whitespace-nowrap"><i class="fas fa-money-bill-wave text-emerald-600"></i> បើកប្រាក់បៀវត្សរ៍</a>
                         <button onclick="addPerson()" type="button" class="sm-badge h-9 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold inline-flex items-center gap-2 whitespace-nowrap"><i class="fas fa-plus"></i> បន្ថែមបុគ្គលិក</button>
                     </div>
                 </div>
@@ -50,6 +51,7 @@
                         <thead><tr class="border-b border-slate-100 bg-slate-50/60">
                             <th class="sm-th py-2.5 px-5 text-left text-slate-500">បុគ្គលិក</th>
                             <th class="sm-th py-2.5 px-3 text-left text-slate-500">តួនាទី</th>
+                            <th class="sm-th py-2.5 px-3 text-right text-slate-500">ប្រាក់ខែគោល</th>
                             <th class="sm-th py-2.5 px-3 text-left text-slate-500">វេនប្រចាំ</th>
                             <th class="sm-th py-2.5 px-3 text-right text-slate-500">បញ្ចុះតម្លៃបាន</th>
                             <th class="sm-th py-2.5 px-3 text-left text-slate-500">វេនចុងក្រោយ</th>
@@ -139,6 +141,7 @@
             const items = p.active ? [
                 menuItem('fa-pen', 'កែឈ្មោះ', 'editName', p.id),
                 menuItem('fa-user-shield', 'ប្តូរតួនាទី', 'changeRole', p.id),
+                menuItem('fa-money-bill-wave', 'កម្រៃ និងប្រាក់ខែ', 'editCompensation', p.id),
                 menuItem('fa-key', 'កំណត់លេខសម្ងាត់ថ្មី', 'resetPin', p.id)
             ].concat(p.role === 'cashier' ? [menuItem('fa-percent', 'ដែនកំណត់បញ្ចុះតម្លៃ', 'editLimit', p.id)] : [])
              .concat([`<div class="h-px bg-slate-100 my-1"></div>`, menuItem('fa-user-slash', 'ផ្អាកគណនី', 'deactivate', p.id, true)])
@@ -171,24 +174,34 @@
             empty.classList.toggle('hidden', !!list.length);
             empty.innerHTML = list.length ? '' : emptyState('fa-users', tab === 'inactive' ? 'គ្មានគណនីដែលបានផ្អាក' : 'រកមិនឃើញបុគ្គលិក', 'សូមសាកល្បងពាក្យស្វែងរកផ្សេង');
             const me = id => id === ME_MANAGER ? '<span class="sm-badge ml-1.5 px-1.5 rounded bg-emerald-50 text-emerald-700">លោកអ្នក</span>' : '';
-            document.getElementById('rows').innerHTML = list.map(p => `<tr class="${p.active ? '' : 'bg-slate-50/50'}">
-                <td class="py-3 px-5"><div class="flex items-center gap-3 min-w-0">${avatarOf(p)}<div class="min-w-0"><p class="sm-td-strong text-slate-800 truncate">${p.name}${me(p.id)}</p><p class="sm-td-sub text-slate-400 sm-figure">${p.id}</p></div></div></td>
-                <td class="py-3 px-3"><span class="sm-badge inline-flex px-2.5 py-0.5 rounded-full border ${ROLE_CHIP[p.role]}">${ROLE_NAME[p.role]}</span></td>
-                <td class="py-3 px-3 sm-td">${shiftText(p)}</td>
-                <td class="py-3 px-3 sm-td text-right">${limitText(p)}</td>
-                <td class="py-3 px-3 sm-td">${lastShift(p)}</td>
-                <td class="py-3 px-3">${statusChipOf(p)}</td>
-                <td class="py-3 px-5 text-right">${dotsBtn('m-' + p.id)}${menu(p, 'm-' + p.id)}</td>
-            </tr>`).join('');
-            document.getElementById('cards').innerHTML = list.map(p => `<div class="p-4 flex items-start gap-3">
-                ${avatarOf(p, 'w-10 h-10')}
-                <div class="min-w-0 flex-1">
-                    <p class="sm-value text-slate-800 truncate">${p.name}${me(p.id)}</p>
-                    <p class="sm-td-sub text-slate-500">${ROLE_NAME[p.role]} · ${p.id}${p.role === 'cashier' ? ` · បញ្ចុះបាន ${discountLimitFor(p.id)}%` : ''}</p>
-                    <div class="mt-1.5">${statusChipOf(p)}</div>
-                </div>
-                ${dotsBtn('c-' + p.id)}${menu(p, 'c-' + p.id)}
-            </div>`).join('');
+            document.getElementById('rows').innerHTML = list.map(p => {
+                const comp = typeof getStaffCompensation === 'function' ? getStaffCompensation(p.id) : { baseSalaryUSD: 250, hourlyRateUSD: 1.20 };
+                return `<tr class="${p.active ? '' : 'bg-slate-50/50'}">
+                    <td class="py-3 px-5"><div class="flex items-center gap-3 min-w-0">${avatarOf(p)}<div class="min-w-0"><p class="sm-td-strong text-slate-800 truncate">${p.name}${me(p.id)}</p><p class="sm-td-sub text-slate-400 sm-figure">${p.id}</p></div></div></td>
+                    <td class="py-3 px-3"><span class="sm-badge inline-flex px-2.5 py-0.5 rounded-full border ${ROLE_CHIP[p.role]}">${ROLE_NAME[p.role]}</span></td>
+                    <td class="py-3 px-3 sm-td text-right">
+                        <span class="sm-figure font-medium text-slate-800">$${Number(comp.baseSalaryUSD).toFixed(2)}</span>
+                        <span class="block sm-td-sub text-slate-400 sm-figure">$${comp.hourlyRateUSD}/ម៉</span>
+                    </td>
+                    <td class="py-3 px-3 sm-td">${shiftText(p)}</td>
+                    <td class="py-3 px-3 sm-td text-right">${limitText(p)}</td>
+                    <td class="py-3 px-3 sm-td">${lastShift(p)}</td>
+                    <td class="py-3 px-3">${statusChipOf(p)}</td>
+                    <td class="py-3 px-5 text-right">${dotsBtn('m-' + p.id)}${menu(p, 'm-' + p.id)}</td>
+                </tr>`;
+            }).join('');
+            document.getElementById('cards').innerHTML = list.map(p => {
+                const comp = typeof getStaffCompensation === 'function' ? getStaffCompensation(p.id) : { baseSalaryUSD: 250 };
+                return `<div class="p-4 flex items-start gap-3">
+                    ${avatarOf(p, 'w-10 h-10')}
+                    <div class="min-w-0 flex-1">
+                        <p class="sm-value text-slate-800 truncate">${p.name}${me(p.id)}</p>
+                        <p class="sm-td-sub text-slate-500">${ROLE_NAME[p.role]} · ${p.id} · <span class="text-emerald-700 font-medium sm-figure">$${Number(comp.baseSalaryUSD).toFixed(2)}/ខែ</span>${p.role === 'cashier' ? ` · បញ្ចុះបាន ${discountLimitFor(p.id)}%` : ''}</p>
+                        <div class="mt-1.5">${statusChipOf(p)}</div>
+                    </div>
+                    ${dotsBtn('c-' + p.id)}${menu(p, 'c-' + p.id)}
+                </div>`;
+            }).join('');
         }
 
         function renderAll() {
@@ -344,6 +357,48 @@
             savePosSettings({ discountLimits: limits }, ME_MANAGER);
             renderAll();
             showToast(`${p.name} បញ្ចុះបានរហូតដល់ ${Number(v.limit)}%`);
+        }
+
+        async function editCompensation(id) {
+            const p = find(id);
+            const comp = typeof getStaffCompensation === 'function' ? getStaffCompensation(id) : { baseSalaryUSD: 250, foodAllowanceUSD: 30, attendanceBonusUSD: 15, bankName: 'ABA Bank' };
+            const v = await showFormDialog({
+                title: `កម្រៃ និងប្រាក់ខែ ${p.name}`,
+                icon: 'fa-money-bill-wave',
+                message: 'កំណត់ប្រាក់ខែគោល ថ្លៃបាយ ប្រាក់រង្វាន់ និងព័ត៌មានធនាគារ',
+                fields: [
+                    { key: 'baseSalary', label: 'ប្រាក់ខែគោល (USD)', value: String(comp.baseSalaryUSD || ''), type: 'number', prefix: '$', hint: 'ស្តង់ដារ 208 ម៉ោង/ខែ' },
+                    { key: 'foodAllowance', label: 'ប្រាក់ឧបត្ថម្ភថ្លៃបាយ (USD)', value: String(comp.foodAllowanceUSD != null ? comp.foodAllowanceUSD : '30'), type: 'number', prefix: '$' },
+                    { key: 'attendanceBonus', label: 'ប្រាក់រង្វាន់ឧស្សាហ៍ (USD)', value: String(comp.attendanceBonusUSD != null ? comp.attendanceBonusUSD : '15'), type: 'number', prefix: '$' },
+                    { key: 'bankName', label: 'ធនាគារទូទាត់ប្រាក់', value: comp.bankName || 'ABA Bank' },
+                    { key: 'accountNumber', label: 'លេខគណនីធនាគារ', value: comp.accountNumber || '', hint: 'ឧ. 000 123 456' },
+                    { key: 'accountName', label: 'ឈ្មោះគណនីធនាគារ', value: comp.accountName || p.name }
+                ],
+                preview: vals => {
+                    const base = Number(vals.baseSalary) || 0;
+                    const hr = (base / 208).toFixed(2);
+                    const ot = (hr * 1.5).toFixed(2);
+                    const night = (hr * 2.0).toFixed(2);
+                    return `<div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-xs space-y-1">
+                        <div class="flex justify-between text-slate-600"><span>ម៉ោងធម្មតា (1.0x):</span><span class="font-semibold text-slate-800 sm-figure">$${hr} /ម៉ោង</span></div>
+                        <div class="flex justify-between text-slate-600"><span>ថែមម៉ោង OT (1.5x):</span><span class="font-semibold text-emerald-600 sm-figure">$${ot} /ម៉ោង</span></div>
+                        <div class="flex justify-between text-slate-600"><span>ម៉ោងយប់/បុណ្យ (2.0x):</span><span class="font-semibold text-indigo-600 sm-figure">$${night} /ម៉ោង</span></div>
+                    </div>`;
+                },
+                confirmText: 'រក្សាទុក',
+                validate: x => !(Number(x.baseSalary) > 0) ? 'សូមបញ្ចូលប្រាក់ខែគោលត្រឹមត្រូវ' : ''
+            });
+            if (!v) return;
+            saveStaffCompensation(id, {
+                baseSalaryUSD: Number(v.baseSalary),
+                foodAllowanceUSD: Number(v.foodAllowance) || 0,
+                attendanceBonusUSD: Number(v.attendanceBonus) || 0,
+                bankName: v.bankName,
+                accountNumber: v.accountNumber,
+                accountName: v.accountName
+            }, `កែប្រែកម្រៃ និងប្រាក់ខែ ${p.name} ($${Number(v.baseSalary)})`);
+            renderAll();
+            showToast(`បានកែប្រែកម្រៃ និងប្រាក់ខែ ${p.name} រួចរាល់`);
         }
 
         async function deactivate(id) {

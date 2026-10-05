@@ -90,6 +90,7 @@ const PORTAL_CONFIGS = {
             { id: 'stock-value', label: 'តម្លៃស្តុកសរុប', icon: 'mdi:chart-pie', href: 'admin/reports/stock-value.html' },
             { id: 'shrinkage', label: 'ការខាតបង់ស្តុក', icon: 'mdi:package-variant-closed-remove', href: 'admin/reports/shrinkage.html' },
             { group: 'គ្រប់គ្រង', id: 'staff', label: 'បុគ្គលិក និងតួនាទី', icon: 'mdi:account-group-outline', href: 'admin/staff/staff.html' },
+            { id: 'payroll', label: 'ម៉ោងការងារ និងប្រាក់បៀវត្សរ៍', icon: 'mdi:cash-multiple', href: 'admin/reports/payroll.html' },
             { id: 'products', label: 'ទំនិញ និងតម្លៃ', icon: 'mdi:tag-outline', href: 'admin/products/products.html' },
             { id: 'settings', label: 'ច្បាប់ និងការកំណត់', icon: 'mdi:tune-variant', href: 'admin/settings/settings.html' },
             { group: 'ត្រួតពិនិត្យ', id: 'audit', label: 'កំណត់ហេតុសវនកម្ម', icon: 'mdi:clipboard-text-clock-outline', href: 'admin/audit/audit.html' }

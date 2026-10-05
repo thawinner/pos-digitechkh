@@ -21,8 +21,35 @@ function isoLocal(d) {
     return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
+function isDateObj(d) {
+    return d instanceof Date || (d != null && typeof d === 'object' && typeof d.getTime === 'function' && typeof d.getFullYear === 'function');
+}
+
 function isoDate(d) {
-    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+    if (!d) return '';
+    if (typeof d === 'string') return d.slice(0, 10);
+    if (isDateObj(d)) {
+        if (isNaN(d.getTime())) return '';
+        return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+    }
+    return '';
+}
+
+function toIsoDateStr(d) {
+    if (!d) return '';
+    if (isDateObj(d)) {
+        if (isNaN(d.getTime())) return '';
+        return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+    }
+    if (typeof d === 'string') {
+        if (/^\d{4}-\d{2}-\d{2}/.test(d)) return d.slice(0, 10);
+        const parsed = new Date(d);
+        if (!isNaN(parsed.getTime())) {
+            return `${parsed.getFullYear()}-${pad2(parsed.getMonth() + 1)}-${pad2(parsed.getDate())}`;
+        }
+        return d;
+    }
+    return '';
 }
 
 function fmtUSD(amount) {
@@ -46,7 +73,18 @@ function fmtKhDate(iso) {
 
 /* DD/MM/YYYY (ឯកសារស្តង់ដារលេខ 05 ផ្នែក 6) */
 function fmtDate(iso) {
+    if (!iso) return '—';
+    if (isDateObj(iso)) {
+        if (isNaN(iso.getTime())) return '—';
+        return `${pad2(iso.getDate())}/${pad2(iso.getMonth() + 1)}/${iso.getFullYear()}`;
+    }
+    const str = String(iso);
+    if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+        const parts = str.slice(0, 10).split('-');
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
     const d = new Date(iso);
+    if (isNaN(d.getTime())) return '—';
     return `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;
 }
 

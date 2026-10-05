@@ -1713,8 +1713,8 @@ function showAssignDialog(opts = {}) {
             const occupant = currentRoster.find(a => a.register === selReg && a.cashierId !== selId);
             const isReplacing = !!occupant;
 
-            const recommended = candidates.filter(c => c.rank <= 3);
-            const others = candidates.filter(c => c.rank > 3);
+            const recommended = candidates.filter(c => c.rank <= 4);
+            const others = candidates.filter(c => c.rank > 4);
 
             const toneMap = {
                 emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200',
@@ -1739,7 +1739,7 @@ function showAssignDialog(opts = {}) {
                             </div>
                             <div class="text-[11px] text-slate-500 mt-0.5 sm-figure flex items-center gap-2">
                                 <span>${c.hoursBefore} → ${c.hoursAfter} ម៉ោង</span>
-                                ${c.reason ? `<span class="text-rose-600 truncate">${c.reason}</span>` : ''}
+                                ${c.reason ? `<span class="${c.blocked ? 'text-rose-600' : 'text-amber-600 font-medium'} truncate">${c.reason}</span>` : ''}
                             </div>
                         </div>
                     </div>
@@ -1782,12 +1782,16 @@ function showAssignDialog(opts = {}) {
                 `;
             }
 
-            let warningLine = '';
-            if (selCand && selCand.leavesGap) {
-                warningLine = `<p class="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2"><i class="fas fa-triangle-exclamation mr-1.5"></i>${selCand.leavesGap} ថ្ងៃនេះនឹងគ្មានអ្នកគិតលុយ</p>`;
-            } else if (isReplacing) {
-                warningLine = `<p class="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2"><i class="fas fa-triangle-exclamation mr-1.5"></i>${personName(occupant.cashierId)} នឹងត្រូវដកចេញពី ${selReg}</p>`;
+            const warningLines = [];
+            if (selCand && selCand.over48) {
+                warningLines.push(`<p class="text-xs font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 flex items-center gap-2"><i class="fas fa-clock text-amber-600"></i><span>បុគ្គលិកនេះធ្វើការ ${selCand.hoursAfter} ម៉ោងក្នុងសប្តាហ៍នេះ (លើស 48 ម៉ោង) · គិតជាម៉ោងបន្ថែម/ថែមម៉ោង (OT)</span></p>`);
             }
+            if (selCand && selCand.leavesGap) {
+                warningLines.push(`<p class="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2"><i class="fas fa-triangle-exclamation mr-1.5"></i>${selCand.leavesGap} ថ្ងៃនេះនឹងគ្មានអ្នកគិតលុយ</p>`);
+            } else if (isReplacing) {
+                warningLines.push(`<p class="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2"><i class="fas fa-triangle-exclamation mr-1.5"></i>${personName(occupant.cashierId)} នឹងត្រូវដកចេញពី ${selReg}</p>`);
+            }
+            const warningLine = warningLines.join('');
 
             const canSubmit = selCand && !selCand.blocked && selReg;
 
