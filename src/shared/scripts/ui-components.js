@@ -4,7 +4,14 @@
  */
 
 // 1. Toast Notification System (Replaces window.alert)
-function showToast(message, type = 'success', duration = 3200) {
+function showToast(message, type = 'success', duration = 3200, options = null) {
+    if (typeof duration === 'object' && duration !== null) {
+        options = duration;
+        duration = options && options.action ? 6000 : 3200;
+    } else if (options && options.action && duration === 3200) {
+        duration = 6000;
+    }
+
     let container = document.getElementById('bmsToastContainer');
     if (!container) {
         container = document.createElement('div');
@@ -33,14 +40,30 @@ function showToast(message, type = 'success', duration = 3200) {
         borderClass = 'border-indigo-100';
     }
 
+    const actionHtml = (options && options.action && options.action.label)
+        ? `<button type="button" data-toast-action class="px-2.5 py-1 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg ml-2 transition flex-shrink-0 cursor-pointer">${options.action.label}</button>`
+        : '';
+
     toast.classList.add(borderClass);
     toast.innerHTML = `
         ${iconHtml}
         <div class="flex-1 font-medium text-slate-800 text-xs leading-relaxed">${message}</div>
+        ${actionHtml}
         <button onclick="this.parentElement.remove()" class="text-slate-300 hover:text-slate-600 p-1 rounded-lg transition ml-auto flex-shrink-0 cursor-pointer">
             <i class="fas fa-xmark text-xs"></i>
         </button>
     `;
+
+    if (options && options.action && typeof options.action.onClick === 'function') {
+        const actBtn = toast.querySelector('[data-toast-action]');
+        if (actBtn) {
+            actBtn.onclick = (e) => {
+                e.stopPropagation();
+                options.action.onClick();
+                toast.remove();
+            };
+        }
+    }
 
     container.appendChild(toast);
 
@@ -1646,5 +1669,256 @@ function showNumberPad(opts = {}) {
         document.addEventListener('keydown', host.__keyHandler, true);
         host.onclick = () => finish(null);
         render();
+    });
+}
+
+/* ===== ប្រអប់ចាត់តាំងវេន (ផែនការកែលម្អ S5, S22) =====
+   បង្ហាញបញ្ជីបេក្ខជនតាមចំណាត់ថ្នាក់ ម៉ោងមុន→ក្រោយ របារម៉ោងថ្ងៃនេះ ជម្រើសវេនខ្លី បញ្ជរ មូលហេតុ និងការព្រមានចន្លោះ */
+function showAssignDialog(opts = {}) {
+    return new Promise(resolve => {
+        const date = opts.date || isoDate(new Date());
+        const code = opts.code || (shiftTemplates()[0] ? shiftTemplates()[0].code : 'A');
+        const tpl = shiftTemplates().find(t => t.code === code) || { name: 'វេន', start: '06:00', end: '14:00' };
+        const dow = new Date(date + 'T12:00').getDay();
+        const DOW_KH = ['អាទិត្យ', 'ច័ន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍'];
+
+        const candidates = typeof rankCandidates === 'function' ? rankCandidates(date, code) : [];
+        if (!candidates.length) {
+            showToast('គ្មានបុគ្គលិកដែលអាចចាត់តាំងបានទេ', 'warning');
+            return resolve(null);
+        }
+
+        const host = posDialogHost('posAssignModal');
+        const currentRoster = rosterFor(date, code);
+
+        let selId = opts.preselectPersonId && candidates.some(c => c.id === opts.preselectPersonId && !c.blocked)
+            ? opts.preselectPersonId
+            : ((candidates.find(c => !c.blocked) || candidates[0]).id);
+
+        let selCand = candidates.find(c => c.id === selId) || candidates[0];
+
+        const defs = posSettings().staffDefaults || {};
+        const staffDef = defs[selId] || {};
+        const freeRegs = REGISTERS.filter(r => !currentRoster.some(a => a.register === r));
+        let selReg = (staffDef.register && freeRegs.includes(staffDef.register))
+            ? staffDef.register
+            : (freeRegs[0] || REGISTERS[0]);
+
+        const reasonsList = (posSettings().reasons && posSettings().reasons.cover) || ['ឈប់សម្រាក', 'ឈឺ', 'ប្តូរវេនគ្នា', 'ពេលមមាញឹក', 'ផ្សេងៗ'];
+        let selReason = '';
+        let isPartial = !!(selCand && selCand.partialAllowed);
+
+        const renderDialog = () => {
+            selCand = candidates.find(c => c.id === selId) || candidates[0];
+            const occupant = currentRoster.find(a => a.register === selReg && a.cashierId !== selId);
+            const isReplacing = !!occupant;
+
+            const recommended = candidates.filter(c => c.rank <= 3);
+            const others = candidates.filter(c => c.rank > 3);
+
+            const toneMap = {
+                emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                indigo: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+                amber: 'bg-amber-50 text-amber-700 border-amber-200',
+                rose: 'bg-rose-50 text-rose-700 border-rose-200'
+            };
+
+            const candRow = c => {
+                const isSelected = c.id === selId;
+                const isBlocked = c.blocked;
+                return `
+                    <div data-cand="${c.id}" class="flex items-center gap-3 p-2.5 rounded-2xl border transition cursor-pointer ${isBlocked ? 'opacity-50 cursor-not-allowed border-slate-100 bg-slate-50/50' : (isSelected ? 'border-indigo-600 bg-indigo-50/40 ring-1 ring-indigo-500' : 'border-slate-200 hover:border-slate-300 bg-white')}">
+                        <div class="flex items-center justify-center w-5 flex-shrink-0">
+                            ${isBlocked ? '<span class="text-rose-400 text-xs font-bold">⊘</span>' : `<span class="w-4 h-4 rounded-full border flex items-center justify-center ${isSelected ? 'border-indigo-600 bg-indigo-600' : 'border-slate-300'}">${isSelected ? '<span class="w-1.5 h-1.5 rounded-full bg-white"></span>' : ''}</span>`}
+                        </div>
+                        ${avatarHtml(c.id, 'w-8 h-8')}
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2">
+                                <span class="sm-value text-slate-800 text-xs truncate">${c.name}</span>
+                                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full border ${toneMap[c.tone] || 'border-slate-200 text-slate-600'}">${c.chip}</span>
+                            </div>
+                            <div class="text-[11px] text-slate-500 mt-0.5 sm-figure flex items-center gap-2">
+                                <span>${c.hoursBefore} → ${c.hoursAfter} ម៉ោង</span>
+                                ${c.reason ? `<span class="text-rose-600 truncate">${c.reason}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            };
+
+            let dayBarHtml = '';
+            if (selCand) {
+                const worked = selCand.workedToday || 0;
+                const shiftH = isPartial && selCand.capTime ? (minutesOf(selCand.capTime) - minutesOf(tpl.start)) / 60 : templateHours(tpl);
+                const workedPct = Math.min(100, (worked / 12) * 100);
+                const shiftPct = Math.min(100 - workedPct, (Math.max(0, shiftH) / 12) * 100);
+                const freePct = Math.max(0, 100 - workedPct - shiftPct);
+
+                dayBarHtml = `
+                    <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2 mt-2">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="font-medium text-slate-700">កម្រិតម៉ោងថ្ងៃនេះ៖ ${worked} / 12 ម៉ោង</span>
+                            <span class="text-slate-500 sm-figure">${selCand.openDrawerNow ? `កំពុងបើកថតប្រាក់ ${selCand.openDrawerNow.templateName}` : ''}</span>
+                        </div>
+                        <div class="h-3 w-full bg-slate-200 rounded-full overflow-hidden flex">
+                            <div style="width: ${workedPct}%" class="bg-indigo-600 h-full" title="បានធ្វើការ"></div>
+                            <div style="width: ${shiftPct}%" class="bg-indigo-300 h-full" title="វេននេះ"></div>
+                            <div style="width: ${freePct}%" class="bg-slate-100 h-full" title="ទំនេរ"></div>
+                        </div>
+                        <div class="flex items-center gap-4 text-[10px] text-slate-500">
+                            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded bg-indigo-600"></span>បានធ្វើការ (${worked} ម៉ោង)</span>
+                            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded bg-indigo-300"></span>វេននេះ (${Math.round(shiftH*10)/10} ម៉ោង)</span>
+                            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded bg-slate-200"></span>ទំនេរ</span>
+                        </div>
+                        ${selCand.partialAllowed ? `
+                            <div class="pt-1 flex items-center justify-between">
+                                <label class="flex items-center gap-2 cursor-pointer text-xs font-semibold text-amber-800">
+                                    <input type="checkbox" id="partialCheckbox" ${isPartial ? 'checked' : ''} class="w-4 h-4 text-indigo-600 rounded">
+                                    <span>ជំនួសត្រឹម ${tpl.start}–${selCand.capTime} (វេនខ្លី ដើម្បីកុំឱ្យលើស 12 ម៉ោង)</span>
+                                </label>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            let warningLine = '';
+            if (selCand && selCand.leavesGap) {
+                warningLine = `<p class="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2"><i class="fas fa-triangle-exclamation mr-1.5"></i>${selCand.leavesGap} ថ្ងៃនេះនឹងគ្មានអ្នកគិតលុយ</p>`;
+            } else if (isReplacing) {
+                warningLine = `<p class="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2"><i class="fas fa-triangle-exclamation mr-1.5"></i>${personName(occupant.cashierId)} នឹងត្រូវដកចេញពី ${selReg}</p>`;
+            }
+
+            const canSubmit = selCand && !selCand.blocked && selReg;
+
+            host.innerHTML = `
+                <div class="w-full max-w-lg rounded-3xl shadow-2xl bg-white text-slate-800 p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+                    <div class="flex items-start justify-between border-b border-slate-100 pb-3">
+                        <div>
+                            <h3 class="sm-card-title text-slate-800 text-base font-semibold">បន្ថែមអ្នកគិតលុយ · ${tpl.name}</h3>
+                            <p class="sm-td-sub text-slate-500 mt-0.5">${DOW_KH[dow]} ${fmtDate(date + 'T12:00')} · ${tpl.start}–${tpl.end}</p>
+                        </div>
+                        <button type="button" data-act="cancel" class="text-slate-400 hover:text-slate-600 p-1"><i class="fas fa-xmark"></i></button>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="space-y-1.5 max-h-[220px] overflow-y-auto pr-1">
+                            ${recommended.length ? `
+                                <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">ណែនាំ</p>
+                                ${recommended.map(candRow).join('')}
+                            ` : ''}
+                            ${others.length ? `
+                                <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mt-2">ផ្សេងទៀត</p>
+                                ${others.map(candRow).join('')}
+                            ` : ''}
+                        </div>
+
+                        ${dayBarHtml}
+
+                        <div>
+                            <label class="text-xs font-semibold text-slate-600 block mb-1.5">បញ្ជរគិតលុយ</label>
+                            <div class="flex flex-wrap gap-2">
+                                ${REGISTERS.map(r => {
+                                    const occ = currentRoster.find(a => a.register === r && a.cashierId !== selId);
+                                    const isCurrentSel = r === selReg;
+                                    return `
+                                        <button type="button" data-reg="${r}" class="h-9 px-3 rounded-xl border text-xs font-semibold transition flex items-center gap-1.5 ${isCurrentSel ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'}">
+                                            <span>${r}</span>
+                                            ${occ ? `<span class="text-[10px] opacity-75">(${personName(occ.cashierId)})</span>` : ''}
+                                            ${isCurrentSel ? '<i class="fas fa-check text-[10px]"></i>' : ''}
+                                        </button>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-semibold text-slate-600 block mb-1.5">មូលហេតុនៃការចាត់តាំង (ជាជម្រើស)</label>
+                            <div class="flex flex-wrap gap-1.5">
+                                ${reasonsList.map(re => `
+                                    <button type="button" data-reason="${re}" class="h-8 px-2.5 rounded-lg border text-xs transition ${selReason === re ? 'bg-indigo-100 text-indigo-700 border-indigo-300 font-semibold' : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border-slate-200'}">
+                                        ${re}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        ${warningLine}
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+                        <button type="button" data-act="cancel" class="sm-value h-11 px-5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition">បោះបង់</button>
+                        <button type="button" data-act="ok" ${canSubmit ? '' : 'disabled'} class="sm-value h-11 px-6 rounded-2xl font-semibold transition ${canSubmit ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}">
+                            ${isReplacing ? `ជំនួស ${personName(occupant.cashierId)}` : 'ចាត់តាំង'}
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            host.querySelectorAll('[data-cand]').forEach(el => {
+                el.onclick = () => {
+                    const cid = el.dataset.cand;
+                    const c = candidates.find(x => x.id === cid);
+                    if (c && !c.blocked) {
+                        selId = cid;
+                        const sDef = defs[selId] || {};
+                        if (sDef.register && freeRegs.includes(sDef.register)) selReg = sDef.register;
+                        isPartial = !!c.partialAllowed;
+                        renderDialog();
+                    }
+                };
+            });
+
+            host.querySelectorAll('[data-reg]').forEach(el => {
+                el.onclick = () => {
+                    selReg = el.dataset.reg;
+                    renderDialog();
+                };
+            });
+
+            host.querySelectorAll('[data-reason]').forEach(el => {
+                el.onclick = () => {
+                    selReason = selReason === el.dataset.reason ? '' : el.dataset.reason;
+                    renderDialog();
+                };
+            });
+
+            const pCheck = host.querySelector('#partialCheckbox');
+            if (pCheck) {
+                pCheck.onchange = () => {
+                    isPartial = pCheck.checked;
+                    renderDialog();
+                };
+            }
+
+            host.querySelector('[data-act="cancel"]').onclick = () => finish(null);
+            const okBtn = host.querySelector('[data-act="ok"]');
+            if (okBtn) {
+                okBtn.onclick = () => {
+                    if (!canSubmit) return;
+                    finish({
+                        personId: selId,
+                        register: selReg,
+                        reason: selReason,
+                        partial: isPartial,
+                        until: isPartial && selCand.capTime ? selCand.capTime : null,
+                        from: tpl.start
+                    });
+                };
+            }
+        };
+
+        const finish = v => { posDialogClose(host); resolve(v); };
+        host.onclick = () => finish(null);
+        host.__keyHandler = e => {
+            if (e.key === 'Escape') { finish(null); e.stopPropagation(); }
+            else if (e.key === 'Enter') {
+                const btn = host.querySelector('[data-act="ok"]');
+                if (btn && !btn.disabled) btn.click();
+            }
+        };
+        document.addEventListener('keydown', host.__keyHandler, true);
+
+        renderDialog();
     });
 }

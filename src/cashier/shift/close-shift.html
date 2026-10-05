@@ -141,6 +141,7 @@
 
                 <!-- ===== អេក្រង់បន្ទាប់ពីបិទវេន ===== -->
                 <section id="closedScreen" class="hidden space-y-5">
+                    <div id="nextShiftCard"></div>
                     <div class="p-5 rounded-2xl bg-emerald-50 border border-emerald-200 flex flex-wrap items-center gap-4 no-print">
                         <div class="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-xl flex-shrink-0">
                             <i class="fas fa-check"></i>
@@ -157,9 +158,11 @@
                             <a href="../receipts/receipts.html" class="pos-tap sm-badge px-4 rounded-xl bg-white hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-semibold transition inline-flex items-center gap-2">
                                 <i class="fas fa-receipt"></i> មើលវិក្កយបត្រវេន
                             </a>
-                            <a href="open-shift.html" class="pos-tap sm-badge px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition inline-flex items-center gap-2">
-                                <i class="fas fa-play"></i> បើកវេនថ្មី
-                            </a>
+                            <span id="closePrimaryAction" class="inline-flex items-center gap-2">
+                                <a href="open-shift.html" class="pos-tap sm-badge px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition inline-flex items-center gap-2">
+                                    <i class="fas fa-play"></i> បើកវេនថ្មី
+                                </a>
+                            </span>
                         </div>
                     </div>
 
@@ -736,6 +739,29 @@
             showToast(`បានបិទវេន ${sh.id} · រង់ចាំអ្នកគ្រប់គ្រងត្រួតពិនិត្យ`, 'success');
         }
 
+        function nextShiftToday(cashierId, currentTemplateCode) {
+            const urlNext = new URLSearchParams(location.search).get('next');
+            if (urlNext) {
+                const t = shiftTemplates().find(x => x.code === urlNext);
+                if (t) {
+                    const a = rosterFor(templateDateFor(t, new Date()), t.code).find(x => x.cashierId === cashierId);
+                    return { template: t, register: a ? a.register : MY_REGISTER };
+                }
+            }
+            const templates = shiftTemplates();
+            const currIdx = templates.findIndex(t => t.code === currentTemplateCode);
+            for (let i = 0; i < templates.length; i++) {
+                const t = templates[i];
+                if (currIdx >= 0 && i <= currIdx) continue;
+                const roster = rosterFor(templateDateFor(t, new Date()), t.code);
+                const a = roster.find(x => x.cashierId === cashierId);
+                if (a) {
+                    return { template: t, register: a.register };
+                }
+            }
+            return null;
+        }
+
         function renderClosedScreen(record) {
             document.getElementById('stepper').classList.add('hidden');
             STEPS.forEach(s => document.getElementById('step-' + s.n).classList.add('hidden'));
@@ -746,6 +772,52 @@
             const v = varianceOf(record.countedUSD, record.countedKHR, s.expectedUSD, s.expectedKHR, s.rate);
             document.getElementById('closedNote').textContent =
                 `វេន ${record.id} បានបិទម៉ោង ${fmtTime(record.closedAt)} · ${DIRECTION_LABEL[v.direction]} ${fmtUSD(v.abs)} · ${SHIFT_STATUS[record.status].label}`;
+
+            const next = nextShiftToday(record.cashierId, record.templateCode || (record.template ? record.template.code : ''));
+            const nextCardEl = document.getElementById('nextShiftCard');
+            const primaryActionEl = document.getElementById('closePrimaryAction');
+            if (next) {
+                if (nextCardEl) {
+                    nextCardEl.innerHTML = `
+                        <div class="p-5 rounded-2xl bg-cyan-50 border border-cyan-200 flex flex-wrap items-center justify-between gap-4 no-print shadow-sm">
+                            <div class="flex items-center gap-3.5">
+                                <div class="w-11 h-11 rounded-2xl bg-cyan-600 text-white flex items-center justify-center text-lg flex-shrink-0 shadow-sm">
+                                    <i class="fas fa-calendar-day"></i>
+                                </div>
+                                <div>
+                                    <h4 class="sm-card-title text-cyan-950">វេនបន្ទាប់របស់អ្នកថ្ងៃនេះ</h4>
+                                    <p class="sm-card-sub text-cyan-800 mt-0.5">បន្ទាប់៖ <strong class="font-semibold">${next.template.name}</strong> ${next.template.start}–${next.template.end} · ${next.register}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <a href="open-shift.html?template=${next.template.code}" class="pos-tap sm-badge px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white font-semibold transition inline-flex items-center gap-2 shadow-sm">
+                                    <i class="fas fa-play"></i> បើក${next.template.name}
+                                </a>
+                                <button onclick="handleLogout()" type="button" class="pos-tap sm-badge px-3.5 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-medium transition inline-flex items-center gap-1.5">
+                                    ចាកចេញ
+                                </button>
+                            </div>
+                        </div>`;
+                }
+                if (primaryActionEl) {
+                    primaryActionEl.innerHTML = `
+                        <button onclick="handleLogout()" type="button" class="pos-tap sm-badge px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition inline-flex items-center gap-2">
+                            ចាកចេញ
+                        </button>`;
+                }
+            } else {
+                if (nextCardEl) nextCardEl.innerHTML = '';
+                if (primaryActionEl) {
+                    primaryActionEl.innerHTML = `
+                        <a href="open-shift.html" class="pos-tap sm-badge px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition inline-flex items-center gap-2">
+                            <i class="fas fa-play"></i> បើកវេនថ្មី
+                        </a>
+                        <button onclick="handleLogout()" type="button" class="pos-tap sm-badge px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition inline-flex items-center gap-2">
+                            ចាកចេញ
+                        </button>`;
+                }
+            }
+
             document.getElementById('zReport').innerHTML = zReportHtml(record, s);
             window.scrollTo(0, 0);
         }

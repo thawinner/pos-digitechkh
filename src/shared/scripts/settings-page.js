@@ -199,33 +199,234 @@ function timeline() {
         const bar = (l, w) => `<div class="absolute top-0 bottom-0 ${colors[i % 4]} rounded-md opacity-90 flex items-center justify-center overflow-hidden" style="left:${l}%;width:${w}%"><span class="text-[11px] text-white font-semibold truncate px-1">${escapeText(t.name)}</span></div>`;
         return e > s ? [bar(s, e - s)] : [bar(s, 100 - s), bar(0, e)];
     }).join('');
-    return `<div class="mt-5">
+    return `<div class="mt-2">
         <div class="relative h-10 rounded-xl bg-slate-100 overflow-hidden">${segs}</div>
         <div class="flex justify-between mt-1 text-[11px] text-slate-400 sm-figure">${[0, 3, 6, 9, 12, 15, 18, 21, 24].map(h => `<span>${pad2(h)}:00</span>`).join('')}</div>
     </div>`;
 }
 
+function isMinuteInTemplate(m, t) {
+    const s = minutesOf(t.start);
+    const e = minutesOf(t.end);
+    return s < e ? (m >= s && m < e) : (m >= s || m < e);
+}
+
+function timeStr(m) {
+    const total = ((m % 1440) + 1440) % 1440;
+    const h = Math.floor(total / 60);
+    const mi = total % 60;
+    return `${pad2(h)}:${pad2(mi)}`;
+}
+
+function shiftUnionHours(templates) {
+    const minutes = new Uint8Array(1440);
+    templates.forEach(t => {
+        const s = minutesOf(t.start);
+        const e = minutesOf(t.end);
+        if (s < e) {
+            for (let m = s; m < e; m++) minutes[m] = 1;
+        } else if (s > e) {
+            for (let m = s; m < 1440; m++) minutes[m] = 1;
+            for (let m = 0; m < e; m++) minutes[m] = 1;
+        }
+    });
+    let count = 0;
+    for (let i = 0; i < 1440; i++) if (minutes[i]) count++;
+    return Math.round((count / 60) * 10) / 10;
+}
+
+function shiftAnalysis(templates) {
+    const gaps = [];
+    const overlaps = [];
+    const minutes = new Uint8Array(1440);
+    templates.forEach(t => {
+        const s = minutesOf(t.start);
+        const e = minutesOf(t.end);
+        if (s < e) {
+            for (let m = s; m < e; m++) minutes[m]++;
+        } else if (s > e) {
+            for (let m = s; m < 1440; m++) minutes[m]++;
+            for (let m = 0; m < e; m++) minutes[m]++;
+        }
+    });
+
+    let inGap = false;
+    let gapStart = 0;
+    for (let m = 0; m < 1440; m++) {
+        if (minutes[m] === 0 && !inGap) {
+            inGap = true;
+            gapStart = m;
+        } else if (minutes[m] > 0 && inGap) {
+            inGap = false;
+            gaps.push({ start: gapStart, end: m });
+        }
+    }
+    if (inGap) {
+        gaps.push({ start: gapStart, end: 1440 });
+    }
+    if (gaps.length > 1 && gaps[0].start === 0 && gaps[gaps.length - 1].end === 1440) {
+        const last = gaps.pop();
+        gaps[0].start = last.start;
+    }
+
+    for (let i = 0; i < templates.length; i++) {
+        for (let j = i + 1; j < templates.length; j++) {
+            const t1 = templates[i];
+            const t2 = templates[j];
+            let count = 0;
+            for (let m = 0; m < 1440; m++) {
+                if (isMinuteInTemplate(m, t1) && isMinuteInTemplate(m, t2)) count++;
+            }
+            if (count > 0) {
+                overlaps.push({ t1: t1.name, t2: t2.name, hours: Math.round((count / 60) * 10) / 10 });
+            }
+        }
+    }
+
+    return { gaps, overlaps };
+}
+
+function stepTime(index, field, deltaMinutes) {
+    const t = draft.shiftTemplates[index];
+    let m = minutesOf(t[field]) + deltaMinutes;
+    t[field] = timeStr(m);
+    renderSaveBar();
+    render();
+}
+
+function normalizeTime(val) {
+    if (!val) return '00:00';
+    let s = String(val).trim();
+    if (s.includes(':')) {
+        const parts = s.split(':');
+        const h = Math.min(23, Math.max(0, parseInt(parts[0], 10) || 0));
+        let mi = parseInt(parts[1], 10) || 0;
+        if (parts[1].length === 1) mi = mi * 10;
+        mi = Math.min(59, Math.max(0, mi));
+        return `${pad2(h)}:${pad2(mi)}`;
+    }
+    if (s.includes('.')) {
+        const n = parseFloat(s);
+        const h = Math.min(23, Math.max(0, Math.floor(n)));
+        const mi = Math.min(59, Math.round((n - Math.floor(n)) * 60));
+        return `${pad2(h)}:${pad2(mi)}`;
+    }
+    const num = parseInt(s, 10);
+    if (!isNaN(num)) {
+        if (num <= 24) return `${pad2(num === 24 ? 0 : num)}:00`;
+        if (num >= 100 && num <= 2359) {
+            const h = Math.floor(num / 100);
+            const mi = num % 100;
+            return `${pad2(h)}:${pad2(Math.min(59, mi))}`;
+        }
+    }
+    return val;
+}
+
+const SHIFT_PRESETS = [
+    {
+        label: 'ហាងបើក 24 ម៉ោង · 3 វេន',
+        templates: [
+            { code: 'A', name: 'វេនព្រឹក', start: '06:00', end: '14:00' },
+            { code: 'B', name: 'វេនរសៀល', start: '14:00', end: '22:00' },
+            { code: 'C', name: 'វេនយប់', start: '22:00', end: '06:00' }
+        ]
+    },
+    {
+        label: 'ហាងបើក 06:00–22:00 · 2 វេន',
+        templates: [
+            { code: 'A', name: 'វេនព្រឹក', start: '06:00', end: '14:00' },
+            { code: 'B', name: 'វេនរសៀល', start: '14:00', end: '22:00' }
+        ]
+    },
+    {
+        label: 'ហាងបើក 07:00–21:00 · 2 វេន',
+        templates: [
+            { code: 'A', name: 'វេនព្រឹក', start: '07:00', end: '14:00' },
+            { code: 'B', name: 'វេនរសៀល', start: '14:00', end: '21:00' }
+        ]
+    }
+];
+
+async function applyShiftPreset(presetIdx) {
+    const p = SHIFT_PRESETS[presetIdx];
+    if (!p) return;
+    const ok = await showCustomConfirm({
+        title: `ប្តូរទៅ «${p.label}»?`,
+        message: 'គំរូវេនបច្ចុប្បន្ននឹងត្រូវជំនួសដោយគំរូថ្មីនេះ។ សូមចុចរក្សាទុកដើម្បីអនុវត្តជាផ្លូវការ។',
+        confirmText: 'ប្តូរគំរូ'
+    });
+    if (!ok) return;
+    draft.shiftTemplates = clone(p.templates);
+    renderSaveBar();
+    render();
+}
+
 function renderShifts(s) {
+    const analysis = shiftAnalysis(draft.shiftTemplates);
+    const unionH = shiftUnionHours(draft.shiftTemplates);
+
     const rows = draft.shiftTemplates.map((t, i) => {
         const h = templateHours(t);
         const valid = /^([01]\d|2[0-3]):[0-5]\d$/.test(t.start) && /^([01]\d|2[0-3]):[0-5]\d$/.test(t.end);
         const tone = !valid || h > 12 ? 'text-rose-600' : h > 8 ? 'text-amber-700' : 'text-emerald-700';
-        return `<div class="grid grid-cols-[1fr_96px_96px_44px] gap-2 items-center py-3 border-b border-slate-100">
+        return `<div class="grid grid-cols-[1fr_auto_auto_44px] gap-2 items-center py-3 border-b border-slate-100">
             <input value="${escapeText(t.name)}" oninput="draft.shiftTemplates[${i}].name=this.value; renderSaveBar()" onblur="render()" class="sm-td h-11 px-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-indigo-500">
-            <input value="${t.start}" inputmode="numeric" maxlength="5" oninput="draft.shiftTemplates[${i}].start=this.value" onblur="render()" class="sm-value h-11 px-2 rounded-xl bg-slate-50 border border-slate-200 text-center sm-figure focus:outline-none focus:border-indigo-500">
-            <input value="${t.end}" inputmode="numeric" maxlength="5" oninput="draft.shiftTemplates[${i}].end=this.value" onblur="render()" class="sm-value h-11 px-2 rounded-xl bg-slate-50 border border-slate-200 text-center sm-figure focus:outline-none focus:border-indigo-500">
+            <div class="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl px-1 h-11">
+                <button type="button" onclick="stepTime(${i}, 'start', -30)" class="w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs"><i class="fas fa-minus text-[10px]"></i></button>
+                <input value="${t.start}" inputmode="numeric" maxlength="5" oninput="draft.shiftTemplates[${i}].start=this.value" onblur="draft.shiftTemplates[${i}].start=normalizeTime(this.value); renderSaveBar(); render()" class="sm-value w-16 h-8 bg-transparent text-center sm-figure focus:outline-none">
+                <button type="button" onclick="stepTime(${i}, 'start', 30)" class="w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs"><i class="fas fa-plus text-[10px]"></i></button>
+            </div>
+            <div class="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl px-1 h-11">
+                <button type="button" onclick="stepTime(${i}, 'end', -30)" class="w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs"><i class="fas fa-minus text-[10px]"></i></button>
+                <input value="${t.end}" inputmode="numeric" maxlength="5" oninput="draft.shiftTemplates[${i}].end=this.value" onblur="draft.shiftTemplates[${i}].end=normalizeTime(this.value); renderSaveBar(); render()" class="sm-value w-16 h-8 bg-transparent text-center sm-figure focus:outline-none">
+                <button type="button" onclick="stepTime(${i}, 'end', 30)" class="w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs"><i class="fas fa-plus text-[10px]"></i></button>
+            </div>
             <button onclick="removeTemplate(${i})" type="button" aria-label="លុបវេន" class="w-11 h-11 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-500 hover:text-rose-600 ${draft.shiftTemplates.length <= 1 ? 'invisible' : ''}"><i class="fas fa-trash-can text-xs"></i></button>
             <p class="col-span-4 sm-td-sub ${tone} -mt-1"><i class="fas ${!valid || h > 12 ? 'fa-circle-exclamation' : h > 8 ? 'fa-triangle-exclamation' : 'fa-circle-check'} mr-1"></i>${!valid ? 'ម៉ោងត្រូវសរសេរជា 24 ម៉ោង ឧ. 07:00' : `${h} ម៉ោង${h > 12 ? ' · លើសកំណត់ច្បាប់ 12 ម៉ោង' : h > 8 ? ' · លើស 8 ម៉ោងធម្មតា ត្រូវគិតម៉ោងបន្ថែម' : ' · ក្នុងម៉ោងធម្មតា'}${nightHours(t) ? ` · ម៉ោងយប់ ${nightHours(t)} ម៉ោង (ប្រាក់ឈ្នួល 200%)` : ''}`}</p>
         </div>`;
     }).join('');
-    const covered = draft.shiftTemplates.reduce((n, t) => n + (isFinite(templateHours(t)) ? templateHours(t) : 0), 0);
+
+    const noticeRaw = sessionStorage.getItem('pos_new_shift_notice');
+    let noticeHtml = '';
+    if (noticeRaw) {
+        try {
+            const not = JSON.parse(noticeRaw);
+            noticeHtml = `
+                <div class="mb-4 p-3 rounded-2xl bg-indigo-50 border border-indigo-200 flex items-center justify-between gap-3">
+                    <p class="sm-td text-indigo-900"><i class="fas fa-circle-info mr-1 text-indigo-600"></i>${escapeText(not.name)} មិនទាន់មានអ្នកគិតលុយ 7 ថ្ងៃខាងមុខ</p>
+                    <a href="../roster/roster.html?template=${not.code}" class="sm-badge h-8 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs inline-flex items-center gap-1.5 flex-shrink-0">
+                        ចាត់តាំងឥឡូវ <i class="fas fa-arrow-right text-[10px]"></i>
+                    </a>
+                </div>
+            `;
+        } catch (e) {}
+    }
+
     return sectionHead(s, 'ចំនួនវេនក្នុងមួយថ្ងៃ = ម៉ោងបើកហាង ÷ ប្រមាណ 8 ម៉ោង · វេនមួយអាចមានអ្នកគិតលុយច្រើននាក់') + `<div class="px-5 sm:px-6 pb-5">
+        ${noticeHtml}
+        <div class="flex flex-wrap items-center gap-2 mb-3">
+            <span class="text-xs text-slate-400">គំរូរហ័ស៖</span>
+            ${SHIFT_PRESETS.map((p, pIdx) => `
+                <button type="button" onclick="applyShiftPreset(${pIdx})" class="sm-badge h-8 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition">
+                    ${p.label}
+                </button>
+            `).join('')}
+        </div>
         ${timeline()}
-        <p class="sm-td-sub text-slate-500 mt-2">ហាងបើក ${covered} ម៉ោងក្នុងមួយថ្ងៃ · ${draft.shiftTemplates.length} វេន</p>
-        <div class="grid grid-cols-[1fr_96px_96px_44px] gap-2 mt-5 sm-td-sub text-slate-400"><span>ឈ្មោះវេន</span><span class="text-center">ចាប់ផ្តើម</span><span class="text-center">បញ្ចប់</span><span></span></div>
+        <div class="space-y-1 mt-2">
+            <p class="sm-td-sub text-slate-600 font-medium">ហាងបើក ${unionH} ម៉ោងក្នុងមួយថ្ងៃ · ${draft.shiftTemplates.length} វេន</p>
+            ${analysis.gaps.map(g => `<p class="sm-td-sub text-amber-700"><i class="fas fa-triangle-exclamation mr-1"></i>ចន្លោះ ${timeStr(g.start)}–${timeStr(g.end)} គ្មានវេន</p>`).join('')}
+            ${analysis.overlaps.map(o => `<p class="sm-td-sub text-amber-700"><i class="fas fa-clock mr-1"></i>${escapeText(o.t1)} និង ${escapeText(o.t2)} ជាន់គ្នា ${o.hours} ម៉ោង</p>`).join('')}
+        </div>
+        <div class="grid grid-cols-[1fr_auto_auto_44px] gap-2 mt-5 sm-td-sub text-slate-400"><span>ឈ្មោះវេន</span><span class="text-center w-28">ចាប់ផ្តើម</span><span class="text-center w-28">បញ្ចប់</span><span></span></div>
         ${rows}
         <div class="flex flex-wrap items-center justify-between gap-3 mt-4">
-            ${draft.shiftTemplates.length < 4 ? `<button onclick="addTemplate()" type="button" class="sm-badge h-10 px-4 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold"><i class="fas fa-plus mr-1"></i> បន្ថែមវេន</button>` : '<span></span>'}
+            <div class="flex items-center gap-2">
+                ${draft.shiftTemplates.length < 4
+                    ? `<button onclick="addTemplate()" type="button" class="sm-badge h-10 px-4 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold"><i class="fas fa-plus mr-1"></i> បន្ថែមវេន</button>`
+                    : `<button disabled type="button" class="sm-badge h-10 px-4 rounded-xl bg-slate-100 text-slate-400 cursor-not-allowed font-semibold"><i class="fas fa-plus mr-1"></i> បន្ថែមវេន</button><span class="sm-td-sub text-slate-400">អតិបរមា 4 វេនក្នុងមួយថ្ងៃ</span>`}
+            </div>
             <a href="../roster/roster.html" class="sm-badge text-indigo-700 hover:text-indigo-900 font-semibold">ចាត់តាំងអ្នកគិតលុយក្នុងកាលវិភាគវេន <i class="fas fa-arrow-right text-[10px]"></i></a>
         </div>
     </div>`;
@@ -394,18 +595,73 @@ function toggleKey(sku) {
 }
 
 function addTemplate() {
-    const code = 'ABCD'.split('').find(c => !draft.shiftTemplates.some(t => t.code === c));
-    draft.shiftTemplates.push({ code, name: 'វេនយប់', start: '21:00', end: '05:00' });
+    if (draft.shiftTemplates.length >= 4) return;
+    const seq = Number(draft.shiftCodeSeq || draft.shiftTemplates.length);
+    const code = String.fromCharCode(65 + seq);
+    draft.shiftCodeSeq = seq + 1;
+
+    // រកចន្លោះធំបំផុតដែលគ្មានវេន (S7)
+    const analysis = shiftAnalysis(draft.shiftTemplates);
+    let startM = 360; // 06:00
+    let endM = 840;   // 14:00
+
+    if (analysis.gaps.length > 0) {
+        const sortedGaps = analysis.gaps.map(g => {
+            let len = g.end - g.start;
+            if (len <= 0) len += 1440;
+            return { start: g.start, end: g.end, len };
+        }).sort((a, b) => b.len - a.len);
+
+        const bestGap = sortedGaps[0];
+        startM = bestGap.start;
+        const dur = Math.min(bestGap.len, 480);
+        endM = (startM + dur) % 1440;
+    } else if (draft.shiftTemplates.length > 0) {
+        const lastT = draft.shiftTemplates[draft.shiftTemplates.length - 1];
+        startM = minutesOf(lastT.end);
+        endM = (startM + 480) % 1440;
+    }
+
+    const startTime = timeStr(startM);
+    const endTime = timeStr(endM);
+
+    // ដាក់ឈ្មោះតាមម៉ោងចាប់ផ្តើម
+    let name = 'វេនព្រឹក';
+    if (startM >= 300 && startM < 660) name = 'វេនព្រឹក';
+    else if (startM >= 660 && startM < 1020) name = 'វេនរសៀល';
+    else if (startM >= 1020 && startM < 1320) name = 'វេនល្ងាច';
+    else name = 'វេនយប់';
+
+    const existingCount = draft.shiftTemplates.filter(t => t.name.startsWith(name)).length;
+    if (existingCount > 0) name = `${name} ${existingCount + 1}`;
+
+    draft.shiftTemplates.push({ code, name, start: startTime, end: endTime });
+    renderSaveBar();
     render();
 }
 
 async function removeTemplate(i) {
     const t = draft.shiftTemplates[i];
+    // ហាមដាច់ខាតការលុបវេនដែលកំពុងមានថតប្រាក់ដំណើរការ (P18 / S14)
+    const openShifts = posRead(POS_KEYS.shifts, []).filter(s => s.status === 'open' && s.templateCode === t.code);
+    if (openShifts.length > 0) {
+        showToast(`មិនអាចលុប ${t.name} បានទេ ព្រោះកំពុងមានថតប្រាក់ ${openShifts[0].register} បើកដំណើរការ!`, 'error');
+        return;
+    }
+
     const used = Object.values(draft.staffDefaults || {}).filter(d => d.template === t.code).length;
-    const ok = await showCustomConfirm({ title: `លុប${t.name}?`, message: used ? `បុគ្គលិក ${used} នាក់មានវេននេះជាវេនប្រចាំ ហើយនឹងក្លាយជា «គ្មានវេនប្រចាំ»។` : 'វេននេះនឹងត្រូវដកចេញពីកាលវិភាគបន្ទាប់។', confirmText: 'លុប', danger: true });
+    const ok = await showCustomConfirm({
+        title: `លុប${t.name}?`,
+        message: used
+            ? `បុគ្គលិក ${used} នាក់មានវេននេះជាវេនប្រចាំ ហើយនឹងក្លាយជា «គ្មានវេនប្រចាំ»។ កាលវិភាគកន្លងមកមិនប៉ះពាល់ឡើយ។`
+            : 'វេននេះនឹងត្រូវដកចេញពីបញ្ជីគំរូវេន។',
+        confirmText: 'លុប',
+        danger: true
+    });
     if (!ok) return;
     draft.shiftTemplates.splice(i, 1);
     Object.values(draft.staffDefaults || {}).forEach(d => { if (d.template === t.code) { d.template = ''; d.register = ''; } });
+    renderSaveBar();
     render();
 }
 
@@ -435,6 +691,20 @@ async function save() {
     if (bad) { goSection(bad[0]); return showToast(bad[1], 'error'); }
     const ok = await showPinConfirm({ title: 'រក្សាទុកការកំណត់', message: keys.map(k => SETTING_LABELS[k] || k).join(' · '), userId: ME_MANAGER, confirmText: 'រក្សាទុក' });
     if (!ok) return;
+
+    if (keys.includes('shiftTemplates')) {
+        const prevTpls = posSettings().shiftTemplates || [];
+        const added = draft.shiftTemplates.find(t => !prevTpls.some(p => p.code === t.code));
+        if (added) {
+            sessionStorage.setItem('pos_new_shift_notice', JSON.stringify({ name: added.name, code: added.code }));
+        }
+        // ពិនិត្យមើលថាតើមានវេនកំពុងដំណើរការដែលត្រូវបានកែម៉ោងដែរឬទេ
+        const running = posRead(POS_KEYS.shifts, []).filter(s => s.status === 'open');
+        if (running.some(r => draft.shiftTemplates.some(t => t.code === r.templateCode && (t.start !== r.start || t.end !== r.end)))) {
+            showToast('ការកែសម្រួលម៉ោងវេននឹងចាប់ផ្តើមពីវេនបន្ទាប់', 'info');
+        }
+    }
+
     const values = {};
     keys.forEach(k => { values[k] = draft[k]; });
     savePosSettings(values, ME_MANAGER);

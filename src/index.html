@@ -429,15 +429,48 @@
             const slot = rosterSlotNow();
             if (!slot) return;
             const live = templateAt(new Date());
+            const allLiveOpen = liveShifts().filter(s => s.status === 'open');
+
             document.getElementById('rosterBoard').innerHTML = shiftTemplates().map(t => {
-                const list = rosterFor(slot.date, t.code).slice().sort((a, b) => a.register.localeCompare(b.register));
                 const now = live && live.code === t.code;
+                const openShiftsForT = allLiveOpen.filter(s => (s.templateCode === t.code) || (s.template && s.template.code === t.code));
+                const openCount = openShiftsForT.length;
+
+                // បញ្ចូលវេនក្នុងកាលវិភាគជាមួយវេនកំពុងបើកជាក់ស្តែង
+                const list = rosterFor(slot.date, t.code).map(a => Object.assign({}, a));
+                openShiftsForT.forEach(sh => {
+                    const existing = list.find(a => a.cashierId === sh.cashierId);
+                    if (existing) {
+                        existing.open = true;
+                    } else {
+                        list.push({ cashierId: sh.cashierId, register: sh.register, unrostered: true, open: true });
+                    }
+                });
+                list.sort((a, b) => a.register.localeCompare(b.register));
+
+                const tNow = new Date();
+                const start = dateAt(templateDateFor(t, tNow), t.start);
+                const end = shiftEndDate({ date: templateDateFor(t, tNow), start: t.start, end: t.end });
+                const isPast = tNow > end;
+
+                const statusBadge = now
+                    ? `<span class="ml-auto text-[11px] font-semibold text-cyan-300 flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>កំពុងដំណើរការ${openCount > 0 ? ` · ${openCount} បញ្ជរបើក` : ''}</span>`
+                    : isPast
+                        ? `<span class="ml-auto text-[11px] font-medium text-slate-500">បានបញ្ចប់</span>`
+                        : `<span class="ml-auto text-[11px] font-medium text-slate-400">មិនទាន់ដល់</span>`;
+
                 return `<div class="pl-3 border-l-2 ${now ? 'border-cyan-400' : 'border-white/10'}">
                     <p class="sm-td-sub flex items-center gap-2 ${now ? 'text-white font-semibold' : 'text-slate-400'}">
                         ${t.name}<span class="${now ? 'text-slate-300' : 'text-slate-500'} font-normal">${t.start}–${t.end}</span>
-                        ${now ? '<span class="ml-auto text-[12px] font-semibold text-cyan-300">ឥឡូវនេះ</span>' : ''}</p>
+                        ${statusBadge}
+                    </p>
                     <div class="mt-1.5 space-y-1">${list.length ? list.map(a => `<p class="sm-td-sub flex items-center gap-2 ${now ? 'text-slate-200' : 'text-slate-400'}">
-                        ${avatarHtml(a.cashierId, 'w-5 h-5')}<span class="truncate">${personName(a.cashierId)}</span>${a.cover ? '<span class="text-[12px] text-amber-300/80">ជំនួស</span>' : ''}
+                        ${avatarHtml(a.cashierId, 'w-5 h-5')}
+                        <span class="truncate">${personName(a.cashierId)}</span>
+                        ${a.open ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" title="កំពុងបើក"></span>' : ''}
+                        ${a.unrostered ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-medium whitespace-nowrap">មិនមានក្នុងកាលវិភាគ</span>'
+                            : a.cover ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-medium whitespace-nowrap">ជំនួស</span>' : ''}
                         <span class="ml-auto ${now ? 'text-slate-300' : 'text-slate-500'}">${a.register}</span></p>`).join('')
                         : '<p class="sm-td-sub text-slate-500">មិនមានអ្នកចាត់តាំង</p>'}</div>
                 </div>`;

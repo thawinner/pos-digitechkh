@@ -1046,3 +1046,180 @@ async function mgrDecide(reqId, approve) {
     showToast(`${approve ? 'បានអនុម័ត' : 'បានបដិសេធ'}${APPROVAL_TYPE[req.type].label} ${req.saleId}`, approve ? 'success' : 'info');
     return rec;
 }
+
+/* ===== ក្បួនវាយតម្លៃ និងចាត់ចំណាត់ថ្នាក់បុគ្គលិកសម្រាប់វេន (ផែនការកែលម្អ S4, S17, S22) ===== */
+
+function weeklyHoursFor(refDate) {
+    const d = new Date(refDate);
+    const day = d.getDay();
+    const start = new Date(d);
+    start.setDate(start.getDate() - day);
+    start.setHours(12, 0, 0, 0);
+    const h = {};
+    const staff = CASHIERS.concat(MANAGERS);
+    staff.forEach(p => { h[p.id] = 0; });
+    for (let i = 0; i < 7; i++) {
+        const curDate = isoDate(addDays(start, i));
+        shiftTemplates().forEach(t => {
+            rosterFor(curDate, t.code).forEach(a => {
+                if (h[a.cashierId] != null) {
+                    if (a.until && a.from) {
+                        let span = minutesOf(a.until) - minutesOf(a.from);
+                        if (span <= 0) span += 1440;
+                        h[a.cashierId] += span / 60;
+                    } else if (a.until) {
+                        let span = minutesOf(a.until) - minutesOf(t.start);
+                        if (span <= 0) span += 1440;
+                        h[a.cashierId] += span / 60;
+                    } else {
+                        h[a.cashierId] += templateHours(t);
+                    }
+                }
+            });
+        });
+    }
+    return h;
+}
+
+function rosterCheck(personId, dateStr, code) {
+    const t = shiftTemplates().find(x => x.code === code);
+    const tHours = t ? templateHours(t) : 8;
+    const dow = new Date(dateStr + 'T12:00').getDay();
+    const def = (posSettings().staffDefaults || {})[personId] || {};
+    const isDayOff = Number(def.dayOff) === dow;
+    const isManager = isManagerId(personId);
+    const weekHrsMap = weeklyHoursFor(dateStr);
+    const weekHrs = Math.round((weekHrsMap[personId] || 0) * 10) / 10;
+    const newWeekHrs = Math.round((weekHrs + tHours) * 10) / 10;
+    const over48 = newWeekHrs > 48;
+
+    const workedHrs = hoursWorkedToday(personId, dateStr);
+    const cap = capFor(personId, dateStr, t ? t.start : '00:00');
+    const todayTotal = Math.round((workedHrs + tHours) * 10) / 10;
+    const over12 = todayTotal > 12;
+    const partialAllowed = over12 && cap.partialAllowed;
+
+    const otherTpls = shiftTemplates().filter(x => x.code !== code && rosterFor(dateStr, x.code).some(a => a.cashierId === personId));
+    const openDrawerNow = posRead(POS_KEYS.shifts, []).find(s => s.status === 'open' && s.cashierId === personId && s.date === dateStr);
+
+    // ពិនិត្យការសម្រាកជាប់គ្នា (យ៉ាងហោច 11 ម៉ោង D-S3)
+    let backToBack = false;
+    if (t) {
+        const prevDate = isoDate(addDays(new Date(dateStr + 'T12:00'), -1));
+        const prevNightTpl = shiftTemplates().find(x => x.start >= '20:00' || x.end <= '08:00');
+        if (prevNightTpl && t.start <= '08:00') {
+            const wasOnNight = rosterFor(prevDate, prevNightTpl.code).some(a => a.cashierId === personId);
+            if (wasOnNight) backToBack = true;
+        }
+    }
+
+    const blocked = over48 || (over12 && !partialAllowed) || (openDrawerNow && openDrawerNow.templateCode !== code);
+
+    let reason = '';
+    if (over48) reason = `លើស 48 ម៉ោង/សប្តាហ៍ (${newWeekHrs} ម៉ោង)`;
+    else if (openDrawerNow && openDrawerNow.templateCode !== code) reason = `កំពុងបើកថតប្រាក់${openDrawerNow.templateName} លើ ${openDrawerNow.register}`;
+    else if (over12 && !partialAllowed) reason = `ធ្វើការ ${todayTotal} ម៉ោងថ្ងៃនេះ · លើស 12 ម៉ោង`;
+    else if (backToBack) reason = 'ធ្វើការជាប់គ្នា · សម្រាកមិនគ្រប់ 11 ម៉ោង';
+
+    return {
+        ok: !blocked,
+        blocked,
+        reason,
+        over48,
+        over12,
+        partialAllowed,
+        capTime: cap.capTime,
+        remainHours: cap.remainHours,
+        hoursBefore: weekHrs,
+        hoursAfter: newWeekHrs,
+        workedToday: workedHrs,
+        todayTotal,
+        isDayOff,
+        isManager,
+        leavesGap: otherTpls.map(x => x.name).join(' · '),
+        otherTpls,
+        openDrawerNow,
+        backToBack
+    };
+}
+
+function rankCandidates(dateStr, code) {
+    const t = shiftTemplates().find(x => x.code === code);
+    const currentRoster = rosterFor(dateStr, code);
+    const staff = CASHIERS.concat(MANAGERS).filter(p => !currentRoster.some(a => a.cashierId === p.id));
+
+    const ranked = staff.map(p => {
+        const check = rosterCheck(p.id, dateStr, code);
+        let rank = 1;
+        let chip = 'ទំនេរ';
+        let tone = 'emerald';
+
+        if (check.blocked) {
+            rank = 99;
+            chip = check.over48 ? 'លើស 48 ម៉ោង' : (check.openDrawerNow ? 'កំពុងធ្វើការ' : 'លើស 12 ម៉ោង');
+            tone = 'rose';
+        } else if (check.partialAllowed) {
+            rank = 5;
+            chip = `ជំនួសត្រឹម ${t ? t.start : '14:00'}–${check.capTime}`;
+            tone = 'amber';
+        } else if (check.leavesGap) {
+            rank = 4;
+            chip = `ផ្លាស់ពី${check.leavesGap} · បង្កើតចន្លោះ`;
+            tone = 'amber';
+        } else if (check.isDayOff) {
+            rank = 3;
+            chip = 'ថ្ងៃឈប់ · ម៉ោងបន្ថែម';
+            tone = 'amber';
+        } else if (check.isManager) {
+            rank = 2;
+            chip = 'អ្នកគ្រប់គ្រង';
+            tone = 'indigo';
+        } else {
+            rank = 1;
+            chip = 'ទំនេរ';
+            tone = 'emerald';
+        }
+
+        return Object.assign({
+            id: p.id,
+            name: p.name,
+            rank,
+            chip,
+            tone
+        }, check);
+    });
+
+    return ranked.sort((a, b) => {
+        if (a.blocked !== b.blocked) return a.blocked ? 1 : -1;
+        if (a.rank !== b.rank) return a.rank - b.rank;
+        return a.hoursBefore - b.hoursBefore;
+    });
+}
+
+function weekGaps(weekStart) {
+    const gaps = [];
+    const ds = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+    ds.forEach(d => {
+        const dateStr = isoDate(d);
+        shiftTemplates().forEach(t => {
+            const list = rosterFor(dateStr, t.code);
+            if (!list.length) {
+                const candidates = rankCandidates(dateStr, t.code);
+                const best = candidates.find(c => !c.blocked);
+                const freeRegs = REGISTERS.filter(r => !list.some(a => a.register === r));
+                const def = best ? (posSettings().staffDefaults || {})[best.id] || {} : {};
+                const register = (best && def.register && freeRegs.includes(def.register)) ? def.register : (freeRegs[0] || 'POS-01');
+                gaps.push({
+                    date: dateStr,
+                    dow: d.getDay(),
+                    template: t,
+                    suggested: best || null,
+                    register,
+                    freeRegs
+                });
+            }
+        });
+    });
+    return gaps;
+}
+

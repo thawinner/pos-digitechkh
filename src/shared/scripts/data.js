@@ -270,8 +270,10 @@ const POS_SETTINGS_DEFAULTS = {
         return: ['ទំនិញខូច ឬមានបញ្ហា', 'អតិថិជនប្តូរចិត្ត', 'ទិញខុសទំនិញ', 'ផុតកំណត់ប្រើប្រាស់'],
         discount: ['ទំនិញជិតផុតកំណត់', 'អតិថិជនប្រចាំ', 'កញ្ចប់ខូចបន្តិច', 'ការផ្សព្វផ្សាយ'],
         payout: ['ទិញទឹកកក', 'ថ្លៃដឹកជញ្ជូន', 'សម្ភារសម្អាត', 'ចំណាយផ្សេងៗ'],
-        holdDiscard: ['អតិថិជនមិនត្រឡប់មកវិញ', 'អតិថិជនលែងចង់ទិញ', 'បង្កើតខុស']
+        holdDiscard: ['អតិថិជនមិនត្រឡប់មកវិញ', 'អតិថិជនលែងចង់ទិញ', 'បង្កើតខុស'],
+        cover: ['ឈប់សម្រាក', 'ឈឺ', 'ប្តូរវេនគ្នា', 'ពេលមមាញឹក', 'ផ្សេងៗ']
     },
+    shiftCodeSeq: 4,
     quickKeys: ['8860001', '8860004', '8850001', '8850002', '8860002', '8880002'],
     /* ស្តុក៖ លក់បានទោះប្រព័ន្ធបង្ហាញថាអស់ (កត់ត្រាជាករណីមិនប្រក្រតី) · ការកែតម្រូវលើសដែនកំណត់
        ណាមួយ (ចំនួនឯកតា ឬតម្លៃលក់រាយ) ត្រូវបានកត់ត្រា · ការរាប់ស្តុកប្រចាំសប្តាហ៍ ឬប្រចាំខែ */
@@ -318,7 +320,11 @@ function clone(v) {
 
 function posSettings() {
     const stored = posRead(POS_KEYS.settings, null);
-    return Object.assign(clone(POS_SETTINGS_DEFAULTS), (stored && stored.values) || {});
+    const s = Object.assign(clone(POS_SETTINGS_DEFAULTS), (stored && stored.values) || {});
+    if (!s.reasons) s.reasons = clone(POS_SETTINGS_DEFAULTS.reasons);
+    if (!s.reasons.cover) s.reasons.cover = clone(POS_SETTINGS_DEFAULTS.reasons.cover);
+    if (!s.shiftCodeSeq) s.shiftCodeSeq = 4;
+    return s;
 }
 
 function settingsHistory() {
@@ -410,6 +416,56 @@ function shiftEndDate(shift) {
     const end = dateAt(shift.date, shift.end);
     if (end <= start) end.setDate(end.getDate() + 1);
     return end;
+}
+
+/* គណនាម៉ោងធ្វើការជាក់ស្តែងថ្ងៃនេះរបស់អ្នកគិតលុយ (វេនបិទ + វេនកំពុងបើក) */
+function hoursWorkedToday(personId, dateStr) {
+    const d = dateStr || isoDate(new Date());
+    const shifts = posRead(POS_KEYS.shifts, []);
+    let totalMinutes = 0;
+    shifts.forEach(s => {
+        if (s.cashierId !== personId) return;
+        const shiftDate = s.date || (s.openedAt ? s.openedAt.slice(0, 10) : '');
+        if (shiftDate !== d) return;
+        if (s.status === 'open') {
+            const startMs = new Date(s.openedAt).getTime();
+            const nowMs = Date.now();
+            if (nowMs > startMs) {
+                totalMinutes += (nowMs - startMs) / 60000;
+            }
+        } else if (s.openedAt && s.closedAt) {
+            const startMs = new Date(s.openedAt).getTime();
+            const endMs = new Date(s.closedAt).getTime();
+            if (endMs > startMs) {
+                totalMinutes += (endMs - startMs) / 60000;
+            }
+        } else if (s.start && s.end) {
+            let span = minutesOf(s.end) - minutesOf(s.start);
+            if (span <= 0) span += 24 * 60;
+            totalMinutes += span;
+        }
+    });
+    return Math.round((totalMinutes / 60) * 10) / 10;
+}
+
+/* គណនាម៉ោងបញ្ចប់អតិបរមាដើម្បីកុំឱ្យលើស 12 ម៉ោង/ថ្ងៃ (D-S5: យ៉ាងហោចណាស់ 2 ម៉ោង) */
+function capFor(personId, dateStr, startTime) {
+    const d = dateStr || isoDate(new Date());
+    const worked = hoursWorkedToday(personId, d);
+    const remainHours = Math.max(0, 12 - worked);
+    if (remainHours <= 0) {
+        return { capTime: '', remainHours: 0, partialAllowed: false, workedHours: worked };
+    }
+    const startM = minutesOf(startTime || '00:00');
+    const remainMinutes = Math.floor(remainHours * 60);
+    // មូលចុះត្រឹម 10 នាទី (តាម D-S5 §5.2)
+    const capMinutesTotal = startM + remainMinutes;
+    const roundedCapM = Math.floor(capMinutesTotal / 10) * 10;
+    const h = Math.floor((roundedCapM % 1440) / 60);
+    const mi = roundedCapM % 60;
+    const capTime = `${pad2(h)}:${pad2(mi)}`;
+    const partialAllowed = remainHours >= 2.0;
+    return { capTime, remainHours: Math.round(remainHours * 10) / 10, partialAllowed, workedHours: worked };
 }
 
 /* ===== កាតាឡុកទំនិញ — មានតែតម្លៃលក់រាយ គ្មានថ្លៃដើមទិញឡើយ ===== */
@@ -736,7 +792,7 @@ function openShiftRecord(opts) {
         templateCode: tpl.code,
         templateName: tpl.name,
         start: tpl.start,
-        end: tpl.end,
+        end: opts.end || tpl.end,
         openedAt: isoLocal(now),
         fxRate: fxRate(),
         floatUSD: opts.floatUSD,
@@ -747,6 +803,10 @@ function openShiftRecord(opts) {
         floatApprovedBy: opts.approverId,
         status: 'open'
     };
+    if (opts.short) {
+        shift.short = true;
+        shift.plannedEnd = opts.plannedEnd || tpl.end;
+    }
     saveLiveShift(shift);
     return shift;
 }
@@ -929,14 +989,20 @@ const EVENT_LABEL = {
     shift_reopened: 'បើកវេនឡើងវិញ',
     recount: 'រាប់ប្រាក់ឡើងវិញ',
     drop: 'ផ្ទេរចូលទូដែក',
-    stock_mismatch: 'លក់លើសស្តុកក្នុងប្រព័ន្ធ'
+    stock_mismatch: 'លក់លើសស្តុកក្នុងប្រព័ន្ធ',
+    roster_assign: 'ចាត់តាំងកាលវិភាគ',
+    roster_remove: 'ដកចេញពីកាលវិភាគ',
+    roster_undo: 'មិនធ្វើវិញនូវការកែប្រែកាលវិភាគ',
+    roster_default: 'កែវេនប្រចាំ',
+    shift_blocked: 'រារាំងការបើកវេន (លើស 12 ម៉ោង)',
+    shift_short: 'បើកវេនខ្លី'
 };
 
 function logPosEvent(type, detail) {
     const d = detail || {};
     const sh = d.shiftId ? null : currentShift();
     const list = posRead(POS_KEYS.events, []);
-    list.push({
+    list.push(Object.assign({
         id: newId('EV'),
         type,
         at: isoLocal(new Date()),
@@ -950,12 +1016,16 @@ function logPosEvent(type, detail) {
         amount: d.amount || 0,
         reason: d.reason || '',
         note: d.note || ''
-    });
+    }, d));
     posWrite(POS_KEYS.events, list.slice(-3000));
 }
 
 function liveEvents() {
     return posRead(POS_KEYS.events, []);
+}
+
+function posEvents() {
+    return liveEvents();
 }
 
 /* ===== សោរបញ្ជរពេលសម្រាក (ផែនការកែលម្អ C22) ===== */
@@ -1852,16 +1922,97 @@ function defaultRoster(dateStr, code) {
 /* ផ្លាស់បុគ្គលិកទៅវេនផ្សេងសម្រាប់ថ្ងៃមួយ (ជំនួសវេន)៖ ដកចេញពីវេនផ្សេងទៀតក្នុងថ្ងៃនោះ
    ហើយបន្ថែមទៅវេនថ្មី ជាមួយសញ្ញា cover ដើម្បីបង្ហាញថាមិនមែនវេនប្រចាំ */
 function assignShift(dateStr, code, personId, register, meta) {
+    let movedFrom = '';
     shiftTemplates().forEach(t => {
         if (t.code === code) return;
         const list = rosterFor(dateStr, t.code);
-        if (list.some(a => a.cashierId === personId)) saveRoster(dateStr, t.code, list.filter(a => a.cashierId !== personId));
+        if (list.some(a => a.cashierId === personId)) {
+            movedFrom = t.code;
+            // P21: បើបុគ្គលិកកំពុងបើកថតប្រាក់ផ្ទាល់លើវេននោះ មិនត្រូវដកចេញឡើយ
+            const openShifts = posRead(POS_KEYS.shifts, []).filter(s => s.status === 'open' && s.cashierId === personId && s.date === dateStr && s.templateCode === t.code);
+            if (!openShifts.length) {
+                saveRoster(dateStr, t.code, list.filter(a => a.cashierId !== personId));
+            }
+        }
     });
     const def = (posSettings().staffDefaults || {})[personId];
     const isDefault = def && def.template === code && def.register === register;
-    const list = rosterFor(dateStr, code).filter(a => a.cashierId !== personId && a.register !== register);
-    list.push(Object.assign({ cashierId: personId, register }, isDefault ? {} : { cover: true }, meta || {}));
+    const curList = rosterFor(dateStr, code);
+    const replacedEntry = curList.find(a => a.register === register && a.cashierId !== personId);
+    const replaced = replacedEntry ? replacedEntry.cashierId : '';
+    const list = curList.filter(a => a.cashierId !== personId && a.register !== register);
+    const entry = Object.assign({ cashierId: personId, register }, isDefault ? {} : { cover: true }, meta || {}, { at: isoLocal(new Date()) });
+    list.push(entry);
     saveRoster(dateStr, code, list);
+    const actorId = (meta && meta.by) || currentActorId();
+    const tpl = shiftTemplates().find(t => t.code === code);
+    logPosEvent('roster_assign', {
+        date: dateStr,
+        templateCode: code,
+        templateName: tpl ? tpl.name : code,
+        personId,
+        register,
+        reason: (meta && meta.reason) || '',
+        movedFrom,
+        replaced,
+        actorId
+    });
+    return { movedFrom, replaced };
+}
+
+function unassignShift(dateStr, code, personId, meta) {
+    const list = rosterFor(dateStr, code).slice();
+    const idx = list.findIndex(a => a.cashierId === personId);
+    if (idx < 0) return null;
+    const [removed] = list.splice(idx, 1);
+    saveRoster(dateStr, code, list);
+    const actorId = (meta && meta.by) || currentActorId();
+    const tpl = shiftTemplates().find(t => t.code === code);
+    logPosEvent('roster_remove', {
+        date: dateStr,
+        templateCode: code,
+        templateName: tpl ? tpl.name : code,
+        personId,
+        register: removed.register,
+        actorId
+    });
+    return { removed };
+}
+
+function undoRosterAction(action) {
+    if (!action) return;
+    if (action.type === 'remove' && action.entry) {
+        const list = rosterFor(action.date, action.code).slice();
+        if (!list.some(a => a.cashierId === action.entry.cashierId)) {
+            list.push(action.entry);
+            saveRoster(action.date, action.code, list);
+            logPosEvent('roster_undo', {
+                date: action.date,
+                templateCode: action.code,
+                personId: action.entry.cashierId,
+                note: `បានដាក់ ${personName(action.entry.cashierId)} ចូលកាលវិភាគវិញ`
+            });
+        }
+    } else if (action.type === 'assign') {
+        const list = rosterFor(action.date, action.code).filter(a => a.cashierId !== action.personId);
+        if (action.replaced) {
+            list.push({ cashierId: action.replaced, register: action.register, cover: true });
+        }
+        saveRoster(action.date, action.code, list);
+        if (action.movedFrom) {
+            const prevList = rosterFor(action.date, action.movedFrom).slice();
+            if (!prevList.some(a => a.cashierId === action.personId)) {
+                prevList.push({ cashierId: action.personId, register: action.prevRegister || action.register, cover: true });
+                saveRoster(action.date, action.movedFrom, prevList);
+            }
+        }
+        logPosEvent('roster_undo', {
+            date: action.date,
+            templateCode: action.code,
+            personId: action.personId,
+            note: `បានលុបចោលការចាត់តាំង ${personName(action.personId)}`
+        });
+    }
 }
 
 function rosterFor(dateStr, code) {

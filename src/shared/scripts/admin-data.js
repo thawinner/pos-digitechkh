@@ -298,6 +298,7 @@ const AUDIT_KINDS = {
     catalog: { label: 'ទំនិញ និងតម្លៃ', icon: 'fa-tag', tone: 'amber' },
     stock: { label: 'ស្តុកទំនិញ', icon: 'fa-boxes-stacked', tone: 'blue' },
     shift: { label: 'វេន', icon: 'fa-cash-register', tone: 'cyan' },
+    roster: { label: 'កាលវិភាគ', icon: 'fa-calendar-days', tone: 'indigo' },
     security: { label: 'សុវត្ថិភាព', icon: 'fa-key', tone: 'rose' }
 };
 
@@ -319,6 +320,12 @@ function auditTrail() {
         if (e.type === 'override_denied') out.push({ at: e.at, by: e.approverId || e.actorId, kind: 'security', title: 'លេខសម្ងាត់អ្នកគ្រប់គ្រងខុស', detail: `${e.register || ''} · ${personName(e.cashierId)}` });
         if (e.type === 'shift_reviewed') out.push({ at: e.at, by: e.actorId, kind: 'shift', title: `ចុះហត្ថលេខាត្រួតពិនិត្យ ${e.shiftId}`, detail: personName(e.cashierId) });
         if (e.type === 'discount' && e.approverId) out.push({ at: e.at, by: e.approverId, kind: 'approval', title: `អនុម័តបញ្ចុះតម្លៃ ${e.note}`, detail: `${e.saleId} · ${e.reason}` });
+        if (e.type === 'roster_assign') out.push({ at: e.at, by: e.actorId, kind: 'roster', title: `ចាត់តាំង ${personName(e.personId)} ទៅ ${e.templateName || e.templateCode}`, detail: `${e.date} · ${e.register}${e.reason ? ' · ' + e.reason : ''}${e.movedFrom ? ' · ផ្លាស់ពី ' + e.movedFrom : ''}${e.replaced ? ' · ជំនួស ' + personName(e.replaced) : ''}` });
+        if (e.type === 'roster_remove') out.push({ at: e.at, by: e.actorId, kind: 'roster', title: `ដក ${personName(e.personId)} ចេញពី ${e.templateName || e.templateCode}`, detail: `${e.date} · ${e.register}` });
+        if (e.type === 'roster_undo') out.push({ at: e.at, by: e.actorId, kind: 'roster', title: 'មិនធ្វើវិញនូវការកែប្រែកាលវិភាគ', detail: `${e.date || ''} · ${e.note || ''}` });
+        if (e.type === 'roster_default') out.push({ at: e.at, by: e.actorId, kind: 'roster', title: `កែវេនប្រចាំរបស់ ${personName(e.personId)}`, detail: `${e.note || ''}` });
+        if (e.type === 'shift_blocked') out.push({ at: e.at, by: e.actorId || e.cashierId, kind: 'shift', title: `រារាំងការបើកវេន (លើស 12 ម៉ោង)`, detail: `${personName(e.cashierId)} · ${e.templateCode} · ធ្វើការរួច ${e.workedHours || ''} ម៉ោង`, tone: 'rose' });
+        if (e.type === 'shift_short') out.push({ at: e.at, by: e.approverId || e.actorId, kind: 'shift', title: `បើកវេនខ្លី (អនុម័ត)`, detail: `${e.shiftId} · បញ្ចប់ ${e.end}` });
     });
     mgrAllShifts().filter(s => s.status === 'reviewed' && s.reviewedBy && s.generated).forEach(s => out.push({
         at: s.reviewedAt, by: s.reviewedBy, kind: 'shift', title: `ចុះហត្ថលេខាត្រួតពិនិត្យ ${s.id}`, detail: personName(s.cashierId)

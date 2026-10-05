@@ -205,6 +205,8 @@
         <!-- ===== ផ្ទាំងឆ្វេង — ជ្រើសរើសទំនិញ ===== -->
         <div class="pos-left">
             <div class="px-3 md:px-4 pt-3 pb-2.5 flex flex-col gap-2.5 flex-shrink-0">
+                <div id="handoverAlertBanner"></div>
+                <div id="precloseBlockerBanner"></div>
                 <div id="drawerBanner"></div>
                 <div class="relative w-full">
                     <i class="fas fa-barcode absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400 text-lg"></i>
@@ -484,6 +486,116 @@
             if (el) el.textContent = `${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}`;
         }
 
+        function nextShiftForCashier(cashierId, currentTemplateCode) {
+            const templates = shiftTemplates();
+            const currIdx = templates.findIndex(t => t.code === currentTemplateCode);
+            for (let i = 0; i < templates.length; i++) {
+                const t = templates[i];
+                if (currIdx >= 0 && i <= currIdx) continue;
+                const roster = rosterFor(templateDateFor(t, new Date()), t.code);
+                const a = roster.find(x => x.cashierId === cashierId);
+                if (a) {
+                    return { template: t, register: a.register };
+                }
+            }
+            return null;
+        }
+
+        function nextAssigneeForRegister(register, currentTemplateCode) {
+            const templates = shiftTemplates();
+            const currIdx = templates.findIndex(t => t.code === currentTemplateCode);
+            for (let i = 0; i < templates.length; i++) {
+                const t = templates[i];
+                if (currIdx >= 0 && i <= currIdx) continue;
+                const roster = rosterFor(templateDateFor(t, new Date()), t.code);
+                const a = roster.find(x => x.register === register);
+                if (a) {
+                    return a;
+                }
+            }
+            return null;
+        }
+
+        let handoverDismissed = false;
+        function checkShiftHandover() {
+            if (handoverDismissed) return;
+            const sh = SH();
+            const host = document.getElementById('handoverAlertBanner');
+            if (!host || !sh) return;
+            const now = new Date();
+            const endDate = shiftEndDate(sh);
+            const passed = now > endDate;
+            const next = nextShiftForCashier(sh.cashierId, sh.templateCode);
+            if (passed && next) {
+                host.innerHTML = `
+                    <div class="p-4 rounded-2xl bg-amber-500/20 border border-amber-400/50 text-white shadow-lg space-y-3">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold text-lg flex-shrink-0">
+                                    <i class="fas fa-calendar-day"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-white text-base">វេនរបស់អ្នកថ្ងៃនេះ</h4>
+                                    <p class="text-xs text-amber-200 mt-0.5">វេនបច្ចុប្បន្ន <strong class="font-semibold text-white">${sh.templateName}</strong> ត្រូវបញ្ចប់ម៉ោង ${sh.end}</p>
+                                    <p class="text-xs text-emerald-300 font-semibold mt-0.5">វេនបន្ទាប់ <strong class="text-white">${next.template.name}</strong> ម៉ោង ${next.template.start}–${next.template.end} · ${next.register}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 flex-shrink-0">
+                                <a href="../shift/close-shift.html?next=${next.template.code}" class="h-10 px-4 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold inline-flex items-center gap-1.5 transition shadow">
+                                    <i class="fas fa-lock"></i> បិទវេន... ហើយបន្តវេន${next.template.name}
+                                </a>
+                                <button type="button" onclick="dismissHandoverNotice()" class="h-10 px-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 text-xs font-medium transition">
+                                    បន្តលក់លើវេននេះ
+                                </button>
+                            </div>
+                        </div>
+                    </div>`;
+            } else {
+                host.innerHTML = '';
+            }
+        }
+
+        function dismissHandoverNotice() {
+            handoverDismissed = true;
+            const host = document.getElementById('handoverAlertBanner');
+            if (host) host.innerHTML = '';
+            showToast('លោកអ្នកកំពុងបន្តលក់លើវេនដែលផុតម៉ោងកំណត់', 'warning');
+        }
+
+        function renderPrecloseBlockerBanner() {
+            const sh = SH();
+            const host = document.getElementById('precloseBlockerBanner');
+            if (!host || !sh) return;
+            const now = new Date();
+            const endDate = shiftEndDate(sh);
+            const msToEnd = endDate - now;
+            if (msToEnd > 15 * 60000) {
+                host.innerHTML = '';
+                return;
+            }
+            const held = heldOfShift(sh.id).length;
+            const drops = movementsOfShift(sh.id).filter(m => m.type === 'drop' && m.status === 'pending').length;
+            if (!held && !drops) {
+                host.innerHTML = '';
+                return;
+            }
+            const parts = [];
+            if (held) parts.push(`${held} ការលក់ព្យួរ`);
+            if (drops) parts.push(`${drops} ការផ្ទេររង់ចាំបញ្ជាក់`);
+            const remainText = msToEnd > 0 ? `នៅសល់ ${fmtDuration(msToEnd)}` : 'ហួសម៉ោងវេន';
+            host.innerHTML = `
+                <div class="flex items-center justify-between gap-3 p-2.5 pl-3.5 rounded-2xl bg-amber-500/15 border border-amber-400/40 text-amber-200">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <i class="fas fa-triangle-exclamation text-amber-400"></i>
+                        <span class="sm-td text-amber-100 truncate">${remainText} · មាន ${parts.join(' / ')} · ដោះស្រាយមុនបិទវេន</span>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        ${held ? `<button onclick="toggleRowActionMenu(event, 'heldMenu')" type="button" class="sm-badge px-3 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold transition">មើលការលក់ព្យួរ</button>` : ''}
+                        ${drops ? `<button onclick="openDropDialog()" type="button" class="sm-badge px-3 py-1 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-semibold transition">ពិនិត្យទូដែក</button>` : ''}
+                    </div>
+                </div>`;
+        }
+
         /* បន្ទះវេន៖ គំរូវេន · ម៉ោងបិទ · ពណ៌លឿងពេលហួសម៉ោង ក្រហមពេលលើស 12 ម៉ោង (ផែនការកែលម្អ C22) */
         function renderShiftChip() {
             const sh = SH();
@@ -492,11 +604,17 @@
             const icon = document.getElementById('shiftChipIcon');
             if (!sh) return;
             const now = new Date();
-            const over = now - shiftEndDate(sh);
+            const endDate = shiftEndDate(sh);
+            const over = now - endDate;
+            const msToEnd = endDate - now;
             const opened = now - new Date(sh.openedAt);
             let tone = 'bg-white/5 border-white/10';
             let iconCls = 'fas fa-cash-register text-cyan-400 text-xs';
             let text = `${sh.templateName} · បិទម៉ោង ${sh.end}<span class="hidden xl:!inline"> · បើកបាន ${fmtDuration(opened)}</span>`;
+
+            const next = nextShiftForCashier(sh.cashierId, sh.templateCode);
+            const nextOnReg = nextAssigneeForRegister(sh.register, sh.templateCode);
+
             if (opened > 12 * 3600000) {
                 tone = 'bg-rose-500/15 border-rose-500/40';
                 iconCls = 'fas fa-triangle-exclamation text-rose-300 text-xs';
@@ -504,13 +622,29 @@
             } else if (over > 0) {
                 tone = 'bg-amber-500/15 border-amber-500/40';
                 iconCls = 'fas fa-clock text-amber-300 text-xs';
-                text = `${sh.templateName} · ហួសម៉ោងវេន ${fmtDuration(over)}`;
+                if (next) {
+                    text = `${sh.templateName} · ហួសម៉ោងវេន · បន្ត${next.template.name}`;
+                } else {
+                    text = `${sh.templateName} · ហួសម៉ោងវេន ${fmtDuration(over)}`;
+                }
+            } else if (msToEnd <= 30 * 60000) {
+                tone = 'bg-amber-500/15 border-amber-500/40';
+                iconCls = 'fas fa-clock text-amber-300 text-xs';
+                if (next) {
+                    text = `បិទម៉ោង ${sh.end} · បន្ត${next.template.name}`;
+                } else if (nextOnReg && nextOnReg.cashierId !== sh.cashierId) {
+                    text = `បិទម៉ោង ${sh.end} · បន្ទាប់៖ ${personName(nextOnReg.cashierId)}`;
+                } else {
+                    text = `បិទម៉ោង ${sh.end} (នៅសល់ ${fmtDuration(msToEnd)})`;
+                }
             }
             wrap.className = `hidden md:!inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border ${tone}`;
             icon.className = iconCls;
             chip.innerHTML = text;
             document.getElementById('receiptCount').textContent = shiftSales().filter(s => !isVoided(s)).length;
             document.getElementById('registerLabel').textContent = `${sh.register} · ${sh.id.split('-').slice(-1)[0]}`;
+
+            renderPrecloseBlockerBanner();
         }
 
         /* ===== ពេញអេក្រង់ ===== */
@@ -1797,6 +1931,7 @@
             renderShiftChip();
             renderHeld();
             renderDrawerBanner();
+            checkShiftHandover();
             renderCategories();
             renderProducts();
             renderCart();
@@ -1805,6 +1940,7 @@
             tickClock();
             setInterval(tickClock, 1000);
             setInterval(renderShiftChip, 30000);
+            setInterval(checkShiftHandover, 30000);
             window.addEventListener('resize', updatePillFade);
             if (document.fonts && document.fonts.ready) document.fonts.ready.then(updatePillFade);
             window.addEventListener('load', updatePillFade);

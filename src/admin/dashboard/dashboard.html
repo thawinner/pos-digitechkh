@@ -192,6 +192,7 @@
             const today = businessDate();
             if (!picked) picked = today;
             const isDark = typeof chartIsDark === 'function' ? chartIsDark() : false;
+            const label = d => d.date === today ? 'ថ្ងៃនេះ' : String(new Date(d.date + 'T12:00').getDate());
             const chart = posChart('chart', {
                 grid: { left: 4, right: 4, top: 12, bottom: 4, containLabel: true },
                 xAxis: chartCategoryAxis(DAYS.map(label), {

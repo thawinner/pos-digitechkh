@@ -84,9 +84,14 @@
         let templateCode = '';
         let mismatchNote = '';
         let stage = 'overview';   // overview | count
+        let customRegister = '';
+        let isShortShift = false;
+        let shortShiftCap = '';
+        let wasRegBusy = false;
 
         /* បញ្ជរដែលត្រូវបើក៖ តាមកាលវិភាគនៃវេនដែលបានជ្រើស បើគ្មាន ប្រើបញ្ជរដែលប្រព័ន្ធកំណត់ពេលចូលប្រើ */
         function reg() {
+            if (customRegister) return customRegister;
             const t = chosenTemplate();
             const a = t && rosterFor(templateDateFor(t, new Date()), t.code).find(x => x.cashierId === ME_CASHIER);
             return a ? a.register : MY_REGISTER;
@@ -94,6 +99,21 @@
 
         function regBusy() {
             return liveShifts().some(x => x.status === 'open' && x.register === reg() && x.cashierId !== ME_CASHIER);
+        }
+
+        function regBusyShift() {
+            return liveShifts().find(x => x.status === 'open' && x.register === reg() && x.cashierId !== ME_CASHIER) || null;
+        }
+
+        function freeRegisters() {
+            const openRegs = liveShifts().filter(x => x.status === 'open').map(x => x.register);
+            return REGISTERS.filter(r => !openRegs.includes(r) && r !== reg());
+        }
+
+        function switchRegister(newReg) {
+            customRegister = newReg;
+            showToast(`បានប្តូរទៅបញ្ជរ ${newReg}`, 'info');
+            render();
         }
 
         function issuedFloat() {
@@ -118,8 +138,16 @@
 
         function workedToday() {
             const today = templateDateFor(chosenTemplate() || shiftTemplates()[0], new Date());
-            return liveShifts().filter(x => x.cashierId === ME_CASHIER && x.date === today)
-                .reduce((h, x) => h + (new Date(x.closedAt || new Date()) - new Date(x.openedAt)) / 3600000, 0);
+            return typeof hoursWorkedToday === 'function' ? hoursWorkedToday(ME_CASHIER, today) : 0;
+        }
+
+        function fmtHoursDuration(h) {
+            const totalMinutes = Math.round(h * 60);
+            const hrs = Math.floor(totalMinutes / 60);
+            const mins = totalMinutes % 60;
+            if (hrs > 0 && mins > 0) return `${hrs} ម៉ោង ${mins} នាទី`;
+            if (hrs > 0) return `${hrs} ម៉ោង`;
+            return `${mins} នាទី`;
         }
 
         /* កាលវិភាគរបស់ខ្ញុំថ្ងៃនេះ (គ្រប់វេន) — មិនត្រឹមតែវេនបច្ចុប្បន្ន */
@@ -188,6 +216,19 @@
             </button>`;
         }
 
+        function notifyManagerBlocked(t) {
+            if (!t) return;
+            logPosEvent('shift_blocked', {
+                cashierId: ME_CASHIER,
+                register: reg(),
+                templateCode: t.code,
+                reason: 'over_12h',
+                workedHours: workedToday(),
+                date: templateDateFor(t, new Date())
+            });
+            showToast('បានជូនដំណឹងអ្នកគ្រប់គ្រងអំពីបញ្ហាកំណត់ម៉ោងរួចរាល់', 'info');
+        }
+
         function shiftPanel() {
             const mine = myRosterToday();
             const t = chosenTemplate();
@@ -200,6 +241,13 @@
                 ? `<p class="sm-td text-slate-300"><i class="fas fa-calendar-check text-slate-500 mr-2"></i>វេនរបស់អ្នកថ្ងៃនេះ៖ <span class="text-white font-semibold">${mine.map(x => `${x.template.name} ${x.template.start}–${x.template.end} · ${x.register}`).join(' · ')}</span></p>`
                 : `<p class="sm-td text-slate-300"><i class="fas fa-calendar-xmark text-amber-300 mr-2"></i><span class="text-white font-semibold">ថ្ងៃនេះអ្នកមិនមានវេនក្នុងកាលវិភាគទេ</span></p>
                    <p class="sm-td-sub text-slate-400 mt-1 ml-6">បើមកជំនួសវេនអ្នកណាម្នាក់ សូមជ្រើសរើសវេនខាងក្រោម។ អ្នកគ្រប់គ្រងត្រូវអនុម័ត ហើយកាលវិភាគនឹងកត់ត្រាថា «ជំនួស»។</p>`;
+
+            const over = t && (workedToday() + templateHours(t) > 12);
+            const cap = over ? capFor(ME_CASHIER, templateDateFor(t, new Date()), t.start) : null;
+            const busy = regBusy();
+            const bShift = regBusyShift();
+            const bPast = bShift && bShift.end && new Date() > shiftEndDate({ date: bShift.date, start: bShift.start, end: bShift.end });
+
             return `<div class="os-panel rounded-xl overflow-hidden">
                 <div class="px-5 py-4 flex items-center gap-3 border-b border-white/[0.08]">
                     ${avatarHtml(me.id, 'w-11 h-11')}
@@ -209,6 +257,49 @@
                     </div>
                 </div>
                 <div class="px-5 py-4 border-b border-white/[0.08]">${status}</div>
+                ${busy ? `<div class="px-5 py-3.5 bg-amber-500/10 border-b border-amber-500/20 space-y-2">
+                    <div class="flex items-center gap-2 text-amber-200">
+                        <i class="fas fa-triangle-exclamation text-amber-400"></i>
+                        <span class="sm-value text-white">បញ្ជរ ${reg()} កំពុងបើកវេន</span>
+                    </div>
+                    <p class="sm-td-sub text-amber-200/90">
+                        ${bPast
+                            ? `បញ្ជរ ${reg()} កំពុងប្រើដោយ ${personName(bShift.cashierId)} (វេនចប់ម៉ោង ${bShift.end})។ សូមរង់ចាំ ${personName(bShift.cashierId)} បិទវេន ឬប្តូរទៅបញ្ជរទំនេរ។`
+                            : `បញ្ជរ ${reg()} កំពុងប្រើដោយ ${personName(bShift ? bShift.cashierId : '')}។`}
+                    </p>
+                    <div class="flex flex-wrap items-center gap-2 pt-1">
+                        ${freeRegisters().map(r => `
+                            <button type="button" onclick="switchRegister('${r}')" class="h-8 px-2.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white sm-td-sub font-semibold transition">
+                                <i class="fas fa-arrow-right-arrow-left mr-1"></i> ប្តូរទៅបញ្ជរ ${r}
+                            </button>
+                        `).join('')}
+                        <button type="button" onclick="render()" class="h-8 px-2.5 rounded-lg bg-white/10 hover:bg-white/15 text-slate-200 sm-td-sub font-medium transition">
+                            <i class="fas fa-rotate mr-1"></i> រង់ចាំ / ពិនិត្យឡើងវិញ
+                        </button>
+                    </div>
+                </div>` : ''}
+                ${over ? (cap ? `<div class="px-5 py-3.5 bg-amber-500/10 border-b border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <p class="sm-value text-amber-200"><i class="fas fa-clock text-amber-400 mr-1.5"></i>អ្នកបានធ្វើការ ${fmtHoursDuration(cap.workedHours)} ថ្ងៃនេះ</p>
+                        <p class="sm-td-sub text-amber-300/80">អាចបើកវេនខ្លីដល់ម៉ោង ${cap.capTime} (នៅសល់ ${fmtHoursDuration(cap.remainHours)}) · ត្រូវការអ្នកគ្រប់គ្រងអនុម័ត</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="notifyManagerBlocked(chosenTemplate())" class="h-9 px-3 rounded-lg bg-white/10 hover:bg-white/15 text-slate-200 sm-td-sub font-medium transition">
+                            ជូនដំណឹងអ្នកគ្រប់គ្រង
+                        </button>
+                        <button type="button" onclick="goCount(true)" class="h-9 px-3.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 sm-td-sub font-semibold transition">
+                            <i class="fas fa-hourglass-half mr-1"></i> បើកវេនខ្លី ដល់ ${cap.capTime}
+                        </button>
+                    </div>
+                </div>` : `<div class="px-5 py-3.5 bg-rose-500/10 border-b border-rose-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <p class="sm-value text-rose-200"><i class="fas fa-ban text-rose-400 mr-1.5"></i>លើសកំណត់ច្បាប់ 12 ម៉ោងក្នុងមួយថ្ងៃ</p>
+                        <p class="sm-td-sub text-rose-300/80">អ្នកបានធ្វើការ ${fmtHoursDuration(workedToday())} ថ្ងៃនេះ (នៅសល់តិចជាង 2 ម៉ោង មិនអាចបើកវេនបានទេ)</p>
+                    </div>
+                    <button type="button" onclick="notifyManagerBlocked(chosenTemplate())" class="h-9 px-3 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 sm-td-sub font-medium transition">
+                        ជូនដំណឹងអ្នកគ្រប់គ្រង
+                    </button>
+                </div>`) : ''}
                 <p class="px-5 pt-4 pb-2 sm-eyebrow text-slate-400">ជ្រើសរើសវេនដែលត្រូវបើក</p>
                 <div role="radiogroup" class="divide-y divide-white/[0.06] border-y border-white/[0.06]">
                     ${shiftTemplates().map(x => templateRow(x, mine.some(y => y.template.code === x.code))).join('')}
@@ -216,13 +307,13 @@
                 <div class="px-5 py-4 flex flex-wrap items-center justify-between gap-3 bg-black/10">
                     <div class="min-w-0">
                         <p class="sm-td-sub text-slate-400">នឹងបើក</p>
-                        <p class="sm-value text-white">${t ? `${t.name} · ${reg()}` : '—'}${cover ? ' <span class="sm-td-sub text-amber-300 font-medium ml-1">ជំនួសវេន</span>' : ''}</p>
+                        <p class="sm-value text-white">${t ? `${t.name} · ${reg()}` : '—'}${cover ? ' <span class="sm-td-sub text-amber-300 font-medium ml-1">ជំនួសវេន</span>' : ''}${isShortShift ? ` <span class="sm-td-sub text-amber-300 font-medium ml-1">(វេនខ្លី ដល់ម៉ោង ${shortShiftCap})</span>` : ''}</p>
                         <p id="limitNote" class="sm-td-sub text-rose-300"></p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
                         ${mine.length ? '' : `<button onclick="handleLogout()" type="button" class="sm-td h-12 px-4 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 font-medium inline-flex items-center gap-2 transition-colors">
                             មិនមែនទេ · ចាកចេញ</button>`}
-                        <button onclick="goCount()" type="button" ${t ? '' : 'disabled'}
+                        <button onclick="goCount(false)" type="button" ${t && !over && !busy ? '' : 'disabled'}
                             class="sm-value h-12 px-6 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold inline-flex items-center gap-2 transition-colors disabled:opacity-40">
                             រាប់ប្រាក់បាតថត <i class="fas fa-arrow-right text-[13px]"></i>
                         </button>
@@ -268,18 +359,32 @@
                     <div class="xl:col-span-2">${shiftPanel()}</div>
                     ${sidePanel()}
                 </div>`;
-            const over = chosenTemplate() && workedToday() + templateHours(chosenTemplate()) > 12;
-            document.getElementById('limitNote').textContent = over ? 'លើស 12 ម៉ោងក្នុងមួយថ្ងៃ ដែលជាកំណត់ច្បាប់ · មិនអាចបើកវេននេះបានទេ' : '';
+            const over = chosenTemplate() && !isShortShift && workedToday() + templateHours(chosenTemplate()) > 12;
+            const noteEl = document.getElementById('limitNote');
+            if (noteEl) {
+                noteEl.textContent = over ? 'លើស 12 ម៉ោងក្នុងមួយថ្ងៃ ដែលជាកំណត់ច្បាប់ · មិនអាចបើកវេនធម្មតាបានទេ' : '';
+            }
         }
 
         function pickTemplate(code) {
             templateCode = code;
+            isShortShift = false;
+            shortShiftCap = '';
             render();
         }
 
-        function goCount() {
+        function goCount(short = false) {
             if (!chosenTemplate()) return showToast('សូមជ្រើសរើសវេន', 'warning');
-            if (workedToday() + templateHours(chosenTemplate()) > 12) return showToast('លើស 12 ម៉ោងក្នុងមួយថ្ងៃ · មិនអាចបើកវេនបន្ថែមបានទេ', 'error');
+            if (short) {
+                const cap = capFor(ME_CASHIER, templateDateFor(chosenTemplate(), new Date()), chosenTemplate().start);
+                if (!cap) return showToast('មិនអាចបើកវេនខ្លីបានទេ (សល់តិចជាង 2 ម៉ោង)', 'error');
+                isShortShift = true;
+                shortShiftCap = cap.capTime;
+            } else {
+                if (workedToday() + templateHours(chosenTemplate()) > 12) return showToast('លើស 12 ម៉ោងក្នុងមួយថ្ងៃ · មិនអាចបើកវេនបន្ថែមបានទេ', 'error');
+                isShortShift = false;
+                shortShiftCap = '';
+            }
             if (regBusy()) return showToast(`បញ្ជរ ${reg()} កំពុងបើកវេនដោយអ្នកផ្សេង`, 'error');
             stage = 'count';
             render();
@@ -359,7 +464,7 @@
 
         function blocker() {
             if (!chosenTemplate()) return 'សូមជ្រើសរើសវេន';
-            if (workedToday() + templateHours(chosenTemplate()) > 12) return 'លើស 12 ម៉ោងក្នុងមួយថ្ងៃ ដែលជាកំណត់ច្បាប់';
+            if (!isShortShift && workedToday() + templateHours(chosenTemplate()) > 12) return 'លើស 12 ម៉ោងក្នុងមួយថ្ងៃ ដែលជាកំណត់ច្បាប់';
             if (regBusy()) return `បញ្ជរ ${reg()} កំពុងបើកវេនដោយអ្នកផ្សេង`;
             if (!(totalUSD() + totalKHR())) return 'សូមរាប់ប្រាក់បាតថតជាមុនសិន';
             const m = mismatch();
@@ -424,14 +529,14 @@
             const note = mismatchNote.trim();
 
             const ok = await showManagerOverride({
-                title: 'បញ្ជាក់ប្រាក់បាតថត និងបើកវេន',
+                title: isShortShift ? 'បញ្ជាក់វេនខ្លី និងបើកវេន' : 'បញ្ជាក់ប្រាក់បាតថត និងបើកវេន',
                 lines: [
-                    ['វេន', `${t.name} ${t.start}–${t.end}`],
+                    ['វេន', `${t.name} ${t.start}–${isShortShift ? shortShiftCap + ' (វេនខ្លី)' : t.end}`],
                     ['បញ្ជរ · អ្នកគិតលុយ', `${reg()} · ${personName(ME_CASHIER)}`],
                     ['ប្រាក់ដែលបានចេញ', `${fmtUSD(f.usd)} · ${fmtKHR(f.khr)}`],
                     ['រាប់បាន', `${fmtUSD(totalUSD())} · ${fmtKHR(totalKHR())}`]
                 ],
-                reason: note || 'ប្រាក់បាតថតត្រឹមត្រូវ',
+                reason: note || (isShortShift ? 'បើកវេនខ្លី ព្រោះជិតដល់កំណត់ 12 ម៉ោង' : 'ប្រាក់បាតថតត្រឹមត្រូវ'),
                 excludeIds: [ME_CASHIER],
                 confirmText: 'អនុម័ត និងបើកវេន',
                 dark: true
@@ -447,7 +552,10 @@
                 floatIssuedUSD: f.usd,
                 floatIssuedKHR: f.khr,
                 floatNote: note,
-                approverId: ok.approverId
+                approverId: ok.approverId,
+                short: isShortShift,
+                end: isShortShift ? shortShiftCap : undefined,
+                plannedEnd: isShortShift ? t.end : undefined
             });
             const now = isoLocal(new Date());
             const move = f.movement || {
@@ -458,15 +566,22 @@
                 shiftId: shift.id, status: 'confirmed', confirmedBy: ME_CASHIER, confirmedAt: now,
                 receivedUSD: totalUSD(), receivedKHR: totalKHR(), note
             }));
-            // ជំនួសវេន៖ បើមិនមែនវេនតាមកាលវិភាគ កត់ត្រាក្នុងកាលវិភាគដោយស្វ័យប្រវត្តិ (រក្សាវេនផ្សេងដែលធ្វើរួចក្នុងថ្ងៃនេះ)
-            const rostered = rosterFor(shift.date, t.code).some(a => a.cashierId === ME_CASHIER && a.register === reg());
-            if (!rostered) {
-                const list = rosterFor(shift.date, t.code).filter(a => a.register !== reg() && a.cashierId !== ME_CASHIER);
-                list.push({ cashierId: ME_CASHIER, register: reg(), cover: true, by: ok.approverId });
+            // ជំនួសវេន ឬកែសម្រួលកាលវិភាគ
+            const rosterList = rosterFor(shift.date, t.code);
+            const myEntry = rosterList.find(a => a.cashierId === ME_CASHIER);
+            if (!myEntry) {
+                const list = rosterList.filter(a => a.register !== reg());
+                list.push({ cashierId: ME_CASHIER, register: reg(), cover: true, by: ok.approverId, ...(isShortShift ? { until: shortShiftCap } : {}) });
                 saveRoster(shift.date, t.code, list);
+            } else if (isShortShift) {
+                myEntry.until = shortShiftCap;
+                saveRoster(shift.date, t.code, rosterList);
+            }
+            if (isShortShift) {
+                logPosEvent('shift_short', { shiftId: shift.id, register: reg(), cashierId: ME_CASHIER, approverId: ok.approverId, until: shortShiftCap, plannedEnd: t.end });
             }
             logPosEvent('shift_opened', { shiftId: shift.id, register: reg(), cashierId: ME_CASHIER,
-                approverId: ok.approverId, note });
+                approverId: ok.approverId, note, ...(isShortShift ? { short: true, until: shortShiftCap } : {}) });
             setTerminalLock(false);
             clearCart();
             showToast(`បានបើក ${t.name} · ${shift.id}`, 'success');
@@ -483,6 +598,14 @@
         function tick() {
             const now = new Date();
             document.getElementById('liveClock').textContent = `${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}`;
+            const busy = regBusy();
+            if (wasRegBusy && !busy) {
+                wasRegBusy = false;
+                showToast(`បញ្ជរ ${reg()} ទំនេរហើយ`, 'success');
+                render();
+            } else {
+                wasRegBusy = busy;
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -494,14 +617,31 @@
             const now = new Date();
             const mine = myRosterToday();
             const current = templateAt(now);
-            const pick = mine.find(m => current && m.template.code === current.code) || mine.find(m => timing(m.template).state !== 'past') || mine[0];
-            const t = (pick && pick.template) || current || lastStartedTemplate(now) || shiftTemplates()[0];
-            templateCode = t ? t.code : '';
+            const urlTemplate = new URLSearchParams(location.search).get('template');
+            const urlT = urlTemplate && shiftTemplates().find(x => x.code === urlTemplate);
+            
+            let pick = null;
+            if (urlT) {
+                pick = urlT;
+            } else {
+                // 1. Cashier's assigned shift for current window (not past)
+                const myCurrent = mine.find(m => current && m.template.code === current.code && timing(m.template).state !== 'past');
+                // 2. Cashier's next upcoming shift today
+                const myUpcoming = mine.find(m => timing(m.template).state !== 'past');
+                // 3. Current active shift (even if not assigned)
+                const activeCurrent = (current && timing(current).state !== 'past') ? current : null;
+                // 4. Next upcoming shift on schedule
+                const upcomingT = shiftTemplates().find(t => timing(t).state !== 'past');
+                
+                pick = (myCurrent && myCurrent.template) || (myUpcoming && myUpcoming.template) || activeCurrent || upcomingT || shiftTemplates()[0];
+            }
+            templateCode = pick ? pick.code : (shiftTemplates()[0] ? shiftTemplates()[0].code : '');
+            wasRegBusy = regBusy();
             const me = personById(ME_CASHIER);
             document.getElementById('regLabel').dataset.date = fmtKhDate(now);
             document.getElementById('meChip').innerHTML = `${avatarHtml(me.id, 'w-8 h-8')}<span class="sm-badge text-slate-200 hidden md:!inline">${me.name}</span>`;
             tick();
-            setInterval(tick, 1000);
+            setInterval(tick, 2000);
             render();
         });
 
