@@ -900,7 +900,7 @@ function salesInRange(range, filter) {
 }
 
 function aggregateSales(sales) {
-    const acc = { tx: 0, gross: 0, net: 0, vat: 0, discount: 0, qty: 0, returns: 0, voids: 0, usdCash: 0, khrCashUSD: 0, khqr: 0 };
+    const acc = { tx: 0, gross: 0, net: 0, vat: 0, discount: 0, qty: 0, returns: 0, voids: 0, usdCash: 0, khrCashUSD: 0, khqr: 0, byBank: {} };
     sales.forEach(s => {
         const t = saleTotals(s.items, s.discountPercent);
         if (isVoided(s)) { acc.voids += 1; return; }
@@ -917,6 +917,11 @@ function aggregateSales(sales) {
         acc.usdCash += s.pay.usdCash * scale;
         acc.khrCashUSD += toUSD(s.pay.khrCash, s.fxRate) * scale;
         acc.khqr += s.pay.khqr * scale;
+        if (s.pay.khqr > 0.005) {
+            const b = acc.byBank[s.pay.bank || ''] || (acc.byBank[s.pay.bank || ''] = { amount: 0, count: 0 });
+            b.amount += s.pay.khqr * scale;
+            b.count += 1;
+        }
     });
     acc.netSales = acc.gross - acc.returns;
     acc.avg = acc.tx ? acc.gross / acc.tx : 0;

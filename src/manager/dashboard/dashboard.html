@@ -338,7 +338,7 @@
             const parts = [
                 { label: 'សាច់ប្រាក់ដុល្លារ', v: a.usdCash, color: '#065f46' },
                 { label: 'សាច់ប្រាក់រៀល', v: a.khrCashUSD, color: '#34d399' },
-                { label: 'ស្កេនកូដបាគង', v: a.khqr, color: '#a7f3d0' }
+                ...bankLines(a).map((b, i) => ({ label: b.label, v: b.amount, color: ['#a7f3d0', '#d1fae5', '#6ee7b7', '#ecfdf5'][i % 4] }))
             ];
             document.getElementById('paySplit').innerHTML = total ? `
                 <div class="flex h-2.5 rounded-full overflow-hidden bg-slate-100">${parts.map(p => `<span style="width:${p.v / total * 100}%;background:${p.color}"></span>`).join('')}</div>

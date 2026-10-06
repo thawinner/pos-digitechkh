@@ -129,6 +129,11 @@ src/
   carries `restock` (false = damaged adjustment). Cashier pages use only `stockStatus()` (out / low by `p.minStock`),
   never quantities. Simulated registers' sales after the opening do not move stock.
 - **Customer display (CFD)**: the terminal's `syncCfd()` (called from `renderCart`, KHQR, success and lock handlers) writes a snapshot with `publishCfd()` to `pos_cfd` `{ stage: idle|sell|pay|khqr|thanks, items (sku, qty, price), totals, pay, khqr, thanks }`; the display listens to the `storage` event. The snapshot carries only what the customer should see: no cost, stock, PINs, reasons or staff names. The idle messages (max 5, with on/off and an icon) are `cfdMessages` in `posSettings()`, edited by the manager or owner in settings → «អេក្រង់អតិថិជន». The terminal republishes every 10 s as a heartbeat; the display falls back to idle after 30 s without an update. The owner may open the display page (exempt in `guardPage`).
+- Banks: KHQR payments go to a shop bank account chosen at the till. `PAY_BANKS` (ABA, ACLEDA, Wing, …) + `payBanks` in
+  `posSettings()` (owner settings → «ធនាគារទទួលប្រាក់»: on/off, Bakong account ID, order; first = default). The sale stores
+  `pay.bank`; labels via `khqrLabel(pay)`, per-bank totals via `bankLines(summary)` (`byBank` in `summarizeShift` /
+  `aggregateSales`). `buildKhqrPayload` emits a valid EMV KHQR string (tag 29 account, 52 MCC, 63 CRC16). The KHQR card
+  follows the Bakong layout (20:29, red header with cut corner, name, amount, dashed line, QR); keep extra text outside it.
 - Money: `saleTotals` (VAT-inclusive prices), `splitChange` ($ + ៛ rounded to 100), every sale stores `fxRate`,
   `cashierId`, `register`, `shiftId`, `change`, and each line its `price` (read with `linePrice`). Cost prices exist
   only in `admin-data.js`; cashier and manager pages never see them.

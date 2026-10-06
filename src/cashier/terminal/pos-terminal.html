@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Nunito+Sans:wght@400;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -139,24 +139,30 @@
         .pos-num::-webkit-outer-spin-button, .pos-num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .pos-num { -moz-appearance: textfield; }
 
-        #khqrBox img, #khqrBox canvas { width: 100%; height: auto; image-rendering: pixelated; }
-        /* កាត KHQR៖ ក្បាលក្រហមមានជ្រុងកាត់ ឈ្មោះហាង ទឹកប្រាក់ បន្ទាត់ចុចៗ និងកូដ (ទម្រង់បាគង) */
+        /* កាត KHQR តាមស្តង់ដារបាគង (ធនាគារជាតិ)៖ សមាមាត្រ 20:29 · ក្បាលក្រហម #E1232E មានជ្រុងកាត់ខាងស្តាំក្រោម
+           ឈ្មោះអ្នកទទួល · ទឹកប្រាក់ + រូបិយប័ណ្ណ · បន្ទាត់ចុចៗ · កូដ QR មានសញ្ញារូបិយប័ណ្ណកណ្តាល · ទំហំទាំងអស់គិតតាមទទឹងកាត (cqw) */
+        .khqr-wrap { container-type: inline-size; }
+        .khqr-card { aspect-ratio: 20 / 29; display: flex; flex-direction: column; background: #fff;
+                     border-radius: 6.5cqw; overflow: hidden; box-shadow: 0 0 18px rgba(0, 0, 0, .12); color: #000; text-align: left;
+                     font-family: 'Nunito Sans', Arial, sans-serif; }
+        .khqr-head { position: relative; flex: 0 0 auto; height: 17.4cqw; background: #e1232e; display: flex; align-items: center; justify-content: center; }
+        .khqr-head span { color: #fff; font: 800 7.2cqw/1 'Nunito Sans', Arial, sans-serif; letter-spacing: .04em; }
+        .khqr-head::after { content: ''; position: absolute; right: 0; bottom: -1px; width: 8.6cqw; height: 8.6cqw; background: #fff;
+                            clip-path: polygon(100% 0, 100% 100%, 0 100%); }
+        .khqr-info { padding: 6.4cqw 10cqw 5.2cqw; }
+        .khqr-merchant { font-size: 4.6cqw; line-height: 1.3; color: #000; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .khqr-amount { font-size: 8.6cqw; line-height: 1.25; font-weight: 800; color: #000; margin-top: 1cqw; font-family: 'Nunito Sans', Arial, sans-serif; }
+        .khqr-cur { font-size: 4.6cqw; font-weight: 400; color: #000; margin-left: 1cqw; }
+        .khqr-cut { border-top: .6cqw dashed rgba(0, 0, 0, .45); }
+        .khqr-qr { position: relative; flex: 1 1 auto; display: flex; align-items: center; justify-content: center; padding: 7cqw 10cqw 9cqw; }
+        .khqr-qr > div:first-child { width: 100%; aspect-ratio: 1; }
+        .khqr-qr img, .khqr-qr canvas { width: 100% !important; height: auto !important; }
+        .khqr-mark { position: absolute; left: 50%; top: calc(50% - 1cqw); transform: translate(-50%, -50%); width: 13cqw; height: 13cqw;
+                     border-radius: 9999px; background: #000; color: #fff; border: 1.4cqw solid #fff; display: flex;
+                     align-items: center; justify-content: center; font: 800 6cqw/1 'Nunito Sans', Arial, sans-serif; }
         .khqr-stage { background: #121212; }
         html:not(.dark) .khqr-stage { background: #fafafa; }
         html:not(.dark) #khqrOverlay { background: #e7e7e7 !important; }
-        .khqr-card { width: 100%; max-width: 300px; background: #fff; border-radius: 18px; overflow: hidden;
-                     box-shadow: 0 10px 30px rgba(23, 23, 23, .18); color: #171717; }
-        .khqr-head { position: relative; height: 54px; background: #e1232e; display: flex; align-items: center; justify-content: center; }
-        .khqr-head span { color: #fff; font-weight: 800; font-size: 20px; letter-spacing: .08em; font-family: Arial, sans-serif; }
-        .khqr-head::after { content: ''; position: absolute; right: 0; bottom: -1px; border-style: solid;
-                            border-width: 0 0 22px 22px; border-color: transparent transparent #fff transparent; }
-        .khqr-merchant { font-size: 14px; color: #404040; font-weight: 500; }
-        .khqr-amount { font-size: 26px; font-weight: 700; color: #171717; line-height: 1.3; margin-top: 2px; }
-        .khqr-cur { font-size: 14px; font-weight: 600; color: #737373; }
-        .khqr-cut { border-top: 2px dashed #d4d4d4; margin: 0 14px; }
-        .khqr-mark { position: absolute; left: 50%; top: calc(50% - 2px); transform: translate(-50%, -50%); width: 38px; height: 38px;
-                     border-radius: 9999px; background: #171717; color: #fff; border: 4px solid #fff; display: flex;
-                     align-items: center; justify-content: center; font: 700 16px/1 Arial, sans-serif; }
         .khqr-kbd { font: 600 11px/1 ui-monospace, monospace; padding: 3px 6px; border-radius: 6px; border: 1px solid currentColor; opacity: .7; }
 
         @page {
@@ -418,35 +424,39 @@
             <div class="w-full min-w-0 max-w-[880px] rounded-2xl border border-white/10 bg-[#171717] shadow-2xl grid grid-cols-1 md:grid-cols-[400px_1fr] overflow-hidden">
                 <!-- ផ្នែកអតិថិជន៖ កាត KHQR តាមទម្រង់បាគង -->
                 <div class="khqr-stage min-w-0 flex items-center justify-center p-6 sm:p-8 border-b md:border-b-0 md:border-r border-white/10">
-                    <div class="khqr-card">
-                        <div class="khqr-head"><span>KHQR</span></div>
-                        <div class="px-6 pt-4 pb-3">
-                            <p id="khqrMerchantName" class="khqr-merchant"></p>
-                            <p class="khqr-amount sm-figure"><span id="khqrCardAmount"></span> <span class="khqr-cur">USD</span></p>
-                        </div>
-                        <div class="khqr-cut"></div>
-                        <div class="relative px-6 pt-5 pb-6">
-                            <div id="khqrBox" class="w-full"></div>
-                            <span class="khqr-mark" aria-hidden="true">$</span>
-                            <div id="khqrExpiredMask" class="hidden absolute inset-0 bg-white/95 flex flex-col items-center justify-center text-center p-6">
-                                <i class="fas fa-clock-rotate-left text-3xl text-rose-500 mb-2"></i>
-                                <p class="sm-value text-rose-700">កូដផុតសុពលភាព</p>
+                    <div class="khqr-wrap w-full max-w-[300px]">
+                        <div class="khqr-card">
+                            <div class="khqr-head"><span>KHQR</span></div>
+                            <div class="khqr-info">
+                                <p id="khqrMerchantName" class="khqr-merchant"></p>
+                                <p class="khqr-amount"><span id="khqrCardAmount"></span><span class="khqr-cur">USD</span></p>
+                            </div>
+                            <div class="khqr-cut"></div>
+                            <div class="khqr-qr">
+                                <div id="khqrBox"></div>
+                                <span class="khqr-mark" aria-hidden="true">$</span>
+                                <div id="khqrExpiredMask" class="hidden absolute inset-0 bg-white/95 flex flex-col items-center justify-center text-center p-6">
+                                    <i class="fas fa-clock-rotate-left text-3xl text-rose-500 mb-2"></i>
+                                    <p class="sm-value text-rose-700">កូដផុតសុពលភាព</p>
+                                </div>
                             </div>
                         </div>
+                        <p id="khqrCaption" class="sm-td-sub text-slate-400 text-center mt-4"></p>
                     </div>
                 </div>
 
                 <!-- ផ្នែកអ្នកគិតលុយ -->
                 <div class="p-6 sm:p-8 flex flex-col min-w-0">
-                    <div class="flex items-center justify-between gap-3">
-                        <p class="sm-card-title text-white">ទូទាត់តាមបាគង</p>
-                        <p id="khqrReceipt" class="sm-td-sub text-slate-400 sm-figure"></p>
+                    <div>
+                        <p class="sm-card-title text-white">ទូទាត់តាមកូដស្កេន</p>
+                        <p id="khqrReceipt" class="sm-td-sub text-slate-400 sm-figure mt-0.5"></p>
                     </div>
 
-                    <p class="sm-td-sub text-slate-400 mt-6">ទឹកប្រាក់ត្រូវទទួល</p>
+                    <p class="sm-td-sub text-slate-400 mt-5">ទឹកប្រាក់ត្រូវទទួល</p>
                     <p id="khqrAmount" class="text-[44px] leading-tight font-bold text-white sm-figure"></p>
                     <p id="khqrAmountKHR" class="sm-value text-slate-400 sm-figure"></p>
                     <div id="khqrSplit"></div>
+                    <div id="khqrBank" class="mt-5"></div>
 
                     <div class="mt-6">
                         <div class="flex items-center justify-between sm-td-sub text-slate-400 mb-1.5">
@@ -468,7 +478,7 @@
                         </button>
                         <p class="sm-td-sub text-slate-500 pt-1 flex gap-2">
                             <i class="fas fa-circle-info mt-1"></i>
-                            <span>ចុច «បានទទួលប្រាក់» ពេលឃើញការជូនដំណឹងបាគងលើទូរស័ព្ទហាង</span>
+                            <span id="khqrHint">ចុច «បានទទួលប្រាក់» ពេលឃើញការជូនដំណឹងបាគងលើទូរស័ព្ទហាង</span>
                         </p>
                     </div>
                 </div>
@@ -621,12 +631,12 @@
             const totals = { list: t.list, discountPercent: t.discountPercent, discount: t.discount, vat: t.vat, gross: t.gross, qty: t.qty };
             if (pending) {
                 return publishCfd({ ...base, stage: 'khqr', items, totals,
-                    khqr: { payload: pending.payload, amount: pending.pay.khqr, createdAt: pending.createdAt, expiresAt: pending.expiresAt } });
+                    khqr: { payload: pending.payload, amount: pending.pay.khqr, bank: pending.pay.bank, createdAt: pending.createdAt, expiresAt: pending.expiresAt } });
             }
             if (!cart.length) return publishCfd({ ...base, stage: 'idle' });
             const paid = paidTotal(pay, rate);
             return publishCfd({ ...base, stage: checkout ? 'pay' : 'sell', items, totals,
-                pay: { usd: pay.usdCash, khr: pay.khrCash, khqr: pay.khqr, paid } });
+                pay: { usd: pay.usdCash, khr: pay.khrCash, khqr: pay.khqr, bank: pay.khqr > 0.005 ? currentPayBank() : '', paid } });
         }
 
         /* ជីពចរ៖ អេក្រង់អតិថិជនត្រឡប់ទៅទំព័រដើមវិញ បើផ្ទាំងគិតលុយបិទ (មិនមានការធ្វើបច្ចុប្បន្នភាព 30 វិនាទី) */
@@ -1577,13 +1587,51 @@
 
         let tenderMode = 'usd';   // usd | khr | khqr | split
         let entry = '';           // អក្សរលេខដែលកំពុងវាយលើផ្ទាំងលេខ
+        /* ធនាគារទទួលប្រាក់តាមកូដស្កេន — នៅដដែលពីការលក់មួយទៅមួយ (លំនាំដើម = ធនាគារទីមួយក្នុងការកំណត់) */
+        let payBank = '';
 
         const TENDERS = [
             { id: 'usd', label: 'ដុល្លារ', icon: 'fa-money-bill-wave' },
             { id: 'khr', label: 'រៀល', icon: 'fa-money-bill-1' },
-            { id: 'khqr', label: 'បាគង', icon: 'fa-qrcode' },
+            { id: 'khqr', label: 'ធនាគារ', icon: 'fa-qrcode' },
             { id: 'split', label: 'ចម្រុះ', icon: 'fa-layer-group' }
         ];
+
+        /* ធនាគារដែលកំពុងជ្រើស បើវានៅបើកក្នុងការកំណត់ ឬធនាគារទីមួយ · '' = ហាងមិនទទួលកូដស្កេន */
+        function currentPayBank() {
+            const banks = activePayBanks();
+            if (!banks.some(b => b.id === payBank)) payBank = banks.length ? banks[0].id : '';
+            return payBank;
+        }
+
+        function setPayBank(id) {
+            payBank = id;
+            renderCart();
+        }
+
+        /* ការទូទាត់ដែលភ្ជាប់ធនាគារ (តែពេលមានទឹកប្រាក់តាមកូដស្កេន) */
+        function payWithBank(p) {
+            const out = { usdCash: p.usdCash, khrCash: p.khrCash, khqr: p.khqr };
+            if (out.khqr > 0.005) out.bank = currentPayBank();
+            return out;
+        }
+
+        function bankPicker() {
+            const banks = activePayBanks();
+            const cur = currentPayBank();
+            if (banks.length < 2) return banks.length ? `<p class="sm-td-sub text-slate-400">ទទួលចូលគណនី <span class="font-semibold text-slate-200">${bankName(cur)}</span> · ${escapeText(banks[0].account)}</p>` : '';
+            return `<div>
+                <p class="sm-td-sub text-slate-400 mb-1.5">ទទួលចូលគណនី</p>
+                <div class="grid grid-cols-2 gap-1.5">${banks.map(b => `
+                    <button onclick="setPayBank('${b.id}')" type="button" aria-pressed="${b.id === cur}"
+                        class="!min-h-[52px] rounded-lg border bg-[#171717] px-3 flex items-center gap-2.5 text-left transition ${b.id === cur
+                            ? 'border-blue-500 ring-1 ring-blue-500' : 'border-white/10 hover:border-blue-600'}">
+                        <span class="w-9 h-9 rounded-md bg-white/5 border border-white/10 text-slate-200 text-[12px] font-bold flex items-center justify-center flex-shrink-0">${PAY_BANKS[b.id].short}</span>
+                        <span class="min-w-0"><span class="sm-td font-semibold text-white block truncate">${bankName(b.id)}</span>
+                            <span class="sm-td-sub text-slate-400 block truncate">${escapeText(b.account)}</span></span>
+                    </button>`).join('')}</div>
+            </div>`;
+        }
 
         function setTender(id) {
             tenderMode = id;
@@ -1631,7 +1679,8 @@
             const change = paid - due;
             const canFinish = remaining <= 0.005 && paid > 0.005;
 
-            const tabs = TENDERS.map(x => `
+            const tenders = activePayBanks().length ? TENDERS : TENDERS.filter(x => x.id !== 'khqr');
+            const tabs = tenders.map(x => `
                 <button onclick="setTender('${x.id}')" type="button"
                     class="!min-h-[50px] h-[50px] rounded-lg border flex flex-col items-center justify-center gap-0.5 transition ${tenderMode === x.id
                         ? 'bg-blue-600 border-blue-500 text-white'
@@ -1669,11 +1718,14 @@
                     </div>`;
             } else if (tenderMode === 'khqr') {
                 body = `
-                    <div class="rounded-lg bg-[#171717] border border-white/10 p-5 text-center">
-                        <i class="fas fa-qrcode text-[32px] text-slate-400"></i>
-                        <p class="sm-card-title text-white mt-3">ទូទាត់ពេញចំនួនតាមកូដស្កេនបាគង</p>
-                        <p class="sm-td-sub text-slate-400 mt-1">ចុច «បង្ហាញកូដស្កេនបាគង» ខាងក្រោម ហើយបង្វែរអេក្រង់ទៅអតិថិជន</p>
-                    </div>`;
+                    <div class="rounded-lg bg-[#171717] border border-white/10 px-4 py-3 flex items-center gap-3">
+                        <i class="fas fa-qrcode text-xl text-slate-400"></i>
+                        <div class="min-w-0">
+                            <p class="sm-td font-semibold text-white">បង់ពេញចំនួនតាមកូដស្កេន KHQR</p>
+                            <p class="sm-td-sub text-slate-400">អតិថិជនស្កេនពីកម្មវិធីធនាគារណាក៏បាន</p>
+                        </div>
+                    </div>
+                    ${bankPicker()}`;
             } else {
                 const tender = (key, label, icon, step, placeholder) => `
                     <label class="flex items-center gap-3 rounded-lg bg-[#171717] border ${pay[key] > 0.005 ? 'border-blue-600' : 'border-white/10'} px-3">
@@ -1684,14 +1736,15 @@
                             class="pos-num sm-value flex-1 min-w-0 bg-transparent text-white text-right focus:outline-none">
                     </label>`;
                 body = `
-                    <p class="sm-td-sub text-slate-400">បង់ច្រើនវិធីក្នុងវិក្កយបត្រតែមួយ · ឧ. ដុល្លារ + រៀល ឬសាច់ប្រាក់ + បាគង</p>
+                    <p class="sm-td-sub text-slate-400">បង់ច្រើនវិធីក្នុងវិក្កយបត្រតែមួយ · ឧ. ដុល្លារ + រៀល ឬសាច់ប្រាក់ + ធនាគារ</p>
                     <div class="space-y-2">
                         ${tender('usdCash', 'ដុល្លារ', 'fa-money-bill-wave', '0.01', '0.00')}
                         ${tender('khrCash', 'រៀល', 'fa-money-bill-1', '100', '0')}
-                        ${tender('khqr', 'បាគង', 'fa-qrcode', '0.01', '0.00')}
+                        ${activePayBanks().length ? tender('khqr', 'ធនាគារ', 'fa-qrcode', '0.01', '0.00') : ''}
                     </div>
-                    ${remaining > 0.005 && paid > 0.005 ? `<button onclick="fillRemainder()" type="button" class="sm-badge w-full !min-h-[44px] rounded-lg border border-white/15 hover:border-blue-500 text-slate-200">
-                        បំពេញនៅខ្វះ ${fmtUSD(remaining)} តាមបាគង</button>` : ''}`;
+                    ${pay.khqr > 0.005 ? bankPicker() : ''}
+                    ${remaining > 0.005 && paid > 0.005 && activePayBanks().length ? `<button onclick="fillRemainder()" type="button" class="sm-badge w-full !min-h-[44px] rounded-lg border border-white/15 hover:border-blue-500 text-slate-200">
+                        បំពេញនៅខ្វះ ${fmtUSD(remaining)} តាម ${bankName(currentPayBank())}</button>` : ''}`;
             }
 
             document.getElementById('cartLines').innerHTML = `
@@ -1706,7 +1759,7 @@
                             <p class="sm-td-sub text-slate-500 sm-figure">${t.discount > 0.005 ? `បញ្ចុះ ${t.discountPercent}% · ` : ''}អាករ ${fmtUSD(t.vat)} · 1$ = ${rate.toLocaleString('en-US')} ៛</p>
                         </div>
                     </div>
-                    <div class="grid grid-cols-4 gap-1.5">${tabs}</div>
+                    <div class="grid ${tenders.length === 4 ? 'grid-cols-4' : 'grid-cols-3'} gap-1.5">${tabs}</div>
                     ${body}
                 </div>`;
 
@@ -1753,7 +1806,7 @@
                     class="sm-card-title w-full !min-h-[64px] rounded-xl font-bold transition inline-flex items-center justify-center gap-2 ${canFinish
                         ? 'bg-blue-600 hover:bg-blue-700 text-white'
                         : 'bg-[#404040] text-slate-500 cursor-not-allowed'}">
-                    <i class="fas ${canFinish && pay.khqr > 0.005 ? 'fa-qrcode' : 'fa-circle-check'}"></i> ${canFinish && pay.khqr > 0.005 ? 'បង្ហាញកូដស្កេនបាគង' : 'បញ្ចប់ការទូទាត់'}
+                    <i class="fas ${canFinish && pay.khqr > 0.005 ? 'fa-qrcode' : 'fa-circle-check'}"></i> ${canFinish && pay.khqr > 0.005 ? `បង្ហាញកូដស្កេន ${bankName(currentPayBank())}` : 'បញ្ចប់ការទូទាត់'}
                     <kbd class="pos-kbd ml-1">Enter</kbd>
                 </button>`;
         }
@@ -1894,10 +1947,11 @@
             const paid = paidTotal(pay, fxRate());
             if (!cart.length || paid < t.gross - 0.005) return;
             if (pay.khqr > 0.005) {
-                openKhqr(snapshot(), { ...pay });
+                if (!currentPayBank()) return showToast('ហាងមិនទាន់កំណត់ធនាគារទទួលប្រាក់ · សូមស្នើម្ចាស់ហាង', 'warning');
+                openKhqr(snapshot(), payWithBank(pay));
                 return;
             }
-            completeSale(buildSale(snapshot(), pay));
+            completeSale(buildSale(snapshot(), payWithBank(pay)));
         }
 
         /* ===== ផ្ទាំងបាគងក្នុងផ្ទាំងគិតលុយ (C10) =====
@@ -1909,7 +1963,7 @@
             const now = Date.now();
             const receiptId = nextReceiptNumber(MY_REGISTER);
             const pending = { receiptId, snap, pay: payNow, createdAt: now, expiresAt: now + seconds * 1000 };
-            pending.payload = buildKhqrPayload(receiptId, payNow.khqr, pending.createdAt, pending.expiresAt);
+            pending.payload = buildKhqrPayload(receiptId, payNow.khqr, pending.createdAt, pending.expiresAt, payNow.bank);
             pending.qrHash = simpleHash(pending.payload);
             savePendingPayment(pending);
             showKhqr(pending);
@@ -1920,16 +1974,33 @@
             document.getElementById('khqrOverlay').classList.remove('hidden');
             document.getElementById('khqrAmount').textContent = fmtUSD(pending.pay.khqr);
             document.getElementById('khqrAmountKHR').textContent = fmtKHR(toKHR(pending.pay.khqr, rate));
-            document.getElementById('khqrCardAmount').textContent = pending.pay.khqr.toFixed(2);
+            document.getElementById('khqrCardAmount').textContent = pending.pay.khqr.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             document.getElementById('khqrReceipt').textContent = `វិក្កយបត្រ ${pending.receiptId}`;
+            const bank = bankName(pending.pay.bank);
+            const account = payBankAccount(pending.pay.bank);
             document.getElementById('khqrMerchantName').textContent = MERCHANT.name;
+            document.getElementById('khqrCaption').textContent = `ប្រាក់ចូលគណនី ${bank} · ស្កេនបានពីកម្មវិធីធនាគារទាំងអស់`;
+            document.getElementById('khqrHint').textContent = `ចុច «បានទទួលប្រាក់» ពេលឃើញការជូនដំណឹងពី ${bank} លើទូរស័ព្ទហាង`;
+            const others = activePayBanks().filter(b => b.id !== pending.pay.bank);
+            document.getElementById('khqrBank').innerHTML = `
+                <p class="sm-td-sub text-slate-400 mb-1.5">ប្រាក់ចូលគណនី</p>
+                <div class="rounded-xl border border-white/10 px-3 py-2.5 flex items-center gap-3">
+                    <span class="w-10 h-10 rounded-lg bg-white/5 border border-white/10 text-slate-200 text-[12px] font-bold flex items-center justify-center flex-shrink-0">${PAY_BANKS[pending.pay.bank] ? PAY_BANKS[pending.pay.bank].short : 'KH'}</span>
+                    <span class="min-w-0 flex-1"><span class="sm-value text-white block truncate">${bank}</span>
+                        <span class="sm-td-sub text-slate-400 block truncate">${escapeText(account)}</span></span>
+                </div>
+                ${others.length ? `<div class="flex flex-wrap items-center gap-1.5 mt-2">
+                    <span class="sm-td-sub text-slate-500 mr-1">ប្តូរទៅ</span>
+                    ${others.map(b => `<button onclick="switchKhqrBank('${b.id}')" type="button"
+                        class="sm-badge !min-h-[36px] h-9 px-3 rounded-lg border border-white/15 text-slate-200 font-semibold hover:border-blue-500 transition">${bankName(b.id)}</button>`).join('')}
+                </div>` : ''}`;
             const cash = pending.pay.usdCash + toUSD(pending.pay.khrCash, rate);
             document.getElementById('khqrSplit').innerHTML = cash > 0.005
                 ? `<p class="sm-td-sub text-slate-400 mt-2">សាច់ប្រាក់បានទទួលរួច <span class="sm-figure text-slate-200 font-semibold">${fmtUSD(cash)}</span></p>` : '';
             const box = document.getElementById('khqrBox');
             box.innerHTML = '';
             if (typeof QRCode !== 'undefined') {
-                new QRCode(box, { text: pending.payload, width: 280, height: 280, colorDark: '#171717', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+                new QRCode(box, { text: pending.payload, width: 512, height: 512, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
             } else {
                 box.innerHTML = '<div class="aspect-square flex items-center justify-center text-slate-400"><i class="fas fa-qrcode text-7xl"></i></div>';
             }
@@ -1961,6 +2032,21 @@
                 ? '<i class="fas fa-rotate-right"></i> បង្កើតកូដថ្មី <kbd class="khqr-kbd">Enter</kbd>'
                 : '<i class="fas fa-circle-check"></i> បានទទួលប្រាក់ <kbd class="khqr-kbd">Enter</kbd>';
             if (expired) clearInterval(khqrTimer);
+        }
+
+        /* អតិថិជនចង់បង់ចូលគណនីផ្សេង → បង្កើតកូដថ្មីសម្រាប់ធនាគារនោះ (លេខវិក្កយបត្រដដែល) */
+        function switchKhqrBank(id) {
+            const pending = loadPendingPayment();
+            if (!pending) return;
+            payBank = id;
+            const seconds = Number(posSettings().khqrSeconds) || 300;
+            const now = Date.now();
+            Object.assign(pending, { pay: { ...pending.pay, bank: id }, createdAt: now, expiresAt: now + seconds * 1000 });
+            pending.payload = buildKhqrPayload(pending.receiptId, pending.pay.khqr, pending.createdAt, pending.expiresAt, id);
+            pending.qrHash = simpleHash(pending.payload);
+            savePendingPayment(pending);
+            showKhqr(pending);
+            showToast(`បានបង្កើតកូដថ្មីចូលគណនី ${bankName(id)}`, 'info');
         }
 
         function khqrMainAction() {

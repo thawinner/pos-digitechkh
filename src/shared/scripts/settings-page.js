@@ -16,6 +16,7 @@ const ALL_SECTIONS = [
     { id: 'cash', icon: 'fa-vault', label: 'សាច់ប្រាក់ក្នុងថត', keys: ['varianceTolerance', 'drawerLimitUSD', 'drawerLimitKHR', 'defaultFloatUSD', 'defaultFloatKHR'], admin: true },
     { id: 'shifts', icon: 'fa-clock', label: 'គំរូវេន', keys: ['shiftTemplates'], admin: true },
     { id: 'till', icon: 'fa-cash-register', label: 'ដែនកំណត់បញ្ជរ', keys: ['khqrSeconds', 'holdLimit', 'discountLimits'], admin: true },
+    { id: 'banks', icon: 'fa-building-columns', label: 'ធនាគារទទួលប្រាក់', keys: ['payBanks'], admin: true },
     { id: 'stock', icon: 'fa-boxes-stacked', label: 'ស្តុក', keys: ['allowNegativeStock', 'adjustLimitQty', 'adjustLimitUSD', 'countSchedule'], admin: true },
     { id: 'display', icon: 'fa-desktop', label: 'អេក្រង់អតិថិជន', keys: ['cfdMessages'] },
     { id: 'quick', icon: 'fa-bolt', label: 'ទំនិញញឹកញាប់', keys: ['quickKeys'] },
@@ -445,6 +446,46 @@ function renderTill(s) {
     </div>`;
 }
 
+/* ធនាគារទទួលប្រាក់តាមកូដស្កេន៖ បើក/បិទ លេខសម្គាល់គណនីបាគង និងលំដាប់ (ធនាគារទីមួយ = លំនាំដើមនៅបញ្ជរ) */
+function renderBanks(s) {
+    const list = draft.payBanks;
+    const saved = posSettings().payBanks;
+    const firstOn = list.find(b => b.on);
+    const rows = list.map((b, i) => {
+        const prev = saved.find(x => x.id === b.id) || {};
+        const missing = b.on && !String(b.account || '').trim();
+        return `<div class="py-3.5 border-b border-slate-100 last:border-0 flex flex-wrap md:flex-nowrap items-center gap-3 ${b.on ? '' : 'opacity-60'}">
+            <span class="w-10 h-10 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 text-[12px] font-bold flex items-center justify-center flex-shrink-0">${PAY_BANKS[b.id].short}</span>
+            <div class="min-w-0 flex-1 md:flex-none md:w-44">
+                <p class="sm-td font-semibold text-slate-800">${bankName(b.id)}</p>
+                <p class="sm-td-sub text-slate-500">${b.on ? (firstOn && firstOn.id === b.id ? 'លំនាំដើមនៅបញ្ជរ' : 'បើក') : 'បិទ'}</p>
+            </div>
+            <button type="button" role="switch" aria-checked="${b.on}" aria-label="បើកឬបិទ ${bankName(b.id)}" onclick="draft.payBanks[${i}].on = ${!b.on}; render()"
+                class="md:order-last relative w-11 h-6 rounded-full transition flex-shrink-0 ${b.on ? 'bg-blue-600' : 'bg-slate-300'}"><span class="absolute top-0.5 ${b.on ? 'left-[22px]' : 'left-0.5'} w-5 h-5 rounded-full bg-white shadow transition-all"></span></button>
+            <input value="${escapeText(b.account || '')}" maxlength="32" placeholder="លេខសម្គាល់បាគង ឧ. shopname@abaa"
+                oninput="draft.payBanks[${i}].account = this.value.trim(); renderSaveBar()"
+                class="sm-td w-full md:w-auto md:flex-1 min-w-0 h-11 px-3 rounded-xl border bg-white ${missing ? 'border-rose-400' : (prev.account || '') !== (b.account || '') ? 'border-amber-400' : 'border-slate-200'} focus:outline-none focus:border-blue-500">
+            <div class="flex items-center gap-1 flex-shrink-0">
+                <button type="button" onclick="moveBank(${i}, -1)" ${i === 0 ? 'disabled' : ''} aria-label="ឡើងលើ" class="w-9 h-9 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-50 disabled:opacity-30"><i class="fas fa-arrow-up text-xs"></i></button>
+                <button type="button" onclick="moveBank(${i}, 1)" ${i === list.length - 1 ? 'disabled' : ''} aria-label="ចុះក្រោម" class="w-9 h-9 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-50 disabled:opacity-30"><i class="fas fa-arrow-down text-xs"></i></button>
+            </div>
+        </div>`;
+    }).join('');
+    return sectionHead(s, 'គណនីដែលអតិថិជនបង់ចូលពេលស្កេនកូដ KHQR · អ្នកគិតលុយជ្រើសធនាគារនៅពេលទូទាត់') + `<div class="px-5 sm:px-6 py-2">
+        <p class="sm-td-sub text-slate-500 pt-3">អតិថិជនស្កេនពីកម្មវិធីធនាគារណាក៏បាន · ប្រាក់ចូលគណនីដែលអ្នកគិតលុយជ្រើស${changedDot('payBanks')}</p>
+        ${rows}
+        ${list.some(b => b.on) ? '' : '<p class="sm-td-sub text-amber-700 py-3"><i class="fas fa-triangle-exclamation mr-1.5"></i>គ្មានធនាគារបើក · បញ្ជរទទួលតែសាច់ប្រាក់</p>'}
+    </div>`;
+}
+
+function moveBank(i, d) {
+    const list = draft.payBanks;
+    const j = i + d;
+    if (j < 0 || j >= list.length) return;
+    [list[i], list[j]] = [list[j], list[i]];
+    render();
+}
+
 /* សារនៅអេក្រង់អតិថិជនពេលគ្មានការលក់ — បើក/បិទ ជ្រើសរូបតំណាង និងវាយអត្ថបទខ្លី */
 const CFD_ICONS = [['fa-tag', 'ការបញ្ចុះតម្លៃ'], ['fa-qrcode', 'បាគង'], ['fa-money-bill-wave', 'សាច់ប្រាក់'], ['fa-receipt', 'វិក្កយបត្រ']];
 
@@ -601,6 +642,7 @@ function renderRules(s) {
         ${item('គំរូវេន', v.shiftTemplates.map(t => `${t.name} ${t.start}–${t.end}`).join(' · '))}
         ${item('សុពលភាពកូដស្កេនបាគង', `${Math.round(v.khqrSeconds / 60)} នាទី`)}
         ${item('ការលក់ព្យួរក្នុងមួយវេន', `${v.holdLimit} ដង`)}
+        ${item('ធនាគារទទួលប្រាក់', v.payBanks.filter(b => b.on).map(b => bankName(b.id)).join(' · ') || 'មិនទទួលកូដស្កេន')}
         ${item('ដែនកំណត់បញ្ចុះតម្លៃ', CASHIERS.map(c => `${c.name} ${v.discountLimits[c.id] != null ? v.discountLimits[c.id] : 5}%`).join(' · '))}
         ${item('អនុញ្ញាតលក់ពេលស្តុកអវិជ្ជមាន', v.allowNegativeStock ? 'អនុញ្ញាត' : 'មិនអនុញ្ញាត')}
         ${item('ដែនកំណត់កែតម្រូវស្តុក', `${v.adjustLimitQty} ឯកតា · ${fmtUSD(v.adjustLimitUSD)}`)}
@@ -623,6 +665,7 @@ function renderReasons(s) {
 }
 
 function fmtVal(v) {
+    if (Array.isArray(v) && v.length && v[0] && PAY_BANKS[v[0].id]) return v.filter(b => b.on).map(b => bankName(b.id)).join(' · ') || 'បិទទាំងអស់';
     if (Array.isArray(v)) return v.length && typeof v[0] === 'object' ? v.map(t => `${t.name} ${t.start}–${t.end}`).join(' · ') : `${v.length} ធាតុ`;
     if (v && typeof v === 'object') return Object.keys(v).map(k => `${personName(k) !== '—' ? personName(k) : k}: ${typeof v[k] === 'object' ? (Array.isArray(v[k]) ? v[k].length : (v[k].template || '—')) : v[k]}`).join(' · ');
     return typeof v === 'number' ? fmtInt(v) : String(v);
@@ -651,6 +694,7 @@ function navSummary(id) {
         case 'cash': return `ល្បឹម ${fmtUSD(d.varianceTolerance)} · បាត ${fmtUSD(d.defaultFloatUSD)}`;
         case 'shifts': return `${d.shiftTemplates.length} វេន · ${d.shiftTemplates.map(t => t.start).join(' ')}`;
         case 'till': return `KHQR ${Math.round(d.khqrSeconds / 60)} នាទី · ព្យួរ ${d.holdLimit}`;
+        case 'banks': return d.payBanks.filter(b => b.on).map(b => bankName(b.id)).join(' · ') || 'បិទ';
         case 'stock': return `${d.allowNegativeStock ? 'លក់អវិជ្ជមាន' : 'ស្តុកវិជ្ជមាន'} · ដែន ${d.adjustLimitQty} · ${d.countSchedule === 'weekly' ? 'សប្តាហ៍' : 'ខែ'}`;
         case 'display': return `${d.cfdMessages.filter(m => m.on).length} សារបើក`;
         case 'quick': return `${d.quickKeys.length} មុខ`;
@@ -677,7 +721,7 @@ function renderNav() {
 
 function render() {
     const s = SECTIONS.find(x => x.id === section) || SECTIONS[0];
-    const fn = { money: renderMoney, cash: renderCash, shifts: renderShifts, till: renderTill, display: renderDisplay, stock: renderStock, quick: renderQuick, reasons: renderReasons, rules: renderRules, history: renderHistory }[s.id];
+    const fn = { money: renderMoney, cash: renderCash, shifts: renderShifts, till: renderTill, banks: renderBanks, display: renderDisplay, stock: renderStock, quick: renderQuick, reasons: renderReasons, rules: renderRules, history: renderHistory }[s.id];
     document.getElementById('sectionBody').innerHTML = fn(s);
     renderNav();
     renderSaveBar();
@@ -811,6 +855,8 @@ function validate() {
     if (draft.fxRate < 3500 || draft.fxRate > 4500) return ['money', 'អត្រាប្ដូរប្រាក់គួរនៅចន្លោះ 3,500 ទៅ 4,500 ៛'];
     if (draft.khqrSeconds < 60 || draft.khqrSeconds > 600) return ['till', 'សុពលភាពកូដស្កេនត្រូវនៅចន្លោះ 60 ទៅ 600 វិនាទី'];
     if (draft.holdLimit < 1 || draft.holdLimit > 20) return ['till', 'ការលក់ព្យួរត្រូវនៅចន្លោះ 1 ទៅ 20'];
+    const noAcc = draft.payBanks.find(b => b.on && !String(b.account || '').trim());
+    if (noAcc) return ['banks', `សូមវាយលេខសម្គាល់គណនី ${bankName(noAcc.id)} ឬបិទវាចោល`];
     if (draft.cfdMessages.some(m => m.on && !m.text.trim())) return ['display', 'សារដែលបើកត្រូវមានអត្ថបទ ឬបិទវាចោល'];
     for (const t of draft.shiftTemplates) {
         if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(t.start) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(t.end)) return ['shifts', `ម៉ោងនៃ ${t.name} មិនត្រឹមត្រូវ (ឧ. 07:00)`];

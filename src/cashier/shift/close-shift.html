@@ -344,7 +344,7 @@
             const over = new Date() - shiftEndDate(sh);
             document.getElementById('systemCards').innerHTML =
                 metricCard('ចំនួនវិក្កយបត្រ', `${s.count}`, 'text-slate-800', `${s.qty} ឯកតាទំនិញ`) +
-                metricCard('ទូទាត់តាមបាគង', fmtUSD(s.khqr), 'text-slate-800', `${s.khqrCount} វិក្កយបត្រ · មិនចូលថតប្រាក់`) +
+                metricCard('ទូទាត់តាមបាគង', fmtUSD(s.khqr), 'text-slate-800', (bankLines(s).length > 1 ? bankLines(s).map(b => `${bankName(b.id)} ${fmtUSD(b.amount)}`).join(' · ') : `${s.khqrCount} វិក្កយបត្រ`) + ' · មិនចូលថតប្រាក់') +
                 metricCard('លុបចោល · ប្រគល់វិញ', `${s.voidCount} · ${s.returnCount}`, s.voidCount + s.returnCount ? 'text-rose-600' : 'text-slate-800', 'អនុម័តដោយអ្នកគ្រប់គ្រង') +
                 metricCard('រយៈពេលវេន', fmtDuration(opened), over > 0 ? 'text-amber-600' : 'text-slate-800',
                     `${sh.templateName} ${sh.start}–${sh.end}${over > 0 ? ` · ហួស ${fmtDuration(over)}` : ''}`);

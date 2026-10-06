@@ -192,7 +192,7 @@
                 rows = [
                     { label: 'សាច់ប្រាក់ដុល្លារ', value: a.usdCash, extra: [['វិក្កយបត្រ', counts.usdCash]] },
                     { label: 'សាច់ប្រាក់រៀល', value: a.khrCashUSD, extra: [['វិក្កយបត្រ', counts.khrCash]] },
-                    { label: 'ស្កេនកូដបាគង', value: a.khqr, extra: [['វិក្កយបត្រ', counts.khqr]] },
+                    ...bankLines(a).map(b => ({ label: b.label, value: b.amount, extra: [['វិក្កយបត្រ', b.count]] })),
                     { label: 'បែងចែក', value: 0, extra: [['វិក្កយបត្រ', counts.split]] }
                 ].filter(r => r.value > 0 || r.extra[0][1] > 0);
             } else {

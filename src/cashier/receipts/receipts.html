@@ -333,7 +333,7 @@
                         <p class="sm-label text-slate-500">ការទូទាត់</p>
                         ${s.pay.usdCash > 0 ? `<div class="flex justify-between"><span class="sm-td text-slate-600">សាច់ប្រាក់ដុល្លារ</span><span class="sm-value text-slate-700">${fmtUSD(s.pay.usdCash)}</span></div>` : ''}
                         ${s.pay.khrCash > 0 ? `<div class="flex justify-between"><span class="sm-td text-slate-600">សាច់ប្រាក់រៀល</span><span class="sm-value text-slate-700">${fmtKHR(s.pay.khrCash)}</span></div>` : ''}
-                        ${s.pay.khqr > 0 ? `<div class="flex justify-between"><span class="sm-td text-slate-600">ស្កេនកូដបាគង</span><span class="sm-value text-slate-700">${fmtUSD(s.pay.khqr)}</span></div>` : ''}
+                        ${s.pay.khqr > 0 ? `<div class="flex justify-between"><span class="sm-td text-slate-600">${khqrLabel(s.pay)}</span><span class="sm-value text-slate-700">${fmtUSD(s.pay.khqr)}</span></div>` : ''}
                         <div class="flex justify-between"><span class="sm-td text-slate-600">ប្រាក់អាប់</span><span class="sm-value text-slate-700">${fmtChange(saleChange(s))}</span></div>
                         ${t.discount > 0.005 ? `<div class="flex justify-between"><span class="sm-td text-slate-600">ការបញ្ចុះតម្លៃ ${t.discountPercent}%</span><span class="sm-value text-amber-700">− ${fmtUSD(t.discount)}</span></div>
                             <p class="sm-td-sub text-slate-400">${escapeText(s.discountReason || '')}${s.discountApproverId ? ` · អនុម័តដោយ ${personName(s.discountApproverId)}` : ''}</p>` : ''}
@@ -571,7 +571,7 @@
             const used = ['usdCash', 'khrCash', 'khqr'].filter(k => d.sale.pay[k] > 0);
             document.getElementById('returnMethods').innerHTML = used.map(k => `
                 <button onclick="returnDraft.method='${k}'; renderReturn()" type="button"
-                    class="sm-badge px-3 py-2 rounded-xl border transition ${d.method === k ? 'bg-amber-600 border-amber-600 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-amber-400'}">${PAY_LABEL[k]}</button>`).join('');
+                    class="sm-badge px-3 py-2 rounded-xl border transition ${d.method === k ? 'bg-amber-600 border-amber-600 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-amber-400'}">${k === 'khqr' ? khqrLabel(d.sale.pay) : PAY_LABEL[k]}</button>`).join('');
             document.getElementById('returnReasons').innerHTML = posSettings().reasons.return.map((r, i) => `
                 <button onclick="returnDraft.reason=posSettings().reasons.return[${i}]; renderReturn()" type="button"
                     class="sm-badge px-3 py-2 rounded-xl border transition ${d.reason === r ? 'bg-amber-600 border-amber-600 text-white' : 'bg-white border-slate-200 text-slate-700 hover:border-amber-400'}">${r}</button>`).join('');
@@ -595,7 +595,7 @@
             await submitRequest(req, [
                 ['វិក្កយបត្រ', `${sale.id} · ${fmtTime(sale.time)}`],
                 ['ទំនិញ', lines.map(l => `${getProduct(l.sku).name} × ${l.qty}`).join(' · ')],
-                ['សងប្រាក់', `${fmtUSD(amount)} · ${PAY_LABEL[d.method]}`]
+                ['សងប្រាក់', `${fmtUSD(amount)} · ${d.method === 'khqr' ? khqrLabel(sale.pay) : PAY_LABEL[d.method]}`]
             ]);
         }
 

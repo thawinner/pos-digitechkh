@@ -342,6 +342,19 @@ function currentActorId() {
 
 /* ===== ការកំណត់ (អ្នកគ្រប់គ្រងកែប្រែនៅទំព័រការកំណត់ — ឯកសាររចនាលេខ 02 ផ្នែក 5.7) ===== */
 
+/* ធនាគារនៅកម្ពុជាដែលភ្ជាប់បាគង (កូដ KHQR មួយ អតិថិជនស្កេនពីកម្មវិធីធនាគារណាក៏បាន)
+   ហាងជ្រើសគណនីទទួលប្រាក់នៅការកំណត់ → អ្នកគិតលុយជ្រើសធនាគារពេលបង្ហាញកូដ · ការលក់រក្សា pay.bank
+   short = អក្សរកាត់នៅលើប៊ូតុង · ការលក់ចាស់គ្មាន bank → «បាគង» */
+const PAY_BANKS = {
+    aba: { name: 'ABA', short: 'ABA' },
+    acleda: { name: 'ACLEDA', short: 'AC' },
+    wing: { name: 'Wing', short: 'W' },
+    canadia: { name: 'Canadia', short: 'CB' },
+    prince: { name: 'Prince', short: 'PB' },
+    sathapana: { name: 'Sathapana', short: 'SB' },
+    chipmong: { name: 'Chip Mong', short: 'CM' }
+};
+
 const POS_SETTINGS_DEFAULTS = {
     fxRate: 4100,
     nbcRate: 0,
@@ -352,6 +365,16 @@ const POS_SETTINGS_DEFAULTS = {
     defaultFloatKHR: 400000,
     khqrSeconds: 300,
     holdLimit: 5,
+    /* គណនីធនាគារដែលហាងទទួលប្រាក់តាមកូដស្កេន KHQR (លំដាប់ = លំដាប់នៅបញ្ជរ) · account = លេខសម្គាល់បាគង */
+    payBanks: [
+        { id: 'aba', account: 'digitechkh@abaa', on: true },
+        { id: 'acleda', account: 'digitechkh@aclb', on: true },
+        { id: 'wing', account: '', on: false },
+        { id: 'canadia', account: '', on: false },
+        { id: 'prince', account: '', on: false },
+        { id: 'sathapana', account: '', on: false },
+        { id: 'chipmong', account: '', on: false }
+    ],
     /* សារនៅអេក្រង់អតិថិជនពេលគ្មានការលក់ (អតិបរមា 5) · icon៖ fa-tag fa-qrcode fa-money-bill-wave fa-receipt */
     cfdMessages: [
         { icon: 'fa-money-bill-wave', text: 'ទទួលសាច់ប្រាក់ជាដុល្លារ និងរៀល', on: true },
@@ -408,6 +431,7 @@ const SETTING_LABELS = {
     defaultFloatKHR: 'ប្រាក់បាតថតស្តង់ដារជារៀល',
     khqrSeconds: 'សុពលភាពកូដស្កេនបាគង',
     holdLimit: 'ការលក់ព្យួរអតិបរមាក្នុងមួយវេន',
+    payBanks: 'ធនាគារទទួលប្រាក់',
     cfdMessages: 'សារនៅអេក្រង់អតិថិជន',
     discountLimits: 'ដែនកំណត់បញ្ចុះតម្លៃរបស់អ្នកគិតលុយ',
     shiftTemplates: 'គំរូវេន',
@@ -433,6 +457,10 @@ function posSettings() {
     // ការកំណត់ដែលរក្សាទុកមុនពេលបន្ថែមបុគ្គលិកថ្មី៖ បុគ្គលិកដែលមិនទាន់មានក្នុងនោះប្រើតម្លៃលំនាំដើម
     s.staffDefaults = Object.assign(clone(POS_SETTINGS_DEFAULTS.staffDefaults), s.staffDefaults || {});
     s.discountLimits = Object.assign(clone(POS_SETTINGS_DEFAULTS.discountLimits), s.discountLimits || {});
+    // ធនាគារដែលបន្ថែមក្នុងបញ្ជីក្រោយពេលរក្សាទុក → បិទជាលំនាំដើម
+    const banks = (s.payBanks || []).filter(b => PAY_BANKS[b.id]);
+    Object.keys(PAY_BANKS).forEach(id => { if (!banks.some(b => b.id === id)) banks.push({ id, account: '', on: false }); });
+    s.payBanks = banks;
     return s;
 }
 
@@ -846,8 +874,35 @@ const PAY_LABEL = {
     khqr: 'ស្កេនកូដបាគង'
 };
 
+function bankName(id) {
+    return PAY_BANKS[id] ? PAY_BANKS[id].name : 'បាគង';
+}
+
+/* គណនីដែលបើក និងមានលេខសម្គាល់ — បញ្ជីទទេ = ហាងមិនទទួលកូដស្កេន */
+function activePayBanks() {
+    return posSettings().payBanks.filter(b => b.on && String(b.account || '').trim());
+}
+
+function payBankAccount(id) {
+    const b = posSettings().payBanks.find(x => x.id === id);
+    return (b && b.account) || MERCHANT.account;
+}
+
+/* «ស្កេនកូដ ABA» · ការលក់ចាស់គ្មានធនាគារ → «ស្កេនកូដបាគង» */
+function khqrLabel(pay) {
+    return pay && PAY_BANKS[pay.bank] ? `ស្កេនកូដ ${PAY_BANKS[pay.bank].name}` : PAY_LABEL.khqr;
+}
+
+/* សរុបតាមធនាគារពី summary.byBank (ឬ aggregate ដែលមាន byBank ដូចគ្នា) តាមលំដាប់ធនាគារ */
+function bankLines(sum) {
+    const by = (sum && sum.byBank) || {};
+    const order = Object.keys(PAY_BANKS).concat(['']);
+    return Object.keys(by).sort((x, y) => order.indexOf(x) - order.indexOf(y))
+        .map(id => ({ id, label: khqrLabel({ bank: id }), amount: by[id].amount, count: by[id].count }));
+}
+
 function payMethodLabel(pay) {
-    const parts = ['usdCash', 'khrCash', 'khqr'].filter(k => pay[k] > 0).map(k => PAY_LABEL[k]);
+    const parts = ['usdCash', 'khrCash', 'khqr'].filter(k => pay[k] > 0).map(k => k === 'khqr' ? khqrLabel(pay) : PAY_LABEL[k]);
     if (!parts.length) return 'មិនកំណត់';
     return parts.length > 1 ? 'បែងចែក៖ ' + parts.join(' និង ') : parts[0];
 }
@@ -1248,6 +1303,7 @@ function summarizeShift(shift, sales, movements) {
         khqrCount: 0, discountCount: 0, overrideCount: 0,
         voidCount: 0, voidAmount: 0, returnCount: 0, returnAmount: 0,
         refundUSD: 0, refundKHR: 0, refundKHQR: 0,
+        byBank: {},
         dropUSD: 0, dropKHR: 0, payoutUSD: 0, payoutKHR: 0, payinUSD: 0, payinKHR: 0,
         pendingDrops: 0
     };
@@ -1268,7 +1324,12 @@ function summarizeShift(shift, sales, movements) {
         acc.usdCash += s.pay.usdCash;
         acc.khrCash += s.pay.khrCash;
         acc.khqr += s.pay.khqr;
-        if (s.pay.khqr > 0.005) acc.khqrCount += 1;
+        if (s.pay.khqr > 0.005) {
+            acc.khqrCount += 1;
+            const b = acc.byBank[s.pay.bank || ''] || (acc.byBank[s.pay.bank || ''] = { amount: 0, count: 0 });
+            b.amount += s.pay.khqr;
+            b.count += 1;
+        }
         if (t.discount > 0.005) acc.discountCount += 1;
         if (s.discountApproverId) acc.overrideCount += 1;
         const ch = saleChange(s);
@@ -1526,7 +1587,7 @@ function receiptHtml(sale, options) {
     const payLines = [
         sale.pay.usdCash > 0 ? row(PAY_LABEL.usdCash, fmtUSD(sale.pay.usdCash)) : '',
         sale.pay.khrCash > 0 ? row(PAY_LABEL.khrCash, fmtKHR(sale.pay.khrCash)) : '',
-        sale.pay.khqr > 0 ? row(PAY_LABEL.khqr, fmtUSD(sale.pay.khqr)) : '',
+        sale.pay.khqr > 0 ? row(khqrLabel(sale.pay), fmtUSD(sale.pay.khqr)) : '',
         (ch.usd > 0.005 || ch.khr >= 1) ? row('ប្រាក់អាប់', fmtChange(ch)) : ''
     ].join('');
 
@@ -1796,7 +1857,7 @@ function zReportHtml(shift, s, opts) {
             <div class="mt-2">
                 ${line('សាច់ប្រាក់ដុល្លារ', fmtUSD(s.usdCash))}
                 ${line('សាច់ប្រាក់រៀល', fmtKHR(s.khrCash))}
-                ${line(`ស្កេនកូដបាគង · ${s.khqrCount} វិក្កយបត្រ`, fmtUSD(s.khqr))}
+                ${bankLines(s).map(b => line(`${b.label} · ${b.count} វិក្កយបត្រ`, fmtUSD(b.amount))).join('') || line('ស្កេនកូដបាគង · 0 វិក្កយបត្រ', fmtUSD(0))}
             </div>
         </div>
 
@@ -1961,21 +2022,34 @@ function totalPending() {
    ហើយពិនិត្យការទូទាត់តាម MD5 នៃកូដ (ស្រាវជ្រាវ §8)។ នៅទីនេះយើងគណនាសញ្ញាសម្គាល់សាមញ្ញ
    ដើម្បីរក្សាទុកជាមួយការទូទាត់ដែលរង់ចាំ — មិនមែន MD5 ពិតទេ។ */
 
-function buildKhqrPayload(receiptId, amount, createdAt, expiresAt) {
+function buildKhqrPayload(receiptId, amount, createdAt, expiresAt, bank) {
+    const tlv = (tag, value) => `${tag}${String(value.length).padStart(2, '0')}${value}`;
     const amt = Number(amount).toFixed(2);
-    const ts = `00${String(createdAt).length}${createdAt}01${String(expiresAt).length}${expiresAt}`;
-    return [
-        '00020101',
-        '010212',
-        `0212${MERCHANT.account}`,
-        '5303840',
-        `54${String(amt.length).padStart(2, '0')}${amt}`,
-        '5802KH',
-        `59${String(MERCHANT.name.length).padStart(2, '0')}${MERCHANT.name}`,
-        `60${String(MERCHANT.city.length).padStart(2, '0')}${MERCHANT.city}`,
-        `62${String(receiptId.length + 4).padStart(2, '0')}01${String(receiptId.length).padStart(2, '0')}${receiptId}`,
-        `99${String(ts.length).padStart(2, '0')}${ts}`
-    ].join('');
+    const account = payBankAccount(bank);
+    const body = [
+        tlv('00', '01'),
+        tlv('01', '12'),                                        // 12 = កូដប្រើម្តង (មានទឹកប្រាក់)
+        tlv('29', tlv('00', account)),                          // គណនីបាគង
+        tlv('52', '5999'),                                      // ប្រភេទអាជីវកម្ម៖ លក់រាយទូទៅ
+        tlv('53', '840'),                                       // USD
+        tlv('54', amt),
+        tlv('58', 'KH'),
+        tlv('59', MERCHANT.name.slice(0, 25)),
+        tlv('60', MERCHANT.city.slice(0, 15)),
+        tlv('62', tlv('01', receiptId.slice(0, 25))),           // លេខវិក្កយបត្រ
+        tlv('99', tlv('00', String(createdAt)) + tlv('01', String(expiresAt)))
+    ].join('') + '6304';
+    return body + crc16(body);
+}
+
+/* CRC16-CCITT (0x1021, ចាប់ផ្តើម 0xFFFF) តាមស្តង់ដារ EMV QR — ស្លាក 63 */
+function crc16(text) {
+    let crc = 0xFFFF;
+    for (let i = 0; i < text.length; i++) {
+        crc ^= text.charCodeAt(i) << 8;
+        for (let j = 0; j < 8; j++) crc = crc & 0x8000 ? ((crc << 1) ^ 0x1021) & 0xFFFF : (crc << 1) & 0xFFFF;
+    }
+    return crc.toString(16).toUpperCase().padStart(4, '0');
 }
 
 function simpleHash(text) {
@@ -2069,7 +2143,11 @@ function genPay(rng, due, rate) {
         const k = due * rate;
         return { usdCash: 0, khrCash: pick(rng, [Math.ceil(k / 1000) * 1000, Math.ceil(k / 5000) * 5000, Math.ceil(k / 10000) * 10000]), khqr: 0 };
     }
-    if (r < 0.93) return { usdCash: 0, khrCash: 0, khqr: Math.round(due * 100) / 100 };
+    if (r < 0.93) {
+        // ធនាគារ៖ ABA ~65% · ACLEDA ~35% (មិនប្រើ rng ដើម្បីកុំឱ្យប្រវត្តិផ្សេងទៀតប្រែប្រួល)
+        const bank = hashStr(`${due.toFixed(2)}|${r}`) % 100 < 65 ? 'aba' : 'acleda';
+        return { usdCash: 0, khrCash: 0, khqr: Math.round(due * 100) / 100, bank };
+    }
     const usd = Math.floor(due);
     return { usdCash: usd, khrCash: Math.ceil((due - usd) * rate / 1000) * 1000 || 1000, khqr: 0 };
 }

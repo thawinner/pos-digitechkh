@@ -9,7 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Nunito+Sans:wght@400;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
@@ -42,20 +42,27 @@
         @keyframes cfdBar { from { transform: scaleX(1); } to { transform: scaleX(0); } }
         .cfd-grid { display: grid; gap: 20px; padding: 20px; height: 100%; }
         @media (max-width: 900px) { .cfd-grid { grid-template-columns: 1fr !important; grid-template-rows: minmax(0, 1fr) auto; } }
-        /* កាត KHQR (ទម្រង់បាគង)៖ ក្បាលក្រហមមានជ្រុងកាត់ ឈ្មោះហាង ទឹកប្រាក់ បន្ទាត់ចុចៗ និងកូដ */
-        .khqr-card { width: min(56vh, 40vw, 86vw); background: #fff; border-radius: 22px; overflow: hidden;
-                     box-shadow: 0 14px 40px rgba(23, 23, 23, .16); color: #171717; text-align: left; }
-        .khqr-head { position: relative; height: clamp(52px, 7.5vh, 76px); background: #e1232e; display: flex; align-items: center; justify-content: center; }
-        .khqr-head span { color: #fff; font: 800 clamp(20px, 2.6vh, 30px)/1 Arial, sans-serif; letter-spacing: .08em; }
-        .khqr-head::after { content: ''; position: absolute; right: 0; bottom: -1px; border-style: solid;
-                            border-width: 0 0 clamp(22px, 3vh, 32px) clamp(22px, 3vh, 32px); border-color: transparent transparent #fff transparent; }
-        .khqr-merchant { font-size: clamp(14px, 1.9vh, 20px); color: #404040; font-weight: 500; }
-        .khqr-amount { font-size: clamp(26px, 4vh, 42px); font-weight: 700; line-height: 1.25; }
-        .khqr-cur { font-size: clamp(14px, 1.9vh, 20px); font-weight: 600; color: #737373; }
-        .khqr-cut { border-top: 2px dashed #d4d4d4; margin: 0 16px; }
-        .khqr-mark { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 14%; aspect-ratio: 1;
-                     border-radius: 9999px; background: #171717; color: #fff; border: 4px solid #fff; display: flex;
-                     align-items: center; justify-content: center; font: 700 clamp(14px, 2.2vh, 24px)/1 Arial, sans-serif; }
+        /* កាត KHQR តាមស្តង់ដារបាគង (ធនាគារជាតិ)៖ សមាមាត្រ 20:29 · ក្បាលក្រហម #E1232E មានជ្រុងកាត់ខាងស្តាំក្រោម
+           ឈ្មោះអ្នកទទួល · ទឹកប្រាក់ + រូបិយប័ណ្ណ · បន្ទាត់ចុចៗ · កូដ QR មានសញ្ញារូបិយប័ណ្ណកណ្តាល · ទំហំទាំងអស់គិតតាមទទឹងកាត (cqw) */
+        .khqr-wrap { container-type: inline-size; width: min(50vh, 36vw, 86vw); }
+        .khqr-card { aspect-ratio: 20 / 29; display: flex; flex-direction: column; background: #fff;
+                     border-radius: 6.5cqw; overflow: hidden; box-shadow: 0 0 18px rgba(0, 0, 0, .12); color: #000; text-align: left;
+                     font-family: 'Nunito Sans', Arial, sans-serif; }
+        .khqr-head { position: relative; flex: 0 0 auto; height: 17.4cqw; background: #e1232e; display: flex; align-items: center; justify-content: center; }
+        .khqr-head span { color: #fff; font: 800 7.2cqw/1 'Nunito Sans', Arial, sans-serif; letter-spacing: .04em; }
+        .khqr-head::after { content: ''; position: absolute; right: 0; bottom: -1px; width: 8.6cqw; height: 8.6cqw; background: #fff;
+                            clip-path: polygon(100% 0, 100% 100%, 0 100%); }
+        .khqr-info { padding: 6.4cqw 10cqw 5.2cqw; }
+        .khqr-merchant { font-size: 4.6cqw; line-height: 1.3; color: #000; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .khqr-amount { font-size: 8.6cqw; line-height: 1.25; font-weight: 800; color: #000; margin-top: 1cqw; font-family: 'Nunito Sans', Arial, sans-serif; }
+        .khqr-cur { font-size: 4.6cqw; font-weight: 400; color: #000; margin-left: 1cqw; }
+        .khqr-cut { border-top: .6cqw dashed rgba(0, 0, 0, .45); }
+        .khqr-qr { position: relative; flex: 1 1 auto; display: flex; align-items: center; justify-content: center; padding: 7cqw 10cqw 9cqw; }
+        .khqr-qr > div:first-child { width: 100%; aspect-ratio: 1; }
+        .khqr-qr img, .khqr-qr canvas { width: 100% !important; height: auto !important; }
+        .khqr-mark { position: absolute; left: 50%; top: calc(50% - 1cqw); transform: translate(-50%, -50%); width: 13cqw; height: 13cqw;
+                     border-radius: 9999px; background: #000; color: #fff; border: 1.4cqw solid #fff; display: flex;
+                     align-items: center; justify-content: center; font: 800 6cqw/1 'Nunito Sans', Arial, sans-serif; }
         .cfd-step { width: clamp(36px, 4.4vh, 48px); height: clamp(36px, 4.4vh, 48px); }
         #lines::-webkit-scrollbar { display: none; }
         #lines { scrollbar-width: none; }
@@ -162,7 +169,7 @@
             const lines = [];
             if (p.usd > 0.005) lines.push(totalRow('ទទួលជាដុល្លារ', fmtUSD(p.usd)));
             if (p.khr > 0.5) lines.push(totalRow('ទទួលជារៀល', fmtKHR(p.khr)));
-            if (p.khqr > 0.005) lines.push(totalRow('បង់តាមបាគង', fmtUSD(p.khqr)));
+            if (p.khqr > 0.005) lines.push(totalRow(PAY_BANKS[p.bank] ? `បង់តាម ${bankName(p.bank)}` : 'បង់តាមបាគង', fmtUSD(p.khqr)));
             let hero;
             if (remain > 0.005) {
                 hero = `<p class="cfd-sub text-amber-600 dark:text-amber-400 mt-4">នៅខ្វះ</p>
@@ -197,22 +204,25 @@
             const step = (n, text) => `<li class="flex items-center gap-4"><span class="cfd-step flex-shrink-0 rounded-full border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center cfd-sub font-bold text-slate-600 dark:text-slate-300">${n}</span><span>${text}</span></li>`;
             return `<div class="cfd-grid cfd-fade" style="grid-template-columns: 1fr 1fr">
                 <section class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 p-8 flex items-center justify-center">
-                    <div class="khqr-card">
-                        <div class="khqr-head"><span>KHQR</span></div>
-                        <div class="px-7 pt-5 pb-4">
-                            <p class="khqr-merchant">${e(MERCHANT.name)}</p>
-                            <p class="khqr-amount">${k.amount.toFixed(2)} <span class="khqr-cur">USD</span></p>
+                    <div class="khqr-wrap">
+                        <div class="khqr-card">
+                            <div class="khqr-head"><span>KHQR</span></div>
+                            <div class="khqr-info">
+                                <p class="khqr-merchant">${e(MERCHANT.name)}</p>
+                                <p class="khqr-amount">${k.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<span class="khqr-cur">USD</span></p>
+                            </div>
+                            <div class="khqr-cut"></div>
+                            <div class="khqr-qr">
+                                <div id="qrBox"></div>
+                                <span class="khqr-mark" aria-hidden="true">$</span>
+                                <div id="qrExpired" class="hidden absolute inset-0 bg-white/95 flex flex-col items-center justify-center text-center p-6 gap-3 cfd-row font-semibold text-slate-700">
+                                    <i class="fas fa-clock-rotate-left text-rose-500"></i>កូដផុតសុពលភាព<span class="cfd-sub font-normal text-slate-500">សូមរង់ចាំអ្នកគិតលុយបង្កើតកូដថ្មី</span></div>
+                            </div>
                         </div>
-                        <div class="khqr-cut"></div>
-                        <div class="relative px-7 pt-6 pb-7">
-                            <div id="qrBox" class="w-full aspect-square"></div>
-                            <span class="khqr-mark" aria-hidden="true">$</span>
-                            <div id="qrExpired" class="hidden absolute inset-0 bg-white/95 flex flex-col items-center justify-center text-center p-6 gap-3 cfd-row font-semibold text-slate-700">
-                                <i class="fas fa-clock-rotate-left text-rose-500"></i>កូដផុតសុពលភាព<span class="cfd-sub font-normal text-slate-500">សូមរង់ចាំអ្នកគិតលុយបង្កើតកូដថ្មី</span></div>
-                        </div>
+                        <p class="cfd-sub text-slate-500 dark:text-slate-400 text-center mt-5">ស្កេនបានពីកម្មវិធីធនាគារទាំងអស់</p>
                     </div>
                 </section>
-                ${panel(`<p class="cfd-mid font-semibold">ស្កេនដើម្បីទូទាត់ជាមួយបាគង</p>
+                ${panel(`<p class="cfd-mid font-semibold">${PAY_BANKS[k.bank] ? `ស្កេនដើម្បីទូទាត់ចូលគណនី ${e(bankName(k.bank))}` : 'ស្កេនដើម្បីទូទាត់ជាមួយបាគង'}</p>
                     <div class="mt-8">
                         <p class="cfd-sub text-slate-500 dark:text-slate-400">ទឹកប្រាក់ត្រូវទូទាត់</p>
                         <p class="cfd-big font-bold mt-1">${fmtUSD(k.amount)}</p>
@@ -257,9 +267,9 @@
             if (!box || drawn.qr === k.payload) return;
             drawn.qr = k.payload;
             box.innerHTML = '';
-            const size = box.clientWidth || 360;
+            const size = 512; // គូរធំ ហើយបង្រួមដោយ CSS ដើម្បីឱ្យច្បាស់
             if (typeof QRCode !== 'undefined') {
-                new QRCode(box, { text: k.payload, width: size, height: size, colorDark: '#171717', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+                new QRCode(box, { text: k.payload, width: size, height: size, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
                 box.querySelectorAll('img, canvas').forEach(n => { n.style.width = '100%'; n.style.height = 'auto'; });
             }
         }
