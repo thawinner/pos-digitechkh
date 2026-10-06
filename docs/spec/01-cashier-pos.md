@@ -468,7 +468,7 @@ A clean form table with each row being one denomination:
 
 **Signature / PIN Confirmation:**
 - Option 1: Digital signature pad (canvas element, draw signature with finger/mouse)
-- Option 2: PIN re-entry `[Enter PIN to Confirm]` — `4–6 digit` numeric input
+- Option 2: PIN re-entry `[Enter PIN to Confirm]` — `6 digit` numeric input
 - Label: `ខ្ញុំបញ្ជាក់ថាការរាប់ខាងលើត្រឹមត្រូវ ហើយខ្ញុំព្រមបិទវេននេះ`
 
 **Important warning box (amber):**

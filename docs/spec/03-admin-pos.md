@@ -89,7 +89,7 @@ Profit maths (`admin-data.js`):
   3. The PIN is then shown once, to be told to the person in person.
 - **Validation:**
   - Khmer name of at least 2 characters.
-  - A PIN of 4–6 digits. Easy PINs are refused (`1111`, `1234`, `9876`), and so is a PIN another active person uses.
+  - A PIN of exactly 6 digits. Easy PINs are refused (`111111`, `123456`, `987654`), and so is a PIN another active person uses.
   - Discount limit between 0 and 20 %.
 - **Safeguards:**
   - The owner cannot deactivate their own account.

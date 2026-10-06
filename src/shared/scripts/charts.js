@@ -6,8 +6,8 @@
 const CHART_FONT = "'Kantumruy Pro', sans-serif";
 /* ស៊េរីទិន្នន័យប្រើពណ៌ខៀវចម្បងតែមួយ (accent) ជាមួយប្រផេះ · លឿង និងក្រហមសម្រាប់តែការព្រមាន */
 const CHART_TONE = {
-    accent: '#2563eb', accentSoft: '#bfdbfe', accentStrong: '#1d4ed8',
-    slate: '#94a3b8', amber: '#f59e0b', rose: '#e11d48'
+    accent: '#047857', accentSoft: '#a7f3d0', accentStrong: '#065f46',
+    slate: '#a2a2a2', amber: '#f59e0b', rose: '#e11d48'
 };
 
 function chartIsDark() {
@@ -18,18 +18,18 @@ function chartBase() {
     const dark = chartIsDark();
     return {
         animationDuration: 350,
-        textStyle: { fontFamily: CHART_FONT, color: dark ? '#cbd5e1' : '#475569' },
+        textStyle: { fontFamily: CHART_FONT, color: dark ? '#d4d4d4' : '#545454' },
         grid: { left: 4, right: 8, top: 16, bottom: 4, containLabel: true },
         tooltip: {
             trigger: 'axis',
             confine: true,
-            backgroundColor: '#0f172a',
+            backgroundColor: '#171717',
             borderWidth: 1,
             borderColor: dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
             padding: [8, 12],
-            textStyle: { color: '#f8fafc', fontFamily: CHART_FONT, fontSize: 13 },
-            extraCssText: 'border-radius:8px;box-shadow:0 8px 24px rgba(15,23,42,.18)',
-            axisPointer: { type: 'shadow', shadowStyle: { color: dark ? 'rgba(255,255,255,.05)' : 'rgba(15,23,42,.04)' } }
+            textStyle: { color: '#fafafa', fontFamily: CHART_FONT, fontSize: 13 },
+            extraCssText: 'border-radius:8px;box-shadow:0 8px 24px rgba(23,23,23,.18)',
+            axisPointer: { type: 'shadow', shadowStyle: { color: dark ? 'rgba(255,255,255,.05)' : 'rgba(23,23,23,.04)' } }
         }
     };
 }
@@ -41,8 +41,8 @@ function chartCategoryAxis(data, extra) {
         type: 'category',
         data,
         axisTick: { show: false },
-        axisLine: { lineStyle: { color: dark ? '#334155' : '#e2e8f0' } },
-        axisLabel: { color: dark ? '#94a3b8' : '#64748b', fontSize: 12, fontFamily: CHART_FONT }
+        axisLine: { lineStyle: { color: dark ? '#404040' : '#e7e7e7' } },
+        axisLabel: { color: dark ? '#a2a2a2' : '#737373', fontSize: 12, fontFamily: CHART_FONT }
     }, extra || {});
 }
 
@@ -52,8 +52,8 @@ function chartValueAxis(fmt, extra) {
     return Object.assign({
         type: 'value',
         splitNumber: 4,
-        axisLabel: { color: dark ? '#94a3b8' : '#64748b', fontSize: 11, fontFamily: CHART_FONT, formatter: fmt || (v => v) },
-        splitLine: { lineStyle: { color: dark ? '#1e293b' : '#f1f5f9' } }
+        axisLabel: { color: dark ? '#a2a2a2' : '#737373', fontSize: 11, fontFamily: CHART_FONT, formatter: fmt || (v => v) },
+        splitLine: { lineStyle: { color: dark ? '#292929' : '#f4f4f4' } }
     }, extra || {});
 }
 
@@ -61,7 +61,7 @@ function chartValueAxis(fmt, extra) {
 function chartTipRow(color, label, value) {
     return `<div style="display:flex;align-items:center;gap:8px;min-width:170px;margin-top:3px">
         <span style="width:8px;height:8px;border-radius:2px;background:${color}"></span>
-        <span style="flex:1;color:#cbd5e1">${label}</span><b style="font-weight:600">${value}</b></div>`;
+        <span style="flex:1;color:#d4d4d4">${label}</span><b style="font-weight:600">${value}</b></div>`;
 }
 
 function chartTipTitle(text) {

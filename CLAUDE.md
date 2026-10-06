@@ -13,9 +13,9 @@ python3 -m http.server 8000 --directory src   # then open localhost:8000 (login 
 ```
 
 Login: email or phone + password (`verifyLogin()` in `data.js`). Demo accounts: phone/email/password per person in
-`STAFF_SEED` (e.g. 012 345 678 · makara@digitechkh.com · makara2026; owner 012 999 000 · chantha2026). The 4-digit PIN
-is only for manager approvals and unlocking the till. Demo PINs: ចន្ទ មករា 1111 · សុខ ដារ៉ា 2222 · លី សុភា 3333 · ពេជ្រ សុវណ្ណារី 4444 · គឹម វិសាល 5555 · ឈឹម រតនា 6666
-(cashiers) · សុខ វណ្ណា 2468 · ម៉ៅ ស្រីនាង 1357 · នួន សុខលី 8642 (managers) · ហេង ចាន់ថា 9999 (owner).
+`STAFF_SEED` (e.g. 012 345 678 · makara@digitechkh.com · makara2026; owner 012 999 000 · chantha2026). The 6-digit PIN (`POS_PIN_LEN` in `ui-components.js`)
+is only for manager approvals and unlocking the till. Demo PINs: ចន្ទ មករា 111111 · សុខ ដារ៉ា 222222 · លី សុភា 333333 · ពេជ្រ សុវណ្ណារី 444444 · គឹម វិសាល 555555 · ឈឹម រតនា 666666
+(cashiers) · សុខ វណ្ណា 246810 · ម៉ៅ ស្រីនាង 135791 · នួន សុខលី 864201 (managers) · ហេង ចាន់ថា 999999 (owner).
 Default roster: morning CAS-01 + CAS-05, afternoon CAS-02 + CAS-04, night CAS-03 + CAS-06 (both off Tuesday, so a
 manager covers that night).
 Accounts are listed on the login page under «ព័ត៌មានសម្រាប់គំរូសាកល្បង» (a click fills the form), next to the reset-demo-data button.
@@ -55,7 +55,7 @@ src/
 
 - Cashier: `<body id="posPortal" …>`; manager: `<body id="managerPortal" …>` (`badgeFn` nav badges); owner:
   `<body id="adminPortal" …>`. All three views share one dark slate sidebar
-  (`portal.css` `--sb-*`: slate-800 #1e293b, slate-900 in dark mode). Never tint it per view. Everything else is neutral: white text, logo on a white tile,
+  (`portal.css` `--sb-*`: dark green #0B2B22, black-gray #171717 in dark mode). Never tint it per view. Everything else is neutral: white text, logo on a white tile,
   active item = white 13% fill, no accent bar, glow or coloured icons. A dot + the view name sit under the logo and in
   the view switcher. Nav
   badges stay neutral (red when urgent). No `title=` tooltips in the sidebar. The sidebar brand block switches views
@@ -157,7 +157,7 @@ old eBMS layout; the rules apply as-is. Condensed:
 | Money summary | subtotal → down payment → special discount → VAT 10% → grand total. Dual currency USD/KHR. |
 | Printing | Receipts print to 80mm thermal, the Z-report to A4, via `@media print`. |
 | Em dash | Don't put «—» between Khmer phrases; a lone «—» as an empty-value marker is fine. |
-| Colour | One accent: blue (`primary` #2563EB, Tailwind `blue-*`) for primary buttons, active tabs, links, chart series. Green / amber / red only for status, and only on exceptions: normal or finished states (in stock, approved, confirmed, reviewed, payment method, roles, categories) are slate. No indigo, cyan, sky, teal or purple. `kpiCard()` ignores non-warning tones. |
+| Colour | One accent: emerald green (`primary` #047857). Each page's `tailwind.config` remaps `blue-*` to the emerald scale and `slate-*` to neutral gray (dark mode is black-gray, no blue tint), so keep writing `blue-*` / `slate-*` classes and never hard-code the old blue or slate hexes. Use it for primary buttons, active tabs, links, chart series. Status green (live, positive) only as a small dot or with a ▲ arrow so it is not mistaken for a button. Amber / red only for status, and only on exceptions: normal or finished states (in stock, approved, confirmed, reviewed, payment method, roles, categories) are slate. No indigo, cyan, sky, teal or purple. `kpiCard()` ignores non-warning tones. |
 | Theme | Light by default (`bms_theme` unset). The cashier terminal and open-shift are authored dark and get their light look from the `html:not(.dark)` layer in their `<style>`; never put a `:hover` selector inside `:is()` there (it raises specificity and beats the white-text restore). The login page is authored light like the portal pages (dark comes from `custom.css`); only its splash is dark, with an `html:not(.dark) #splash` rule. Sidebar is never collapsible. |
 
 ## UX/UI rules (for AI working on this repo)

@@ -213,18 +213,18 @@ const MERCHANT = {
    លេខសម្ងាត់សម្រាប់គំរូសាកល្បងប៉ុណ្ណោះ — ប្រព័ន្ធពិតរក្សាទុកជាសញ្ញាកូដនៅម៉ាស៊ីនមេ។
    ម្ចាស់ហាងបន្ថែមបុគ្គលិក ប្តូរតួនាទី ឬផ្អាកគណនីនៅទំព័រ «បុគ្គលិក» (រក្សាក្នុង pos_staff)។
    គណនីដែលផ្អាកមិនអាចចូលប្រើបាន ប៉ុន្តែឈ្មោះនៅតែបង្ហាញក្នុងប្រវត្តិ (personById រកឃើញជានិច្ច)។ */
-/* គណនីចូលប្រើ៖ អ៊ីមែល ឬលេខទូរស័ព្ទ + ពាក្យសម្ងាត់ (ទំព័រចូលប្រើ) · pin = លេខកូដ 4 ខ្ទង់សម្រាប់អនុម័ត និងដោះសោផ្ទាំងគិតលុយ */
+/* គណនីចូលប្រើ៖ អ៊ីមែល ឬលេខទូរស័ព្ទ + ពាក្យសម្ងាត់ (ទំព័រចូលប្រើ) · pin = លេខកូដ 6 ខ្ទង់សម្រាប់អនុម័ត និងដោះសោផ្ទាំងគិតលុយ */
 const STAFF_SEED = [
-    { id: 'CAS-01', name: 'ចន្ទ មករា', initials: 'ចម', pin: '1111', phone: '012 345 678', email: 'makara@digitechkh.com', password: 'makara2026', role: 'cashier' },
-    { id: 'CAS-02', name: 'សុខ ដារ៉ា', initials: 'សដ', pin: '2222', phone: '098 765 432', email: 'dara@digitechkh.com', password: 'dara2026', role: 'cashier' },
-    { id: 'CAS-03', name: 'លី សុភា', initials: 'លស', pin: '3333', phone: '015 888 999', email: 'sophea@digitechkh.com', password: 'sophea2026', role: 'cashier' },
-    { id: 'CAS-04', name: 'ពេជ្រ សុវណ្ណារី', initials: 'ពស', pin: '4444', phone: '016 727 340', email: 'sovannary@digitechkh.com', password: 'sovannary2026', role: 'cashier' },
-    { id: 'CAS-05', name: 'គឹម វិសាល', initials: 'គវ', pin: '5555', phone: '070 515 662', email: 'visal@digitechkh.com', password: 'visal2026', role: 'cashier' },
-    { id: 'CAS-06', name: 'ឈឹម រតនា', initials: 'ឈរ', pin: '6666', phone: '096 330 184', email: 'ratana@digitechkh.com', password: 'ratana2026', role: 'cashier' },
-    { id: 'MGR-01', name: 'សុខ វណ្ណា', initials: 'សវ', pin: '2468', phone: '077 222 333', email: 'vanna@digitechkh.com', password: 'vanna2026', role: 'manager' },
-    { id: 'MGR-02', name: 'ម៉ៅ ស្រីនាង', initials: 'មស', pin: '1357', phone: '089 444 555', email: 'sreynang@digitechkh.com', password: 'sreynang2026', role: 'manager' },
-    { id: 'MGR-03', name: 'នួន សុខលី', initials: 'នស', pin: '8642', phone: '011 606 275', email: 'sokly@digitechkh.com', password: 'sokly2026', role: 'manager' },
-    { id: 'ADM-01', name: 'ហេង ចាន់ថា', initials: 'ហច', pin: '9999', phone: '012 999 000', email: 'chantha@digitechkh.com', password: 'chantha2026', role: 'admin' }
+    { id: 'CAS-01', name: 'ចន្ទ មករា', initials: 'ចម', pin: '111111', phone: '012 345 678', email: 'makara@digitechkh.com', password: 'makara2026', role: 'cashier' },
+    { id: 'CAS-02', name: 'សុខ ដារ៉ា', initials: 'សដ', pin: '222222', phone: '098 765 432', email: 'dara@digitechkh.com', password: 'dara2026', role: 'cashier' },
+    { id: 'CAS-03', name: 'លី សុភា', initials: 'លស', pin: '333333', phone: '015 888 999', email: 'sophea@digitechkh.com', password: 'sophea2026', role: 'cashier' },
+    { id: 'CAS-04', name: 'ពេជ្រ សុវណ្ណារី', initials: 'ពស', pin: '444444', phone: '016 727 340', email: 'sovannary@digitechkh.com', password: 'sovannary2026', role: 'cashier' },
+    { id: 'CAS-05', name: 'គឹម វិសាល', initials: 'គវ', pin: '555555', phone: '070 515 662', email: 'visal@digitechkh.com', password: 'visal2026', role: 'cashier' },
+    { id: 'CAS-06', name: 'ឈឹម រតនា', initials: 'ឈរ', pin: '666666', phone: '096 330 184', email: 'ratana@digitechkh.com', password: 'ratana2026', role: 'cashier' },
+    { id: 'MGR-01', name: 'សុខ វណ្ណា', initials: 'សវ', pin: '246810', phone: '077 222 333', email: 'vanna@digitechkh.com', password: 'vanna2026', role: 'manager' },
+    { id: 'MGR-02', name: 'ម៉ៅ ស្រីនាង', initials: 'មស', pin: '135791', phone: '089 444 555', email: 'sreynang@digitechkh.com', password: 'sreynang2026', role: 'manager' },
+    { id: 'MGR-03', name: 'នួន សុខលី', initials: 'នស', pin: '864201', phone: '011 606 275', email: 'sokly@digitechkh.com', password: 'sokly2026', role: 'manager' },
+    { id: 'ADM-01', name: 'ហេង ចាន់ថា', initials: 'ហច', pin: '999999', phone: '012 999 000', email: 'chantha@digitechkh.com', password: 'chantha2026', role: 'admin' }
 ];
 const STAFF_KEY = 'pos_staff';
 
@@ -234,7 +234,12 @@ function staffStore() {
 
 function loadStaff() {
     const st = staffStore();
-    return STAFF_SEED.concat(st.added || []).map(p => Object.assign({ active: true }, p, (st.changes || {})[p.id] || {}));
+    return STAFF_SEED.concat(st.added || []).map(p => {
+        const x = Object.assign({ active: true }, p, (st.changes || {})[p.id] || {});
+        // បុគ្គលិកដែលបន្ថែមមុនពេលប្តូរទៅ 6 ខ្ទង់៖ បន្ថែមខ្ទង់ពីរដំបូងនៅខាងចុង (4821 → 482148)
+        if (x.pin && !/^\d{6}$/.test(x.pin)) x.pin = (x.pin + x.pin).slice(0, 6);
+        return x;
+    });
 }
 
 const ALL_STAFF = loadStaff();
@@ -275,6 +280,15 @@ function avatarHtml(id, cls) {
 }
 
 /* លេខសម្ងាត់ដែលអ្នកគ្រប់គ្រងកំណត់ឡើងវិញ (ទំព័រការកំណត់) ឈ្នះលើតម្លៃលំនាំដើម */
+/* លេខសម្ងាត់ចាស់ 4 ខ្ទង់ដែលកំណត់មុនពេលប្តូរទៅ 6 ខ្ទង់ មិនប្រើទៀតទេ · ត្រឡប់ទៅលេខលំនាំដើម */
+(function migratePins() {
+    const custom = posRead('pos_pins', null);
+    if (!custom) return;
+    const kept = {};
+    Object.keys(custom).forEach(id => { if (/^\d{6}$/.test(custom[id])) kept[id] = custom[id]; });
+    if (Object.keys(kept).length !== Object.keys(custom).length) posWrite('pos_pins', kept);
+})();
+
 function effectivePin(id) {
     const custom = posRead('pos_pins', {});
     const p = personById(id);
@@ -723,7 +737,7 @@ function productImgHtml(p) {
     const label = PRODUCT_SHORT[p.sku] || p.name.split(' ')[0];
     return `<span class="w-full h-full flex items-center justify-center" style="container-type:size">
             <span class="w-[78%] h-[78%] rounded-md flex items-center justify-center text-white font-semibold text-center leading-tight px-[6%]"
-                  style="background:${CATEGORY_TILE[p.category] || '#64748b'};font-size:clamp(9px,17cqmin,22px)">${label}</span>
+                  style="background:${CATEGORY_TILE[p.category] || '#737373'};font-size:clamp(9px,17cqmin,22px)">${label}</span>
         </span>`;
 }
 
@@ -1492,7 +1506,7 @@ function receiptHtml(sale, options) {
     const voided = isVoided(sale);
 
     const row = (label, value, strong) => `
-        <div style="display:flex;justify-content:space-between;gap:8px;${strong ? 'font-weight:600;padding-top:4px;border-top:1px dashed #94a3b8;' : ''}">
+        <div style="display:flex;justify-content:space-between;gap:8px;${strong ? 'font-weight:600;padding-top:4px;border-top:1px dashed #a2a2a2;' : ''}">
             <span>${label}</span><span>${value}</span>
         </div>`;
 
@@ -1502,7 +1516,7 @@ function receiptHtml(sale, options) {
         return `
             <div style="margin-bottom:6px;">
                 <div>${p.name}</div>
-                <div style="display:flex;justify-content:space-between;gap:8px;color:#475569;">
+                <div style="display:flex;justify-content:space-between;gap:8px;color:#545454;">
                     <span>${l.qty} ${p.unit} × ${fmtUSD(linePrice(l))}${back ? ` · ប្រគល់វិញ ${back}` : ''}</span>
                     <span>${fmtUSD(lineTotal(l))}</span>
                 </div>
@@ -1523,18 +1537,18 @@ function receiptHtml(sale, options) {
     const taxInvoice = customer && customer.vattin;
 
     return `
-        <div class="receipt-ticket" style="width:72mm;max-width:100%;margin:0 auto;font-family:'Kantumruy Pro',sans-serif;font-size:12px;line-height:1.5;color:#0f172a;position:relative;background:#ffffff;">
-            <div style="text-align:center;padding-bottom:8px;border-bottom:1px dashed #94a3b8;">
+        <div class="receipt-ticket" style="width:72mm;max-width:100%;margin:0 auto;font-family:'Kantumruy Pro',sans-serif;font-size:12px;line-height:1.5;color:#171717;position:relative;background:#ffffff;">
+            <div style="text-align:center;padding-bottom:8px;border-bottom:1px dashed #a2a2a2;">
                 <div style="font-size:15px;font-weight:700;">${MERCHANT.nameKh}</div>
-                <div style="color:#475569;">${MERCHANT.branch}</div>
-                <div style="color:#475569;">លេខអត្តសញ្ញាណកម្មអាករ ${MERCHANT.tin}</div>
-                <div style="color:#475569;">ទូរស័ព្ទ ${MERCHANT.phone}</div>
+                <div style="color:#545454;">${MERCHANT.branch}</div>
+                <div style="color:#545454;">លេខអត្តសញ្ញាណកម្មអាករ ${MERCHANT.tin}</div>
+                <div style="color:#545454;">ទូរស័ព្ទ ${MERCHANT.phone}</div>
                 <div style="margin-top:6px;font-weight:600;">${taxInvoice ? 'វិក្កយបត្រអាករ' : 'វិក្កយបត្រ'}</div>
             </div>
 
             ${voided ? `<div style="margin:8px 0;padding:6px;border:2px solid #e11d48;color:#e11d48;text-align:center;font-weight:700;">បានលុបចោល · ${fmtTime(sale.voidedAt)}</div>` : ''}
 
-            <div style="padding:8px 0;border-bottom:1px dashed #94a3b8;">
+            <div style="padding:8px 0;border-bottom:1px dashed #a2a2a2;">
                 ${row('លេខវិក្កយបត្រ', sale.id)}
                 ${row('កាលបរិច្ឆេទ', fmtDate(sale.time))}
                 ${row('ម៉ោង', fmtTime(sale.time))}
@@ -1542,12 +1556,12 @@ function receiptHtml(sale, options) {
                 ${row('ម៉ាស៊ីន', sale.register || MY_REGISTER)}
                 ${customer ? row('អតិថិជន', customer.name) : ''}
                 ${taxInvoice ? row('លេខអត្តសញ្ញាណកម្មអាករអតិថិជន', customer.vattin) : ''}
-                ${taxInvoice ? `<div style="color:#475569;">${customer.address}</div>` : ''}
+                ${taxInvoice ? `<div style="color:#545454;">${customer.address}</div>` : ''}
             </div>
 
-            <div style="padding:8px 0;border-bottom:1px dashed #94a3b8;">${items}</div>
+            <div style="padding:8px 0;border-bottom:1px dashed #a2a2a2;">${items}</div>
 
-            <div style="padding:8px 0;border-bottom:1px dashed #94a3b8;">
+            <div style="padding:8px 0;border-bottom:1px dashed #a2a2a2;">
                 ${row('ចំនួនឯកតា', t.qty)}
                 ${t.discount > 0.005 ? row('តម្លៃមុនបញ្ចុះ', fmtUSD(t.list)) : ''}
                 ${t.discount > 0.005 ? row(`ការបញ្ចុះតម្លៃ ${t.discountPercent}%`, '− ' + fmtUSD(t.discount)) : ''}
@@ -1557,11 +1571,11 @@ function receiptHtml(sale, options) {
                 ${row('គិតជារៀល', fmtKHR(toKHR(t.gross, rate)))}
             </div>
 
-            <div style="padding:8px 0;border-bottom:1px dashed #94a3b8;">${payLines}${returns}</div>
+            <div style="padding:8px 0;border-bottom:1px dashed #a2a2a2;">${payLines}${returns}</div>
 
-            <div style="text-align:center;padding-top:10px;color:#475569;">
+            <div style="text-align:center;padding-top:10px;color:#545454;">
                 <div>អត្រាប្តូរប្រាក់ 1 ដុល្លារ = ${rate.toLocaleString('en-US')} ៛</div>
-                <div style="margin-top:6px;font-weight:600;color:#0f172a;">សូមអរគុណ · ជួបគ្នាពេលក្រោយ</div>
+                <div style="margin-top:6px;font-weight:600;color:#171717;">សូមអរគុណ · ជួបគ្នាពេលក្រោយ</div>
                 ${opts.reprint ? '<div style="margin-top:6px;font-weight:600;">-- បោះពុម្ពឡើងវិញ --</div>' : ''}
             </div>
         </div>`;
@@ -1677,7 +1691,7 @@ function printThermalReceipt(sale, options) {
             padding: 0;
             background: #ffffff;
             font-family: 'Kantumruy Pro', sans-serif;
-            color: #0f172a;
+            color: #171717;
             -webkit-font-smoothing: antialiased;
         }
         .receipt-sheet {

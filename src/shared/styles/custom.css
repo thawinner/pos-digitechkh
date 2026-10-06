@@ -78,7 +78,7 @@ table th,
     font-family: 'Kantumruy Pro', sans-serif;
     font-size: 15px !important;
     font-weight: 600 !important;
-    color: #64748b !important; /* slate-500 */
+    color: #737373 !important; /* slate-500 */
     white-space: nowrap !important;
     letter-spacing: normal !important;
 }
@@ -89,7 +89,7 @@ table tbody tr,
     font-family: 'Kantumruy Pro', sans-serif;
     font-size: 15.5px !important;
     font-weight: 500 !important;
-    color: #334155 !important; /* slate-700 - softer text */
+    color: #404040 !important; /* slate-700 - softer text */
     white-space: nowrap;
 }
 
@@ -121,7 +121,7 @@ button[onclick*="selectFilter"] {
 .text-slate-800,
 .text-gray-900,
 .text-gray-800 {
-    color: #334155 !important; /* Soft Slate-700 */
+    color: #404040 !important; /* Soft Slate-700 */
 }
 
 /* Inputs, Selects, Buttons, and Form Controls */
@@ -207,8 +207,8 @@ textarea::-webkit-scrollbar {
 
 .bms-custom-select-menu {
     z-index: 99999 !important;
-    border: 1px solid rgba(226, 232, 240, 0.95) !important;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(15, 23, 42, 0.06) !important;
+    border: 1px solid rgba(231, 231, 231, 0.95) !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(23, 23, 23, 0.06) !important;
     background-color: #ffffff !important;
 }
 
@@ -220,11 +220,11 @@ textarea::-webkit-scrollbar {
     background: transparent;
 }
 .bms-custom-select-menu::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
+    background: #d4d4d4;
     border-radius: 4px;
 }
 .bms-custom-select-menu::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+    background: #a2a2a2;
 }
 
 .bms-custom-select-menu,
@@ -282,7 +282,7 @@ textarea::-webkit-scrollbar {
         min-height: auto !important;
         overflow: visible !important;
         background: #ffffff !important;
-        color: #0f172a !important;
+        color: #171717 !important;
         font-size: 13.5px !important;
         line-height: 1.45 !important;
         display: block !important;
@@ -343,7 +343,7 @@ textarea::-webkit-scrollbar {
     table th, table td {
         font-size: 13px !important;
         padding: 8px 10px !important;
-        border-color: #cbd5e1 !important;
+        border-color: #d4d4d4 !important;
     }
 
     thead {
@@ -378,9 +378,9 @@ textarea::-webkit-scrollbar {
         align-items: center !important;
         margin-top: 36px !important;
         padding-top: 10px !important;
-        border-top: 1px dashed #cbd5e1 !important;
+        border-top: 1px dashed #d4d4d4 !important;
         font-size: 11px !important;
-        color: #64748b !important;
+        color: #737373 !important;
     }
 
     /* 10. Clean Links without URL display */
@@ -396,7 +396,7 @@ textarea::-webkit-scrollbar {
 button.bg-primary:hover,
 a.bg-primary:hover,
 .btn-primary:hover {
-    background-color: #1d4ed8 !important;
+    background-color: #065f46 !important;
     color: #ffffff !important;
 }
 
@@ -487,7 +487,7 @@ main {
         bottom: 0 !important;
         width: 100vw !important;
         height: 100vh !important;
-        background-color: rgba(15, 23, 42, 0.6) !important;
+        background-color: rgba(23, 23, 23, 0.6) !important;
         z-index: 45 !important;
         opacity: 0;
         pointer-events: none;
@@ -682,7 +682,7 @@ div:has(.bms-items-table-wrapper .bms-custom-select-menu:not(.hidden)),
         grid-template-columns: 1fr 1fr !important;
         gap: 0.625rem !important;
         background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
+        border: 1px solid #e7e7e7 !important;
         border-radius: 1rem !important;
         padding: 0.875rem !important;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
@@ -740,7 +740,7 @@ div:has(.bms-items-table-wrapper .bms-custom-select-menu:not(.hidden)),
         grid-column: span 2 !important;
         padding: 0.625rem 0 0 0 !important;
         margin-top: 0.25rem !important;
-        border-top: 1px dashed #e2e8f0 !important;
+        border-top: 1px dashed #e7e7e7 !important;
         border-bottom: none !important;
         border-left: none !important;
         border-right: none !important;
@@ -762,7 +762,7 @@ div:has(.bms-items-table-wrapper .bms-custom-select-menu:not(.hidden)),
         grid-column: span 2 !important;
         padding: 0.625rem 0 0 0 !important;
         margin-top: 0.25rem !important;
-        border-top: 1px dashed #e2e8f0 !important;
+        border-top: 1px dashed #e7e7e7 !important;
         display: flex !important;
         justify-content: space-between !important;
         align-items: center !important;
@@ -795,8 +795,8 @@ div:has(.bms-items-table-wrapper .bms-custom-select-menu:not(.hidden)),
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
         gap: 0.5rem !important;
-        background: #f8fafc !important;
-        border: 1px solid #e2e8f0 !important;
+        background: #fafafa !important;
+        border: 1px solid #e7e7e7 !important;
         border-radius: 0.875rem !important;
         padding: 0.75rem !important;
         width: 100% !important;
@@ -811,14 +811,14 @@ div:has(.bms-items-table-wrapper .bms-custom-select-menu:not(.hidden)),
         grid-column: span 2 !important;
         padding: 0 !important;
         font-weight: 600 !important;
-        color: #1e293b !important;
+        color: #292929 !important;
     }
 
     .bms-view-item-table td.col-code {
         grid-column: span 2 !important;
         padding: 0 !important;
         font-size: 0.75rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
         text-align: left !important;
     }
 
@@ -839,7 +839,7 @@ div:has(.bms-items-table-wrapper .bms-custom-select-menu:not(.hidden)),
         grid-column: span 2 !important;
         padding-top: 0.5rem !important;
         margin-top: 0.25rem !important;
-        border-top: 1px dashed #cbd5e1 !important;
+        border-top: 1px dashed #d4d4d4 !important;
         display: flex !important;
         justify-content: space-between !important;
         align-items: center !important;
@@ -869,7 +869,7 @@ div:has(.bms-items-table-wrapper .bms-custom-select-menu:not(.hidden)),
     .bms-view-item-table td {
         display: table-cell !important;
         padding: 0.75rem 1rem !important;
-        border-bottom: 1px solid #e2e8f0 !important;
+        border-bottom: 1px solid #e7e7e7 !important;
     }
     .bms-view-item-table .mobile-label {
         display: none !important;
@@ -905,7 +905,7 @@ div:has(.bms-items-table-wrapper .bms-custom-select-menu:not(.hidden)),
     bottom: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    background-color: rgba(15, 23, 42, 0.5) !important;
+    background-color: rgba(23, 23, 23, 0.5) !important;
     backdrop-filter: blur(3px) !important;
     -webkit-backdrop-filter: blur(3px) !important;
     z-index: 9998 !important;
@@ -927,7 +927,7 @@ div:has(.bms-items-table-wrapper .bms-custom-select-menu:not(.hidden)),
         overflow-y: auto !important;
         z-index: 9999 !important;
         border-radius: 1.25rem !important;
-        box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
+        box-shadow: 0 25px 50px -12px rgba(23, 23, 23, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
         margin: 0 !important;
     }
 
@@ -955,9 +955,9 @@ div:has(.bms-items-table-wrapper .bms-custom-select-menu:not(.hidden)),
         gap: 0.375rem !important;
         max-height: none !important;
         border-right: none !important;
-        border-bottom: 1px solid #f1f5f9 !important;
+        border-bottom: 1px solid #f4f4f4 !important;
         padding: 0.625rem 0.75rem !important;
-        background-color: #f8fafc !important;
+        background-color: #fafafa !important;
     }
 
     #datePickerPopover .preset-btn,
@@ -968,21 +968,21 @@ div:has(.bms-items-table-wrapper .bms-custom-select-menu:not(.hidden)),
         padding: 0.35rem 0.75rem !important;
         font-size: 13px !important;
         border-radius: 9999px !important;
-        border: 1px solid #e2e8f0 !important;
+        border: 1px solid #e7e7e7 !important;
         background-color: #ffffff !important;
-        color: #475569 !important;
+        color: #545454 !important;
         text-align: center !important;
         line-height: 1.4 !important;
         box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
     }
 
-    #datePickerPopover .preset-btn.bg-\[\#0f2b5c\],
-    .bms-date-popover .preset-btn.bg-\[\#0f2b5c\],
+    #datePickerPopover .preset-btn.bg-\[\#047857\],
+    .bms-date-popover .preset-btn.bg-\[\#047857\],
     #datePickerPopover .preset-btn.active,
     .bms-date-popover .preset-btn.active {
-        background-color: #0f2b5c !important;
+        background-color: #047857 !important;
         color: #ffffff !important;
-        border-color: #0f2b5c !important;
+        border-color: #047857 !important;
     }
 
     #datePickerPopover .col-span-8,
@@ -1467,12 +1467,12 @@ main .toolbar-actions a {
         display: flex !important;
         flex-direction: column !important;
         background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
+        border: 1px solid #e7e7e7 !important;
         border-radius: 1.25rem !important;
         padding: 1.125rem !important;
         margin-bottom: 0.875rem !important;
         position: relative !important;
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+        box-shadow: 0 1px 3px rgba(23, 23, 23, 0.04) !important;
         gap: 0.625rem !important;
         transition: transform 0.15s ease, box-shadow 0.15s ease !important;
     }
@@ -1535,28 +1535,28 @@ main .toolbar-actions a {
     #billsTable tr td:nth-child(1) p {
         font-size: 0.72rem !important;
         font-weight: 400 !important;
-        color: #94a3b8 !important;
+        color: #a2a2a2 !important;
         margin: 0 !important;
     }
 
     #invoicesTable tr td:nth-child(2),
     #quotesTable tr td:nth-child(2),
     #billsTable tr td:nth-child(2) {
-        border-top: 1px solid #f1f5f9 !important;
+        border-top: 1px solid #f4f4f4 !important;
         padding-top: 0.625rem !important;
     }
 
     #invoicesTable tr td:nth-child(3),
     #quotesTable tr td:nth-child(3),
     #billsTable tr td:nth-child(3) {
-        background: #f8fafc !important;
+        background: #fafafa !important;
         border-radius: 0.75rem !important;
         padding: 0.5rem 0.75rem !important;
         display: flex !important;
         justify-content: space-between !important;
         align-items: center !important;
         font-size: 0.75rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
     }
 
     #invoicesTable tr td:nth-child(4),
@@ -1567,14 +1567,14 @@ main .toolbar-actions a {
         align-items: center !important;
         font-size: 0.95rem !important;
         font-weight: 600 !important;
-        color: #1e293b !important;
+        color: #292929 !important;
     }
     #invoicesTable tr td:nth-child(4)::before,
     #quotesTable tr td:nth-child(4)::before,
     #billsTable tr td:nth-child(4)::before {
         content: 'ទឹកប្រាក់សរុប:';
         font-size: 0.8rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
         font-weight: 400 !important;
     }
 
@@ -1590,7 +1590,7 @@ main .toolbar-actions a {
     #quotesTable tr td:nth-child(5)::before,
     #billsTable tr td:nth-child(5)::before {
         content: 'ការទូទាត់:';
-        color: #64748b !important;
+        color: #737373 !important;
     }
 
     #invoicesTable tr td:nth-child(6),
@@ -1604,11 +1604,11 @@ main .toolbar-actions a {
     #invoicesTable tr td:nth-child(6)::before,
     #quotesTable tr td:nth-child(6)::before {
         content: 'កម្រៃរំពឹងទុក:';
-        color: #64748b !important;
+        color: #737373 !important;
     }
     #billsTable tr td:nth-child(6)::before {
         content: 'ចូលស្តុក:';
-        color: #64748b !important;
+        color: #737373 !important;
     }
 
     #invoicesTable tr td:nth-child(7),
@@ -1639,13 +1639,13 @@ main .toolbar-actions a {
 
     #customersTable tr td:nth-child(2),
     #suppliersTable tr td:nth-child(2) {
-        border-top: 1px solid #f1f5f9 !important;
+        border-top: 1px solid #f4f4f4 !important;
         padding-top: 0.625rem !important;
     }
 
     #customersTable tr td:nth-child(3),
     #suppliersTable tr td:nth-child(3) {
-        background: #f8fafc !important;
+        background: #fafafa !important;
         border-radius: 0.75rem !important;
         padding: 0.5rem 0.75rem !important;
     }
@@ -1660,7 +1660,7 @@ main .toolbar-actions a {
     #suppliersTable tr td:nth-child(4)::before {
         content: 'ប្រភេទដៃគូ:';
         font-size: 0.8rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
     }
 
     #customersTable tr td:nth-child(5),
@@ -1673,7 +1673,7 @@ main .toolbar-actions a {
     #suppliersTable tr td:nth-child(5)::before {
         content: 'ការបញ្ជាទិញ:';
         font-size: 0.8rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
     }
 
     #customersTable tr td:nth-child(6),
@@ -1687,7 +1687,7 @@ main .toolbar-actions a {
     #suppliersTable tr td:nth-child(6)::before {
         content: 'ទិញសរុប:';
         font-size: 0.8rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
         font-weight: 400 !important;
     }
 
@@ -1701,7 +1701,7 @@ main .toolbar-actions a {
     #suppliersTable tr td:nth-child(7)::before {
         content: 'បំណុលនៅសល់:';
         font-size: 0.8rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
     }
 
     #customersTable tr td:nth-child(8),
@@ -1730,7 +1730,7 @@ main .toolbar-actions a {
 
     #paymentsTable tr td:nth-child(2),
     #disbursementsTable tr td:nth-child(2) {
-        border-top: 1px solid #f1f5f9 !important;
+        border-top: 1px solid #f4f4f4 !important;
         padding-top: 0.625rem !important;
     }
 
@@ -1744,12 +1744,12 @@ main .toolbar-actions a {
     #paymentsTable tr td:nth-child(3)::before,
     #disbursementsTable tr td:nth-child(3)::before {
         content: 'ឯកសារយោង:';
-        color: #64748b !important;
+        color: #737373 !important;
     }
 
     #paymentsTable tr td:nth-child(4),
     #disbursementsTable tr td:nth-child(4) {
-        background: #f8fafc !important;
+        background: #fafafa !important;
         border-radius: 0.75rem !important;
         padding: 0.5rem 0.75rem !important;
         display: flex !important;
@@ -1760,7 +1760,7 @@ main .toolbar-actions a {
     #paymentsTable tr td:nth-child(4)::before,
     #disbursementsTable tr td:nth-child(4)::before {
         content: 'វិធីសាស្ត្រ:';
-        color: #64748b !important;
+        color: #737373 !important;
     }
 
     #paymentsTable tr td:nth-child(5),
@@ -1776,7 +1776,7 @@ main .toolbar-actions a {
     #disbursementsTable tr td:nth-child(5)::before {
         content: 'ទឹកប្រាក់:';
         font-size: 0.8rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
         font-weight: 400 !important;
     }
 
@@ -1786,12 +1786,12 @@ main .toolbar-actions a {
         justify-content: space-between !important;
         align-items: center !important;
         font-size: 0.75rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
     }
     #paymentsTable tr td:nth-child(6)::before,
     #disbursementsTable tr td:nth-child(6)::before {
         content: 'លេខប្រតិបត្តិការ:';
-        color: #64748b !important;
+        color: #737373 !important;
     }
 
     #paymentsTable tr td:nth-child(7),
@@ -1800,12 +1800,12 @@ main .toolbar-actions a {
         justify-content: space-between !important;
         align-items: center !important;
         font-size: 0.75rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
     }
     #paymentsTable tr td:nth-child(7)::before,
     #disbursementsTable tr td:nth-child(7)::before {
         content: 'កាលបរិច្ឆេទ:';
-        color: #64748b !important;
+        color: #737373 !important;
     }
 
     #paymentsTable tr td:nth-child(8),
@@ -1832,12 +1832,12 @@ main .toolbar-actions a {
     }
 
     #stockTable tr td:nth-child(2) {
-        border-top: 1px solid #f1f5f9 !important;
+        border-top: 1px solid #f4f4f4 !important;
         padding-top: 0.625rem !important;
     }
 
     #stockTable tr td:nth-child(3) {
-        background: #f8fafc !important;
+        background: #fafafa !important;
         border-radius: 0.75rem !important;
         padding: 0.5rem 0.75rem !important;
         display: flex !important;
@@ -1847,7 +1847,7 @@ main .toolbar-actions a {
     }
     #stockTable tr td:nth-child(3)::before {
         content: 'ទីតាំងឃ្លាំង:';
-        color: #64748b !important;
+        color: #737373 !important;
     }
 
     #stockTable tr td:nth-child(4) {
@@ -1859,7 +1859,7 @@ main .toolbar-actions a {
     #stockTable tr td:nth-child(4)::before {
         content: 'ថ្លៃដើមមធ្យម:';
         font-size: 0.8rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
     }
 
     #stockTable tr td:nth-child(5) {
@@ -1872,7 +1872,7 @@ main .toolbar-actions a {
     #stockTable tr td:nth-child(5)::before {
         content: 'តម្លៃលក់:';
         font-size: 0.8rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
         font-weight: 400 !important;
     }
 
@@ -1885,7 +1885,7 @@ main .toolbar-actions a {
     #stockTable tr td:nth-child(6)::before {
         content: 'ចំនួនក្នុងស្តុក:';
         font-size: 0.8rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
     }
 
     #stockTable tr td:nth-child(7) {
@@ -1894,12 +1894,12 @@ main .toolbar-actions a {
         align-items: center !important;
         font-size: 0.95rem !important;
         font-weight: 700 !important;
-        color: #1e293b !important;
+        color: #292929 !important;
     }
     #stockTable tr td:nth-child(7)::before {
         content: 'តម្លៃស្តុកសរុប:';
         font-size: 0.8rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
         font-weight: 400 !important;
     }
 
@@ -1925,12 +1925,12 @@ main .toolbar-actions a {
     }
 
     #catalogTable tr td:nth-child(2) {
-        border-top: 1px solid #f1f5f9 !important;
+        border-top: 1px solid #f4f4f4 !important;
         padding-top: 0.625rem !important;
     }
 
     #catalogTable tr td:nth-child(3) {
-        background: #f8fafc !important;
+        background: #fafafa !important;
         border-radius: 0.75rem !important;
         padding: 0.5rem 0.75rem !important;
         display: flex !important;
@@ -1940,7 +1940,7 @@ main .toolbar-actions a {
     }
     #catalogTable tr td:nth-child(3)::before {
         content: 'ប្រភេទ & ម៉ាក:';
-        color: #64748b !important;
+        color: #737373 !important;
     }
 
     #catalogTable tr td:nth-child(4) {
@@ -1952,7 +1952,7 @@ main .toolbar-actions a {
     #catalogTable tr td:nth-child(4)::before {
         content: 'ឯកតា:';
         font-size: 0.8rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
     }
 
     #catalogTable tr td:nth-child(5) {
@@ -1967,7 +1967,7 @@ main .toolbar-actions a {
         content: 'ថ្លៃដើមទិញ:';
         grid-row: 1 / span 2 !important;
         font-size: 0.8rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
         font-weight: 400 !important;
     }
     #catalogTable tr td:nth-child(5) > div:first-of-type {
@@ -1987,13 +1987,13 @@ main .toolbar-actions a {
         align-items: baseline !important;
         font-size: 0.95rem !important;
         font-weight: 600 !important;
-        color: #1e293b !important;
+        color: #292929 !important;
     }
     #catalogTable tr td:nth-child(6)::before {
         content: 'តម្លៃលក់:';
         grid-row: 1 / span 2 !important;
         font-size: 0.8rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
         font-weight: 400 !important;
     }
     #catalogTable tr td:nth-child(6) > div:first-of-type {
@@ -2016,7 +2016,7 @@ main .toolbar-actions a {
     #catalogTable tr td:nth-child(7)::before {
         content: 'កម្រៃចំណេញ:';
         font-size: 0.8rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
         font-weight: 400 !important;
     }
 
@@ -2056,13 +2056,13 @@ main .toolbar-actions a {
 
     #movementsTable tr td:nth-child(5) {
         order: 2 !important;
-        border-top: 1px solid #f1f5f9 !important;
+        border-top: 1px solid #f4f4f4 !important;
         padding-top: 0.625rem !important;
     }
 
     #movementsTable tr td:nth-child(2) {
         order: 3 !important;
-        background: #f8fafc !important;
+        background: #fafafa !important;
         border-radius: 0.75rem !important;
         padding: 0.5rem 0.75rem !important;
         display: grid !important;
@@ -2074,20 +2074,20 @@ main .toolbar-actions a {
     #movementsTable tr td:nth-child(2)::before {
         content: 'កាលបរិច្ឆេទ:';
         grid-row: 1 / span 2 !important;
-        color: #64748b !important;
+        color: #737373 !important;
         white-space: nowrap !important;
     }
     #movementsTable tr td:nth-child(2) > div:first-of-type {
         grid-column: 2 !important;
         text-align: right !important;
         font-weight: 500 !important;
-        color: #1e293b !important;
+        color: #292929 !important;
     }
     #movementsTable tr td:nth-child(2) > div:last-of-type {
         grid-column: 2 !important;
         text-align: right !important;
         font-size: 0.7rem !important;
-        color: #94a3b8 !important;
+        color: #a2a2a2 !important;
     }
 
     #movementsTable tr td:nth-child(4) {
@@ -2100,7 +2100,7 @@ main .toolbar-actions a {
     #movementsTable tr td:nth-child(4)::before {
         content: 'ឯកសារយោង:';
         font-size: 0.8rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
     }
 
     #movementsTable tr td:nth-child(6) {
@@ -2116,7 +2116,7 @@ main .toolbar-actions a {
         content: 'ឃ្លាំងចរាចរ:';
         grid-row: 1 / span 2 !important;
         font-size: 0.8rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
         white-space: nowrap !important;
     }
     #movementsTable tr td:nth-child(6) > div:first-of-type {
@@ -2142,7 +2142,7 @@ main .toolbar-actions a {
     #movementsTable tr td:nth-child(7)::before {
         content: 'បរិមាណប្រែប្រួល:';
         font-size: 0.8rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
         font-weight: 400 !important;
     }
 
@@ -2153,12 +2153,12 @@ main .toolbar-actions a {
         align-items: center !important;
         font-size: 0.85rem !important;
         font-weight: 600 !important;
-        color: #334155 !important;
+        color: #404040 !important;
     }
     #movementsTable tr td:nth-child(8)::before {
         content: 'ស្តុកនៅសល់:';
         font-size: 0.8rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
         font-weight: 400 !important;
     }
 
@@ -2174,10 +2174,10 @@ main .toolbar-actions a {
     div:has(> .overflow-x-auto > #catalogTable) > div:last-child,
     div:has(> .overflow-x-auto > #movementsTable) > div:last-child {
         background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
+        border: 1px solid #e7e7e7 !important;
         border-radius: 1.25rem !important;
         padding: 0.875rem 1rem !important;
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+        box-shadow: 0 1px 3px rgba(23, 23, 23, 0.04) !important;
         flex-direction: column !important;
         align-items: center !important;
         gap: 0.75rem !important;
@@ -2210,14 +2210,14 @@ main .toolbar-actions a {
         row-gap: 0.625rem !important;
         column-gap: 0.75rem !important;
         background: #ffffff !important;
-        border: 1px solid #f1f5f9 !important;
+        border: 1px solid #f4f4f4 !important;
         border-radius: 1rem !important;
         padding: 0.875rem !important;
         margin-bottom: 0.625rem !important;
         position: relative !important;
         box-sizing: border-box !important;
         width: 100% !important;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
+        box-shadow: 0 1px 2px rgba(23, 23, 23, 0.03) !important;
     }
 
     #dashLowStockTable tr td:nth-child(1) {
@@ -2243,7 +2243,7 @@ main .toolbar-actions a {
         font-size: 0.85rem !important;
         line-height: 1.25 !important;
         font-weight: 500 !important;
-        color: #1e293b !important;
+        color: #292929 !important;
         white-space: normal !important;
         word-break: break-word !important;
     }
@@ -2269,15 +2269,15 @@ main .toolbar-actions a {
         align-items: center !important;
         gap: 0.35rem !important;
         font-size: 0.75rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
         border: none !important;
         padding: 0 !important;
-        border-top: 1px solid #f8fafc !important;
+        border-top: 1px solid #fafafa !important;
         padding-top: 0.5rem !important;
     }
     #dashLowStockTable tr td:nth-child(3)::before {
         content: 'កម្រិតប្រកាស:';
-        color: #94a3b8 !important;
+        color: #a2a2a2 !important;
     }
 
     #dashLowStockTable tr td:nth-child(4) {
@@ -2287,7 +2287,7 @@ main .toolbar-actions a {
         justify-self: end !important;
         border: none !important;
         padding: 0 !important;
-        border-top: 1px solid #f8fafc !important;
+        border-top: 1px solid #fafafa !important;
         padding-top: 0.5rem !important;
     }
     #dashLowStockTable tr td:nth-child(4) a {
@@ -2301,13 +2301,13 @@ main .toolbar-actions a {
         display: flex !important;
         flex-direction: column !important;
         background: #ffffff !important;
-        border: 1px solid #f1f5f9 !important;
+        border: 1px solid #f4f4f4 !important;
         border-radius: 1rem !important;
         padding: 0.875rem !important;
         margin-bottom: 0.625rem !important;
         gap: 0.375rem !important;
         position: relative !important;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
+        box-shadow: 0 1px 2px rgba(23, 23, 23, 0.03) !important;
     }
 
     #dashRecentInvoicesTable tr td:nth-child(2) {
@@ -2332,12 +2332,12 @@ main .toolbar-actions a {
         border: none !important;
         padding: 0 !important;
         padding-top: 0.25rem !important;
-        border-top: 1px solid #f8fafc !important;
+        border-top: 1px solid #fafafa !important;
     }
     #dashRecentInvoicesTable tr td:nth-child(3) p:first-child {
         font-size: 0.85rem !important;
         font-weight: 500 !important;
-        color: #334155 !important;
+        color: #404040 !important;
     }
 
     #dashRecentInvoicesTable tr td:nth-child(4) {
@@ -2347,7 +2347,7 @@ main .toolbar-actions a {
         align-items: center !important;
         font-size: 0.95rem !important;
         font-weight: 700 !important;
-        color: #1e293b !important;
+        color: #292929 !important;
         border: none !important;
         padding: 0 !important;
         margin-top: 0.125rem !important;
@@ -2355,7 +2355,7 @@ main .toolbar-actions a {
     #dashRecentInvoicesTable tr td:nth-child(4)::before {
         content: 'ទឹកប្រាក់:';
         font-size: 0.75rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
         font-weight: 400 !important;
     }
 
@@ -2365,13 +2365,13 @@ main .toolbar-actions a {
         justify-content: space-between !important;
         align-items: center !important;
         font-size: 0.75rem !important;
-        color: #64748b !important;
+        color: #737373 !important;
         border: none !important;
         padding: 0 !important;
     }
     #dashRecentInvoicesTable tr td:nth-child(5)::before {
         content: 'កាលបរិច្ឆេទ:';
-        color: #94a3b8 !important;
+        color: #a2a2a2 !important;
     }
 }
 
@@ -2390,7 +2390,7 @@ main .toolbar-actions a {
     bottom: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(15, 23, 42, 0.45);
+    background-color: rgba(23, 23, 23, 0.45);
     z-index: 9990;
     opacity: 0;
     pointer-events: none;
@@ -2412,7 +2412,7 @@ main .toolbar-actions a {
     height: 100vh;
     height: 100dvh;
     background-color: #ffffff;
-    border-left: 1px solid #e2e8f0;
+    border-left: 1px solid #e7e7e7;
     z-index: 9991;
     display: flex;
     flex-direction: column;
@@ -2425,7 +2425,7 @@ main .toolbar-actions a {
 
 #bmsUserProfileDrawer.open {
     transform: translateX(0);
-    box-shadow: -24px 0 60px -20px rgba(15, 23, 42, 0.35);
+    box-shadow: -24px 0 60px -20px rgba(23, 23, 23, 0.35);
 }
 
 /* Full-screen on phones (< 640px). Anything narrower than a small tablet would
@@ -2519,7 +2519,7 @@ main .toolbar-actions a {
 
 /* Header lift once the drawer body scrolls */
 #bmsUserProfileDrawer #bmsProfileDrawerHeader.is-scrolled {
-    box-shadow: 0 4px 14px -8px rgba(15, 23, 42, 0.28);
+    box-shadow: 0 4px 14px -8px rgba(23, 23, 23, 0.28);
     border-bottom-color: transparent;
 }
 
@@ -2558,10 +2558,10 @@ main .toolbar-actions a {
     z-index: 1;
     border-radius: 0.75rem 0 0 0.75rem;
     background-color: #ffffff;
-    border-color: #e2e8f0;
+    border-color: #e7e7e7;
     border-right-color: transparent;
-    color: #64748b;
-    box-shadow: -10px 0 24px -14px rgba(15, 23, 42, 0.45);
+    color: #737373;
+    box-shadow: -10px 0 24px -14px rgba(23, 23, 23, 0.45);
     /* The button overhangs the panel's left edge, so it would still be on-screen
        when the closed panel is parked at translateX(100%). Keep it hidden until
        the panel is actually open. */
@@ -2576,8 +2576,8 @@ main .toolbar-actions a {
 }
 
 #bmsUserProfileDrawer #bmsProfileDrawerCloseBtn:hover {
-    background-color: #f8fafc;
-    color: #334155;
+    background-color: #fafafa;
+    color: #404040;
 }
 
 /* On phones the panel is full-screen, so the button tucks back inside the header */
@@ -2586,17 +2586,17 @@ main .toolbar-actions a {
         top: 1rem;
         left: 1rem;
         border-radius: 0.75rem;
-        background-color: #f8fafc;
-        border-color: rgba(226, 232, 240, 0.7);
-        border-right-color: rgba(226, 232, 240, 0.7);
-        color: #64748b;
+        background-color: #fafafa;
+        border-color: rgba(231, 231, 231, 0.7);
+        border-right-color: rgba(231, 231, 231, 0.7);
+        color: #737373;
         box-shadow: none;
     }
 
     #bmsUserProfileDrawer #bmsProfileDrawerCloseBtn:hover {
-        background-color: #f1f5f9;
-        border-color: #e2e8f0;
-        color: #334155;
+        background-color: #f4f4f4;
+        border-color: #e7e7e7;
+        color: #404040;
     }
 }
 
@@ -2680,7 +2680,7 @@ main .toolbar-actions a {
 
 /* Separate the mark-all-read action from the two tabs */
 #bmsNotificationFlyout #bmsMarkAllReadBtn {
-    border-left: 1px solid #f1f5f9;
+    border-left: 1px solid #f4f4f4;
 }
 
 /* Bottom scroll fade — visible only while more rows remain below */
@@ -2711,53 +2711,53 @@ main .toolbar-actions a {
    ========================================================= */
 html.dark,
 html.dark body {
-    background-color: #0b1120 !important;
-    color: #e2e8f0 !important;
+    background-color: #111111 !important;
+    color: #e7e7e7 !important;
 }
 
 /* Base layouts & body variants */
 html.dark body.bg-slate-50 {
-    background-color: #0b1120 !important;
-    border-color: #1e293b !important;
+    background-color: #111111 !important;
+    border-color: #292929 !important;
 }
 
 html.dark header {
-    background-color: #0f172a !important;
-    border-bottom: 1px solid #1e293b !important;
+    background-color: #171717 !important;
+    border-bottom: 1px solid #292929 !important;
 }
 
 html.dark #portalTitle {
-    color: #f8fafc !important;
+    color: #fafafa !important;
 }
 
 html.dark #portalSubtitle {
-    color: #94a3b8 !important;
+    color: #a2a2a2 !important;
 }
 
 html.dark #portalBackBtn,
 html.dark #darkModeToggleBtn,
 html.dark [aria-label="ការជូនដំណឹង"] {
-    background-color: #1e293b !important;
-    border-color: #334155 !important;
-    color: #cbd5e1 !important;
+    background-color: #292929 !important;
+    border-color: #404040 !important;
+    color: #d4d4d4 !important;
 }
 
 html.dark #portalBackBtn:hover,
 html.dark #darkModeToggleBtn:hover,
 html.dark [aria-label="ការជូនដំណឹង"]:hover {
-    background-color: #334155 !important;
+    background-color: #404040 !important;
     color: #ffffff !important;
 }
 
 html.dark main {
-    background-color: #0b1120 !important;
+    background-color: #111111 !important;
 }
 
 /* Surfaces, Cards & Panels */
 html.dark .bg-white,
 html.dark .bg-slate-50 {
-    background-color: #0f172a !important;
-    border-color: #1e293b !important;
+    background-color: #171717 !important;
+    border-color: #292929 !important;
 }
 
 /* Fractional & Translucent Opacity Backgrounds */
@@ -2766,21 +2766,21 @@ html.dark .bg-slate-50\/50,
 html.dark .bg-slate-50\/60,
 html.dark .bg-slate-50\/70,
 html.dark .bg-slate-50\/80 {
-    background-color: #162032 !important;
-    border-color: #1e293b !important;
+    background-color: #202020 !important;
+    border-color: #292929 !important;
 }
 
 html.dark .bg-slate-100 {
-    background-color: #1e293b !important;
-    color: #cbd5e1 !important;
+    background-color: #292929 !important;
+    color: #d4d4d4 !important;
 }
 
 html.dark .bg-slate-200 {
-    background-color: #334155 !important;
+    background-color: #404040 !important;
 }
 
 html.dark .bg-slate-300 {
-    background-color: #475569 !important;
+    background-color: #545454 !important;
 }
 
 /* Borders & Dividers */
@@ -2790,13 +2790,13 @@ html.dark .border-slate-200,
 html.dark .border-slate-200\/70,
 html.dark .border-slate-200\/80,
 html.dark .border-slate-300 {
-    border-color: #1e293b !important;
+    border-color: #292929 !important;
 }
 
 html.dark .divide-slate-50 > :not([hidden]) ~ :not([hidden]),
 html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
 html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
-    border-color: #1e293b !important;
+    border-color: #292929 !important;
 }
 
 /* Typography in Dark Mode */
@@ -2811,7 +2811,7 @@ html.dark .text-gray-800,
 html.dark .sm-card-title,
 html.dark .sm-value,
 html.dark .sm-kpi-value {
-    color: #f8fafc !important;
+    color: #fafafa !important;
 }
 
 html.dark .text-slate-700,
@@ -2820,7 +2820,7 @@ html.dark .text-gray-700,
 html.dark .text-gray-600,
 html.dark .sm-td,
 html.dark .sm-td-strong {
-    color: #cbd5e1 !important;
+    color: #d4d4d4 !important;
 }
 
 html.dark .text-slate-500,
@@ -2831,25 +2831,25 @@ html.dark .sm-td-sub,
 html.dark .sm-card-sub,
 html.dark .sm-kpi-sub,
 html.dark .sm-th {
-    color: #94a3b8 !important;
+    color: #a2a2a2 !important;
 }
 
 html.dark .font-mono {
-    color: #93c5fd !important;
+    color: #6ee7b7 !important;
 }
 
 /* High-Contrast Interactive Hover States */
 html.dark .hover\:bg-slate-50:hover,
 html.dark .hover\:bg-slate-50\/80:hover {
-    background-color: #1e293b !important;
+    background-color: #292929 !important;
 }
 
 html.dark .hover\:bg-slate-100:hover {
-    background-color: #1e293b !important;
+    background-color: #292929 !important;
 }
 
 html.dark .hover\:bg-slate-200:hover {
-    background-color: #334155 !important;
+    background-color: #404040 !important;
 }
 
 html.dark .group:hover .group-hover\:text-slate-900,
@@ -2860,7 +2860,7 @@ html.dark .hover\:text-slate-800:hover {
 }
 
 html.dark .hover\:bg-blue-50:hover {
-    background-color: rgba(59, 130, 246, 0.2) !important;
+    background-color: rgba(5, 150, 105, 0.2) !important;
 }
 
 html.dark .hover\:bg-emerald-50:hover {
@@ -2877,72 +2877,72 @@ html.dark .hover\:bg-rose-100:hover {
 }
 
 html.dark .hover\:bg-blue-100:hover {
-    background-color: rgba(59, 130, 246, 0.25) !important;
+    background-color: rgba(5, 150, 105, 0.25) !important;
 }
 
 /* Inputs & Form Controls */
 html.dark input,
 html.dark select,
 html.dark textarea {
-    background-color: #0b1120 !important;
-    border-color: #334155 !important;
-    color: #f8fafc !important;
+    background-color: #111111 !important;
+    border-color: #404040 !important;
+    color: #fafafa !important;
 }
 
 html.dark input::placeholder,
 html.dark textarea::placeholder {
-    color: #64748b !important;
+    color: #737373 !important;
 }
 
 html.dark input:focus,
 html.dark select:focus,
 html.dark textarea:focus {
-    border-color: #60a5fa !important;
-    background-color: #0b1120 !important;
-    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2) !important;
+    border-color: #34d399 !important;
+    background-color: #111111 !important;
+    box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.2) !important;
 }
 
 /* Tables */
 html.dark table {
-    background-color: #0f172a !important;
+    background-color: #171717 !important;
 }
 
 html.dark table thead,
 html.dark table thead tr,
 html.dark table thead th,
 html.dark .table-header th {
-    background-color: #162032 !important;
-    color: #94a3b8 !important;
-    border-bottom: 1px solid #1e293b !important;
+    background-color: #202020 !important;
+    color: #a2a2a2 !important;
+    border-bottom: 1px solid #292929 !important;
 }
 
 html.dark table tfoot,
 html.dark table tfoot tr,
 html.dark #tfoot {
-    background-color: #162032 !important;
-    border-top-color: #1e293b !important;
-    color: #e2e8f0 !important;
+    background-color: #202020 !important;
+    border-top-color: #292929 !important;
+    color: #e7e7e7 !important;
 }
 
 html.dark table tbody tr,
 html.dark .table-row-item {
-    border-bottom-color: #1e293b !important;
-    color: #e2e8f0 !important;
+    border-bottom-color: #292929 !important;
+    color: #e7e7e7 !important;
 }
 
 html.dark table tbody tr:hover {
-    background-color: #162032 !important;
+    background-color: #202020 !important;
 }
 
 html.dark table td,
 html.dark table td p,
 html.dark table td span {
-    color: #e2e8f0;
+    color: #e7e7e7;
 }
 
 /* «table td» ខាងលើកំណត់ពណ៌ slate-700 ដោយ !important — ក្រឡាដែលគ្មានថ្នាក់ពណ៌ផ្ទាល់ខ្លួនត្រូវភ្លឺក្នុងទម្រង់ងងឹត */
 html.dark table td:not([class*="text-slate"], [class*="text-gray"], [class*="text-rose"], [class*="text-red"], [class*="text-amber"], [class*="text-emerald"], [class*="text-green"], [class*="text-blue"], [class*="text-white"]) {
-    color: #e2e8f0 !important;
+    color: #e7e7e7 !important;
 }
 
 /* Tone Colors & Badges in Dark Mode (Vibrant & High Contrast) */
@@ -3011,20 +3011,20 @@ html.dark .bg-blue-50,
 html.dark .bg-blue-100,
 html.dark [class*="bg-blue-50/"],
 html.dark [class*="bg-blue-100/"] {
-    background-color: rgba(59, 130, 246, 0.16) !important;
-    color: #93c5fd !important;
-    border-color: rgba(96, 165, 250, 0.35) !important;
+    background-color: rgba(5, 150, 105, 0.16) !important;
+    color: #6ee7b7 !important;
+    border-color: rgba(52, 211, 153, 0.35) !important;
 }
 html.dark .text-blue-950,
 html.dark .text-blue-900,
 html.dark .text-blue-800,
 html.dark .text-blue-700,
 html.dark .text-blue-600 {
-    color: #93c5fd !important;
+    color: #6ee7b7 !important;
 }
 html.dark .border-blue-200,
 html.dark .border-blue-300 {
-    border-color: rgba(96, 165, 250, 0.35) !important;
+    border-color: rgba(52, 211, 153, 0.35) !important;
 }
 
 /* Popovers, Dropdowns & Modals */
@@ -3048,106 +3048,106 @@ html.dark [id$="Modal"] > div,
 html.dark #receiveModal > div,
 html.dark #detailModal > div,
 html.dark #dropModal > div {
-    background-color: #0f172a !important;
-    border-color: #334155 !important;
+    background-color: #171717 !important;
+    border-color: #404040 !important;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8) !important;
 }
 
 html.dark .sm-row-menu-item,
 html.dark [data-floating-active="true"] button,
 html.dark [data-floating-active="true"] a {
-    color: #e2e8f0 !important;
+    color: #e7e7e7 !important;
 }
 
 html.dark .sm-row-menu-item:hover,
 html.dark [data-floating-active="true"] button:hover,
 html.dark [data-floating-active="true"] a:hover {
-    background-color: #1e293b !important;
+    background-color: #292929 !important;
     color: #ffffff !important;
 }
 
 /* Floating row actions menu icon containers */
 html.dark .sm-row-menu-item .w-7.h-7,
 html.dark .sm-row-menu-item span[class*="rounded-"] {
-    background-color: #1e293b !important;
-    color: #93c5fd !important;
+    background-color: #292929 !important;
+    color: #6ee7b7 !important;
 }
 
 /* Date Range Picker in Dark Mode */
 html.dark #calMonthYearLabel {
-    color: #f8fafc !important;
+    color: #fafafa !important;
 }
 
 html.dark #calendarDaysGrid button,
 html.dark #calendarDaysGrid div {
-    color: #cbd5e1 !important;
+    color: #d4d4d4 !important;
 }
 
 html.dark #calendarDaysGrid div:hover,
 html.dark #calendarDaysGrid button:hover {
-    background-color: #1e293b !important;
+    background-color: #292929 !important;
 }
 
 html.dark .preset-btn {
-    color: #cbd5e1 !important;
+    color: #d4d4d4 !important;
 }
 
 html.dark .preset-btn:hover {
-    background-color: #1e293b !important;
-    color: #f8fafc !important;
+    background-color: #292929 !important;
+    color: #fafafa !important;
 }
 
-html.dark .preset-btn.bg-\[\#0f2b5c\] {
-    background-color: #1d4ed8 !important;
+html.dark .preset-btn.bg-\[\#047857\] {
+    background-color: #065f46 !important;
     color: #ffffff !important;
 }
 
 /* Single Date Picker Popover */
 html.dark .bms-date-popover {
-    background-color: #0f172a !important;
-    border-color: #334155 !important;
+    background-color: #171717 !important;
+    border-color: #404040 !important;
 }
 
 html.dark .bms-date-popover [id$="-days-grid"] div {
-    color: #cbd5e1 !important;
+    color: #d4d4d4 !important;
 }
 
 html.dark .bms-date-popover [id$="-days-grid"] div:hover {
-    background-color: #1e293b !important;
+    background-color: #292929 !important;
 }
 
 /* Settings Page in Dark Mode */
 html.dark #saveBar {
-    background-color: #0f172a !important;
-    border-top-color: #1e293b !important;
+    background-color: #171717 !important;
+    border-top-color: #292929 !important;
     box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.45) !important;
 }
 
 /* Login Page UI Elements in Dark Mode */
 html.dark .kbd {
-    background-color: #1e293b !important;
-    color: #cbd5e1 !important;
-    border-color: #334155 !important;
+    background-color: #292929 !important;
+    color: #d4d4d4 !important;
+    border-color: #404040 !important;
 }
 
 html.dark .pin-key {
-    background-color: #131d31 !important;
-    border-color: #1e293b !important;
-    color: #f8fafc !important;
+    background-color: #1d1d1d !important;
+    border-color: #292929 !important;
+    color: #fafafa !important;
 }
 
 html.dark .pin-key:hover {
-    background-color: #1e293b !important;
-    border-color: #334155 !important;
+    background-color: #292929 !important;
+    border-color: #404040 !important;
 }
 
 html.dark .pin-key:active {
-    background-color: #25334d !important;
+    background-color: #333333 !important;
 }
 
 html.dark aside:not(#portalSidebar) {
-    background-color: #0b1329 !important;
-    border-right-color: #1e2d4d !important;
+    background-color: #141414 !important;
+    border-right-color: #2e2e2e !important;
 }
 
 

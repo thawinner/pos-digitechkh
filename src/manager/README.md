@@ -14,4 +14,4 @@ manager/settings/settings.html           rate, cash limits, templates, till, rea
 ```
 
 Pages use `<body id="managerPortal" data-role-root="../..">` and load `shared/scripts/manager-data.js` after
-`data.js`. They need a manager login (PIN 2468 or 1357 in the demo).
+`data.js`. They need a manager login (PIN 246810 or 135791 in the demo).

@@ -15,7 +15,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
+                    colors: { blue: { 50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 400: '#34d399', 500: '#059669', 600: '#047857', 700: '#065f46', 800: '#064e3b', 900: '#053d30', 950: '#022c22' }, slate: { 50: '#fafafa', 100: '#f4f4f4', 200: '#e7e7e7', 300: '#d4d4d4', 400: '#a2a2a2', 500: '#737373', 600: '#545454', 700: '#404040', 800: '#292929', 900: '#171717', 950: '#070707' }, primary: "#047857", 'primary-dark': "#065f46", accent: "#34d399" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -189,7 +189,7 @@
             const labels = rows.map(r => view === 'day' ? r.label.slice(0, 5) : short(r.label));
             posChart('chart', {
                 grid: { left: 4, right: 4, top: 24, bottom: 4, containLabel: true },
-                xAxis: chartCategoryAxis(labels, { axisLabel: { color: (typeof chartIsDark === 'function' && chartIsDark()) ? '#94a3b8' : '#64748b', fontSize: 12, fontFamily: CHART_FONT, interval: 0, rotate: rows.length > 7 && view !== 'day' ? 30 : 0 } }),
+                xAxis: chartCategoryAxis(labels, { axisLabel: { color: (typeof chartIsDark === 'function' && chartIsDark()) ? '#a2a2a2' : '#737373', fontSize: 12, fontFamily: CHART_FONT, interval: 0, rotate: rows.length > 7 && view !== 'day' ? 30 : 0 } }),
                 yAxis: [chartValueAxis(v => '$' + v), chartValueAxis(v => v + '%', { splitLine: { show: false }, min: 0, max: v => Math.max(40, Math.ceil(v.max / 10) * 10) })],
                 tooltip: {
                     formatter: ps => {
@@ -202,7 +202,7 @@
                     }
                 },
                 series: [
-                    { type: 'bar', stack: 'n', barMaxWidth: 36, itemStyle: { color: (typeof chartIsDark === 'function' && chartIsDark()) ? '#475569' : CHART_TONE.slate }, data: rows.map(r => +r.cost.toFixed(2)) },
+                    { type: 'bar', stack: 'n', barMaxWidth: 36, itemStyle: { color: (typeof chartIsDark === 'function' && chartIsDark()) ? '#545454' : CHART_TONE.slate }, data: rows.map(r => +r.cost.toFixed(2)) },
                     { type: 'bar', stack: 'n', barMaxWidth: 36, itemStyle: { color: CHART_TONE.accent, borderRadius: [4, 4, 0, 0] }, data: rows.map(r => +Math.max(r.profit, 0).toFixed(2)) },
                     { type: 'line', yAxisIndex: 1, smooth: true, symbol: 'circle', symbolSize: 6, lineStyle: { width: 2, color: CHART_TONE.amber }, itemStyle: { color: CHART_TONE.amber }, data: rows.map(r => +r.margin.toFixed(1)) }
                 ]

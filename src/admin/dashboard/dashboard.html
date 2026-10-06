@@ -15,7 +15,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
+                    colors: { blue: { 50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 400: '#34d399', 500: '#059669', 600: '#047857', 700: '#065f46', 800: '#064e3b', 900: '#053d30', 950: '#022c22' }, slate: { 50: '#fafafa', 100: '#f4f4f4', 200: '#e7e7e7', 300: '#d4d4d4', 400: '#a2a2a2', 500: '#737373', 600: '#545454', 700: '#404040', 800: '#292929', 900: '#171717', 950: '#070707' }, primary: "#047857", 'primary-dark': "#065f46", accent: "#34d399" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -197,7 +197,7 @@
             const chart = posChart('chart', {
                 grid: { left: 4, right: 4, top: 12, bottom: 4, containLabel: true },
                 xAxis: chartCategoryAxis(DAYS.map(label), {
-                    axisLabel: { color: isDark ? '#94a3b8' : '#64748b', fontSize: 12, fontFamily: CHART_FONT,
+                    axisLabel: { color: isDark ? '#a2a2a2' : '#737373', fontSize: 12, fontFamily: CHART_FONT,
                         formatter: (v, i) => DAYS[i] && DAYS[i].date === picked ? `{on|${v}}` : v,
                         rich: { on: { color: CHART_TONE.accent, fontWeight: 700, fontFamily: CHART_FONT } } }
                 }),
@@ -210,12 +210,12 @@
                             chartTipRow(CHART_TONE.slate, 'ថ្លៃដើម', fmtUSD(d.cost)) +
                             chartTipRow(CHART_TONE.accent, 'ប្រាក់ចំណេញដុល', fmtUSD(d.profit)) +
                             chartTipRow(CHART_TONE.accent, 'អត្រាចំណេញ', d.margin.toFixed(1) + '%') +
-                            chartTipRow('#94a3b8', 'វិក្កយបត្រ', d.tx);
+                            chartTipRow('#a2a2a2', 'វិក្កយបត្រ', d.tx);
                     }
                 },
                 series: [
                     { name: 'ថ្លៃដើម', type: 'bar', stack: 'net', barMaxWidth: 34, cursor: 'pointer',
-                      data: DAYS.map(d => ({ value: +d.cost.toFixed(2), itemStyle: { color: d.date === picked ? (isDark ? '#cbd5e1' : '#94a3b8') : (isDark ? '#475569' : CHART_TONE.slate), opacity: d.date === today ? .6 : 1 } })) },
+                      data: DAYS.map(d => ({ value: +d.cost.toFixed(2), itemStyle: { color: d.date === picked ? (isDark ? '#d4d4d4' : '#a2a2a2') : (isDark ? '#545454' : CHART_TONE.slate), opacity: d.date === today ? .6 : 1 } })) },
                     { name: 'ប្រាក់ចំណេញដុល', type: 'bar', stack: 'net', barMaxWidth: 34, cursor: 'pointer',
                       itemStyle: { borderRadius: [4, 4, 0, 0] },
                       data: DAYS.map(d => ({ value: +Math.max(d.profit, 0).toFixed(2), itemStyle: { color: d.date === picked ? CHART_TONE.accentStrong : CHART_TONE.accent, opacity: d.date === today ? .6 : 1 } })) }

@@ -278,7 +278,7 @@ function openFloatingDropdown(btn, menu) {
     menu.style.setProperty('z-index', '999999', 'important');
     menu.style.setProperty('width', `${targetWidth}px`, 'important');
     // រចនាប័ទ្មក្នុងបន្ទាត់ !important ឈ្នះ CSS ទាំងអស់ ដូច្នេះត្រូវជ្រើសពណ៌តាមទម្រង់ (ភ្លឺ · ងងឹត) នៅទីនេះ
-    menu.style.setProperty('background-color', document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff', 'important');
+    menu.style.setProperty('background-color', document.documentElement.classList.contains('dark') ? '#171717' : '#ffffff', 'important');
     menu.style.setProperty('margin-top', '0px', 'important');
     menu.style.setProperty('margin-bottom', '0px', 'important');
 
@@ -752,7 +752,7 @@ function renderSingleDatePickerGrid(id) {
         cell.onclick = () => selectSinglePickerDate(id, state.viewYear, state.viewMonth, d);
 
         if (isSelected) {
-            cell.innerHTML = `<span class="w-7 h-7 rounded-full bg-[#0f2b5c] text-white flex items-center justify-center font-bold text-xs shadow-xs">${d}</span>`;
+            cell.innerHTML = `<span class="w-7 h-7 rounded-full bg-[#047857] text-white flex items-center justify-center font-bold text-xs shadow-xs">${d}</span>`;
         } else if (isToday) {
             cell.innerHTML = `<span class="w-7 h-7 rounded-full border border-blue-500 text-blue-600 flex items-center justify-center font-bold text-xs hover:bg-blue-50">${d}</span>`;
         } else {
@@ -1163,18 +1163,18 @@ if (document.readyState === 'loading') {
 
 const POS_DIALOG_THEME = {
     dark: {
-        panel: 'bg-[#0f172a] border border-white/10 text-slate-100',
+        panel: 'bg-[#171717] border border-white/10 text-slate-100',
         title: 'text-white',
         sub: 'text-slate-400',
         box: 'bg-white/5 border border-white/10',
         chip: 'bg-transparent border-white/15 text-slate-200 hover:border-white/30',
         chipOn: 'bg-transparent border-blue-500 text-blue-300',
         key: 'bg-white/5 hover:bg-white/10 active:bg-white/15 text-white border border-white/10',
-        input: 'bg-[#1e293b] border-white/10 text-white placeholder-slate-500 focus:border-blue-500',
+        input: 'bg-[#292929] border-white/10 text-white placeholder-slate-500 focus:border-blue-500',
         ghost: 'bg-transparent border border-white/15 hover:bg-white/5 text-slate-200',
         primary: 'bg-blue-600 hover:bg-blue-500 text-white',
         disabled: 'bg-white/5 text-slate-500 cursor-not-allowed',
-        pinBox: 'bg-[#0b1220] border-white/10',
+        pinBox: 'bg-[#121212] border-white/10',
         dot: 'bg-blue-400',
         dotOff: 'bg-white/15'
     },
@@ -1249,9 +1249,12 @@ function posKeypadHtml(th) {
     </div>`;
 }
 
-/* ប្រអប់លេខសម្ងាត់ (ចំណុច) — ដូចទំព័រចូលប្រើ៖ 4 ចំណុច បន្ថែមដល់ 6 · ខៀវពេលកំពុងវាយ · ក្រហមពេលខុស */
+/* លេខសម្ងាត់ (PIN) មានលេខ 6 ខ្ទង់ជានិច្ច */
+const POS_PIN_LEN = 6;
+
+/* ប្រអប់លេខសម្ងាត់ (ចំណុច) — ដូចទំព័រចូលប្រើ៖ 6 ចំណុច · ខៀវពេលកំពុងវាយ · ក្រហមពេលខុស */
 function posPinFieldHtml(th, pin, err, msg) {
-    const n = Math.max(4, pin.length);
+    const n = POS_PIN_LEN;
     return `<div class="h-14 rounded-lg border flex items-center justify-center gap-3.5 transition-colors ${err ? 'border-rose-400' : pin.length ? 'border-blue-500 ring-2 ring-blue-500/15 ' + th.pinBox.split(' ')[0] : th.pinBox}">
             ${Array.from({ length: n }, (_, i) => `<span class="w-3.5 h-3.5 rounded-full ${i < pin.length ? (err ? 'bg-rose-500' : th.dot) : th.dotOff}"></span>`).join('')}
         </div>
@@ -1280,7 +1283,7 @@ function showManagerOverride(opts = {}) {
             const lockedFor = Math.ceil((POS_PIN_GUARD.lockedUntil - Date.now()) / 1000);
             const locked = lockedFor > 0;
             const needReason = reasons.length && !state.reason && !state.other.trim();
-            const ready = !locked && state.approverId && !needReason && state.pin.length >= 4;
+            const ready = !locked && state.approverId && !needReason && state.pin.length === POS_PIN_LEN;
 
             host.innerHTML = `
                 <div role="dialog" aria-modal="true" class="w-full max-w-md rounded-xl shadow-2xl ${th.panel} p-5 sm:p-6" onclick="event.stopPropagation()">
@@ -1311,7 +1314,7 @@ function showManagerOverride(opts = {}) {
                     </div>
 
                     <div class="mt-4">
-                        <div class="flex items-baseline justify-between mb-1.5"><p class="sm-td-sub font-semibold ${th.title}">លេខសម្ងាត់</p><p class="sm-td-sub ${th.sub}">4 ទៅ 6 ខ្ទង់</p></div>
+                        <div class="flex items-baseline justify-between mb-1.5"><p class="sm-td-sub font-semibold ${th.title}">លេខសម្ងាត់</p><p class="sm-td-sub ${th.sub}">${POS_PIN_LEN} ខ្ទង់</p></div>
                         ${posPinFieldHtml(th, state.pin, locked || !!state.msg, locked ? `<i class="fas fa-lock mr-1.5"></i>វាយខុស 3 ដង · សូមរង់ចាំ ${lockedFor} វិនាទី` : state.msg ? `<i class="fas fa-circle-exclamation mr-1.5"></i>${state.msg}` : '')}
                         ${posKeypadHtml(th)}
                     </div>
@@ -1335,7 +1338,7 @@ function showManagerOverride(opts = {}) {
                 state.other = other.value;
                 if (state.other.trim()) state.reason = '';
                 const okBtn = host.querySelector('[data-act="ok"]');
-                const okNow = !locked && state.approverId && (state.reason || state.other.trim()) && state.pin.length >= 4;
+                const okNow = !locked && state.approverId && (state.reason || state.other.trim()) && state.pin.length === POS_PIN_LEN;
                 if (okBtn) {
                     okBtn.disabled = !okNow;
                     okBtn.className = `sm-value h-12 rounded-lg font-semibold transition inline-flex items-center justify-center gap-2 ${okNow ? th.primary : th.disabled}`;
@@ -1359,7 +1362,7 @@ function showManagerOverride(opts = {}) {
             if (POS_PIN_GUARD.lockedUntil > Date.now()) return;
             if (k === 'C') state.pin = '';
             else if (k === '⌫') state.pin = state.pin.slice(0, -1);
-            else if (state.pin.length < 6) state.pin += k;
+            else if (state.pin.length < POS_PIN_LEN) state.pin += k;
             state.msg = '';
             render();
         };
@@ -1420,7 +1423,7 @@ function showPinConfirm(opts = {}) {
         const render = () => {
             const lockedFor = Math.ceil((POS_PIN_GUARD.lockedUntil - Date.now()) / 1000);
             const locked = lockedFor > 0;
-            const ready = !locked && state.pin.length >= 4;
+            const ready = !locked && state.pin.length === POS_PIN_LEN;
             host.innerHTML = `
                 <div role="dialog" aria-modal="true" class="w-full max-w-sm rounded-xl shadow-2xl ${th.panel} p-5 sm:p-6" onclick="event.stopPropagation()">
                     <p class="sm-card-title ${th.title}">${posEsc(opts.title || 'បញ្ជាក់ដោយលេខសម្ងាត់')}</p>
@@ -1428,7 +1431,7 @@ function showPinConfirm(opts = {}) {
                     ${person ? `<div class="mt-4 rounded-lg ${th.box} px-3 py-2.5 flex items-center gap-3">${avatarHtml(person.id, 'w-9 h-9')}
                         <span class="min-w-0"><span class="sm-td font-semibold ${th.title} block truncate">${person.name}</span><span class="sm-td-sub ${th.sub} block">វាយលេខសម្ងាត់របស់អ្នក</span></span></div>` : ''}
                     <div class="mt-4">
-                        <div class="flex items-baseline justify-between mb-1.5"><p class="sm-td-sub font-semibold ${th.title}">លេខសម្ងាត់</p><p class="sm-td-sub ${th.sub}">4 ទៅ 6 ខ្ទង់</p></div>
+                        <div class="flex items-baseline justify-between mb-1.5"><p class="sm-td-sub font-semibold ${th.title}">លេខសម្ងាត់</p><p class="sm-td-sub ${th.sub}">${POS_PIN_LEN} ខ្ទង់</p></div>
                         ${posPinFieldHtml(th, state.pin, locked || !!state.msg, locked ? `<i class="fas fa-lock mr-1.5"></i>វាយខុស 3 ដង · សូមរង់ចាំ ${lockedFor} វិនាទី` : state.msg ? `<i class="fas fa-circle-exclamation mr-1.5"></i>${state.msg}` : '')}
                         ${posKeypadHtml(th)}
                     </div>
@@ -1449,13 +1452,13 @@ function showPinConfirm(opts = {}) {
             if (POS_PIN_GUARD.lockedUntil > Date.now()) return;
             if (k === 'C') state.pin = '';
             else if (k === '⌫') state.pin = state.pin.slice(0, -1);
-            else if (state.pin.length < 6) state.pin += k;
+            else if (state.pin.length < POS_PIN_LEN) state.pin += k;
             state.msg = '';
             render();
         };
 
         const submit = () => {
-            if (POS_PIN_GUARD.lockedUntil > Date.now() || state.pin.length < 4) return;
+            if (POS_PIN_GUARD.lockedUntil > Date.now() || state.pin.length !== POS_PIN_LEN) return;
             if (typeof verifyPin === 'function' && verifyPin(opts.userId, state.pin)) {
                 POS_PIN_GUARD.fails = 0;
                 finish(true);
@@ -1579,7 +1582,7 @@ function showFormDialog(opts = {}) {
         const host = posDialogHost('posFormModal');
         const fields = opts.fields || [];
         const input = f => {
-            const mode = f.type === 'number' ? 'inputmode="decimal"' : f.type === 'pin' ? 'inputmode="numeric" maxlength="6" autocomplete="off"' : '';
+            const mode = f.type === 'number' ? 'inputmode="decimal"' : f.type === 'pin' ? `inputmode="numeric" maxlength="${POS_PIN_LEN}" autocomplete="off"` : '';
             return `<label class="block">
                 <span class="sm-td-sub ${th.sub} block mb-1">${posEsc(f.label)}</span>
                 <span class="flex items-center rounded-xl border ${th.input} focus-within:border-blue-500 transition">

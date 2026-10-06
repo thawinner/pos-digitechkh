@@ -602,7 +602,7 @@ The cashier role gains nothing: `rankCandidates()` reads weekly hours of other s
 
 ## 9. Acceptance checks
 
-Verify in a browser (serve `src/` over HTTP) at 1440×900 and 390×844, signed in as សុខ វណ្ណា (2468) for the roster
+Verify in a browser (serve `src/` over HTTP) at 1440×900 and 390×844, signed in as សុខ វណ្ណា (246810) for the roster
 and ហេង ចាន់ថា (9999) for templates.
 
 - [ ] Reported case (§2.4): with ចន្ទ មករា's morning drawer open, the roster won't let them be added to the afternoon,

@@ -16,7 +16,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: "#2563eb", 'primary-dark': "#1d4ed8", accent: "#60a5fa" },
+                    colors: { blue: { 50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 400: '#34d399', 500: '#059669', 600: '#047857', 700: '#065f46', 800: '#064e3b', 900: '#053d30', 950: '#022c22' }, slate: { 50: '#fafafa', 100: '#f4f4f4', 200: '#e7e7e7', 300: '#d4d4d4', 400: '#a2a2a2', 500: '#737373', 600: '#545454', 700: '#404040', 800: '#292929', 900: '#171717', 950: '#070707' }, primary: "#047857", 'primary-dark': "#065f46", accent: "#34d399" },
                     fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
                 }
             }
@@ -30,22 +30,22 @@
            ហើយផ្ទាំងឆ្វេង និងស្តាំរំកិលដោយឡែកពីគ្នា។ */
         .pos-shell { display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; }
         .pos-body { display: flex; flex: 1; overflow: hidden; }
-        .pos-left { display: flex; flex-direction: column; overflow: hidden; flex: 1; min-width: 0; background: #1e293b; }
+        .pos-left { display: flex; flex-direction: column; overflow: hidden; flex: 1; min-width: 0; background: #292929; }
         .pos-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        .pos-right { display: flex; flex-direction: column; overflow: hidden; background: #0f172a; }
+        .pos-right { display: flex; flex-direction: column; overflow: hidden; background: #171717; }
 
         /* គោលដៅប៉ះអប្បបរមា 48 ភិចសែល (ឯកសាររចនាលេខ 01 ច្បាប់លេខ 3) */
         .pos-shell button, .pos-shell a.pos-tap, .pos-shell input { min-height: 48px; }
         .pos-tap-sm { min-width: 48px; min-height: 48px; }
         /* របារខាងលើ៖ ចំនួនជាស្លាកប្រផេះ · F4 ជាអក្សរតូច */
         .pos-nav-count { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center;
-                         font-size: 12.5px !important; font-weight: 700; background: rgba(255, 255, 255, .12); color: #f1f5f9; font-variant-numeric: tabular-nums; }
+                         font-size: 12.5px !important; font-weight: 700; background: rgba(255, 255, 255, .12); color: #f4f4f4; font-variant-numeric: tabular-nums; }
         .pos-nav-sep { width: 1px; flex-shrink: 0; background: rgba(255, 255, 255, .22); }
-        html:not(.dark) .pos-nav-sep { background: #cbd5e1; }
+        html:not(.dark) .pos-nav-sep { background: #d4d4d4; }
         .pos-nav-count.is-warn { background: #f59e0b; color: #1f1300; }
-        html:not(.dark) .pos-nav-count { background: #e2e8f0; color: #334155; }
+        html:not(.dark) .pos-nav-count { background: #e7e7e7; color: #404040; }
         html:not(.dark) .pos-nav-count.is-warn { background: #f59e0b; color: #1f1300; }
-        html.dark .pos-nav button[aria-label="ការជូនដំណឹង"] { background-color: transparent !important; color: #cbd5e1 !important; }
+        html.dark .pos-nav button[aria-label="ការជូនដំណឹង"] { background-color: transparent !important; color: #d4d4d4 !important; }
         html.dark .pos-nav button[aria-label="ការជូនដំណឹង"]:hover { background-color: rgba(255, 255, 255, .1) !important; color: #fff !important; }
         html.dark #moreMenu button.text-rose-600, html.dark #moreMenu button.text-rose-600 * { color: #fb7185 !important; }
         /* កន្លែងសារជូនដំណឹងដែលទទេ មិនត្រូវទុកចន្លោះ (gap) ពីលើប្រអប់ស្កេនទេ */
@@ -69,7 +69,7 @@
         .pos-name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
                     overflow: hidden; min-height: 3.1em; min-height: 2lh; }
 
-        @keyframes posFlash { 0% { transform: scale(1); } 45% { transform: scale(0.96); box-shadow: 0 0 0 3px #3b82f6; } 100% { transform: scale(1); } }
+        @keyframes posFlash { 0% { transform: scale(1); } 45% { transform: scale(0.96); box-shadow: 0 0 0 3px #059669; } 100% { transform: scale(1); } }
         .pos-flash { animation: posFlash .32s ease; }
 
         /* ស្លាកគ្រាប់ចុចផ្លូវកាត់ — បង្ហាញតែលើឧបករណ៍មានក្តារចុច និងកណ្តុរ (មិនបង្ហាញលើអេក្រង់ប៉ះសុទ្ធ) */
@@ -80,48 +80,48 @@
         /* ===== ទម្រង់ភ្លឺ (លំនាំដើម) =====
            ផ្ទាំងនេះសរសេរជាពណ៌ងងឹត។ ពេល <html> មិនមានថ្នាក់ dark ស្រទាប់នេះបកពណ៌ទៅផ្ទៃភ្លឺ
            ដូច្នេះប៊ូតុងព្រះច័ន្ទនៅតែប្តូរទៅទម្រង់ងងឹតបានដដែល។ ប៊ូតុងពណ៌ពេញរក្សាអក្សរពណ៌ស។ */
-        html:not(.dark) .pos-shell { background: #f1f5f9 !important; color: #0f172a !important; }
-        html:not(.dark) .pos-shell > header { background: #ffffff !important; border-color: #e2e8f0 !important; }
-        html:not(.dark) .pos-left { background: #f1f5f9; }
+        html:not(.dark) .pos-shell { background: #f4f4f4 !important; color: #171717 !important; }
+        html:not(.dark) .pos-shell > header { background: #ffffff !important; border-color: #e7e7e7 !important; }
+        html:not(.dark) .pos-left { background: #f4f4f4; }
         html:not(.dark) .pos-right { background: #ffffff; }
-        html:not(.dark) .pos-shell .bg-\[\#0f172a\],
-        html:not(.dark) .pos-shell .bg-\[\#1e293b\],
-        html:not(.dark) .pos-shell .bg-\[\#0b1220\],
+        html:not(.dark) .pos-shell .bg-\[\#171717\],
+        html:not(.dark) .pos-shell .bg-\[\#292929\],
+        html:not(.dark) .pos-shell .bg-\[\#121212\],
         html:not(.dark) .pos-shell .bg-white\/5 { background-color: #ffffff !important; }
-        html:not(.dark) .pos-shell .bg-\[\#223047\],
-        html:not(.dark) .pos-shell .bg-\[\#374151\],
+        html:not(.dark) .pos-shell .bg-\[\#303030\],
+        html:not(.dark) .pos-shell .bg-\[\#404040\],
         html:not(.dark) .pos-shell .bg-white\/10,
         html:not(.dark) .pos-shell .bg-white\/\[0\.07\],
-        html:not(.dark) .pos-shell .bg-white\/\[0\.03\] { background-color: #f1f5f9 !important; }
-        html:not(.dark) .pos-shell .focus\:bg-\[\#223047\]:focus { background-color: #ffffff !important; }
+        html:not(.dark) .pos-shell .bg-white\/\[0\.03\] { background-color: #f4f4f4 !important; }
+        html:not(.dark) .pos-shell .focus\:bg-\[\#303030\]:focus { background-color: #ffffff !important; }
         html:not(.dark) .pos-shell .hover\:bg-white\/10:hover,
-        html:not(.dark) .pos-shell .hover\:bg-white\/15:hover { background-color: #f1f5f9 !important; }
-        html:not(.dark) .pos-shell .hover\:bg-white\/20:hover { background-color: #e2e8f0 !important; }
-        html:not(.dark) .pos-shell :is(.border-white\/5, .border-white\/10, .border-white\/15, .border-\[\#0f172a\]) { border-color: #e2e8f0 !important; }
-        html:not(.dark) .pos-shell .hover\:border-white\/25:hover { border-color: #cbd5e1 !important; }
-        html:not(.dark) .pos-shell .divide-white\/5 > * + * { border-color: #f1f5f9 !important; }
-        html:not(.dark) .pos-shell :is(.text-white, .text-slate-100) { color: #0f172a !important; }
-        html:not(.dark) .pos-shell .hover\:text-white:hover { color: #0f172a !important; }
-        html:not(.dark) .pos-shell .text-slate-200 { color: #1e293b !important; }
-        html:not(.dark) .pos-shell .text-slate-300 { color: #475569 !important; }
-        html:not(.dark) .pos-shell .text-slate-400 { color: #64748b !important; }
-        html:not(.dark) .pos-shell :is(.text-blue-200, .text-blue-300) { color: #1d4ed8 !important; }
-        html:not(.dark) .pos-shell .text-blue-400 { color: #2563eb !important; }
+        html:not(.dark) .pos-shell .hover\:bg-white\/15:hover { background-color: #f4f4f4 !important; }
+        html:not(.dark) .pos-shell .hover\:bg-white\/20:hover { background-color: #e7e7e7 !important; }
+        html:not(.dark) .pos-shell :is(.border-white\/5, .border-white\/10, .border-white\/15, .border-\[\#171717\]) { border-color: #e7e7e7 !important; }
+        html:not(.dark) .pos-shell .hover\:border-white\/25:hover { border-color: #d4d4d4 !important; }
+        html:not(.dark) .pos-shell .divide-white\/5 > * + * { border-color: #f4f4f4 !important; }
+        html:not(.dark) .pos-shell :is(.text-white, .text-slate-100) { color: #171717 !important; }
+        html:not(.dark) .pos-shell .hover\:text-white:hover { color: #171717 !important; }
+        html:not(.dark) .pos-shell .text-slate-200 { color: #292929 !important; }
+        html:not(.dark) .pos-shell .text-slate-300 { color: #545454 !important; }
+        html:not(.dark) .pos-shell .text-slate-400 { color: #737373 !important; }
+        html:not(.dark) .pos-shell :is(.text-blue-200, .text-blue-300) { color: #065f46 !important; }
+        html:not(.dark) .pos-shell .text-blue-400 { color: #047857 !important; }
         html:not(.dark) .pos-shell :is(.text-emerald-100, .text-emerald-200, .text-emerald-300, .text-emerald-400) { color: #047857 !important; }
         html:not(.dark) .pos-shell :is(.text-amber-100, .text-amber-200, .text-amber-300) { color: #b45309 !important; }
         html:not(.dark) .pos-shell .hover\:text-amber-200:hover { color: #b45309 !important; }
         html:not(.dark) .pos-shell :is(.text-rose-200, .text-rose-300) { color: #be123c !important; }
         html:not(.dark) .pos-shell :is(.hover\:text-rose-200, .hover\:text-rose-300):hover { color: #be123c !important; }
-        html:not(.dark) .pos-shell .pos-total { color: #0f172a; }
+        html:not(.dark) .pos-shell .pos-total { color: #171717; }
         /* ផ្ទៃភ្លឺ៖ ក្រឡាទំនិញពណ៌ស រូបភាពលើផ្ទៃប្រផេះស្រាល តម្លៃពណ៌ខ្មៅដិត ស្រមោលស្រាលពេលដាក់កណ្តុរ */
-        html:not(.dark) .pos-shell .pos-card { box-shadow: 0 1px 2px rgba(15, 23, 42, .04); }
-        html:not(.dark) .pos-shell .pos-card:not(:disabled):hover { box-shadow: 0 4px 12px rgba(15, 23, 42, .08); }
+        html:not(.dark) .pos-shell .pos-card { box-shadow: 0 1px 2px rgba(23, 23, 23, .04); }
+        html:not(.dark) .pos-shell .pos-card:not(:disabled):hover { box-shadow: 0 4px 12px rgba(23, 23, 23, .08); }
         html:not(.dark) .pos-shell .pos-card .pos-thumb,
-        html:not(.dark) .pos-shell .pos-quick-thumb { background-color: #f8fafc !important; }
-        html:not(.dark) .pos-shell .pos-price { color: #0f172a !important; font-weight: 700; }
-        html:not(.dark) .pos-shell #categoryPills button:not(.bg-blue-600) { background-color: #ffffff; color: #475569 !important; }
-        html:not(.dark) .pos-shell #categoryPills button:not(.bg-blue-600):hover { border-color: #cbd5e1 !important; color: #0f172a !important; }
-        html:not(.dark) .pos-shell #paymentPanel button:disabled { background-color: #e2e8f0 !important; color: #94a3b8 !important; }
+        html:not(.dark) .pos-shell .pos-quick-thumb { background-color: #fafafa !important; }
+        html:not(.dark) .pos-shell .pos-price { color: #171717 !important; font-weight: 700; }
+        html:not(.dark) .pos-shell #categoryPills button:not(.bg-blue-600) { background-color: #ffffff; color: #545454 !important; }
+        html:not(.dark) .pos-shell #categoryPills button:not(.bg-blue-600):hover { border-color: #d4d4d4 !important; color: #171717 !important; }
+        html:not(.dark) .pos-shell #paymentPanel button:disabled { background-color: #e7e7e7 !important; color: #a2a2a2 !important; }
         /* ប៊ូតុង និងស្លាកពណ៌ពេញ៖ អក្សរពណ៌សដដែល */
         html:not(.dark) body.pos-shell :is([class~="bg-blue-500"], [class~="bg-blue-600"], [class~="bg-blue-700"], [class~="bg-emerald-500"], [class~="bg-emerald-600"], [class~="bg-rose-500"], [class~="bg-rose-600"], [class~="bg-amber-500"], [class~="bg-[#e11d2a]"]),
         html:not(.dark) body.pos-shell :is([class~="bg-blue-500"], [class~="bg-blue-600"], [class~="bg-blue-700"], [class~="bg-emerald-500"], [class~="bg-emerald-600"], [class~="bg-rose-500"], [class~="bg-rose-600"], [class~="bg-amber-500"], [class~="bg-[#e11d2a]"]) :is(.text-white, .text-slate-100, .text-blue-100, .text-emerald-100) { color: #ffffff !important; }
@@ -134,28 +134,28 @@
             .pos-right.is-open { transform: translateX(0); }
         }
 
-        .pos-total { font-size: 34px; font-weight: 800; line-height: 1.1; color: #f8fafc; font-variant-numeric: tabular-nums; }
+        .pos-total { font-size: 34px; font-weight: 800; line-height: 1.1; color: #fafafa; font-variant-numeric: tabular-nums; }
 
         .pos-num::-webkit-outer-spin-button, .pos-num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .pos-num { -moz-appearance: textfield; }
 
         #khqrBox img, #khqrBox canvas { width: 100%; height: auto; image-rendering: pixelated; }
         /* កាត KHQR៖ ក្បាលក្រហមមានជ្រុងកាត់ ឈ្មោះហាង ទឹកប្រាក់ បន្ទាត់ចុចៗ និងកូដ (ទម្រង់បាគង) */
-        .khqr-stage { background: #0b1220; }
-        html:not(.dark) .khqr-stage { background: #f8fafc; }
-        html:not(.dark) #khqrOverlay { background: #e2e8f0 !important; }
+        .khqr-stage { background: #121212; }
+        html:not(.dark) .khqr-stage { background: #fafafa; }
+        html:not(.dark) #khqrOverlay { background: #e7e7e7 !important; }
         .khqr-card { width: 100%; max-width: 300px; background: #fff; border-radius: 18px; overflow: hidden;
-                     box-shadow: 0 10px 30px rgba(15, 23, 42, .18); color: #0f172a; }
+                     box-shadow: 0 10px 30px rgba(23, 23, 23, .18); color: #171717; }
         .khqr-head { position: relative; height: 54px; background: #e1232e; display: flex; align-items: center; justify-content: center; }
         .khqr-head span { color: #fff; font-weight: 800; font-size: 20px; letter-spacing: .08em; font-family: Arial, sans-serif; }
         .khqr-head::after { content: ''; position: absolute; right: 0; bottom: -1px; border-style: solid;
                             border-width: 0 0 22px 22px; border-color: transparent transparent #fff transparent; }
-        .khqr-merchant { font-size: 14px; color: #334155; font-weight: 500; }
-        .khqr-amount { font-size: 26px; font-weight: 700; color: #0f172a; line-height: 1.3; margin-top: 2px; }
-        .khqr-cur { font-size: 14px; font-weight: 600; color: #64748b; }
-        .khqr-cut { border-top: 2px dashed #cbd5e1; margin: 0 14px; }
+        .khqr-merchant { font-size: 14px; color: #404040; font-weight: 500; }
+        .khqr-amount { font-size: 26px; font-weight: 700; color: #171717; line-height: 1.3; margin-top: 2px; }
+        .khqr-cur { font-size: 14px; font-weight: 600; color: #737373; }
+        .khqr-cut { border-top: 2px dashed #d4d4d4; margin: 0 14px; }
         .khqr-mark { position: absolute; left: 50%; top: calc(50% - 2px); transform: translate(-50%, -50%); width: 38px; height: 38px;
-                     border-radius: 9999px; background: #0f172a; color: #fff; border: 4px solid #fff; display: flex;
+                     border-radius: 9999px; background: #171717; color: #fff; border: 4px solid #fff; display: flex;
                      align-items: center; justify-content: center; font: 700 16px/1 Arial, sans-serif; }
         .khqr-kbd { font: 600 11px/1 ui-monospace, monospace; padding: 3px 6px; border-radius: 6px; border: 1px solid currentColor; opacity: .7; }
 
@@ -178,7 +178,7 @@
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #ffffff !important;
-                color: #0f172a !important;
+                color: #171717 !important;
                 overflow: visible !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
@@ -222,10 +222,10 @@
         }
     </style>
 </head>
-<body id="posPortal" data-role-root="../.." data-active="pos" class="pos-shell bg-[#0f172a] font-sans text-[16px] text-slate-100">
+<body id="posPortal" data-role-root="../.." data-active="pos" class="pos-shell bg-[#171717] font-sans text-[16px] text-slate-100">
 
     <!-- ===== របារខាងលើ ===== -->
-    <header class="pos-nav h-14 flex-shrink-0 bg-[#0f172a] border-b border-white/10 flex items-center gap-3 px-3 md:px-4">
+    <header class="pos-nav h-14 flex-shrink-0 bg-[#171717] border-b border-white/10 flex items-center gap-3 px-3 md:px-4">
 
         <!-- ហាង និងបញ្ជរ -->
         <div class="flex items-center gap-2.5 min-w-0 flex-shrink-0">
@@ -338,7 +338,7 @@
                            onkeydown="if(event.key==='Enter'){event.preventDefault();scanBarcode();}"
                            oninput="debouncedSearch()"
                            placeholder="ស្កេនបាកូដ ឬវាយឈ្មោះទំនិញ..."
-                           class="sm-td w-full h-14 pl-12 pr-14 rounded-xl bg-[#1e293b] border-2 border-white/10 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-[#223047] transition">
+                           class="sm-td w-full h-14 pl-12 pr-14 rounded-xl bg-[#292929] border-2 border-white/10 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-[#303030] transition">
                     <kbd class="pos-kbd absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">F2</kbd>
                 </div>
                 <div id="lastAdded" class="hidden"></div>
@@ -394,7 +394,7 @@
 
             <div id="cartLines" class="pos-scroll divide-y divide-white/5"></div>
 
-            <div class="flex-shrink-0 border-t-2 border-blue-600 bg-[#1e293b]">
+            <div class="flex-shrink-0 border-t-2 border-blue-600 bg-[#292929]">
                 <div id="saleOptions" class="px-4 pt-3 space-y-2"></div>
                 <div id="cartTotals" class="px-4 py-3 space-y-1.5"></div>
                 <div id="paymentPanel" class="px-4 pb-4 space-y-3"></div>
@@ -413,9 +413,9 @@
 
     <!-- ===== ផ្ទាំងទូទាត់តាមកូដស្កេនបាគង (ផែនការកែលម្អ C10) =====
          នៅលើផ្ទាំងគិតលុយផ្ទាល់ ដូច្នេះអ្នកគិតលុយមិនចាកចេញពីបរិបទលក់ឡើយ -->
-    <div id="khqrOverlay" class="hidden fixed inset-0 z-50 bg-[#0b1220] overflow-y-auto">
+    <div id="khqrOverlay" class="hidden fixed inset-0 z-50 bg-[#121212] overflow-y-auto">
         <div class="min-h-full flex items-center justify-center p-4 sm:p-8">
-            <div class="w-full min-w-0 max-w-[880px] rounded-2xl border border-white/10 bg-[#0f172a] shadow-2xl grid grid-cols-1 md:grid-cols-[400px_1fr] overflow-hidden">
+            <div class="w-full min-w-0 max-w-[880px] rounded-2xl border border-white/10 bg-[#171717] shadow-2xl grid grid-cols-1 md:grid-cols-[400px_1fr] overflow-hidden">
                 <!-- ផ្នែកអតិថិជន៖ កាត KHQR តាមទម្រង់បាគង -->
                 <div class="khqr-stage min-w-0 flex items-center justify-center p-6 sm:p-8 border-b md:border-b-0 md:border-r border-white/10">
                     <div class="khqr-card">
@@ -479,7 +479,7 @@
 
     <!-- ===== ផ្ទាំងជោគជ័យ ===== -->
     <div id="successOverlay" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-[2px] flex items-center justify-center p-4">
-        <div role="dialog" aria-modal="true" class="w-full max-w-sm rounded-xl bg-[#0f172a] border border-white/10 shadow-2xl p-6 text-center">
+        <div role="dialog" aria-modal="true" class="w-full max-w-sm rounded-xl bg-[#171717] border border-white/10 shadow-2xl p-6 text-center">
             <i class="fas fa-circle-check text-[44px] text-emerald-400"></i>
             <p class="sm-card-title text-white text-[20px] mt-3">ទូទាត់ជោគជ័យ</p>
             <p id="successAmount" class="pos-total mt-2"></p>
@@ -500,7 +500,7 @@
     </div>
 
     <!-- ===== បញ្ជរចាក់សោរពេលសម្រាក ===== -->
-    <div id="lockOverlay" class="hidden fixed inset-0 z-[60] bg-[#0f172a] flex items-center justify-center p-6">
+    <div id="lockOverlay" class="hidden fixed inset-0 z-[60] bg-[#171717] flex items-center justify-center p-6">
         <div class="w-full max-w-md text-center">
             <i class="fas fa-user-lock text-[40px] text-slate-400"></i>
             <p class="sm-card-title text-white text-[20px] mt-4">បញ្ជរត្រូវបានចាក់សោរ</p>
@@ -519,7 +519,7 @@
     </div>
 
     <!-- ===== បញ្ជរមានវេនរបស់អ្នកផ្សេង ===== -->
-    <div id="foreignOverlay" class="hidden fixed inset-0 z-[61] bg-[#0f172a] flex items-center justify-center p-6">
+    <div id="foreignOverlay" class="hidden fixed inset-0 z-[61] bg-[#171717] flex items-center justify-center p-6">
         <div class="w-full max-w-md text-center">
             <i class="fas fa-user-slash text-[40px] text-amber-400"></i>
             <p class="sm-card-title text-white text-[20px] mt-4">បញ្ជរនេះមានវេនរបស់អ្នកផ្សេង</p>
@@ -540,7 +540,7 @@
 
     <!-- ===== ផ្ទេរប្រាក់ចូលទូដែក (ផែនការកែលម្អ C13) ===== -->
     <div id="dropModal" data-modal="closeDropDialog" onclick="closeDropDialog()" class="hidden fixed inset-0 z-[55] bg-slate-950/60 backdrop-blur-[2px] items-center justify-center p-4">
-        <div role="dialog" aria-modal="true" class="w-full max-w-md rounded-xl bg-[#0f172a] border border-white/10 p-5 sm:p-6" onclick="event.stopPropagation()">
+        <div role="dialog" aria-modal="true" class="w-full max-w-md rounded-xl bg-[#171717] border border-white/10 p-5 sm:p-6" onclick="event.stopPropagation()">
             <div>
                 <div>
                     <p class="sm-card-title text-white">ផ្ទេរប្រាក់ចូលទូដែក</p>
@@ -551,12 +551,12 @@
                 <label class="block">
                     <span class="sm-td-sub text-slate-400">ដុល្លារ</span>
                     <input id="dropUSD" type="number" inputmode="decimal" min="0" step="1" placeholder="0"
-                        class="pos-num sm-value sm-figure w-full h-12 mt-1 px-3 rounded-lg bg-[#1e293b] border border-white/10 text-white text-right focus:outline-none focus:border-blue-500">
+                        class="pos-num sm-value sm-figure w-full h-12 mt-1 px-3 rounded-lg bg-[#292929] border border-white/10 text-white text-right focus:outline-none focus:border-blue-500">
                 </label>
                 <label class="block">
                     <span class="sm-td-sub text-slate-400">រៀល</span>
                     <input id="dropKHR" type="number" inputmode="numeric" min="0" step="1000" placeholder="0"
-                        class="pos-num sm-value sm-figure w-full h-12 mt-1 px-3 rounded-lg bg-[#1e293b] border border-white/10 text-white text-right focus:outline-none focus:border-blue-500">
+                        class="pos-num sm-value sm-figure w-full h-12 mt-1 px-3 rounded-lg bg-[#292929] border border-white/10 text-white text-right focus:outline-none focus:border-blue-500">
                 </label>
             </div>
             <p id="dropErr" class="hidden sm-td-sub text-rose-400 mt-2">សូមបញ្ចូលចំនួនប្រាក់ដែលផ្ទេរ</p>
@@ -722,7 +722,7 @@
             const next = nextShiftForCashier(sh.cashierId, sh.templateCode);
             if (passed && next) {
                 host.innerHTML = `
-                    <div class="p-3 pl-4 rounded-lg bg-[#0f172a] border border-amber-400/60 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <div class="p-3 pl-4 rounded-lg bg-[#171717] border border-amber-400/60 flex flex-col md:flex-row md:items-center justify-between gap-3">
                         <div class="flex items-start gap-3 min-w-0">
                             <i class="fas fa-clock text-amber-400 mt-1"></i>
                             <div class="min-w-0">
@@ -773,7 +773,7 @@
             if (drops) parts.push(`${drops} ការផ្ទេររង់ចាំបញ្ជាក់`);
             const remainText = msToEnd > 0 ? `នៅសល់ ${fmtDuration(msToEnd)}` : 'ហួសម៉ោងវេន';
             host.innerHTML = `
-                <div class="flex items-center justify-between gap-3 p-2 pl-4 rounded-lg bg-[#0f172a] border border-amber-400/60">
+                <div class="flex items-center justify-between gap-3 p-2 pl-4 rounded-lg bg-[#171717] border border-amber-400/60">
                     <div class="flex items-center gap-3 min-w-0">
                         <i class="fas fa-triangle-exclamation text-amber-400"></i>
                         <span class="sm-td text-slate-100 truncate">${remainText} · មាន ${parts.join(' / ')} · ដោះស្រាយមុនបិទវេន</span>
@@ -894,7 +894,7 @@
             const st = posSettings();
             const over = s.expectedUSD > st.drawerLimitUSD || s.expectedKHR > st.drawerLimitKHR;
             host.innerHTML = over ? `
-                <div class="flex items-center gap-3 p-2 pl-4 rounded-lg bg-[#0f172a] border border-amber-400/60">
+                <div class="flex items-center gap-3 p-2 pl-4 rounded-lg bg-[#171717] border border-amber-400/60">
                     <i class="fas fa-vault text-amber-400"></i>
                     <p class="sm-td text-slate-100 flex-1 min-w-0">សាច់ប្រាក់ក្នុងថតលើសកំណត់ · សូមផ្ទេរប្រាក់ខ្លះចូលទូដែក</p>
                     <button onclick="openDropDialog()" type="button" class="sm-td-sub px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition flex-shrink-0">ផ្ទេរចូលទូដែក</button>
@@ -965,7 +965,7 @@
                         return `<button onclick="addToCart('${p.sku}')" type="button" ${out ? 'disabled' : ''}
                             class="flex items-center gap-2 p-1.5 pr-2.5 rounded-xl border text-left transition ${out
                                 ? 'border-white/5 opacity-40 cursor-not-allowed' : 'pos-quick border-white/10 bg-white/5 hover:border-blue-500'}">
-                            <span class="pos-quick-thumb w-10 h-10 rounded-lg bg-[#0f172a] p-0.5 flex items-center justify-center overflow-hidden flex-shrink-0">${productImgHtml(p, 'text-sm')}</span>
+                            <span class="pos-quick-thumb w-10 h-10 rounded-lg bg-[#171717] p-0.5 flex items-center justify-center overflow-hidden flex-shrink-0">${productImgHtml(p, 'text-sm')}</span>
                             <span class="min-w-0">
                                 <span class="sm-td-sub text-slate-100 block truncate">${p.name}</span>
                                 <span class="pos-price sm-td-sub text-blue-300 sm-figure block">${fmtUSD(p.price)}</span>
@@ -1021,11 +1021,11 @@
                 return `
                 <button id="card-${p.sku}" onclick="addToCart('${p.sku}')" type="button" ${out ? 'disabled' : ''}
                     class="pos-card rounded-xl border overflow-hidden text-left flex flex-col transition ${out
-                        ? 'bg-[#1e293b] border-white/5 opacity-45 cursor-not-allowed'
+                        ? 'bg-[#292929] border-white/5 opacity-45 cursor-not-allowed'
                         : inCart
-                            ? 'bg-[#1e293b] border-blue-500/60 hover:border-blue-400'
-                            : 'bg-[#1e293b] border-white/10 hover:border-blue-500 active:border-blue-400'}">
-                    <div class="pos-thumb relative w-full bg-[#0f172a] p-2 flex items-center justify-center overflow-hidden">
+                            ? 'bg-[#292929] border-blue-500/60 hover:border-blue-400'
+                            : 'bg-[#292929] border-white/10 hover:border-blue-500 active:border-blue-400'}">
+                    <div class="pos-thumb relative w-full bg-[#171717] p-2 flex items-center justify-center overflow-hidden">
                         ${productImgHtml(p, 'text-4xl')}
                         ${cartChip}
                         ${stockChip ? `<span class="absolute top-1.5 right-1.5">${stockChip}</span>` : ''}
@@ -1042,7 +1042,7 @@
         let lastAddedTimer = null;
         function showLastAdded(p, qty) {
             const el = document.getElementById('lastAdded');
-            el.className = 'flex items-center gap-3 px-3 py-2 rounded-lg bg-[#0f172a] border border-white/10';
+            el.className = 'flex items-center gap-3 px-3 py-2 rounded-lg bg-[#171717] border border-white/10';
             el.innerHTML = `
                 <span class="w-9 h-9 rounded-md bg-white/5 p-0.5 flex items-center justify-center overflow-hidden flex-shrink-0">${productImgHtml(p, 'text-sm')}</span>
                 <span class="sm-td text-slate-100 flex-1 min-w-0 truncate"><i class="fas fa-circle-check text-emerald-400 mr-1.5"></i>${p.name}</span>
@@ -1312,7 +1312,7 @@
                     const last = l.qty === 1;
                     return `
                         <div class="px-3 py-2.5 flex gap-3">
-                            <div class="w-11 h-11 mt-0.5 rounded-lg bg-[#0f172a] border border-white/10 p-1 flex items-center justify-center overflow-hidden flex-shrink-0">
+                            <div class="w-11 h-11 mt-0.5 rounded-lg bg-[#171717] border border-white/10 p-1 flex items-center justify-center overflow-hidden flex-shrink-0">
                                 ${productImgHtml(p, 'text-sm')}
                             </div>
                             <div class="min-w-0 flex-1">
@@ -1391,7 +1391,7 @@
             const limit = discountLimitFor(ME_CASHIER);
             const reasonRow = discountPercent > 0 ? `
                 <button onclick="pickDiscountReason()" type="button"
-                    class="w-full px-3 rounded-lg border bg-[#0f172a] text-left inline-flex items-center justify-between gap-2 transition ${discountReason
+                    class="w-full px-3 rounded-lg border bg-[#171717] text-left inline-flex items-center justify-between gap-2 transition ${discountReason
                         ? 'border-white/10 text-slate-200 hover:border-blue-600' : 'border-rose-500/60 text-rose-300'}">
                     <span class="sm-td-sub truncate"><i class="fas fa-tag mr-1.5"></i>${discountReason ? `មូលហេតុ៖ ${escapeText(discountReason)}` : 'សូមជ្រើសរើសមូលហេតុនៃការបញ្ចុះតម្លៃ'}</span>
                     ${discountApproverId ? `<span class="sm-td-sub text-slate-400 flex-shrink-0"><i class="fas fa-user-shield mr-1"></i>${personName(discountApproverId)}</span>` : '<i class="fas fa-chevron-right text-[10px] opacity-60"></i>'}
@@ -1401,7 +1401,7 @@
                     <div>
                         <label class="sm-td-sub text-slate-400 block mb-1">អតិថិជន</label>
                         <button onclick="toggleRowActionMenu(event, 'customerMenu')" type="button"
-                            class="w-full px-3 rounded-lg bg-[#0f172a] border border-white/10 hover:border-blue-600 text-left inline-flex items-center justify-between gap-2 transition">
+                            class="w-full px-3 rounded-lg bg-[#171717] border border-white/10 hover:border-blue-600 text-left inline-flex items-center justify-between gap-2 transition">
                             <span class="sm-td ${c ? 'text-slate-100' : 'text-slate-400'} truncate">${c ? c.name : 'អតិថិជនដើរចូល'}</span>
                             <i class="fas fa-chevron-down text-[10px] text-slate-500 flex-shrink-0"></i>
                         </button>
@@ -1427,7 +1427,7 @@
                             <input id="discountInput" type="number" inputmode="decimal" min="0" max="100" step="0.5"
                                 value="${discountPercent || ''}" placeholder="0"
                                 onchange="setDiscount(this.value)"
-                                class="pos-num sm-td w-full px-3 pr-8 rounded-lg bg-[#0f172a] border ${discountPercent > limit ? 'border-amber-400/70' : 'border-white/10'} text-white text-right focus:outline-none focus:border-blue-600 transition">
+                                class="pos-num sm-td w-full px-3 pr-8 rounded-lg bg-[#171717] border ${discountPercent > limit ? 'border-amber-400/70' : 'border-white/10'} text-white text-right focus:outline-none focus:border-blue-600 transition">
                             <span class="absolute right-3 top-1/2 -translate-y-1/2 sm-td text-slate-400">%</span>
                         </div>
                     </div>
@@ -1635,7 +1635,7 @@
                 <button onclick="setTender('${x.id}')" type="button"
                     class="!min-h-[50px] h-[50px] rounded-lg border flex flex-col items-center justify-center gap-0.5 transition ${tenderMode === x.id
                         ? 'bg-blue-600 border-blue-500 text-white'
-                        : 'bg-[#0f172a] border-white/10 text-slate-300 hover:border-blue-600'}">
+                        : 'bg-[#171717] border-white/10 text-slate-300 hover:border-blue-600'}">
                     <i class="fas ${x.icon} text-sm"></i><span class="sm-td-sub font-semibold">${x.label}</span>
                 </button>`).join('');
 
@@ -1655,7 +1655,7 @@
                     : rielSuggestions(due).map(v => chip(`pickAmount(${v})`, fmtKHR(v), Math.abs(amount - v) < 0.5));
                 const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', usd ? '.' : '000', '0', 'back'];
                 body = `
-                    <div class="rounded-lg bg-[#0f172a] border ${amount > 0 ? 'border-blue-500/60' : 'border-white/10'} px-4 py-2 flex items-center justify-between gap-3">
+                    <div class="rounded-lg bg-[#171717] border ${amount > 0 ? 'border-blue-500/60' : 'border-white/10'} px-4 py-2 flex items-center justify-between gap-3">
                         <span class="sm-td-sub text-slate-400">ទទួលបាន${usd ? 'ជាដុល្លារ' : 'ជារៀល'}</span>
                         <span class="text-[28px] font-bold leading-none sm-figure ${amount > 0 ? 'text-white' : 'text-slate-600'}">${usd
                             ? '$' + (entry || (amount ? amount.toFixed(2) : '0.00'))
@@ -1669,14 +1669,14 @@
                     </div>`;
             } else if (tenderMode === 'khqr') {
                 body = `
-                    <div class="rounded-lg bg-[#0f172a] border border-white/10 p-5 text-center">
+                    <div class="rounded-lg bg-[#171717] border border-white/10 p-5 text-center">
                         <i class="fas fa-qrcode text-[32px] text-slate-400"></i>
                         <p class="sm-card-title text-white mt-3">ទូទាត់ពេញចំនួនតាមកូដស្កេនបាគង</p>
                         <p class="sm-td-sub text-slate-400 mt-1">ចុច «បង្ហាញកូដស្កេនបាគង» ខាងក្រោម ហើយបង្វែរអេក្រង់ទៅអតិថិជន</p>
                     </div>`;
             } else {
                 const tender = (key, label, icon, step, placeholder) => `
-                    <label class="flex items-center gap-3 rounded-lg bg-[#0f172a] border ${pay[key] > 0.005 ? 'border-blue-600' : 'border-white/10'} px-3">
+                    <label class="flex items-center gap-3 rounded-lg bg-[#171717] border ${pay[key] > 0.005 ? 'border-blue-600' : 'border-white/10'} px-3">
                         <i class="fas ${icon} text-slate-400 w-4"></i>
                         <span class="sm-td-sub text-slate-300 w-14">${label}</span>
                         <input type="number" inputmode="decimal" min="0" step="${step}" value="${pay[key] || ''}" placeholder="${placeholder}"
@@ -1696,7 +1696,7 @@
 
             document.getElementById('cartLines').innerHTML = `
                 <div class="p-3 space-y-2.5">
-                    <div class="rounded-lg bg-[#0f172a] border border-white/10 px-4 py-2.5 flex items-end justify-between gap-3">
+                    <div class="rounded-lg bg-[#171717] border border-white/10 px-4 py-2.5 flex items-end justify-between gap-3">
                         <div>
                             <p class="sm-td-sub text-slate-400">ទឹកប្រាក់ត្រូវទូទាត់</p>
                             <p class="pos-total mt-0.5">${fmtUSD(due)}</p>
@@ -1746,13 +1746,13 @@
                     </div>`;
             }
             const skin = state === 'short' ? 'border-amber-400/60' : 'border-white/10';
-            document.getElementById('cartTotals').innerHTML = `<div class="p-3 rounded-lg bg-[#0f172a] border ${skin}">${inner}</div>`;
+            document.getElementById('cartTotals').innerHTML = `<div class="p-3 rounded-lg bg-[#171717] border ${skin}">${inner}</div>`;
 
             document.getElementById('paymentPanel').innerHTML = `
                 <button onclick="finishSale()" type="button" ${canFinish ? '' : 'disabled'}
                     class="sm-card-title w-full !min-h-[64px] rounded-xl font-bold transition inline-flex items-center justify-center gap-2 ${canFinish
                         ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                        : 'bg-[#374151] text-slate-500 cursor-not-allowed'}">
+                        : 'bg-[#404040] text-slate-500 cursor-not-allowed'}">
                     <i class="fas ${canFinish && pay.khqr > 0.005 ? 'fa-qrcode' : 'fa-circle-check'}"></i> ${canFinish && pay.khqr > 0.005 ? 'បង្ហាញកូដស្កេនបាគង' : 'បញ្ចប់ការទូទាត់'}
                     <kbd class="pos-kbd ml-1">Enter</kbd>
                 </button>`;
@@ -1929,7 +1929,7 @@
             const box = document.getElementById('khqrBox');
             box.innerHTML = '';
             if (typeof QRCode !== 'undefined') {
-                new QRCode(box, { text: pending.payload, width: 280, height: 280, colorDark: '#0f172a', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+                new QRCode(box, { text: pending.payload, width: 280, height: 280, colorDark: '#171717', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
             } else {
                 box.innerHTML = '<div class="aspect-square flex items-center justify-center text-slate-400"><i class="fas fa-qrcode text-7xl"></i></div>';
             }

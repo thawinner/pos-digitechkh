@@ -78,7 +78,7 @@ function initialsOf(name) {
 }
 
 function pinError(pin, exceptId) {
-    if (!/^\d{4,6}$/.test(pin)) return 'លេខសម្ងាត់ត្រូវមានលេខ 4 ដល់ 6 ខ្ទង់';
+    if (!new RegExp(`^\\d{${POS_PIN_LEN}}$`).test(pin)) return `លេខសម្ងាត់ត្រូវមានលេខ ${POS_PIN_LEN} ខ្ទង់`;
     if (/^(\d)\1+$/.test(pin) || '0123456789'.includes(pin) || '9876543210'.includes(pin)) return 'លេខសម្ងាត់នេះងាយទាយពេក · សូមជ្រើសលេខផ្សេង';
     if (pinTaken(pin, exceptId)) return 'លេខសម្ងាត់នេះមានអ្នកប្រើរួចហើយ';
     return '';
@@ -119,7 +119,7 @@ async function showNewPassword(p, pw) {
 
 function randomPin(exceptId) {
     let pin;
-    do { pin = String(1000 + Math.floor(Math.random() * 9000)); } while (pinError(pin, exceptId));
+    do { pin = String(100000 + Math.floor(Math.random() * 900000)); } while (pinError(pin, exceptId));
     return pin;
 }
 
@@ -175,7 +175,7 @@ async function resetAccess(id) {
         message: 'ជ្រើសអ្វីដែលត្រូវកំណត់ថ្មី · ចាស់ឈប់ដំណើរការភ្លាមៗ',
         options: [
             { value: 'password', label: 'ពាក្យសម្ងាត់', desc: 'ចូលប្រើប្រព័ន្ធជាមួយលេខទូរស័ព្ទ ឬអ៊ីមែល', icon: 'fa-lock' },
-            { value: 'pin', label: 'លេខសម្ងាត់ 4 ខ្ទង់', desc: 'អនុម័តលើបញ្ជរ និងដោះសោផ្ទាំងគិតលុយ', icon: 'fa-key' }
+            { value: 'pin', label: 'លេខសម្ងាត់ 6 ខ្ទង់', desc: 'អនុម័តលើបញ្ជរ និងដោះសោផ្ទាំងគិតលុយ', icon: 'fa-key' }
         ]
     });
     if (kind === 'password') resetPassword(id);
@@ -217,7 +217,7 @@ async function resetPin(id) {
     const p = findStaff(id);
     const v = await showFormDialog({
         title: `លេខសម្ងាត់ថ្មីសម្រាប់ ${p.name}`, icon: 'fa-key',
-        message: 'លេខសម្ងាត់ 4 ដល់ 6 ខ្ទង់ សម្រាប់អនុម័ត និងដោះសោផ្ទាំងគិតលុយ · លេខចាស់ឈប់ដំណើរការភ្លាមៗ',
+        message: 'លេខសម្ងាត់ 6 ខ្ទង់ សម្រាប់អនុម័ត និងដោះសោផ្ទាំងគិតលុយ · លេខចាស់ឈប់ដំណើរការភ្លាមៗ',
         fields: [{ key: 'pin', label: 'លេខសម្ងាត់ថ្មី', value: randomPin(id), type: 'pin', hint: 'បង្កើតដោយស្វ័យប្រវត្តិ · អាចវាយលេខផ្សេងបាន' }],
         confirmText: 'កំណត់',
         validate: x => pinError(x.pin, id) || (x.pin === (posRead('pos_pins', {})[id] || p.pin) ? 'នេះជាលេខសម្ងាត់បច្ចុប្បន្ន' : '')

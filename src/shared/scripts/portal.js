@@ -589,7 +589,7 @@ function renderPortalSidebar() {
     }).join('');
 
     host.outerHTML = `
-        <aside class="w-64 bg-[#1e3a5f] text-white flex flex-col flex-shrink-0 select-none z-20 border-r border-slate-700">
+        <aside class="w-64 bg-[#393939] text-white flex flex-col flex-shrink-0 select-none z-20 border-r border-slate-700">
             <div class="h-[72px] px-6 flex items-center gap-3 border-b border-white/10 flex-shrink-0">
                 <div class="w-8 h-8 flex items-center justify-center flex-shrink-0">
                     <img src="${sharedRoot}/assets/logo-mark-transparent.png" alt="" class="w-full h-full object-contain">
@@ -739,7 +739,7 @@ function renderDateRangePicker(hostId) {
     const presetButtons = DATE_PRESETS.map(name => {
         const isDefault = name === DEFAULT_PRESET;
         const cls = isDefault
-            ? 'preset-btn w-full text-left px-3 py-1.5 rounded-lg bg-[#0f2b5c] text-white font-medium shadow-sm transition-colors'
+            ? 'preset-btn w-full text-left px-3 py-1.5 rounded-lg bg-[#047857] text-white font-medium shadow-sm transition-colors'
             : 'preset-btn w-full text-left px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors text-slate-600';
         return `<button class="${cls}" onclick="selectPreset('${name}')">${name}</button>`;
     }).join('');
@@ -778,7 +778,7 @@ function renderDateRangePicker(hostId) {
                 </span>
                 <div class="flex items-center gap-2">
                     <button onclick="toggleDatePicker(event)" class="px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-200 text-[11px] font-medium transition">បោះបង់</button>
-                    <button onclick="applyDateRange()" class="px-3.5 py-1.5 rounded-lg bg-[#0f2b5c] hover:bg-[#0a1d3f] text-white text-[11px] font-semibold shadow-sm transition">ជ្រើសរើស</button>
+                    <button onclick="applyDateRange()" class="px-3.5 py-1.5 rounded-lg bg-[#047857] hover:bg-[#065f46] text-white text-[11px] font-semibold shadow-sm transition">ជ្រើសរើស</button>
                 </div>
             </div>
         </div>`;
@@ -818,7 +818,7 @@ function updateRangeLabels(btnText, tagText) {
 function highlightPresetButton(name) {
     document.querySelectorAll('.preset-btn').forEach(btn => {
         if (name && btn.textContent.trim() === name) {
-            btn.className = 'preset-btn w-full text-left px-3 py-1.5 rounded-lg bg-[#0f2b5c] text-white font-medium shadow-sm transition-colors';
+            btn.className = 'preset-btn w-full text-left px-3 py-1.5 rounded-lg bg-[#047857] text-white font-medium shadow-sm transition-colors';
         } else {
             btn.className = 'preset-btn w-full text-left px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors text-slate-600';
         }
@@ -891,15 +891,15 @@ function renderCalendarGrid() {
         cell.onclick = () => handleDateClick(calCurrentYear, calCurrentMonth, d);
 
         if (isStart && isEnd) {
-            cell.innerHTML = `<span class="w-7 h-7 rounded-full bg-[#0f2b5c] text-white flex items-center justify-center font-bold text-xs shadow">${d}</span>`;
+            cell.innerHTML = `<span class="w-7 h-7 rounded-full bg-[#047857] text-white flex items-center justify-center font-bold text-xs shadow">${d}</span>`;
         } else if (isStart && effectiveEnd) {
             cell.className += ' bg-slate-100 rounded-l-full';
-            cell.innerHTML = `<span class="w-7 h-7 rounded-full bg-[#0f2b5c] text-white flex items-center justify-center font-bold text-xs shadow">${d}</span>`;
+            cell.innerHTML = `<span class="w-7 h-7 rounded-full bg-[#047857] text-white flex items-center justify-center font-bold text-xs shadow">${d}</span>`;
         } else if (isStart && !effectiveEnd) {
-            cell.innerHTML = `<span class="w-7 h-7 rounded-full bg-[#0f2b5c] text-white flex items-center justify-center font-bold text-xs ring-2 ring-primary/30 shadow">${d}</span>`;
+            cell.innerHTML = `<span class="w-7 h-7 rounded-full bg-[#047857] text-white flex items-center justify-center font-bold text-xs ring-2 ring-primary/30 shadow">${d}</span>`;
         } else if (isEnd) {
             cell.className += ' bg-slate-100 rounded-r-full';
-            cell.innerHTML = `<span class="w-7 h-7 rounded-full bg-[#0f2b5c] text-white flex items-center justify-center font-bold text-xs shadow">${d}</span>`;
+            cell.innerHTML = `<span class="w-7 h-7 rounded-full bg-[#047857] text-white flex items-center justify-center font-bold text-xs shadow">${d}</span>`;
         } else if (isInRange) {
             cell.className += ' bg-slate-100 text-slate-800 font-medium text-xs';
             cell.innerHTML = `<span>${d}</span>`;
@@ -1270,7 +1270,7 @@ const BMS_STEPPER_TONES = {
      * អក្សរប្រើ amber-700 (5.02:1) ព្រោះ custom.css មានការកែពណ៌សម្រាប់ទម្រង់ងងឹតរួចហើយ
      */
     amber: { fill: 'bg-[#C88016]', ring: 'ring-amber-100', bar: 'bg-[#E9A23B]', text: 'bms-amber-text', rgb: '233,162,59' },
-    /* ពណ៌ខៀវដែនរបស់ម៉ាក (btn-navy #16255C) — រូបតំណាងពណ៌សមានកម្រិតពន្លឺ 14.5:1 */
+    /* ពណ៌ខៀវដែនរបស់ម៉ាក (btn-navy #065F46) — រូបតំណាងពណ៌សមានកម្រិតពន្លឺ 14.5:1 */
     navy: { fill: 'bms-navy-fill', ring: 'ring-blue-100', bar: 'bms-navy-fill', text: 'bms-navy-text', rgb: '22,37,92' },
     /*
      * ពណ៌បៃតងរបស់ប្រព័ន្ធ (primary #24692D) — ដូចរបារចំហៀង និងប៊ូតុងចម្បង
@@ -1279,7 +1279,7 @@ const BMS_STEPPER_TONES = {
     brand: { fill: 'bms-brand-fill', ring: 'ring-emerald-100', bar: 'bms-brand-fill', text: 'bms-brand-text', rgb: '36,105,45' }
 };
 BMS_STEPPER_TONES.yellow = BMS_STEPPER_TONES.amber;
-/* ពណ៌ចម្បងរបស់ប្រព័ន្ធ (ខៀវ #2563EB) — ប្រើលើជំហាននៃទំព័រចូលប្រើ បើកវេន និងបិទវេន */
+/* ពណ៌ចម្បងរបស់ប្រព័ន្ធ (ខៀវ #047857) — ប្រើលើជំហាននៃទំព័រចូលប្រើ បើកវេន និងបិទវេន */
 BMS_STEPPER_TONES.accent = { fill: 'bg-blue-600', ring: 'ring-blue-100', bar: 'bg-blue-600', text: 'text-blue-700', textDark: 'text-blue-300', rgb: '37,99,235' };
 
 /**
@@ -1310,19 +1310,19 @@ function bmsEnsureStepperStyles() {
          * ខៀវដែនលើផ្ទៃងងឹតស្ទើរមើលមិនឃើញ ដូច្នេះប្តូរទៅខៀវភ្លឺជាងក្នុងទម្រង់ងងឹត
          * #A46912 = ហ្វ័រដូចពណ៌លឿងរូបគំរូ តែងងឹតល្មមសម្រាប់អក្សរ (4.56:1)
          */
-        .bms-navy-fill { background-color: #16255C; }
-        .bms-navy-text { color: #16255C; }
+        .bms-navy-fill { background-color: #065F46; }
+        .bms-navy-text { color: #065F46; }
         .bms-amber-text { color: #A46912; }
         .bms-brand-fill { background-color: #24692D; }
         .bms-brand-text { color: #1B5223; }
         html.dark .bms-brand-fill { background-color: #2F9E44; }
         html.dark .bms-brand-text { color: #86EFAC; }
-        html.dark .bms-navy-fill { background-color: #4F63C4; }
-        html.dark .bms-navy-text { color: #A5B4FC; }
+        html.dark .bms-navy-fill { background-color: #059669; }
+        html.dark .bms-navy-text { color: #6EE7B7; }
         html.dark .bms-amber-text { color: #F5C26B; }
         /* ផ្លូវប្រផេះភ្លឺពេកលើផ្ទៃងងឹត ហើយរង្វង់ពណ៌ស្រាលមើលទៅធ្ងន់ — បន្ថយទាំងពីរ */
-        .bms-step-track { background-color: #E2E8F0; }
-        html.dark .bms-step-track { background-color: #334155; }
+        .bms-step-track { background-color: #E7E7E7; }
+        html.dark .bms-step-track { background-color: #404040; }
         .bms-step-track.bms-step-track-dark { background-color: rgba(255, 255, 255, .12); }
         html.dark .bms-step-now { --tw-ring-color: rgba(var(--bms-rgb), .28); }
         .bms-step-run  { animation: bmsStepRun 2s cubic-bezier(.4, 0, .2, 1) infinite; }
@@ -1457,7 +1457,7 @@ function bmsRenderStepper(hostId) {
                     // សញ្ញាធីកតូចបញ្ជាក់ថាបានបញ្ចប់ ដោយមិនលុបរូបតំណាងដើមចោល
                     const badge = n < current && icons && !compact && cfg.doneBadge === true
                         ? `<span aria-hidden="true" class="absolute -right-1 -bottom-1 w-5 h-5 rounded-full bg-white flex items-center justify-center"
-                               style="box-shadow:0 0 0 2px #fff,0 1px 3px rgba(15,23,42,.18)">
+                               style="box-shadow:0 0 0 2px #fff,0 1px 3px rgba(23,23,23,.18)">
                                <span class="w-4 h-4 rounded-full ${doneSkin.fill} flex items-center justify-center">
                                    <i class="fas fa-check text-white" style="font-size:8px"></i>
                                </span>

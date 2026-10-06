@@ -256,7 +256,7 @@
     .bg-white,
     .rounded-2xl {
         box-shadow: none !important;
-        border-color: #e2e8f0 !important;
+        border-color: #e7e7e7 !important;
     }
 
     tr,
@@ -270,9 +270,9 @@
         display: block !important;
         margin-top: 18px;
         padding-top: 10px;
-        border-top: 1px solid #cbd5e1;
+        border-top: 1px solid #d4d4d4;
         font-size: 11px;
-        color: #64748b;
+        color: #737373;
         text-align: center;
     }
 }
@@ -283,16 +283,16 @@
     :is(#posPortal, #managerPortal, #adminPortal, #loginPortal) .rounded-3xl { border-radius: 14px !important; }
     :is(#posPortal, #managerPortal, #adminPortal, #loginPortal) .rounded-2xl { border-radius: 10px !important; }
     :is(#posPortal, #managerPortal, #adminPortal, #loginPortal) .rounded-xl { border-radius: 8px !important; }
-    :is(#posPortal, #managerPortal, #adminPortal) .shadow-sm { box-shadow: 0 1px 2px rgba(15, 23, 42, .04) !important; }
+    :is(#posPortal, #managerPortal, #adminPortal) .shadow-sm { box-shadow: 0 1px 2px rgba(23, 23, 23, .04) !important; }
 }
 
 
-/* ===== របារចំហៀង៖ ផ្ទៃប្រផេះខៀវចាស់ (slate-800) តែមួយសម្រាប់គ្រប់ទិដ្ឋភាព =====
-   ពណ៌ក្នុងគ្រួសារ slate ដូចអក្សរ និងបន្ទាត់លើទំព័រ មិនប្រជែងនឹងប៊ូតុងពណ៌ខៀវ
+/* ===== របារចំហៀង៖ ផ្ទៃបៃតងខ្មៅ (#0B2B22) តែមួយសម្រាប់គ្រប់ទិដ្ឋភាព =====
+   ពណ៌ក្នុងគ្រួសារពណ៌ចម្បង (បៃតង emerald) តែងងឹតខ្លាំង មិនប្រជែងនឹងប៊ូតុង
    អក្សរស ធាតុសកម្មផ្ទៃសស្រាល · គ្មានបន្ទាត់ពណ៌ ពន្លឺ ឬពណ៌សង្កត់ផ្សេងទៀត · ទិដ្ឋភាពសម្គាល់ដោយចំណុច និងឈ្មោះក្រោមឈ្មោះម៉ាក */
 #portalSidebar, .sb-menu {
-    --sb-bg: #1e293b;
-    --sb-menu-bg: #1e293b;
+    --sb-bg: #0b2b22;
+    --sb-menu-bg: #0b2b22;
     --sb-line: rgba(255, 255, 255, .09);
     --sb-text: rgba(255, 255, 255, .80);
     --sb-strong: #ffffff;
@@ -303,8 +303,8 @@
     --sb-accent: #ffffff;
     --sb-track: rgba(255, 255, 255, .14);
 }
-/* ទម្រង់ងងឹត៖ slate-900 ដូចក្បាលទំព័រងងឹត */
-html.dark #portalSidebar, html.dark .sb-menu { --sb-bg: #0f172a; --sb-menu-bg: #0f172a; --sb-line: rgba(255, 255, 255, .08); }
+/* ទម្រង់ងងឹត៖ ខ្មៅប្រផេះ (#171717) ដូចក្បាលទំព័រងងឹត */
+html.dark #portalSidebar, html.dark .sb-menu { --sb-bg: #171717; --sb-menu-bg: #171717; --sb-line: rgba(255, 255, 255, .08); }
 
 /* custom.css បង្ខំ <aside> ទាំងអស់ទៅពណ៌បៃតង ដោយ !important */
 aside#portalSidebar,
@@ -366,7 +366,7 @@ html.dark aside#portalSidebar {
 /* ម៉ឺនុយលេចចេញ (ប្តូរទិដ្ឋភាព · គណនី) */
 .sb-menu {
     background: var(--sb-menu-bg); color: var(--sb-text);
-    border: 1px solid var(--sb-line); box-shadow: 0 10px 30px rgba(2, 6, 23, .35);
+    border: 1px solid var(--sb-line); box-shadow: 0 10px 30px rgba(7, 7, 7, .35);
 }
 .sb-menu .sb-group { font-size: 12.5px; font-weight: 500; color: var(--sb-muted); }
 .sb-menu .sb-menu-item { font-size: 14.5px; color: var(--sb-text); }
@@ -378,8 +378,8 @@ html.dark aside#portalSidebar {
 
 /* ចំណុចទិដ្ឋភាពក្រោមឈ្មោះម៉ាក និងក្នុងម៉ឺនុយប្តូរទិដ្ឋភាព */
 .sb-view-dot { width: 7px; height: 7px; border-radius: 9999px; flex-shrink: 0; display: inline-block; }
-.sb-view-dot.view-cashier { background: #cbd5e1; }
-.sb-view-dot.view-manager { background: #60a5fa; }
+.sb-view-dot.view-cashier { background: #d4d4d4; }
+.sb-view-dot.view-manager { background: #34d399; }
 .sb-view-dot.view-admin   { background: #34d399; }
 #portalSidebar .sb-view { color: var(--sb-muted); font-weight: 500; }
 .sb-menu .sb-check { color: var(--sb-accent); }
@@ -389,7 +389,7 @@ html.dark aside#portalSidebar {
 @keyframes rowFlash { 0%, 40% { background-color: rgb(219 234 254); } 100% { background-color: transparent; } }
 .row-flash, .row-flash > td { animation: rowFlash 2.2s ease-out; }
 html.dark .row-flash, html.dark .row-flash > td { animation-name: rowFlashDark; }
-@keyframes rowFlashDark { 0%, 40% { background-color: rgba(59, 130, 246, .22); } 100% { background-color: transparent; } }
+@keyframes rowFlashDark { 0%, 40% { background-color: rgba(5, 150, 105, .22); } 100% { background-color: transparent; } }
 
 
 /* ===== អក្សររងលើផ្ទៃភ្លឺ៖ កម្រិតពន្លឺអាចអានបាន =====
@@ -398,11 +398,11 @@ html.dark .row-flash, html.dark .row-flash > td { animation-name: rowFlashDark; 
    មិនប៉ះពាល់ទេ ព្រោះពណ៌នេះត្រឹមត្រូវលើផ្ទៃងងឹត។ */
 html:not(.dark) body:is(#managerPortal, #adminPortal, .bg-slate-50) :is(.text-slate-400, .text-gray-400):not(#portalSidebar *, .sb-menu *),
 html:not(.dark) #loginPortal .bg-white :is(.text-slate-400, .text-gray-400) {
-    color: #64748b !important;
+    color: #737373 !important;
 }
 /* តួលេខសូន្យ និងសញ្ញា «—» ដែលបន្ថយពន្លឺដោយចេតនា (slate-300) នៅតែស្រាល តែអាចមើលឃើញ */
 html:not(.dark) body:is(#managerPortal, #adminPortal, .bg-slate-50) .text-slate-300:not(#portalSidebar *, .sb-menu *) {
-    color: #94a3b8 !important;
+    color: #a2a2a2 !important;
 }
 
 /* ===== ផ្ទាំងជូនដំណឹង (refreshPortalNotifications ក្នុង portal.js) — ទំហំអក្សរថេរ មិនរងឥទ្ធិពល custom.css ===== */
@@ -417,67 +417,67 @@ html:not(.dark) body:is(#managerPortal, #adminPortal, .bg-slate-50) .text-slate-
     display: inline-flex; align-items: center; justify-content: center;
 }
 html.dark #portalNotifMenu .border-slate-100,
-html.dark #portalNotifMenu .divide-slate-100 > * + * { border-color: #1e293b !important; }
+html.dark #portalNotifMenu .divide-slate-100 > * + * { border-color: #292929 !important; }
 html.dark #portalNotifMenu a:hover { background-color: rgba(255, 255, 255, .04) !important; }
 html.dark #portalNotifMenu .bg-slate-50\/70 { background-color: rgba(255, 255, 255, .03) !important; }
-html.dark #portalNotifMenu .bg-slate-100 { background-color: #1e293b !important; color: #cbd5e1 !important; }
-html.dark #portalNotifMenu .text-slate-800 { color: #f1f5f9 !important; }
-html.dark #portalNotifMenu :is(.text-slate-500, .text-slate-600) { color: #94a3b8 !important; }
+html.dark #portalNotifMenu .bg-slate-100 { background-color: #292929 !important; color: #d4d4d4 !important; }
+html.dark #portalNotifMenu .text-slate-800 { color: #f4f4f4 !important; }
+html.dark #portalNotifMenu :is(.text-slate-500, .text-slate-600) { color: #a2a2a2 !important; }
 html.dark #portalNotifMenu .text-rose-600 { color: #fb7185 !important; }
 html.dark #portalNotifMenu .text-amber-600 { color: #fbbf24 !important; }
 
 /* ===== សារជូនដំណឹងខ្លី (showToast) ===== */
 #bmsToastContainer .bms-toast-text { font-size: 14.5px; font-weight: 500; line-height: 1.5; }
 #bmsToastContainer .bms-toast-action { font-size: 14px; }
-html.dark #bmsToastContainer .bms-toast { background-color: #1e293b !important; border-color: #334155 !important; box-shadow: 0 10px 30px rgba(0, 0, 0, .45) !important; }
-html.dark #bmsToastContainer .bms-toast-text { color: #f1f5f9 !important; }
-html.dark #bmsToastContainer .bms-toast-action { color: #93c5fd !important; }
+html.dark #bmsToastContainer .bms-toast { background-color: #292929 !important; border-color: #404040 !important; box-shadow: 0 10px 30px rgba(0, 0, 0, .45) !important; }
+html.dark #bmsToastContainer .bms-toast-text { color: #f4f4f4 !important; }
+html.dark #bmsToastContainer .bms-toast-action { color: #6ee7b7 !important; }
 html.dark #bmsToastContainer .bms-toast-action:hover,
 html.dark #bmsToastContainer button:hover { background-color: rgba(255, 255, 255, .06) !important; }
 
 /* ប៊ូតុងបិទ (disabled:bg-slate-100) ក្នុងទម្រង់ងងឹត */
-html.dark button:disabled[class*="disabled:bg-slate-100"] { background-color: #1e293b !important; color: #64748b !important; }
+html.dark button:disabled[class*="disabled:bg-slate-100"] { background-color: #292929 !important; color: #737373 !important; }
 
 /* ===== រាប់ក្រដាសប្រាក់ (cashCounter ក្នុង ui-components.js) — ពណ៌ទម្រង់ភ្លឺ និងងឹតនៅកន្លែងតែមួយ ===== */
-.cc-card { background: #fff; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(15, 23, 42, .04); }
-.cc-header, .cc-hint { border-color: #f1f5f9; }
-.cc-header { border-bottom: 1px solid #f1f5f9; }
-.cc-hint { border-top: 1px solid #f1f5f9; color: #64748b; }
-.cc-split > section + section { border-left: 1px solid #f1f5f9; }
-@media (max-width: 1023px) { .cc-split > section + section { border-left: 0; border-top: 1px solid #f1f5f9; } }
-.cc-title { color: #1e293b; }
-.cc-sub, .cc-head { color: #64748b; }
-.cc-head { border-bottom: 1px solid #f1f5f9; }
-.cc-row + .cc-row { border-top: 1px solid #f1f5f9; }
-.cc-row.cc-on { background: #f8fafc; }
-.cc-note { color: #334155; font-weight: 600; }
-.cc-row.cc-on .cc-note { color: #0f172a; }
-.cc-line { color: #334155; font-weight: 600; }
-.cc-btn { border: 1px solid #e2e8f0; background: #fff; color: #475569; }
-.cc-btn:hover { background: #f1f5f9; color: #0f172a; }
-.cc-btn:active { background: #e2e8f0; }
-.cc-in { border: 1px solid #e2e8f0; background: #fff; color: #0f172a; }
-.cc-in::placeholder { color: #cbd5e1; font-weight: 500; }
-.cc-in:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, .18); }
-.cc-foot { border-top: 1px solid #e2e8f0; background: #f8fafc; color: #64748b; }
-.cc-total { color: #0f172a; }
-.cc-clear { color: #64748b; }
-.cc-clear:hover { color: #0f172a; }
-html.dark .cc-card { background: #111a2b !important; border-color: rgba(255, 255, 255, .08) !important; }
+.cc-card { background: #fff; border: 1px solid #e7e7e7; box-shadow: 0 1px 2px rgba(23, 23, 23, .04); }
+.cc-header, .cc-hint { border-color: #f4f4f4; }
+.cc-header { border-bottom: 1px solid #f4f4f4; }
+.cc-hint { border-top: 1px solid #f4f4f4; color: #737373; }
+.cc-split > section + section { border-left: 1px solid #f4f4f4; }
+@media (max-width: 1023px) { .cc-split > section + section { border-left: 0; border-top: 1px solid #f4f4f4; } }
+.cc-title { color: #292929; }
+.cc-sub, .cc-head { color: #737373; }
+.cc-head { border-bottom: 1px solid #f4f4f4; }
+.cc-row + .cc-row { border-top: 1px solid #f4f4f4; }
+.cc-row.cc-on { background: #fafafa; }
+.cc-note { color: #404040; font-weight: 600; }
+.cc-row.cc-on .cc-note { color: #171717; }
+.cc-line { color: #404040; font-weight: 600; }
+.cc-btn { border: 1px solid #e7e7e7; background: #fff; color: #545454; }
+.cc-btn:hover { background: #f4f4f4; color: #171717; }
+.cc-btn:active { background: #e7e7e7; }
+.cc-in { border: 1px solid #e7e7e7; background: #fff; color: #171717; }
+.cc-in::placeholder { color: #d4d4d4; font-weight: 500; }
+.cc-in:focus { border-color: #059669; box-shadow: 0 0 0 3px rgba(5, 150, 105, .18); }
+.cc-foot { border-top: 1px solid #e7e7e7; background: #fafafa; color: #737373; }
+.cc-total { color: #171717; }
+.cc-clear { color: #737373; }
+.cc-clear:hover { color: #171717; }
+html.dark .cc-card { background: #1a1a1a !important; border-color: rgba(255, 255, 255, .08) !important; }
 html.dark :is(.cc-header, .cc-hint, .cc-head, .cc-row + .cc-row) { border-color: rgba(255, 255, 255, .06) !important; }
 html.dark .cc-split > section + section { border-color: rgba(255, 255, 255, .06) !important; }
-html.dark .cc-title, html.dark .cc-total, html.dark .cc-row.cc-on .cc-note { color: #f1f5f9 !important; }
-html.dark :is(.cc-sub, .cc-head, .cc-hint, .cc-clear, .cc-foot) { color: #94a3b8 !important; }
-html.dark .cc-note, html.dark .cc-line { color: #cbd5e1 !important; }
+html.dark .cc-title, html.dark .cc-total, html.dark .cc-row.cc-on .cc-note { color: #f4f4f4 !important; }
+html.dark :is(.cc-sub, .cc-head, .cc-hint, .cc-clear, .cc-foot) { color: #a2a2a2 !important; }
+html.dark .cc-note, html.dark .cc-line { color: #d4d4d4 !important; }
 html.dark .cc-row.cc-on { background: rgba(255, 255, 255, .03) !important; }
-html.dark .cc-btn { background: transparent !important; border-color: rgba(255, 255, 255, .1) !important; color: #cbd5e1 !important; }
+html.dark .cc-btn { background: transparent !important; border-color: rgba(255, 255, 255, .1) !important; color: #d4d4d4 !important; }
 html.dark .cc-btn:hover { background: rgba(255, 255, 255, .06) !important; color: #fff !important; }
-html.dark .cc-in { background: #0b1220 !important; border-color: rgba(255, 255, 255, .1) !important; color: #fff !important; }
-html.dark .cc-in::placeholder { color: #475569 !important; }
+html.dark .cc-in { background: #121212 !important; border-color: rgba(255, 255, 255, .1) !important; color: #fff !important; }
+html.dark .cc-in::placeholder { color: #545454 !important; }
 html.dark .cc-foot { background: rgba(0, 0, 0, .15) !important; border-color: rgba(255, 255, 255, .08) !important; }
 
 /* ប្រអប់ចាត់តាំងវេន៖ អ្នកដែលបានជ្រើស = ស៊ុមខៀវ (ទម្រង់ងងឹតត្រូវកំណត់ផ្ទាល់ ព្រោះ custom.css ប្តូរ border ទៅប្រផេះ) */
-html.dark #posAssignModal [data-cand][aria-checked="true"] { border-color: #3b82f6 !important; }
+html.dark #posAssignModal [data-cand][aria-checked="true"] { border-color: #059669 !important; }
 
 /* ===== ប្រអប់សន្ទនារួម (showCustomConfirm · showReasonPrompt) — ទំហំអក្សរថេរ និងទម្រង់ងងឹត ===== */
 .bms-dialog-title { font-size: 17px; font-weight: 600; line-height: 1.4; }
@@ -486,12 +486,12 @@ html.dark #posAssignModal [data-cand][aria-checked="true"] { border-color: #3b82
 .bms-dialog-input { font-size: 15px; }
 .bms-dialog-chip { font-size: 13.5px; }
 .bms-dialog button { font-size: 15px; }
-html.dark .bms-dialog { background: #0f172a !important; border-color: rgba(255, 255, 255, .1) !important; }
-html.dark .bms-dialog .bms-dialog-title { color: #f8fafc !important; }
-html.dark .bms-dialog :is(.bms-dialog-msg, .bms-dialog-label) { color: #cbd5e1 !important; }
+html.dark .bms-dialog { background: #171717 !important; border-color: rgba(255, 255, 255, .1) !important; }
+html.dark .bms-dialog .bms-dialog-title { color: #fafafa !important; }
+html.dark .bms-dialog :is(.bms-dialog-msg, .bms-dialog-label) { color: #d4d4d4 !important; }
 html.dark .bms-dialog .bms-dialog-msg.text-rose-600 { color: #fb7185 !important; }
-html.dark .bms-dialog .bms-dialog-input { background: #1e293b !important; border-color: rgba(255, 255, 255, .1) !important; color: #f1f5f9 !important; }
-html.dark .bms-dialog :is(#bmsConfirmCancelBtn, #bmsReasonCancelBtn, [data-quick]) { background: transparent !important; border-color: rgba(255, 255, 255, .15) !important; color: #e2e8f0 !important; }
+html.dark .bms-dialog .bms-dialog-input { background: #292929 !important; border-color: rgba(255, 255, 255, .1) !important; color: #f4f4f4 !important; }
+html.dark .bms-dialog :is(#bmsConfirmCancelBtn, #bmsReasonCancelBtn, [data-quick]) { background: transparent !important; border-color: rgba(255, 255, 255, .15) !important; color: #e7e7e7 !important; }
 html.dark .bms-dialog :is(#bmsConfirmCancelBtn, #bmsReasonCancelBtn, [data-quick]):hover { background: rgba(255, 255, 255, .05) !important; }
 
 /* ===== ផ្លាកលេខលើកណ្តឹង =====
@@ -501,11 +501,11 @@ html.dark .bms-dialog :is(#bmsConfirmCancelBtn, #bmsReasonCancelBtn, [data-quick
     position: absolute; top: 1px; right: 0;
     min-width: 19px; height: 19px; padding: 0 5px;
     display: inline-flex; align-items: center; justify-content: center;
-    border-radius: 9999px; background: #334155; color: #fff;
+    border-radius: 9999px; background: #404040; color: #fff;
     font-size: 11px !important; font-weight: 700 !important; line-height: 1; letter-spacing: 0;
     box-shadow: 0 0 0 2px #fff; pointer-events: none;
 }
 #portalNotifDot.is-urgent { background: #e11d48; }
 #posPortal #portalNotifDot { top: 3px; right: 2px; }
-html.dark #portalNotifDot { background: #e2e8f0; color: #0f172a; box-shadow: 0 0 0 2px #1e293b; }
+html.dark #portalNotifDot { background: #e7e7e7; color: #171717; box-shadow: 0 0 0 2px #292929; }
 html.dark #portalNotifDot.is-urgent { background: #f43f5e; color: #fff; }

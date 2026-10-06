@@ -90,7 +90,7 @@ float). The terminal opens a dark full-screen dialog **on the cashier's screen**
 └──────────────────────────────────────────────┘
 ```
 
-- On-screen numeric keypad (touch). The PIN field is `type="password" inputmode="numeric"`, 4–6 digits.
+- On-screen numeric keypad (touch). The PIN field is `type="password" inputmode="numeric"`, exactly 6 digits.
 - **3 wrong PINs** → the dialog locks for 60 s and logs `override_denied`.
 - An approver equal to the current cashier is not offered (M-RULE 3).
 - Success: toast «បានអនុម័តដោយ ‹name›», the action completes, and the audit entry gets `mode: 'onsite'`.
@@ -326,7 +326,7 @@ The "reset demo data" action must clear all of these keys.
 
 ```js
 const MANAGERS = [
-  { id: 'MGR-01', name: 'សុខ វណ្ណា', initials: 'សវ', pin: '2468' },
+  { id: 'MGR-01', name: 'សុខ វណ្ណា', initials: 'សវ', pin: '246810' },
   { id: 'MGR-02', name: 'ម៉ៅ ស្រីនាង', initials: 'មស', pin: '1357' }
 ];
 const CASHIERS = [
