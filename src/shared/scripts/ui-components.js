@@ -1582,7 +1582,7 @@ function showFormDialog(opts = {}) {
             const mode = f.type === 'number' ? 'inputmode="decimal"' : f.type === 'pin' ? 'inputmode="numeric" maxlength="6" autocomplete="off"' : '';
             return `<label class="block">
                 <span class="sm-td-sub ${th.sub} block mb-1">${posEsc(f.label)}</span>
-                <span class="flex items-center rounded-xl border ${th.input} focus-within:border-emerald-500 transition">
+                <span class="flex items-center rounded-xl border ${th.input} focus-within:border-blue-500 transition">
                     ${f.prefix ? `<span class="pl-3 sm-td ${th.sub}">${posEsc(f.prefix)}</span>` : ''}
                     <input data-key="${f.key}" type="text" ${mode} value="${posEsc(f.value == null ? '' : f.value)}"
                         class="sm-value w-full h-11 px-3 bg-transparent focus:outline-none ${f.type === 'pin' ? 'tracking-[.4em] sm-figure' : ''} ${f.type === 'number' ? 'sm-figure' : ''}">

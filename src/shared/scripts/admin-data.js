@@ -497,6 +497,22 @@ function setStaffPin(id, pin) {
     adminLog('pin', `កំណត់លេខសម្ងាត់ថ្មីឱ្យ ${p ? p.name : id}`, { target: id });
 }
 
+/* ពាក្យសម្ងាត់ចូលប្រើ (ទំព័រចូលប្រើ) — រក្សាក្នុង pos_passwords ឈ្នះលើតម្លៃលំនាំដើម */
+function setStaffPassword(id, password) {
+    const pw = posRead('pos_passwords', {});
+    pw[id] = password;
+    posWrite('pos_passwords', pw);
+    const p = loadStaff().find(x => x.id === id);
+    adminLog('pin', `កំណត់ពាក្យសម្ងាត់ចូលប្រើថ្មីឱ្យ ${p ? p.name : id}`, { target: id });
+}
+
+/* អ៊ីមែល ឬលេខទូរស័ព្ទដែលបុគ្គលិកសកម្មផ្សេងប្រើរួច (ប្រើសម្រាប់ចូលប្រើ ដូច្នេះមិនអាចជាន់គ្នា) */
+function accountTaken(field, value, exceptId) {
+    if (!value) return false;
+    const norm = field === 'phone' ? normPhone : v => String(v).trim().toLowerCase();
+    return loadStaff().some(p => p.id !== exceptId && p.active && p[field] && norm(p[field]) === norm(value));
+}
+
 function pinTaken(pin, exceptId) {
     const custom = posRead('pos_pins', {});
     return loadStaff().some(p => p.id !== exceptId && p.active && (custom[p.id] || p.pin) === pin);

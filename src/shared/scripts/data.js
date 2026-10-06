@@ -195,8 +195,13 @@ window.addEventListener('storage', e => {
 
 /* ===== ហាង មនុស្ស និងបញ្ជរ ===== */
 
+/* ព័ត៌មានហាង (ហាងគំរូសម្រាប់បង្ហាញ) — ហាងពិតកែតែនៅទីនេះ (ឈ្មោះ សាខា ឡូហ្គោ)
+   nameKh បង្ហាញលើអេក្រង់ វិក្កយបត្រ និងរបាយការណ៍ · name (អក្សរឡាតាំង) សម្រាប់ KHQR តាមស្តង់ដារធនាគារ
+   DIGITECHKH = ក្រុមអ្នកអភិវឌ្ឍប្រព័ន្ធ មិនមែនហាងទេ (បង្ហាញតែជា «អភិវឌ្ឍដោយ») */
 const MERCHANT = {
-    name: 'DIGITECHKH RETAIL',
+    nameKh: 'DIGITECHKH',
+    name: 'DIGITECHKH SHOP',
+    logo: 'shared/assets/logo-mark-transparent.png',
     branch: 'សាខាកណ្តាល ភ្នំពេញ',
     tin: 'K001-901234567',
     phone: '023 999 888',
@@ -208,17 +213,18 @@ const MERCHANT = {
    លេខសម្ងាត់សម្រាប់គំរូសាកល្បងប៉ុណ្ណោះ — ប្រព័ន្ធពិតរក្សាទុកជាសញ្ញាកូដនៅម៉ាស៊ីនមេ។
    ម្ចាស់ហាងបន្ថែមបុគ្គលិក ប្តូរតួនាទី ឬផ្អាកគណនីនៅទំព័រ «បុគ្គលិក» (រក្សាក្នុង pos_staff)។
    គណនីដែលផ្អាកមិនអាចចូលប្រើបាន ប៉ុន្តែឈ្មោះនៅតែបង្ហាញក្នុងប្រវត្តិ (personById រកឃើញជានិច្ច)។ */
+/* គណនីចូលប្រើ៖ អ៊ីមែល ឬលេខទូរស័ព្ទ + ពាក្យសម្ងាត់ (ទំព័រចូលប្រើ) · pin = លេខកូដ 4 ខ្ទង់សម្រាប់អនុម័ត និងដោះសោផ្ទាំងគិតលុយ */
 const STAFF_SEED = [
-    { id: 'CAS-01', name: 'ចន្ទ មករា', initials: 'ចម', pin: '1111', role: 'cashier' },
-    { id: 'CAS-02', name: 'សុខ ដារ៉ា', initials: 'សដ', pin: '2222', role: 'cashier' },
-    { id: 'CAS-03', name: 'លី សុភា', initials: 'លស', pin: '3333', role: 'cashier' },
-    { id: 'CAS-04', name: 'ពេជ្រ សុវណ្ណារី', initials: 'ពស', pin: '4444', role: 'cashier' },
-    { id: 'CAS-05', name: 'គឹម វិសាល', initials: 'គវ', pin: '5555', role: 'cashier' },
-    { id: 'CAS-06', name: 'ឈឹម រតនា', initials: 'ឈរ', pin: '6666', role: 'cashier' },
-    { id: 'MGR-01', name: 'សុខ វណ្ណា', initials: 'សវ', pin: '2468', role: 'manager' },
-    { id: 'MGR-02', name: 'ម៉ៅ ស្រីនាង', initials: 'មស', pin: '1357', role: 'manager' },
-    { id: 'MGR-03', name: 'នួន សុខលី', initials: 'នស', pin: '8642', role: 'manager' },
-    { id: 'ADM-01', name: 'ហេង ចាន់ថា', initials: 'ហច', pin: '9999', role: 'admin' }
+    { id: 'CAS-01', name: 'ចន្ទ មករា', initials: 'ចម', pin: '1111', phone: '012 345 678', email: 'makara@digitechkh.com', password: 'makara2026', role: 'cashier' },
+    { id: 'CAS-02', name: 'សុខ ដារ៉ា', initials: 'សដ', pin: '2222', phone: '098 765 432', email: 'dara@digitechkh.com', password: 'dara2026', role: 'cashier' },
+    { id: 'CAS-03', name: 'លី សុភា', initials: 'លស', pin: '3333', phone: '015 888 999', email: 'sophea@digitechkh.com', password: 'sophea2026', role: 'cashier' },
+    { id: 'CAS-04', name: 'ពេជ្រ សុវណ្ណារី', initials: 'ពស', pin: '4444', phone: '016 727 340', email: 'sovannary@digitechkh.com', password: 'sovannary2026', role: 'cashier' },
+    { id: 'CAS-05', name: 'គឹម វិសាល', initials: 'គវ', pin: '5555', phone: '070 515 662', email: 'visal@digitechkh.com', password: 'visal2026', role: 'cashier' },
+    { id: 'CAS-06', name: 'ឈឹម រតនា', initials: 'ឈរ', pin: '6666', phone: '096 330 184', email: 'ratana@digitechkh.com', password: 'ratana2026', role: 'cashier' },
+    { id: 'MGR-01', name: 'សុខ វណ្ណា', initials: 'សវ', pin: '2468', phone: '077 222 333', email: 'vanna@digitechkh.com', password: 'vanna2026', role: 'manager' },
+    { id: 'MGR-02', name: 'ម៉ៅ ស្រីនាង', initials: 'មស', pin: '1357', phone: '089 444 555', email: 'sreynang@digitechkh.com', password: 'sreynang2026', role: 'manager' },
+    { id: 'MGR-03', name: 'នួន សុខលី', initials: 'នស', pin: '8642', phone: '011 606 275', email: 'sokly@digitechkh.com', password: 'sokly2026', role: 'manager' },
+    { id: 'ADM-01', name: 'ហេង ចាន់ថា', initials: 'ហច', pin: '9999', phone: '012 999 000', email: 'chantha@digitechkh.com', password: 'chantha2026', role: 'admin' }
 ];
 const STAFF_KEY = 'pos_staff';
 
@@ -278,6 +284,38 @@ function effectivePin(id) {
 function verifyPin(id, pin) {
     const p = personById(id);
     return !!p && p.active && String(pin) === effectivePin(id);
+}
+
+/* ===== គណនីចូលប្រើ៖ អ៊ីមែល ឬលេខទូរស័ព្ទ + ពាក្យសម្ងាត់ =====
+   លេខទូរស័ព្ទវាយបានគ្រប់ទម្រង់ (012 345 678 · 012345678 · +855 12 345 678)
+   ពាក្យសម្ងាត់ដែលកំណត់ឡើងវិញ (pos_passwords) ឈ្នះលើតម្លៃលំនាំដើម */
+function normPhone(s) {
+    let d = String(s || '').replace(/\D/g, '');
+    if (d.startsWith('855')) d = d.slice(3);
+    if (d && d[0] !== '0') d = '0' + d;
+    return d;
+}
+
+function effectivePassword(id) {
+    const custom = posRead('pos_passwords', {});
+    const p = personById(id);
+    return custom[id] || (p ? p.password || '' : '');
+}
+
+function findAccount(identifier) {
+    const q = String(identifier || '').trim();
+    if (!q) return null;
+    if (q.includes('@')) return ALL_STAFF.find(p => (p.email || '').toLowerCase() === q.toLowerCase()) || null;
+    const d = normPhone(q);
+    return d.length >= 9 ? ALL_STAFF.find(p => p.phone && normPhone(p.phone) === d) || null : null;
+}
+
+/* ត្រឡប់ { person } ពេលត្រឹមត្រូវ · { error: 'bad' } មិនប្រាប់ថាខុសត្រង់ណា · { error: 'inactive' } គណនីផ្អាក */
+function verifyLogin(identifier, password) {
+    const p = findAccount(identifier);
+    if (!p || !effectivePassword(p.id) || effectivePassword(p.id) !== String(password)) return { error: 'bad' };
+    if (!p.active) return { error: 'inactive', person: p };
+    return { person: p };
 }
 
 function isManagerPage() {
@@ -1459,7 +1497,7 @@ function receiptHtml(sale, options) {
     return `
         <div class="receipt-ticket" style="width:72mm;max-width:100%;margin:0 auto;font-family:'Kantumruy Pro',sans-serif;font-size:12px;line-height:1.5;color:#0f172a;position:relative;background:#ffffff;">
             <div style="text-align:center;padding-bottom:8px;border-bottom:1px dashed #94a3b8;">
-                <div style="font-size:15px;font-weight:700;">${MERCHANT.name}</div>
+                <div style="font-size:15px;font-weight:700;">${MERCHANT.nameKh}</div>
                 <div style="color:#475569;">${MERCHANT.branch}</div>
                 <div style="color:#475569;">លេខអត្តសញ្ញាណកម្មអាករ ${MERCHANT.tin}</div>
                 <div style="color:#475569;">ទូរស័ព្ទ ${MERCHANT.phone}</div>
@@ -1674,7 +1712,7 @@ function zReportHtml(shift, s, opts) {
 
     return `
         <div class="text-center pb-5 border-b-2 border-slate-800">
-            <p class="sm-card-title text-slate-800 text-[18px]">${MERCHANT.name}</p>
+            <p class="sm-card-title text-slate-800 text-[18px]">${MERCHANT.nameKh}</p>
             <p class="sm-card-sub text-slate-500">${MERCHANT.branch}</p>
             <p class="sm-card-sub text-slate-500">លេខអត្តសញ្ញាណកម្មអាករ ${MERCHANT.tin}</p>
             <p class="sm-card-title text-slate-800 text-[20px] mt-4">${live ? 'របាយការណ៍ពាក់កណ្តាលវេន' : 'របាយការណ៍បិទវេន'}</p>

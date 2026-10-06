@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIGITECHKH - របាយការណ៍ប្រាក់ចំណេញ</title>
+    <title>ប្រព័ន្ធគិតលុយ - របាយការណ៍ប្រាក់ចំណេញ</title>
     <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -160,7 +160,7 @@
             else if (view === 'product') rows = group(all, x => x.sku).map(r => Object.assign(r, { label: getProduct(r.key).name, sub: `${r.key} · ថ្លៃដើម ${fmtUSD(costOf(r.key))}` })).sort((a, b) => b.profit - a.profit);
             else rows = group(all, x => x.sale.cashierId, 'sales').map(r => Object.assign(r, { label: personName(r.key), sub: ROLE_NAME[roleOf(r.key)] })).sort((a, b) => b.profit - a.profit);
 
-            document.getElementById('printHead').textContent = `${MERCHANT.name} · របាយការណ៍ប្រាក់ចំណេញ`;
+            document.getElementById('printHead').textContent = `${MERCHANT.nameKh} · របាយការណ៍ប្រាក់ចំណេញ`;
             document.getElementById('viewTitle').textContent = `ប្រាក់ចំណេញ${meta.label}`;
             document.getElementById('viewSub').textContent = range.start ? `${fmtDate(range.start)} – ${fmtDate(range.end || range.start)} · ${rows.length} ជួរ` : 'គ្រប់កាលបរិច្ឆេទ';
             document.getElementById('labelHead').textContent = meta.head;

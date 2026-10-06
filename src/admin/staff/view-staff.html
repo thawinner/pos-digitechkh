@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIGITECHKH - ព័ត៌មានបុគ្គលិក</title>
+    <title>ប្រព័ន្ធគិតលុយ - ព័ត៌មានបុគ្គលិក</title>
     <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -66,10 +66,12 @@
             return Math.max(0, (end - new Date(sh.openedAt)) / 3600000);
         }
 
-        function infoRow(label, value, sub) {
-            return `<div class="py-3 flex items-start justify-between gap-4">
-                <dt class="sm-td-sub text-slate-500 flex-shrink-0">${label}</dt>
-                <dd class="sm-td text-slate-800 text-right min-w-0">${value}${sub ? `<span class="block sm-td-sub text-slate-400">${sub}</span>` : ''}</dd>
+        /* action = ប៊ូតុងកែតូចមួយនៅខាងស្តាំជួរ */
+        function infoRow(label, value, sub, action) {
+            return `<div class="py-3 flex items-start gap-4">
+                <dt class="sm-td-sub text-slate-500 flex-shrink-0 w-24 sm:w-36">${label}</dt>
+                <dd class="sm-td text-slate-800 min-w-0 flex-1 break-words">${value}${sub ? `<span class="block sm-td-sub text-slate-400">${sub}</span>` : ''}</dd>
+                ${action ? `<div class="flex-shrink-0">${action}</div>` : ''}
             </div>`;
         }
 
@@ -160,18 +162,41 @@
 
         /* ===== ព័ត៌មាន ===== */
 
-        function workPanel(p, comp) {
+        const dash = '<span class="text-slate-400">—</span>';
+
+        function lastLog(id, word) {
+            return adminLogList().find(x => x.type === 'pin' && x.target === id && (x.note || '').includes(word));
+        }
+
+        function profilePanel(p, comp) {
+            const act = fn => p.active ? linkBtn('កែ', `${fn}('${p.id}')`) : '';
+            return panel('ព័ត៌មានផ្ទាល់ខ្លួន', `<dl class="px-5 divide-y divide-slate-100">
+                ${infoRow('ឈ្មោះពេញ', p.name)}
+                ${infoRow('លេខទូរស័ព្ទ', p.phone ? `<span class="sm-figure">${p.phone}</span>` : dash)}
+                ${infoRow('អ៊ីមែល', p.email ? escapeText(p.email) : dash)}
+                ${infoRow('ចូលធ្វើការ', comp.joinedDate ? `<span class="sm-figure">${fmtDate(comp.joinedDate)}</span>` : dash)}
+            </dl>`, act('editProfile'));
+        }
+
+        function workPanel(p) {
             const last = shiftsOf(p.id)[0];
-            const pinAt = adminLogList().find(x => x.type === 'pin' && x.target === p.id);
+            const on = p.active;
             return panel('ការងារ និងសិទ្ធិ', `<dl class="px-5 divide-y divide-slate-100">
-                ${infoRow('តួនាទី', ROLE_NAME[p.role], ROLE_DESC[p.role])}
-                ${infoRow('វេនប្រចាំ', staffShiftText(p))}
-                ${infoRow('បញ្ចុះតម្លៃបាន', p.role === 'cashier' ? `<span class="sm-figure">${discountLimitFor(p.id)}%</span>` : 'គ្មានដែនកំណត់', p.role === 'cashier' ? 'លើសនេះត្រូវការលេខសម្ងាត់អ្នកគ្រប់គ្រង' : '')}
-                ${infoRow('លេខសម្ងាត់', '<span class="tracking-[.3em] text-slate-500">••••</span>', pinAt ? `កំណត់ថ្មីចុងក្រោយ ${fmtDate(pinAt.at)}` : '')}
-                ${infoRow('វេនចុងក្រោយ', last ? `<span class="sm-figure">${fmtDate(last.openedAt)}</span>` : '<span class="text-slate-400">—</span>', last ? `${last.register}${last.status === 'open' ? ' · កំពុងបើក' : ''}` : '')}
-                ${infoRow('ទូរស័ព្ទ', comp.phone ? `<span class="sm-figure">${comp.phone}</span>` : '<span class="text-slate-400">—</span>')}
-                ${infoRow('ចូលធ្វើការ', comp.joinedDate ? `<span class="sm-figure">${fmtDate(comp.joinedDate)}</span>` : '<span class="text-slate-400">—</span>')}
-            </dl>`, p.active ? linkBtn('កំណត់លេខសម្ងាត់ថ្មី', `resetPin('${p.id}')`) : '');
+                ${infoRow('តួនាទី', ROLE_NAME[p.role], ROLE_DESC[p.role], on ? linkBtn('ប្តូរ', `changeRole('${p.id}')`) : '')}
+                ${infoRow('វេនប្រចាំ', staffShiftText(p), '', on && p.role !== 'admin' ? `<a href="../../manager/roster/roster.html" class="sm-td-sub font-semibold text-blue-700 hover:underline">កាលវិភាគ</a>` : '')}
+                ${infoRow('បញ្ចុះតម្លៃបាន', p.role === 'cashier' ? `<span class="sm-figure">${discountLimitFor(p.id)}%</span>` : 'គ្មានដែនកំណត់', p.role === 'cashier' ? 'លើសនេះត្រូវការលេខសម្ងាត់អ្នកគ្រប់គ្រង' : '', on && p.role === 'cashier' ? linkBtn('កែ', `editLimit('${p.id}')`) : '')}
+                ${infoRow('វេនចុងក្រោយ', last ? `<span class="sm-figure">${fmtDate(last.openedAt)}</span>` : dash, last ? `${last.register}${last.status === 'open' ? ' · កំពុងបើក' : ''}` : '')}
+            </dl>`);
+        }
+
+        function accessPanel(p) {
+            const pw = lastLog(p.id, 'ពាក្យសម្ងាត់');
+            const pin = lastLog(p.id, 'លេខសម្ងាត់');
+            const act = fn => p.active ? linkBtn('កំណត់ថ្មី', `${fn}('${p.id}')`) : '';
+            return panel('ការចូលប្រើ', `<dl class="px-5 divide-y divide-slate-100">
+                ${infoRow('ពាក្យសម្ងាត់', '<span class="tracking-[.3em] text-slate-500">••••••</span>', `ចូលប្រើជាមួយលេខទូរស័ព្ទ ឬអ៊ីមែល${pw ? ` · កំណត់ថ្មី ${fmtDate(pw.at)}` : ''}`, act('resetPassword'))}
+                ${infoRow('លេខសម្ងាត់', '<span class="tracking-[.3em] text-slate-500">••••</span>', `អនុម័ត និងដោះសោផ្ទាំងគិតលុយ${pin ? ` · កំណត់ថ្មី ${fmtDate(pin.at)}` : ''}`, act('resetPin'))}
+            </dl>`);
         }
 
         function payPanel(p, comp) {
@@ -189,7 +214,7 @@
                 ${pay ? infoRow('ប្រាក់ត្រូវបើកខែនេះ', `<span class="sm-figure font-semibold">${fmtUSD(pay.netUSD)}</span>`, `<span class="inline-flex mt-1">${status}</span>`) : ''}
             </dl>
             <div class="px-5 pb-4 pt-1"><a href="../reports/payroll.html" class="sm-td-sub font-semibold text-blue-700 hover:underline">ទៅទំព័របើកប្រាក់បៀវត្សរ៍ <i class="fas fa-arrow-right text-[10px] ml-1"></i></a></div>`,
-                p.active ? linkBtn('កែប្រាក់ខែ', `editCompensation('${p.id}')`) : '');
+                p.active ? linkBtn('កែ', `editCompensation('${p.id}')`) : '');
         }
 
         function historyPanel(p) {
@@ -213,7 +238,7 @@
             const comp = getStaffCompensation(p.id);
             const me = p.id === ME_MANAGER;
             setPortalTitle(p.name);
-            setPortalSubtitle(`${ROLE_NAME[p.role]} · ${p.id}`);
+            setPortalSubtitle(ROLE_NAME[p.role]);
             const showShifts = p.role !== 'admin' || shiftsOf(p.id).length;
 
             host.innerHTML = `
@@ -226,15 +251,19 @@
                             <span class="sm-badge inline-flex px-2.5 py-0.5 rounded-full border bg-slate-50 text-slate-700 border-slate-200">${ROLE_NAME[p.role]}</span>
                             ${staffStatusChip(p)}
                         </div>
-                        <p class="sm-td-sub text-slate-500 mt-1 sm-figure">${[comp.employeeCode, p.id, comp.phone].filter(Boolean).join(' · ')}</p>
+                        <p class="sm-td-sub text-slate-500 mt-1 sm-figure">${[p.phone, p.email && escapeText(p.email)].filter(Boolean).join(' · ') || 'មិនទាន់មានទូរស័ព្ទ ឬអ៊ីមែល'}</p>
                     </div>
-                    <div class="relative">
-                        <button onclick="toggleRowActionMenu(event, 'profileMenu')" type="button"
+                    ${p.active ? `<div class="flex items-center gap-2 relative">
+                        <button onclick="editProfile('${p.id}')" type="button"
                             class="sm-badge h-11 px-4 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center gap-2">
-                            <i class="fas fa-pen text-xs text-slate-500"></i> កែប្រែ <i class="fas fa-chevron-down text-[10px] text-slate-400"></i>
+                            <i class="fas fa-pen text-xs text-slate-400"></i> កែព័ត៌មាន
                         </button>
-                        ${staffMenu(p, 'profileMenu', false)}
-                    </div>
+                        <button onclick="toggleRowActionMenu(event, 'profileMenu')" type="button" aria-label="សកម្មភាពផ្សេងទៀត"
+                            class="h-11 w-11 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-500 inline-flex items-center justify-center">
+                            <i class="fas fa-ellipsis-vertical"></i>
+                        </button>
+                        ${staffMenu(p, 'profileMenu', { noProfile: true })}
+                    </div>` : ''}
                 </div>
 
                 ${p.active ? '' : `<div class="p-4 rounded-2xl bg-white border border-slate-200 flex flex-wrap items-center gap-3">
@@ -245,16 +274,19 @@
 
                 ${monthKpis(p)}
 
-                <div class="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-5 items-start">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
                     <div class="space-y-5 min-w-0">
-                        ${showShifts ? panel('វេនទាំងអស់', shiftRows(p.id)) : ''}
-                        ${historyPanel(p)}
+                        ${profilePanel(p, comp)}
+                        ${accessPanel(p)}
                     </div>
-                    <div class="space-y-5">
-                        ${workPanel(p, comp)}
+                    <div class="space-y-5 min-w-0">
+                        ${workPanel(p)}
                         ${payPanel(p, comp)}
                     </div>
-                </div>`;
+                </div>
+
+                ${showShifts ? panel('វេនទាំងអស់', shiftRows(p.id)) : ''}
+                ${historyPanel(p)}`;
         }
 
         window.onStoreChanged = renderAll;

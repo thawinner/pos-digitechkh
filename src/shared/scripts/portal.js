@@ -171,11 +171,11 @@ function sidebarStatusHtml() {
         const pct = Math.min(Math.max((now - start) / (end - start) * 100, 0), 100);
         const left = end - now;
         return `<div class="flex items-center justify-between gap-2">
-                <span class="sm-nav-label text-white truncate">${sh.templateName} · ${sh.register}</span>
+                <span class="sm-nav-label sb-strong truncate">${sh.templateName} · ${sh.register}</span>
                 <span class="w-2 h-2 rounded-full ${left < 0 ? 'bg-rose-400' : 'bg-emerald-400'} flex-shrink-0"></span>
             </div>
             <p class="sm-nav-note sb-accent-soft mt-0.5 whitespace-nowrap">${left < 0 ? `ហួសម៉ោងបិទ ${fmtDuration(-left)}` : `បិទ ${sh.end} · នៅសល់ ${Math.floor(left / 3600000)}:${pad2(Math.floor(left / 60000) % 60)}`}</p>
-            <div class="h-1 rounded-full bg-white/10 mt-2 overflow-hidden"><div class="h-full ${left < 0 ? 'bg-rose-400' : 'sb-progress'}" style="width:${pct}%"></div></div>`;
+            <div class="h-1 rounded-full sb-track mt-2 overflow-hidden"><div class="h-full ${left < 0 ? 'bg-rose-400' : 'sb-progress'}" style="width:${pct}%"></div></div>`;
     }
     return '';
 }
@@ -247,7 +247,7 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
         : `<div class="w-8 h-8 rounded-full sb-avatar border flex items-center justify-center font-semibold text-xs flex-shrink-0">${cfg.userInitials}</div>`;
     const roleLabel = { adminPortal: 'ម្ចាស់ហាង', managerPortal: 'អ្នកគ្រប់គ្រង', posPortal: 'ផ្ទាំងគិតលុយ' }[portalId] || cfg.title;
     const canSwitch = (cfg.views || []).length > 1;
-    // ចំណុចពណ៌ទិដ្ឋភាព (ដូចពណ៌របារចំហៀងនៃទិដ្ឋភាពនោះ)
+    // ចំណុចពណ៌ទិដ្ឋភាព៖ សម្គាល់ទិដ្ឋភាពនីមួយៗ (របារចំហៀងខ្លួនឯងនៅតែអព្យាក្រឹត)
     const viewOf = { adminPortal: 'admin', managerPortal: 'manager', posPortal: 'cashier' };
     const dot = id => `<span class="sb-view-dot view-${id}" aria-hidden="true"></span>`;
     const menuItem = (icon, label, attrs, tone) => `<button type="button" ${attrs}
@@ -255,30 +255,30 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
         <iconify-icon icon="${icon}" class="text-[18px] flex-shrink-0 opacity-80"></iconify-icon><span class="flex-1">${label}</span></button>`;
 
     host.outerHTML = `
-        <aside id="portalSidebar" class="w-[272px] text-white flex flex-col flex-shrink-0 select-none z-20 border-r border-white/[0.06]">
-            <div class="sb-brand h-[72px] px-6 flex items-center justify-between flex-shrink-0 border-b border-white/[0.06]">
+        <aside id="portalSidebar" class="w-[272px] flex flex-col flex-shrink-0 select-none z-20">
+            <div class="sb-brand h-[72px] px-6 flex items-center justify-between flex-shrink-0 border-b">
                 <button type="button" data-sb-menu onclick="if(${canSwitch}){openSidebarMenu(this, 'sbRoleMenu', 'down');}" aria-haspopup="${canSwitch ? 'menu' : 'false'}" aria-expanded="false"
-                    class="sb-switcher relative -mx-2 px-2 py-1.5 flex-1 min-w-0 flex items-center gap-3 rounded-lg hover:bg-white/[0.06] text-left transition-colors cursor-pointer" aria-label="${canSwitch ? `ប្តូរទិដ្ឋភាព · ឥឡូវ ${roleLabel}` : roleLabel}">
-                    <span class="w-8 h-8 rounded-lg bg-white/[0.08] flex items-center justify-center flex-shrink-0">
-                        <img src="${sharedRoot}/assets/logo-mark-transparent.png" alt="DIGITECHKH" class="w-5 h-5 object-contain">
+                    class="sb-switcher relative -mx-2 px-2 py-1.5 flex-1 min-w-0 flex items-center gap-3 rounded-lg text-left transition-colors cursor-pointer" aria-label="${canSwitch ? `ប្តូរទិដ្ឋភាព · ឥឡូវ ${roleLabel}` : roleLabel}">
+                    <span class="sb-logo w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <img src="${sharedRoot}/assets/logo-mark-transparent.png" alt="" class="w-5 h-5 object-contain">
                     </span>
                     <span class="min-w-0 flex-1 sb-brand-text">
-                        <span class="block text-[15px] font-semibold text-white leading-tight tracking-wide">DIGITECHKH</span>
+                        <span class="block text-[15px] font-semibold sb-strong leading-tight truncate">${typeof MERCHANT !== 'undefined' ? MERCHANT.nameKh : ''}</span>
                         <span class="flex items-center gap-1.5 sb-sub sb-view truncate">${dot(viewOf[portalId] || 'cashier')}${roleLabel}</span>
                     </span>
                     ${canSwitch ? '<iconify-icon icon="mdi:unfold-more-horizontal" class="text-lg sb-muted flex-shrink-0"></iconify-icon>' : ''}
                 </button>
             </div>
-            ${canSwitch ? `<div id="sbRoleMenu" role="menu" class="sb-menu hidden z-[70] p-1.5 rounded-lg border border-white/10 shadow-2xl text-white">
+            ${canSwitch ? `<div id="sbRoleMenu" role="menu" class="sb-menu hidden z-[70] p-1.5 rounded-lg">
                 <p class="px-3 pt-1.5 pb-1 sb-group">ប្តូរទិដ្ឋភាព</p>
                 ${cfg.views.map(v => v.current
-                    ? `<div class="sb-menu-item flex items-center gap-3 px-3 py-2 rounded-md bg-white/[0.06]">
+                    ? `<div class="sb-menu-item is-current flex items-center gap-3 px-3 py-2 rounded-md">
                         ${dot(v.id)}<span class="flex-1">${v.label}</span>
                         <iconify-icon icon="mdi:check" class="text-[18px] sb-check"></iconify-icon></div>`
                     : `<button type="button" role="menuitem" onclick="location.href='${roleRoot}/${v.href}'" class="sb-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-md text-left">${dot(v.id)}<span class="flex-1">${v.label}</span><iconify-icon icon="mdi:arrow-right" class="text-[16px] opacity-60"></iconify-icon></button>`).join('')}
             </div>` : ''}
 
-            <div id="sbStatus" class="mx-3 mt-3 px-3 py-2.5 rounded-lg bg-white/[0.04]"></div>
+            <div id="sbStatus" class="mx-3 mt-3 px-3 py-2.5 rounded-lg"></div>
 
             <nav aria-label="ម៉ឺនុយរុករក" class="flex-1 overflow-y-auto px-3 py-3 space-y-0.5 scrollbar-hide">
                 ${navHtml}
@@ -292,25 +292,25 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
                         <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 sb-presence"></span>
                     </div>
                     <span class="min-w-0 flex-1 user-meta">
-                        <span class="block text-[14.5px] font-medium text-white leading-tight truncate">${cfg.userName}</span>
-                        <span class="block sb-sub text-[12px] text-white/70 leading-snug mt-0.5">${cfg.userRole}</span>
+                        <span class="block text-[14.5px] font-medium sb-strong leading-tight truncate">${cfg.userName}</span>
+                        <span class="block sb-sub text-[12px] leading-snug mt-0.5">${cfg.userRole}</span>
                     </span>
                     <iconify-icon icon="mdi:dots-horizontal" class="text-lg sb-muted flex-shrink-0"></iconify-icon>
                 </button>
             </div>
 
-            <div id="sbUserMenu" role="menu" class="sb-menu hidden z-[70] p-1.5 rounded-lg border border-white/10 shadow-2xl text-white">
+            <div id="sbUserMenu" role="menu" class="sb-menu hidden z-[70] p-1.5 rounded-lg">
                 <div class="flex items-center gap-3 px-3 py-2.5">
                     ${avatar}
-                    <span class="min-w-0"><span class="block text-[14.5px] font-medium truncate">${cfg.userName}</span><span class="block sb-sub text-[12px] text-white/70 mt-0.5">${cfg.userRole}</span></span>
+                    <span class="min-w-0"><span class="block text-[14.5px] font-medium sb-strong truncate">${cfg.userName}</span><span class="block sb-sub text-[12px] mt-0.5">${cfg.userRole}</span></span>
                 </div>
-                <div class="h-px bg-white/[0.08] my-1"></div>
+                <div class="sb-divider h-px my-1"></div>
                 ${(cfg.views || []).filter(v => !v.current).map(v => menuItem(v.icon, `ប្តូរទៅ${v.label}`, `onclick="location.href='${roleRoot}/${v.href}'"`)).join('')}
                 ${menuItem('mdi:theme-light-dark', 'ទម្រង់ភ្លឺ ឬងងឹត', 'onclick="toggleDarkMode(); closeSidebarMenus()"')}
                 ${menuItem('mdi:shield-check-outline', 'គោលការណ៍សិទ្ធិ', "onclick=\"document.getElementById('sbPolicyBody').classList.toggle('hidden')\"")}
                 <p id="sbPolicyBody" class="hidden mx-3 mb-1.5 mt-0.5 sb-sub leading-relaxed">${cfg.policyNote}</p>
-                <div class="h-px bg-white/[0.08] my-1"></div>
-                ${menuItem('mdi:logout', 'ចាកចេញ', 'onclick="handleLogout()"', 'text-rose-300 hover:!bg-rose-500/15')}
+                <div class="sb-divider h-px my-1"></div>
+                ${menuItem('mdi:logout', 'ចាកចេញ', 'onclick="handleLogout()"', 'sb-danger')}
             </div>
         </aside>`;
 }
@@ -592,10 +592,10 @@ function renderPortalSidebar() {
         <aside class="w-64 bg-[#1e3a5f] text-white flex flex-col flex-shrink-0 select-none z-20 border-r border-slate-700">
             <div class="h-[72px] px-6 flex items-center gap-3 border-b border-white/10 flex-shrink-0">
                 <div class="w-8 h-8 flex items-center justify-center flex-shrink-0">
-                    <img src="${sharedRoot}/assets/logo-mark-transparent.png" alt="DIGITECHKH" class="w-full h-full object-contain">
+                    <img src="${sharedRoot}/assets/logo-mark-transparent.png" alt="" class="w-full h-full object-contain">
                 </div>
                 <div class="min-w-0">
-                    <h1 class="text-lg font-semibold tracking-wider whitespace-nowrap text-white">DIGITECHKH</h1>
+                    <h1 class="text-lg font-semibold whitespace-nowrap text-white">${typeof MERCHANT !== 'undefined' ? MERCHANT.nameKh : ''}</h1>
                     <span class="sm-nav-note font-medium text-blue-300 uppercase tracking-wider block">${cfg.title}</span>
                 </div>
             </div>
@@ -1359,21 +1359,23 @@ function bmsRenderStepper(hostId) {
     const doneSkin = BMS_STEPPER_TONES[cfg.doneTone] || skin;
     const icons = cfg.variant === 'icon';
     const compact = cfg.compact === true;
+    // hideLabels: រង្វង់ទំហំពេញ ប៉ុន្តែលាក់ឈ្មោះជំហាន (នៅតែអានបានដោយកម្មវិធីអានអេក្រង់) — ទំព័រចូលប្រើ
     const below = icons || cfg.labelAt === 'below';
     const clickable = typeof cfg.onStep === 'function';
 
     // ទំហំរង្វង់ និងកម្រាស់បន្ទាត់ (ភីកសែល) — ប្រើគណនាទីតាំងបន្ទាត់ភ្ជាប់
     // size: 'md' = រូបតំណាងទំហំមធ្យម (48px) សម្រាប់ផ្ទាំងតូចដូចទំព័រចូលប្រើ
     const medium = icons && cfg.size === 'md';
-    const R = compact ? 14 : (medium ? 24 : (icons ? 28 : 18));
-    const T = compact ? 2 : (medium ? 4 : (icons ? 5 : 2));
-    const circle = compact ? 'w-7 h-7' : (medium ? 'w-12 h-12' : (icons ? 'w-14 h-14' : 'w-9 h-9 text-xs'));
+    const small = icons && cfg.size === 'sm';   // 36px · ផ្ទាំងទម្រង់តូច (ទំព័រចូលប្រើ)
+    const R = compact ? 14 : small ? 18 : (medium ? 24 : (icons ? 28 : 18));
+    const T = compact ? 2 : small ? 3 : (medium ? 4 : (icons ? 5 : 2));
+    const circle = compact ? 'w-7 h-7' : small ? 'w-9 h-9' : (medium ? 'w-12 h-12' : (icons ? 'w-14 h-14' : 'w-9 h-9 text-xs'));
     /*
      * ទំហំរូបតំណាងត្រូវដាក់លើ <i> ផ្ទាល់ជារចនាប័ទ្មក្នុងជួរ
      * ព្រោះ custom.css មានច្បាប់ [class*="rounded-full"][class*="text-"]
      * ដែលបង្ខំធាតុមូលទាំងអស់ឲ្យទៅ 13.5px ដោយ !important
      */
-    const iconPx = compact ? 11 : (medium ? 18 : 22);
+    const iconPx = compact ? 11 : small ? 14 : (medium ? 18 : 22);
 
     /*
      * បន្ទាត់ចេញពីជំហានបច្ចុប្បន្នបំពេញ 75% (វាស់ពីរូបគំរូ) ដើម្បីបង្ហាញថា
@@ -1467,7 +1469,7 @@ function bmsRenderStepper(hostId) {
                             <span class="relative ${circle} rounded-full flex items-center justify-center font-bold transition ${face(n)}" style="--bms-rgb:${skin.rgb}">${glyph(s, n)}</span>
                             ${badge}
                         </span>
-                        ${compact ? '' : `<span class="${medium ? 'text-sm mt-2.5' : icons ? 'text-sm mt-3' : 'sm-badge mt-3'} px-1 text-center leading-snug ${labelTone(n)}">${s.label}</span>`}`;
+                        ${compact ? '' : cfg.hideLabels ? `<span class="sr-only">${s.label}</span>` : `<span class="${medium ? 'text-sm mt-2.5' : icons ? 'text-sm mt-3' : 'sm-badge mt-3'} px-1 text-center leading-snug ${labelTone(n)}">${s.label}</span>`}`;
                     return `<li class="relative flex-1 min-w-0 flex justify-center">
                         ${connector}
                         ${wrap(n, body, 'relative flex flex-col items-center')}
@@ -1533,4 +1535,14 @@ window.addEventListener('bms-theme-change', () => {
             bmsRenderStepper(hostId);
         });
     }
+});
+
+/* ឈ្មោះ និងឡូហ្គោហាងលើទំព័រឋិតិវន្ត៖ <span class="shop-name"> · <span class="shop-branch"> · <img class="shop-logo">
+   ប្រភពតែមួយគឺ MERCHANT (data.js) ដូច្នេះហាងពិតកែតែម្តង */
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof MERCHANT === 'undefined') return;
+    const root = (document.body && document.body.dataset.roleRoot) || '.';
+    document.querySelectorAll('.shop-name').forEach(el => { el.textContent = MERCHANT.nameKh; });
+    document.querySelectorAll('.shop-branch').forEach(el => { el.textContent = MERCHANT.branch; });
+    document.querySelectorAll('img.shop-logo').forEach(el => { el.src = `${root}/${MERCHANT.logo}`; });
 });

@@ -42,22 +42,23 @@ function staffStatusChip(p) {
 }
 
 function staffMenuItem(icon, label, act, id, danger) {
-    return `<button type="button" onclick="closeAllFloatingDropdowns(); ${act}('${id}')" class="sm-row-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg ${danger ? 'text-rose-600 hover:bg-rose-50' : 'text-slate-700 hover:bg-slate-50'}">
-        <span class="w-7 h-7 rounded-lg ${danger ? 'bg-rose-50' : 'bg-slate-100 text-slate-600'} flex items-center justify-center"><i class="fas ${icon} text-[11px]"></i></span>${label}</button>`;
+    return `<button type="button" onclick="closeAllFloatingDropdowns(); ${act}('${id}')" class="sm-row-menu-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg ${danger ? 'text-rose-600 hover:bg-rose-50' : 'text-slate-700 hover:bg-slate-50'}">
+        <i class="fas ${icon} w-4 text-center text-[13px] ${danger ? '' : 'text-slate-400'}"></i>${label}</button>`;
 }
 
-/* ម៉ឺនុយ ⋮ · withView = បន្ថែម «មើលព័ត៌មាន» (ទំព័របញ្ជី) */
-function staffMenu(p, mid, withView) {
-    const items = (withView ? [staffMenuItem('fa-id-card', 'មើលព័ត៌មាន', 'openStaff', p.id), '<div class="h-px bg-slate-100 my-1"></div>'] : [])
+/* ម៉ឺនុយ ⋮ · opts.view = បន្ថែម «មើលព័ត៌មាន» (ទំព័របញ្ជី) · opts.noProfile = មានប៊ូតុង «កែព័ត៌មាន» នៅខាងក្រៅរួចហើយ */
+function staffMenu(p, mid, opts) {
+    opts = opts === true ? { view: true } : (opts || {});
+    const sep = '<div class="h-px bg-slate-100 my-1"></div>';
+    const items = (opts.view ? [staffMenuItem('fa-id-card', 'មើលព័ត៌មាន', 'openStaff', p.id), sep] : [])
         .concat(p.active ? [
-            staffMenuItem('fa-pen', 'កែឈ្មោះ', 'editName', p.id),
+            opts.noProfile ? '' : staffMenuItem('fa-pen', 'កែព័ត៌មាន', 'editProfile', p.id),
             staffMenuItem('fa-user-shield', 'ប្តូរតួនាទី', 'changeRole', p.id),
-            staffMenuItem('fa-key', 'កំណត់លេខសម្ងាត់ថ្មី', 'resetPin', p.id)
+            staffMenuItem('fa-key', 'ពាក្យសម្ងាត់ និងលេខសម្ងាត់', 'resetAccess', p.id)
         ].concat(staffOnPayroll(p) ? [staffMenuItem('fa-money-bill-wave', 'ប្រាក់ខែ និងធនាគារ', 'editCompensation', p.id)] : [])
-         .concat(p.role === 'cashier' ? [staffMenuItem('fa-percent', 'ដែនកំណត់បញ្ចុះតម្លៃ', 'editLimit', p.id)] : [])
-         .concat(['<div class="h-px bg-slate-100 my-1"></div>', staffMenuItem('fa-user-slash', 'ផ្អាកគណនី', 'deactivate', p.id, true)])
+         .concat([sep, staffMenuItem('fa-user-slash', 'ផ្អាកគណនី', 'deactivate', p.id, true)])
             : [staffMenuItem('fa-user-check', 'បើកគណនីវិញ', 'reactivate', p.id)]);
-    return `<div id="${mid}" class="hidden bg-white rounded-xl shadow-2xl border border-slate-200 p-2 text-left min-w-[230px]">${items.join('')}</div>`;
+    return `<div id="${mid}" class="hidden bg-white rounded-xl shadow-2xl border border-slate-200 p-1.5 text-left min-w-[240px]">${items.join('')}</div>`;
 }
 
 function openStaff(id) {
@@ -81,6 +82,39 @@ function pinError(pin, exceptId) {
     if (/^(\d)\1+$/.test(pin) || '0123456789'.includes(pin) || '9876543210'.includes(pin)) return 'លេខសម្ងាត់នេះងាយទាយពេក · សូមជ្រើសលេខផ្សេង';
     if (pinTaken(pin, exceptId)) return 'លេខសម្ងាត់នេះមានអ្នកប្រើរួចហើយ';
     return '';
+}
+
+/* គណនីចូលប្រើ៖ ត្រូវមានលេខទូរស័ព្ទ ឬអ៊ីមែលយ៉ាងហោចណាស់មួយ · មិនជាន់អ្នកផ្សេង */
+function accountError(phone, email, exceptId) {
+    if (!phone && !email) return 'សូមបញ្ចូលលេខទូរស័ព្ទ ឬអ៊ីមែល ដើម្បីចូលប្រើ';
+    if (phone && normPhone(phone).length < 9) return 'លេខទូរស័ព្ទមិនគ្រប់ខ្ទង់ · ឧ. 012 345 678';
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'ទម្រង់អ៊ីមែលមិនត្រឹមត្រូវ';
+    if (accountTaken('phone', phone, exceptId)) return 'លេខទូរស័ព្ទនេះមានបុគ្គលិកផ្សេងប្រើរួចហើយ';
+    if (accountTaken('email', email, exceptId)) return 'អ៊ីមែលនេះមានបុគ្គលិកផ្សេងប្រើរួចហើយ';
+    return '';
+}
+
+function passwordError(pw) {
+    if (String(pw).length < 6) return 'ពាក្យសម្ងាត់ត្រូវមានយ៉ាងតិច 6 តួ';
+    if (!/\d/.test(pw) || !/[A-Za-z]/.test(pw)) return 'ពាក្យសម្ងាត់ត្រូវមានទាំងអក្សរ និងលេខ';
+    return '';
+}
+
+function randomPassword() {
+    const letters = 'abcdefghjkmnpqrstuvwxyz';
+    let s = '';
+    for (let i = 0; i < 5; i++) s += letters[Math.floor(Math.random() * letters.length)];
+    return s + String(100 + Math.floor(Math.random() * 900));
+}
+
+async function showNewPassword(p, pw) {
+    await showCustomConfirm({
+        title: `ពាក្យសម្ងាត់របស់ ${p.name}`,
+        message: `<span class="block text-2xl font-semibold tracking-wider text-slate-800 my-3 sm-figure">${pw}</span>សូមប្រាប់ផ្ទាល់ ហើយឱ្យគាត់ចងចាំ · ពាក្យនេះនឹងមិនបង្ហាញម្តងទៀតទេ`,
+        confirmText: 'បានប្រាប់រួច',
+        hideCancel: true,
+        type: 'success'
+    });
 }
 
 function randomPin(exceptId) {
@@ -109,18 +143,43 @@ function openShiftOf(id) {
 
 /* ===== សកម្មភាព ===== */
 
-async function editName(id) {
+/* ឈ្មោះ លេខទូរស័ព្ទ និងអ៊ីមែល ក្នុងផ្ទាំងតែមួយ */
+async function editProfile(id) {
     const p = findStaff(id);
     const v = await showFormDialog({
-        title: 'កែឈ្មោះ', icon: 'fa-pen',
-        message: 'ឈ្មោះថ្មីបង្ហាញលើវិក្កយបត្រ និងរបាយការណ៍ចាប់ពីពេលនេះ',
-        fields: [{ key: 'name', label: 'ឈ្មោះពេញ', value: p.name }],
-        validate: x => nameError(x.name) || (x.name === p.name ? 'ឈ្មោះមិនបានប្តូរ' : '')
+        title: 'កែព័ត៌មាន', icon: 'fa-pen',
+        message: `${p.name} · ឈ្មោះបង្ហាញលើវិក្កយបត្រ និងរបាយការណ៍ · ទូរស័ព្ទ ឬអ៊ីមែលប្រើសម្រាប់ចូលប្រើ`,
+        fields: [
+            { key: 'name', label: 'ឈ្មោះពេញ', value: p.name },
+            { key: 'phone', label: 'លេខទូរស័ព្ទ', value: p.phone || '', hint: 'ឧ. 012 345 678' },
+            { key: 'email', label: 'អ៊ីមែល', value: p.email || '', hint: 'មិនចាំបាច់' }
+        ],
+        validate: x => nameError(x.name) || accountError(x.phone, x.email, id)
+            || (x.name === p.name && x.phone === (p.phone || '') && x.email.toLowerCase() === (p.email || '') ? 'មិនបានប្តូរអ្វីទេ' : '')
     });
     if (!v) return;
-    updateStaff(id, { name: v.name, initials: initialsOf(v.name) }, `ប្តូរឈ្មោះ ${p.name} → ${v.name}`);
+    const patch = { phone: v.phone, email: v.email.toLowerCase() };
+    const notes = [];
+    if (v.name !== p.name) { Object.assign(patch, { name: v.name, initials: initialsOf(v.name) }); notes.push(`ប្តូរឈ្មោះ ${p.name} → ${v.name}`); }
+    if (v.phone !== (p.phone || '') || patch.email !== (p.email || '')) notes.push(`កែគណនីចូលប្រើរបស់ ${v.name}`);
+    updateStaff(id, patch, notes.join(' · '));
     staffRefresh();
-    showToast('បានរក្សាទុកឈ្មោះថ្មី');
+    showToast('បានរក្សាទុកព័ត៌មាន');
+}
+
+/* ពាក្យសម្ងាត់ (ចូលប្រើ) ឬលេខសម្ងាត់ (អនុម័ត និងដោះសោ) */
+async function resetAccess(id) {
+    const p = findStaff(id);
+    const kind = await showOptionDialog({
+        title: `កំណត់ថ្មីសម្រាប់ ${p.name}`,
+        message: 'ជ្រើសអ្វីដែលត្រូវកំណត់ថ្មី · ចាស់ឈប់ដំណើរការភ្លាមៗ',
+        options: [
+            { value: 'password', label: 'ពាក្យសម្ងាត់', desc: 'ចូលប្រើប្រព័ន្ធជាមួយលេខទូរស័ព្ទ ឬអ៊ីមែល', icon: 'fa-lock' },
+            { value: 'pin', label: 'លេខសម្ងាត់ 4 ខ្ទង់', desc: 'អនុម័តលើបញ្ជរ និងដោះសោផ្ទាំងគិតលុយ', icon: 'fa-key' }
+        ]
+    });
+    if (kind === 'password') resetPassword(id);
+    else if (kind === 'pin') resetPin(id);
 }
 
 async function changeRole(id) {
@@ -158,7 +217,7 @@ async function resetPin(id) {
     const p = findStaff(id);
     const v = await showFormDialog({
         title: `លេខសម្ងាត់ថ្មីសម្រាប់ ${p.name}`, icon: 'fa-key',
-        message: 'លេខចាស់ឈប់ដំណើរការភ្លាមៗ',
+        message: 'លេខសម្ងាត់ 4 ដល់ 6 ខ្ទង់ សម្រាប់អនុម័ត និងដោះសោផ្ទាំងគិតលុយ · លេខចាស់ឈប់ដំណើរការភ្លាមៗ',
         fields: [{ key: 'pin', label: 'លេខសម្ងាត់ថ្មី', value: randomPin(id), type: 'pin', hint: 'បង្កើតដោយស្វ័យប្រវត្តិ · អាចវាយលេខផ្សេងបាន' }],
         confirmText: 'កំណត់',
         validate: x => pinError(x.pin, id) || (x.pin === (posRead('pos_pins', {})[id] || p.pin) ? 'នេះជាលេខសម្ងាត់បច្ចុប្បន្ន' : '')
@@ -168,6 +227,22 @@ async function resetPin(id) {
     staffRefresh();
     showToast('បានកំណត់លេខសម្ងាត់ថ្មី');
     await showNewPin(p, v.pin);
+}
+
+async function resetPassword(id) {
+    const p = findStaff(id);
+    const v = await showFormDialog({
+        title: `ពាក្យសម្ងាត់ថ្មីសម្រាប់ ${p.name}`, icon: 'fa-lock',
+        message: 'ពាក្យសម្ងាត់ចាស់ឈប់ដំណើរការភ្លាមៗ',
+        fields: [{ key: 'pw', label: 'ពាក្យសម្ងាត់ថ្មី', value: randomPassword(), hint: 'បង្កើតដោយស្វ័យប្រវត្តិ · យ៉ាងតិច 6 តួ មានអក្សរ និងលេខ' }],
+        confirmText: 'កំណត់',
+        validate: x => passwordError(x.pw) || (x.pw === effectivePassword(id) ? 'នេះជាពាក្យសម្ងាត់បច្ចុប្បន្ន' : '')
+    });
+    if (!v) return;
+    setStaffPassword(id, v.pw);
+    staffRefresh();
+    showToast('បានកំណត់ពាក្យសម្ងាត់ថ្មី');
+    await showNewPassword(p, v.pw);
 }
 
 async function editLimit(id) {

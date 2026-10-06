@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIGITECHKH - បុគ្គលិក</title>
+    <title>ប្រព័ន្ធគិតលុយ - បុគ្គលិក</title>
     <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -176,16 +176,20 @@
             const v = await showFormDialog({
                 title: `${ROLE_NAME[role]}ថ្មី`,
                 icon: 'fa-user-plus',
-                message: 'លេខសម្ងាត់ត្រូវបង្កើតដោយស្វ័យប្រវត្តិ អាចកែបាន',
+                message: 'ពាក្យសម្ងាត់ និងលេខសម្ងាត់ត្រូវបង្កើតដោយស្វ័យប្រវត្តិ អាចកែបាន',
                 fields: [
                     { key: 'name', label: 'ឈ្មោះពេញ', value: '' },
-                    { key: 'pin', label: 'លេខសម្ងាត់ចូលប្រើ', value: randomPin(), type: 'pin', hint: 'លេខ 4 ដល់ 6 ខ្ទង់ · មិនត្រូវដូចអ្នកដទៃ' }
+                    { key: 'phone', label: 'លេខទូរស័ព្ទ', value: '', hint: 'ប្រើសម្រាប់ចូលប្រើ · ឧ. 012 345 678' },
+                    { key: 'email', label: 'អ៊ីមែល', value: '', hint: 'មិនចាំបាច់' },
+                    { key: 'password', label: 'ពាក្យសម្ងាត់ចូលប្រើ', value: randomPassword(), hint: 'យ៉ាងតិច 6 តួ មានអក្សរ និងលេខ' },
+                    { key: 'pin', label: 'លេខសម្ងាត់អនុម័ត', value: randomPin(), type: 'pin', hint: 'លេខ 4 ដល់ 6 ខ្ទង់ · សម្រាប់អនុម័ត និងដោះសោផ្ទាំងគិតលុយ' }
                 ].concat(role === 'cashier' ? [{ key: 'limit', label: 'បញ្ចុះតម្លៃបានដោយខ្លួនឯងរហូតដល់', value: '3', type: 'number', suffix: '%' }] : []),
                 confirmText: 'បន្ថែម',
-                validate: x => nameError(x.name) || pinError(x.pin) || (role === 'cashier' && !(Number(x.limit) >= 0 && Number(x.limit) <= 20) ? 'ដែនកំណត់បញ្ចុះតម្លៃត្រូវនៅចន្លោះ 0 ដល់ 20%' : '')
+                validate: x => nameError(x.name) || accountError(x.phone.trim(), x.email.trim()) || passwordError(x.password) || pinError(x.pin) || (role === 'cashier' && !(Number(x.limit) >= 0 && Number(x.limit) <= 20) ? 'ដែនកំណត់បញ្ចុះតម្លៃត្រូវនៅចន្លោះ 0 ដល់ 20%' : '')
             });
             if (!v) return;
-            const person = { id: nextStaffId(role), name: v.name, initials: initialsOf(v.name), pin: v.pin, role };
+            const person = { id: nextStaffId(role), name: v.name, initials: initialsOf(v.name), pin: v.pin, role,
+                phone: v.phone.trim(), email: v.email.trim().toLowerCase(), password: v.password };
             addStaff(person);
             if (role === 'cashier') {
                 const limits = clone(posSettings().discountLimits || {});
@@ -195,6 +199,7 @@
             tab = role;
             renderAll();
             showToast(`បានបន្ថែម ${person.name}`);
+            await showNewPassword(person, v.password);
             await showNewPin(person, v.pin);
         }
 

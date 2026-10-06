@@ -12,22 +12,29 @@ There is no build system, no tests and no backend: all state lives in the browse
 python3 -m http.server 8000 --directory src   # then open localhost:8000 (login page)
 ```
 
-Demo PINs: ចន្ទ មករា 1111 · សុខ ដារ៉ា 2222 · លី សុភា 3333 · ពេជ្រ សុវណ្ណារី 4444 · គឹម វិសាល 5555 · ឈឹម រតនា 6666
+Login: email or phone + password (`verifyLogin()` in `data.js`). Demo accounts: phone/email/password per person in
+`STAFF_SEED` (e.g. 012 345 678 · makara@digitechkh.com · makara2026; owner 012 999 000 · chantha2026). The 4-digit PIN
+is only for manager approvals and unlocking the till. Demo PINs: ចន្ទ មករា 1111 · សុខ ដារ៉ា 2222 · លី សុភា 3333 · ពេជ្រ សុវណ្ណារី 4444 · គឹម វិសាល 5555 · ឈឹម រតនា 6666
 (cashiers) · សុខ វណ្ណា 2468 · ម៉ៅ ស្រីនាង 1357 · នួន សុខលី 8642 (managers) · ហេង ចាន់ថា 9999 (owner).
 Default roster: morning CAS-01 + CAS-05, afternoon CAS-02 + CAS-04, night CAS-03 + CAS-06 (both off Tuesday, so a
 manager covers that night).
-They are listed on the login page under «ព័ត៌មានសម្រាប់គំរូសាកល្បង», next to the reset-demo-data button.
+Accounts are listed on the login page under «ព័ត៌មានសម្រាប់គំរូសាកល្បង» (a click fills the form), next to the reset-demo-data button.
 
 Deploy: Vercel only; `vercel.json` publishes `src/` as the site root. Never move pages out of `src/`, and keep every path relative so the site works under a subpath.
 
 Verification is visual: open the page in a browser, or drive headless Chrome over the DevTools protocol. Serve over
 HTTP; `file://` storage is unreliable.
 
+Branding: DIGITECHKH is the dev team, not the shop. Staff screens show the shop from `MERCHANT` (`nameKh`, `branch`,
+`logo`; demo shop = «DIGITECHKH» with the team logo; Latin `name` only for KHQR). Static markup uses `.shop-name` / `.shop-branch` /
+`img.shop-logo`, filled by `portal.js`. DIGITECHKH appears only as «អភិវឌ្ឍដោយ DIGITECHKH» (login footer, splash, payslip).
+Page titles start with «ប្រព័ន្ធគិតលុយ - ».
+
 ## Layout
 
 ```
 src/
-├── index.html                      login: pick a person, enter PIN (session in localStorage `pos_session`)
+├── index.html                      login: top bar (brand + theme), one card with illustration + email-or-phone / password form (session in localStorage `pos_session`)
 ├── cashier/terminal/pos-terminal   sell, hold, discount override, Riel change, in-terminal KHQR, safe drop, lock
 ├── cashier/receipts/receipts       shift receipts, void / return requests (manager PIN on the spot or queued)
 ├── cashier/shift/{open,close}-shift  float count + manager PIN · blind close with one recount + Z-report
@@ -46,9 +53,10 @@ src/
 ## How a page is assembled
 
 - Cashier: `<body id="posPortal" …>`; manager: `<body id="managerPortal" …>` (`badgeFn` nav badges); owner:
-  `<body id="adminPortal" …>`. Each view has its own muted dark sidebar (`portal.css`
-  `--sb-*` per body id): cashier graphite, manager navy, owner deep brand green (owner accent emerald); a matching dot
-  sits next to the view name under the logo and in the view switcher. Page content keeps the single blue accent; nav
+  `<body id="adminPortal" …>`. All three views share one dark slate sidebar
+  (`portal.css` `--sb-*`: slate-800 #1e293b, slate-900 in dark mode). Never tint it per view. Everything else is neutral: white text, logo on a white tile,
+  active item = white 13% fill, no accent bar, glow or coloured icons. A dot + the view name sit under the logo and in
+  the view switcher. Nav
   badges stay neutral (red when urgent). No `title=` tooltips in the sidebar. The sidebar brand block switches views
   (`ROLE_VIEW`): owner ⇄ manager, manager ⇄ cashier. The sidebar is never collapsible.
   `data-active` picks the highlighted nav item. Change nav in `PORTAL_CONFIGS`, never in pages.
@@ -57,7 +65,11 @@ src/
   settings pages) → (`staff-actions.js`, staff list + view-staff) → inline script.
 - Charts: always ECharts through `posChart(el, option)` in `charts.js` (owner override of the eBMS «no ECharts on
   dashboards» rule). Steppers: always `bmsStepper()` with `variant: 'icon'`, `tone: 'accent'`, `doneTone: 'accent'` (round icons;
-  `dark: true` on dark pages) so login, open-shift and close-shift look the same.
+  `dark: true` on dark pages) so open-shift and close-shift look the same. The login page has no stepper (minimal form, Stripe/Shopify style); it is one centred card with
+  `shared/assets/pos-login.jpg` / `pos-login-dark.jpg` (resized from `pos.jpeg` / `pos_dark.jpeg`) and the form. Phone accepts any format (`normPhone`); phone and
+  email are unique per active person (`accountError()` in `staff-actions.js`); the error never says which part is wrong;
+  5 wrong tries lock it for 1 minute (`pos_login_guard`); the last email/phone is remembered (`pos_last_login`).
+  Owners manage accounts in the staff ⋮ menu: «កែព័ត៌មាន» (name + phone + email, `editProfile`), «ពាក្យសម្ងាត់ និងលេខសម្ងាត់» (`resetAccess` → password in `pos_passwords` or PIN), role, pay, deactivate; the discount limit is edited on view-staff.
 - Manager pages are generated from a shared shell (head, sidebar host, header host, script tags); keep that shell
   identical when adding one. View/create pages are full pages with `data-back`, never modals. A
   `?back=<relative path>` parameter overrides `data-back` (e.g. a shift opened from a staff profile returns to it).
@@ -102,7 +114,7 @@ src/
   `ADMINS` are active only. Use `loadStaff()` for a fresh list after an edit on the same page. Catalogue edits
   (`pos_catalog`: price, active) apply at load; `sellableProducts()` hides paused products.
 - localStorage keys (all `pos_*`): `session`, `settings`, `roster`, `shifts`, `shift_sales`, `held_sales`, `approvals`,
-  `cash_movements`, `events`, `terminal_lock`, `pins`, `stock_opening`, `stock_moves`, `stock_counts`, `stock_costs`, `overlay`, `staff`, `catalog`, `costs`, `admin_log`, seeds. sessionStorage: `pos_cart`, `pos_pending_khqr`.
+  `cash_movements`, `events`, `terminal_lock`, `pins`, `passwords`, `login_guard`, `last_login`, `stock_opening`, `stock_moves`, `stock_counts`, `stock_costs`, `overlay`, `staff`, `catalog`, `costs`, `admin_log`, seeds. sessionStorage: `pos_cart`, `pos_pending_khqr`.
   A `storage` event re-renders other tabs (`window.onStoreChanged`).
 - **Shift model** (see `docs/spec/02-manager-pos.md` §11): shift template (time window) → staff default shift →
   roster per date (covers marked `cover`; default templates morning / afternoon / night, the night one overnight) → drawer shift (one cashier, one register, one drawer: open → closed →
@@ -144,7 +156,7 @@ old eBMS layout; the rules apply as-is. Condensed:
 | Printing | Receipts print to 80mm thermal, the Z-report to A4, via `@media print`. |
 | Em dash | Don't put «—» between Khmer phrases; a lone «—» as an empty-value marker is fine. |
 | Colour | One accent: blue (`primary` #2563EB, Tailwind `blue-*`) for primary buttons, active tabs, links, chart series. Green / amber / red only for status, and only on exceptions: normal or finished states (in stock, approved, confirmed, reviewed, payment method, roles, categories) are slate. No indigo, cyan, sky, teal or purple. `kpiCard()` ignores non-warning tones. |
-| Theme | Light by default (`bms_theme` unset). The login, cashier terminal and open-shift are authored dark and get their light look from the `html:not(.dark)` layer in their `<style>` (login: only `.login-dark` parts); never put a `:hover` selector inside `:is()` there (it raises specificity and beats the white-text restore). Sidebar is never collapsible. |
+| Theme | Light by default (`bms_theme` unset). The cashier terminal and open-shift are authored dark and get their light look from the `html:not(.dark)` layer in their `<style>`; never put a `:hover` selector inside `:is()` there (it raises specificity and beats the white-text restore). The login page is authored light like the portal pages (dark comes from `custom.css`); only its splash is dark, with an `html:not(.dark) #splash` rule. Sidebar is never collapsible. |
 
 ## UX/UI rules (for AI working on this repo)
 
@@ -183,6 +195,9 @@ work faster, clearer or safer. Apply these on every page you add or touch:
   instead. Round elements are forced to 13.5px.
 - On phones, `header p` is `display: none`. Use `<span class="block">` for text that must stay visible in a header.
 - It hides scrollbars globally and holds the `< 1024px` off-canvas drawer rules.
+- On phones (§17), every button inside a `main .bg-white` that contains a `button[type="submit"]` is forced to full width,
+  and its child divs to `justify-content: stretch`. A compact form card needs its own background class (see `.login-card`).
+- On phones, `main .grid.grid-cols-2.md:grid-cols-4` is forced to one column; use a page-level grid class instead.
 - On phones, `div:has(> a[href*="create-"])` is forced to `display: flex`, so a hidden ⋮ menu containing a link to a
   `create-*.html` page shows permanently. Use a `<button onclick="location.href=…">` inside menus instead.
 

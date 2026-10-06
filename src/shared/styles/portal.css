@@ -287,116 +287,102 @@
 }
 
 
-/* ===== របារចំហៀង៖ ពណ៌តាមទិដ្ឋភាព =====
-   ផ្ទៃងងឹតស្រាលពណ៌ (មិនឆ្អៅ) ដើម្បីឱ្យបុគ្គលិកដឹងភ្លាមថាកំពុងនៅផ្នែកណា · ពណ៌ទាំងបីសុខដុមជាមួយពណ៌ខៀវមេ និងផ្ទៃប្រផេះ
-   • ផ្ទាំងគិតលុយ៖ ប្រផេះខ្មៅ (អព្យាក្រឹត មិនរំខានការលក់)
-   • អ្នកគ្រប់គ្រង៖ ខៀវចាស់ (ស៊ីគ្នានឹងពណ៌ខៀវមេ)
-   • ម្ចាស់ហាង៖ បៃតងចាស់ (ពណ៌និមិត្តសញ្ញា DIGITECHKH)
-   ពណ៌ទិដ្ឋភាពប្រើតែលើផ្ទៃរបារ ធាតុសកម្ម និងចំណុចតួនាទី · ផ្លាកលេខនៅតែប្រផេះ/ក្រហមដដែល */
-#portalSidebar {
-    --sb-bg: #18181b;
-    --sb-menu-bg: #111113;
-    --sb-line: rgba(255, 255, 255, .07);
-    --sb-accent: #60a5fa;
-    --sb-accent-icon: #93c5fd;
-    --sb-accent-text: #bfdbfe;
-    --sb-active-bg: rgba(96, 165, 250, .14);
-    --sb-hover-bg: rgba(255, 255, 255, .06);
+/* ===== របារចំហៀង៖ ផ្ទៃប្រផេះខៀវចាស់ (slate-800) តែមួយសម្រាប់គ្រប់ទិដ្ឋភាព =====
+   ពណ៌ក្នុងគ្រួសារ slate ដូចអក្សរ និងបន្ទាត់លើទំព័រ មិនប្រជែងនឹងប៊ូតុងពណ៌ខៀវ
+   អក្សរស ធាតុសកម្មផ្ទៃសស្រាល · គ្មានបន្ទាត់ពណ៌ ពន្លឺ ឬពណ៌សង្កត់ផ្សេងទៀត · ទិដ្ឋភាពសម្គាល់ដោយចំណុច និងឈ្មោះក្រោមឈ្មោះម៉ាក */
+#portalSidebar, .sb-menu {
+    --sb-bg: #1e293b;
+    --sb-menu-bg: #1e293b;
+    --sb-line: rgba(255, 255, 255, .09);
+    --sb-text: rgba(255, 255, 255, .80);
+    --sb-strong: #ffffff;
+    --sb-muted: rgba(255, 255, 255, .58);
+    --sb-icon: rgba(255, 255, 255, .62);
+    --sb-hover-bg: rgba(255, 255, 255, .07);
+    --sb-active-bg: rgba(255, 255, 255, .13);
+    --sb-accent: #ffffff;
+    --sb-track: rgba(255, 255, 255, .14);
 }
-body#managerPortal #portalSidebar {
-    --sb-bg: #0f1d36;
-    --sb-menu-bg: #0a1529;
-    --sb-line: rgba(147, 197, 253, .10);
-    --sb-active-bg: rgba(96, 165, 250, .18);
-    --sb-hover-bg: rgba(147, 197, 253, .08);
-}
-body#adminPortal #portalSidebar {
-    --sb-bg: #0d2620;
-    --sb-menu-bg: #081b16;
-    --sb-line: rgba(110, 231, 183, .10);
-    --sb-accent: #34d399;
-    --sb-accent-icon: #6ee7b7;
-    --sb-accent-text: #a7f3d0;
-    --sb-active-bg: rgba(52, 211, 153, .15);
-    --sb-hover-bg: rgba(110, 231, 183, .07);
-}
-/* ទម្រង់ងងឹត៖ ងងឹតជាងផ្ទៃទំព័របន្តិច ប៉ុន្តែរក្សាពណ៌ទិដ្ឋភាព */
-html.dark #portalSidebar { --sb-bg: #0e0e10; --sb-menu-bg: #09090b; --sb-line: rgba(255, 255, 255, .09); }
-html.dark body#managerPortal #portalSidebar { --sb-bg: #0a1426; --sb-menu-bg: #070f1d; --sb-line: rgba(147, 197, 253, .11); }
-html.dark body#adminPortal #portalSidebar { --sb-bg: #091b17; --sb-menu-bg: #061310; --sb-line: rgba(110, 231, 183, .11); }
+/* ទម្រង់ងងឹត៖ slate-900 ដូចក្បាលទំព័រងងឹត */
+html.dark #portalSidebar, html.dark .sb-menu { --sb-bg: #0f172a; --sb-menu-bg: #0f172a; --sb-line: rgba(255, 255, 255, .08); }
 
 /* custom.css បង្ខំ <aside> ទាំងអស់ទៅពណ៌បៃតង ដោយ !important */
 aside#portalSidebar,
 html.dark aside#portalSidebar {
     background-color: var(--sb-bg) !important;
-    border-right-color: var(--sb-line) !important;
+    border-right: 1px solid var(--sb-line) !important;
+    color: var(--sb-text);
 }
 #portalSidebar .sb-brand,
 #portalSidebar .sb-foot { border-color: var(--sb-line) !important; }
 
 /* ពណ៌អត្ថបទ */
-#portalSidebar .sb-accent      { color: var(--sb-accent-text); }
-#portalSidebar .sb-accent-soft { color: rgba(255, 255, 255, .6); }
-#portalSidebar .sb-avatar      { background: var(--sb-active-bg); border-color: var(--sb-line); color: var(--sb-accent-text); }
+#portalSidebar .sb-strong, .sb-menu .sb-strong { color: var(--sb-strong); }
+#portalSidebar .sb-accent-soft { color: var(--sb-muted); }
+#portalSidebar .sb-avatar, .sb-menu .sb-avatar { background: var(--sb-hover-bg); border-color: var(--sb-line); color: var(--sb-text); }
 #portalSidebar .sb-presence    { border-color: var(--sb-bg) !important; }
 #portalSidebar .sb-progress    { background: var(--sb-accent); }
+#portalSidebar .sb-track       { background: var(--sb-track); }
+#portalSidebar .sb-logo        { background: #fff; }
+#portalSidebar .sb-switcher:hover,
+#portalSidebar .sb-user:hover  { background: var(--sb-hover-bg); }
 
-/* ស្លាកស្ថានភាពផ្ទាល់ (វេន · បញ្ជរ · ការលក់) */
-#portalSidebar #sbStatus {
-    background: rgba(255, 255, 255, .035);
-    border: 1px solid var(--sb-line);
-}
+/* ស្លាកស្ថានភាពផ្ទាល់ (វេន · បញ្ជរ) */
+#portalSidebar #sbStatus { border: 1px solid var(--sb-line); }
 
-/* ជួររុករក៖ កម្ពស់ 36px · រូបតំណាងស្រាល · ធាតុសកម្មមានផ្ទៃពណ៌តួនាទី និងបន្ទាត់ខាងឆ្វេង */
+/* ជួររុករក៖ កម្ពស់ 36px · ធាតុសកម្មមានផ្ទៃប្រផេះស្រាល មិនមានបន្ទាត់ ឬពន្លឺពណ៌ */
 #portalSidebar .sb-row {
-    display: flex; align-items: center; gap: 12px; height: 36px; padding: 0 12px; border-radius: 6px;
-    color: rgba(255, 255, 255, .74); transition: background-color .12s ease, color .12s ease; white-space: nowrap;
+    display: flex; align-items: center; gap: 12px; height: 36px; padding: 0 10px; border-radius: 6px;
+    color: var(--sb-text); transition: background-color .12s ease, color .12s ease; white-space: nowrap;
 }
-#portalSidebar .sb-row:hover { background: var(--sb-hover-bg); color: #fff; }
-#portalSidebar .sb-row .sb-icon { color: rgba(255, 255, 255, .52); font-size: 18px; transition: color .12s ease; }
-#portalSidebar .sb-row:hover .sb-icon { color: rgba(255, 255, 255, .85); }
+#portalSidebar .sb-row:hover { background: var(--sb-hover-bg); color: var(--sb-strong); }
+#portalSidebar .sb-row .sb-icon { color: var(--sb-icon); font-size: 18px; transition: color .12s ease; }
+#portalSidebar .sb-row:hover .sb-icon { color: var(--sb-strong); }
 #portalSidebar .sb-nav-item[aria-current="page"],
-#portalSidebar .sb-nav-item[aria-current="page"]:hover { background: var(--sb-active-bg) !important; color: #fff; }
+#portalSidebar .sb-nav-item[aria-current="page"]:hover { background: var(--sb-active-bg) !important; color: var(--sb-strong); }
 #portalSidebar .sb-nav-item[aria-current="page"] .sb-label { font-weight: 600; }
-#portalSidebar .sb-nav-item[aria-current="page"] .sb-icon { color: var(--sb-accent-icon) !important; }
-#portalSidebar .sb-nav-item[aria-current="page"]::before {
-    content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-    width: 3px; height: 18px; border-radius: 0 3px 3px 0; background: var(--sb-accent);
-}
+#portalSidebar .sb-nav-item[aria-current="page"] .sb-icon { color: var(--sb-accent) !important; }
 #portalSidebar :is(a, button):focus-visible,
 .sb-menu button:focus-visible {
     outline: 2px solid var(--sb-accent);
     outline-offset: -2px;
 }
 
-/* ស្លាកក្រុម និងអត្ថបទរង (កម្រិតពន្លឺគ្រប់គ្រាន់សម្រាប់អានលើផ្ទៃងងឹត) */
+/* ស្លាកក្រុម និងអត្ថបទរង */
 #portalSidebar .sb-label { font-size: 15px; font-weight: 500; }
-#portalSidebar .sb-group { font-size: 12.5px; font-weight: 500; color: rgba(255, 255, 255, .5); }
-#portalSidebar .sb-sub, .sb-menu .sb-sub { font-size: 12.5px; color: rgba(255, 255, 255, .58); line-height: 1.5; }
-#portalSidebar .sb-muted { color: rgba(255, 255, 255, .45); }
+#portalSidebar .sb-group { font-size: 12.5px; font-weight: 500; color: var(--sb-muted); }
+#portalSidebar .sb-sub, .sb-menu .sb-sub { font-size: 12.5px; color: var(--sb-muted); line-height: 1.5; }
+#portalSidebar .sb-muted, .sb-menu .sb-muted { color: var(--sb-muted); }
 
-/* ផ្លាកលេខ */
+/* ផ្លាកលេខ៖ ប្រផេះ · ក្រហមតែពេលបន្ទាន់ */
 #portalSidebar .sb-count {
     min-width: 20px; height: 20px; padding: 0 6px; border-radius: 5px; font-size: 12px !important; font-weight: 600 !important;
-    display: inline-flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, .12); color: rgba(255, 255, 255, .9);
+    display: inline-flex; align-items: center; justify-content: center; background: var(--sb-hover-bg); color: var(--sb-text);
 }
+#portalSidebar .sb-nav-item[aria-current="page"] .sb-count:not(.sb-count-urgent) { background: var(--sb-bg); }
 #portalSidebar .sb-count.hidden { display: none; }
-#portalSidebar .sb-count-warn { background: rgba(255, 255, 255, .12); color: #fff; }
 #portalSidebar .sb-count-urgent { background: #dc2626; color: #fff; }
 
-/* ម៉ឺនុយលេចចេញ (ប្តូរទិដ្ឋភាព · គណនី) ប្រើពណ៌ផ្ទៃរបស់តួនាទីដដែល */
-.sb-menu { background: var(--sb-menu-bg); }
-.sb-menu .sb-group { font-size: 12.5px; font-weight: 500; color: rgba(255, 255, 255, .5); }
-.sb-menu .sb-menu-item { font-size: 14.5px; color: rgba(255, 255, 255, .84); }
-.sb-menu button.sb-menu-item:hover { background: var(--sb-hover-bg, rgba(255, 255, 255, .07)); color: #fff; }
+/* ម៉ឺនុយលេចចេញ (ប្តូរទិដ្ឋភាព · គណនី) */
+.sb-menu {
+    background: var(--sb-menu-bg); color: var(--sb-text);
+    border: 1px solid var(--sb-line); box-shadow: 0 10px 30px rgba(2, 6, 23, .35);
+}
+.sb-menu .sb-group { font-size: 12.5px; font-weight: 500; color: var(--sb-muted); }
+.sb-menu .sb-menu-item { font-size: 14.5px; color: var(--sb-text); }
+.sb-menu .sb-menu-item.is-current { background: var(--sb-hover-bg); color: var(--sb-strong); }
+.sb-menu button.sb-menu-item:hover { background: var(--sb-hover-bg); color: var(--sb-strong); }
+.sb-menu .sb-menu-item.sb-danger { color: #fca5a5; }
+.sb-menu button.sb-menu-item.sb-danger:hover { background: rgba(220, 38, 38, .15); color: #fecaca; }
+.sb-menu .sb-divider { background: var(--sb-line); }
 
-/* ចំណុចពណ៌ទិដ្ឋភាពក្រោមឈ្មោះម៉ាក និងក្នុងម៉ឺនុយប្តូរទិដ្ឋភាព */
+/* ចំណុចទិដ្ឋភាពក្រោមឈ្មោះម៉ាក និងក្នុងម៉ឺនុយប្តូរទិដ្ឋភាព */
 .sb-view-dot { width: 7px; height: 7px; border-radius: 9999px; flex-shrink: 0; display: inline-block; }
-.sb-view-dot.view-cashier { background: #a1a1aa; }
+.sb-view-dot.view-cashier { background: #cbd5e1; }
 .sb-view-dot.view-manager { background: #60a5fa; }
 .sb-view-dot.view-admin   { background: #34d399; }
-#portalSidebar .sb-view { color: var(--sb-accent-text); font-weight: 500; }
-#portalSidebar .sb-check { color: var(--sb-accent); }
+#portalSidebar .sb-view { color: var(--sb-muted); font-weight: 500; }
+.sb-menu .sb-check { color: var(--sb-accent); }
 
 
 /* ជួរដែលទើបមើល ឬទើបកែ — បន្លិចពណ៌ខៀវស្រាល រួចរសាត់បាត់ (flashViewedRow) */
