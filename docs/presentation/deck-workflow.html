@@ -1,0 +1,96 @@
+<!doctype html><html lang="km"><head><meta charset="utf-8"><title>DIGITECHKH POS Workflow</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&display=swap"><style>
+@page{size:1920px 1080px;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Kantumruy Pro','Khmer Sangam MN',sans-serif;color:#1c2321;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.s{width:1920px;height:1080px;page-break-after:always;position:relative;overflow:hidden;padding:100px 112px 120px;display:flex;flex-direction:column;background:#f7f8f6}
+.dark{background:#0B2B22;color:#eef3f0}
+.eyebrow{font-size:28px;font-weight:600;color:#047857;margin-bottom:14px}
+.dark .eyebrow{color:#6ee7b7}
+h1{font-size:104px;font-weight:700;line-height:1.35}
+h2{font-size:64px;font-weight:700;line-height:1.35;margin-bottom:40px}
+h3{font-size:36px;font-weight:600;margin-bottom:10px;line-height:1.4}
+p,li{font-size:30px;line-height:1.55;color:#4a5551}
+.dark p,.dark li{color:#bfd8cf}
+.grid{display:grid;gap:28px}.c2{grid-template-columns:repeat(2,1fr)}.c3{grid-template-columns:repeat(3,1fr)}.c4{grid-template-columns:repeat(4,1fr)}
+.card{background:#fff;border:1px solid #dfe5e2;border-radius:20px;padding:36px}
+.dark .card{background:#12382d;border-color:#245a49}.dark .card h3{color:#fff}
+.num{font-size:76px;font-weight:700;color:#047857;line-height:1.2}
+.foot{position:absolute;left:112px;right:112px;bottom:44px;display:flex;justify-content:space-between;font-size:24px;color:#8a948f}
+.dark .foot{color:#7fa597}
+ul{list-style:none}li{padding-left:34px;position:relative;margin-bottom:14px}
+li:before{content:"";position:absolute;left:0;top:19px;width:14px;height:14px;border-radius:50%;background:#047857}
+.dark li:before{background:#6ee7b7}
+.pill{display:inline-block;background:#e4f3ec;color:#047857;border-radius:999px;padding:4px 24px;font-size:26px;font-weight:600;margin-bottom:16px}
+.split{display:flex;gap:48px;flex:1;align-items:center}
+.txt{flex:1}
+.shot{border-radius:18px;border:1px solid #cfd8d4;box-shadow:0 18px 50px rgba(11,43,34,.18);overflow:hidden;background:#fff}
+.shot img{display:block;width:100%}
+.dark .shot{border-color:#245a49;box-shadow:0 18px 50px rgba(0,0,0,.4)}
+.cap{font-size:24px;color:#8a948f;margin-top:14px}
+table{border-collapse:collapse;width:100%}
+th,td{font-size:28px;padding:16px 22px;text-align:center;border-bottom:1px solid #dfe5e2;color:#4a5551}
+th{background:#0B2B22;color:#fff;font-weight:600}
+td:first-child,th:first-child{text-align:left}
+td.y{color:#047857;font-weight:700}
+.crop{position:relative;overflow:hidden;width:900px;aspect-ratio:1592/1080}
+.full{width:1040px}
+.crop img{position:absolute;left:-20.6%;top:0;width:120.6%}
+.en{font-family:'Kantumruy Pro',sans-serif}
+
+.flow{display:flex;align-items:stretch;gap:0}
+.st{flex:1;background:#fff;border:1px solid #dfe5e2;border-radius:20px;padding:38px 30px;min-width:0}
+.dark .st{background:#12382d;border-color:#245a49}.dark .st h3{color:#fff}
+.st h3{font-size:40px;margin-bottom:12px}.st p{font-size:30px;line-height:1.5}
+.ar{width:44px;flex:none;display:flex;align-items:center;justify-content:center}
+.ar:after{content:"";border-left:18px solid #047857;border-top:12px solid transparent;border-bottom:12px solid transparent}
+.dark .ar:after{border-left-color:#6ee7b7}
+.tag{display:inline-block;font-size:26px;font-weight:600;border-radius:999px;padding:3px 22px;margin-bottom:18px;background:#e4f3ec;color:#047857}
+.tag.m{background:#eceff1;color:#455a64}.tag.o{background:#0B2B22;color:#6ee7b7}
+.dark .tag{background:#0B2B22;color:#6ee7b7}
+.lane{display:flex;align-items:stretch;gap:24px;margin-bottom:30px}
+.lane .lab{width:230px;flex:none;border-radius:18px;background:#0B2B22;color:#fff;font-size:34px;font-weight:700;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px}
+.lane .flow{flex:1}
+.note{background:#e4f3ec;border-radius:16px;padding:26px 34px;font-size:32px;color:#0B2B22;margin-top:36px}
+.wrap{flex:1;display:flex;flex-direction:column;justify-content:center;padding-bottom:30px}
+.dark .note{background:#12382d;color:#bfd8cf}
+.sw th,.sw td{font-size:31px;padding:26px 24px;vertical-align:top;text-align:left;line-height:1.5}
+.sw td:first-child{font-weight:700;color:#0B2B22;width:16%}
+</style></head><body>
+<div class="s dark"><div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+<img src="logo-mark-transparent.png" style="width:110px;height:110px;background:#fff;border-radius:24px;padding:12px;margin-bottom:48px">
+<div class="eyebrow">DIGITECHKH POS</div><h1 style="font-size:92px">Workflow<br>ដំណើរការងារក្នុងប្រព័ន្ធ</h1>
+<p style="margin-top:32px;font-size:34px">ពីបើកហាង រហូតដល់ Owner សម្រេចចិត្ត</p></div>
+<div class="foot"><span>Workflow Overview</span><span>អភិវឌ្ឍដោយ DIGITECHKH</span></div></div>
+<div class="s "><div class="eyebrow">ទិដ្ឋភាពរួម</div><h2 style="margin-bottom:34px">មួយថ្ងៃក្នុងហាង ដំណើរការបែបនេះ</h2><div class="wrap"><div class="flow"><div class="st"><div class="tag m">Manager</div><h3>Roster</h3><p>កំណត់អ្នកធ្វើវេន</p></div><div class="ar"></div><div class="st"><div class="tag ">Cashier</div><h3>Open Shift</h3><p>រាប់ Float ហើយបញ្ជាក់</p></div><div class="ar"></div><div class="st"><div class="tag ">Cashier</div><h3>លក់</h3><p>ទទួលលុយ ចេញ Receipt</p></div><div class="ar"></div><div class="st"><div class="tag ">Cashier</div><h3>Close Shift</h3><p>Blind Count និង Z-Report</p></div><div class="ar"></div><div class="st"><div class="tag m">Manager</div><h3>Review</h3><p>ត្រួតពិនិត្យ និងចុះហត្ថលេខា</p></div><div class="ar"></div><div class="st"><div class="tag o">Owner</div><h3>Report</h3><p>ចំណេញ ការខាតបង់</p></div></div><div class="note">ដំណើរការនេះធ្វើម្តងទៀតរាល់ Shift · រាល់សកម្មភាពមានកំណត់ត្រា អ្នកធ្វើ និងពេលវេលា</div></div><div class="foot"><span>DIGITECHKH POS · Workflow</span><span>2</span></div></div>
+<div class="s "><div class="eyebrow">តួនាទី</div><h2 style="margin-bottom:34px">អ្នកណាធ្វើអ្វី ក្នុងមួយថ្ងៃ</h2><div class="wrap"><table class="sw"><tr><th style="width:16%"></th><th>មុនបើក</th><th>ពេលលក់</th><th>ពេលបិទ</th></tr>
+<tr><td>Cashier</td><td>Login · Open Shift រាប់ Float</td><td>លក់ · Hold · Cash Drop · ស្នើ Void ឬ Refund</td><td>Close Shift រាប់លុយ បោះពុម្ព Z-Report</td></tr>
+<tr><td>Manager</td><td>កំណត់អត្រាប្តូរប្រាក់ · ត្រួតពិនិត្យ Roster</td><td>អនុម័ត Void Refund និងបញ្ចុះតម្លៃ · បញ្ជាក់ Cash Drop</td><td>Review Shift ដែលបិទ · ដោះស្រាយ Exceptions</td></tr>
+<tr><td>Owner</td><td>កំណត់តម្លៃ ច្បាប់ និងបុគ្គលិក</td><td>មើល Dashboard ចំណូល និងចំណេញ</td><td>មើល Report Stock និង Audit Log</td></tr></table></div><div class="foot"><span>DIGITECHKH POS · Workflow</span><span>3</span></div></div>
+<div class="s "><div class="eyebrow">Cashier · Sale Flow</div><h2 style="margin-bottom:34px">ដំណើរការលក់ មួយវិក្កយបត្រ</h2><div class="wrap"><div class="flow"><div class="st"><h3>ស្កេន</h3><p>Barcode ឬប៉ះផលិតផល</p></div><div class="ar"></div><div class="st"><h3>កន្ត្រក</h3><p>កែចំនួន ឬលុបមុនបង់ប្រាក់</p></div><div class="ar"></div><div class="st"><h3>ទូទាត់</h3><p>សាច់ប្រាក់ USD KHR ឬ KHQR</p></div><div class="ar"></div><div class="st"><h3>អាប់ដូរ</h3><p>គិតជា USD និងរៀល</p></div><div class="ar"></div><div class="st"><h3>Receipt</h3><p>បោះពុម្ព 80mm និង Customer Display</p></div></div><div class="grid c2" style="margin-top:36px"><div class="card"><h3>បញ្ចុះតម្លៃលើសកំណត់?</h3><p>ត្រូវបញ្ចូល PIN របស់ Manager នៅលើអេក្រង់ Cashier</p></div>
+<div class="card"><h3>មានអតិថិជនបន្ទាប់?</h3><p>Hold ការលក់ ហើយបន្តវិញពេលក្រោយ</p></div></div></div><div class="foot"><span>DIGITECHKH POS · Workflow</span><span>4</span></div></div>
+<div class="s dark"><div class="eyebrow">Approval Flow</div><h2 style="margin-bottom:34px">Void និង Refund ត្រូវមានអ្នកអនុម័ត</h2><div class="wrap"><div class="lane"><div class="lab">នៅកន្លែង<br>គិតលុយ</div><div class="flow"><div class="st"><h3>Cashier ស្នើ</h3><p>ជ្រើសមូលហេតុ</p></div><div class="ar"></div><div class="st"><h3>Manager បញ្ចូល PIN</h3><p>នៅលើអេក្រង់ Cashier</p></div><div class="ar"></div><div class="st"><h3>រួចរាល់</h3><p>Stock និងកំណត់ត្រាធ្វើបច្ចុប្បន្នភាព</p></div></div></div>
+<div class="lane"><div class="lab">តាមជួរ<br>រង់ចាំ</div><div class="flow"><div class="st"><h3>Cashier ស្នើ</h3><p>អតិថិជនចាកចេញហើយ</p></div><div class="ar"></div><div class="st"><h3>ចូល Approvals</h3><p>បង្ហាញលើ Dashboard ក្នុងលំដាប់ប្រញាប់</p></div><div class="ar"></div><div class="st"><h3>Manager សម្រេច</h3><p>អនុម័ត ឬបដិសេធ ដោយមានមូលហេតុ</p></div></div></div>
+<div class="note">Manager មិនអាចអនុម័តការលក់ខ្លួនឯង · PIN ខុស 3 ដង ចាក់សោ 60 វិនាទី · មិនអាចលុបកំណត់ត្រាបាន</div></div><div class="foot"><span>DIGITECHKH POS · Workflow</span><span>5</span></div></div>
+<div class="s "><div class="eyebrow">Shift Lifecycle</div><h2 style="margin-bottom:34px">Shift មួយ ឆ្លងកាត់ 3 ស្ថានភាព</h2><div class="wrap"><div class="flow"><div class="st"><div class="tag ">កំពុងលក់</div><h3>Open</h3><p>Cashier រាប់ Float · Manager បញ្ជាក់ · មួយបញ្ជរ មួយ Cashier</p></div><div class="ar"></div><div class="st"><div class="tag m">រង់ចាំ Review</div><h3>Closed</h3><p>Cashier រាប់លុយដោយមិនមើលចំនួនរំពឹងទុក · រាប់ឡើងវិញបានម្តង · Z-Report</p></div><div class="ar"></div><div class="st"><div class="tag o">បានបញ្ជាក់</div><h3>Reviewed</h3><p>Manager ចុះហត្ថលេខា · ត្រូវមានកំណត់ចំណាំ បើខុសលើសកំណត់</p></div></div><div class="grid c3" style="margin-top:36px"><div class="card"><h3>Open Shift</h3><p>មិនអាចបើកពីរ Shift លើបញ្ជរតែមួយ ឬអ្នកតែមួយ</p></div>
+<div class="card"><h3>Close Shift</h3><p>Cash Drop ដែលមិនទាន់បញ្ជាក់ ត្រូវបញ្ចប់មុន</p></div>
+<div class="card"><h3>Reopen</h3><p>Manager បើកឡើងវិញបាន ដោយមានមូលហេតុ</p></div></div></div><div class="foot"><span>DIGITECHKH POS · Workflow</span><span>6</span></div></div>
+<div class="s dark"><div class="eyebrow">Cash Flow</div><h2 style="margin-bottom:34px">លុយចេញចូល តាមដានគ្រប់ជំហាន</h2><div class="wrap"><div class="flow"><div class="st"><h3>Float</h3><p>លុយចាប់ផ្តើម USD និង KHR</p></div><div class="ar"></div><div class="st"><h3>លក់ជាសាច់ប្រាក់</h3><p>លុយចូលថត</p></div><div class="ar"></div><div class="st"><h3>Cash Drop</h3><p>Cashier ផ្ទេរចូលទូដែក</p></div><div class="ar"></div><div class="st"><h3>Manager បញ្ជាក់</h3><p>ទទួលលុយទម្លាក់</p></div><div class="ar"></div><div class="st"><h3>Close Shift</h3><p>រាប់ ប្រៀបធៀប ចំនួនរំពឹងទុក</p></div></div><div class="grid c2" style="margin-top:36px"><div class="card"><h3>ខុសក្នុងកម្រិតអនុញ្ញាត</h3><p>បិទបានធម្មតា</p></div>
+<div class="card"><h3>ខុសលើសកំណត់</h3><p>ត្រូវមានកំណត់ចំណាំពី Manager ហើយបង្ហាញលើ Dashboard របស់ Owner</p></div></div></div><div class="foot"><span>DIGITECHKH POS · Workflow</span><span>7</span></div></div>
+<div class="s "><div class="eyebrow">Stock Flow</div><h2 style="margin-bottom:34px">Stock មិនត្រូវបានកែដោយដៃ ទាំងស្រុង</h2><div class="wrap"><div class="flow"><div class="st"><h3>Stock ដើម</h3><p>ចំនួនចាប់ផ្តើម</p></div><div class="ar"></div><div class="st"><h3>ការលក់</h3><p>ដកចេញដោយស្វ័យប្រវត្តិ</p></div><div class="ar"></div><div class="st"><h3>ចលនា</h3><p>Stock In · Adjust · Count · Void · Return</p></div><div class="ar"></div><div class="st"><h3>ជិតអស់</h3><p>ជូនដំណឹង Manager</p></div><div class="ar"></div><div class="st"><h3>ទទួលទំនិញ</h3><p>Stock In ធ្វើបច្ចុប្បន្នភាព Stock</p></div></div><div class="grid c3" style="margin-top:36px"><div class="card"><h3>Cashier</h3><p>ឃើញតែ «អស់» ឬ «ជិតអស់»</p></div>
+<div class="card"><h3>Manager</h3><p>ទទួលទំនិញ រាប់ Stock កែតម្រូវ</p></div>
+<div class="card"><h3>Owner</h3><p>តម្លៃ Stock សរុប និងការខាតបង់</p></div></div></div><div class="foot"><span>DIGITECHKH POS · Workflow</span><span>8</span></div></div>
+<div class="s "><div class="eyebrow">Control</div><h2 style="margin-bottom:34px">អ្វីដែលធ្វើឲ្យកើត Exception</h2><div class="wrap"><div class="grid c3"><div class="card"><div class="tag m">Void</div><h3>លុបវិក្កយបត្រ</h3><p>ត្រូវមានមូលហេតុ និងអនុម័ត</p></div>
+<div class="card"><div class="tag m">Refund</div><h3>ប្រគល់ទំនិញ</h3><p>ជ្រើស Restock ឬខូច</p></div>
+<div class="card"><div class="tag m">Discount</div><h3>បញ្ចុះតម្លៃលើសកំណត់</h3><p>ត្រូវមាន PIN</p></div>
+<div class="card"><div class="tag m">Line Removed</div><h3>ដកទំនិញមុនទូទាត់</h3><p>កត់ត្រាជា Event</p></div>
+<div class="card"><div class="tag m">PIN</div><h3>PIN ខុស</h3><p>ចាក់សោបណ្តោះអាសន្ន</p></div>
+<div class="card"><div class="tag m">Variance</div><h3>លុយខុសពេលបិទ</h3><p>លើសកំណត់ត្រូវមានចំណាំ</p></div></div>
+<div class="note">ទាំងអស់បង្ហាញក្នុង «ករណីមិនប្រក្រតី» របស់ Manager និង Audit Log របស់ Owner</div></div><div class="foot"><span>DIGITECHKH POS · Workflow</span><span>9</span></div></div>
+<div class="s dark"><div class="eyebrow">Owner · Decision Flow</div><h2 style="margin-bottom:34px">Owner ឃើញអ្វី ហើយសម្រេចអ្វី</h2><div class="wrap"><div class="flow"><div class="st"><h3>Dashboard</h3><p>ចំណូល ចំណេញ ខុសសាច់ប្រាក់</p></div><div class="ar"></div><div class="st"><h3>Report</h3><p>Profit · Stock Value · Shrinkage</p></div><div class="ar"></div><div class="st"><h3>វិភាគ</h3><p>ទំនិញចំណេញទាប បុគ្គលិកមានបញ្ហា</p></div><div class="ar"></div><div class="st"><h3>សម្រេច</h3><p>កែតម្លៃ កែសិទ្ធិ កែច្បាប់</p></div><div class="ar"></div><div class="st"><h3>Audit Log</h3><p>កត់ត្រារាល់ការផ្លាស់ប្តូរ</p></div></div><div class="note">តម្លៃដើម និងប្រាក់ចំណេញ មានតែ Owner មើលឃើញ · Cashier និង Manager មិនឃើញ</div></div><div class="foot"><span>DIGITECHKH POS · Workflow</span><span>10</span></div></div>
+<div class="s dark"><div style="flex:1;display:flex;flex-direction:column;justify-content:center"><div class="eyebrow">សង្ខេប</div>
+<h1 style="font-size:80px">លក់លឿន · លុយត្រូវ · ត្រួតពិនិត្យបាន</h1>
+<div class="grid c3" style="margin-top:52px"><div class="card"><h3>Cashier</h3><p>លក់ និងបិទ Shift ដោយស្មោះត្រង់</p></div>
+<div class="card"><h3>Manager</h3><p>អនុម័ត និងត្រួតពិនិត្យរាល់ថ្ងៃ</p></div>
+<div class="card"><h3>Owner</h3><p>ដឹងចំណេញ និងគ្រប់គ្រងច្បាប់</p></div></div></div>
+<div class="foot"><span>សូមអរគុណ</span><span>អភិវឌ្ឍដោយ DIGITECHKH</span></div></div>
+</body></html>
