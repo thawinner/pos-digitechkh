@@ -12,7 +12,10 @@ const COST_SEED = {
     '8890001': 1.55, '8890002': 2.10, '8890003': 1.40,
     '8850005': 0.42, '8850006': 0.38, '8850007': 0.58, '8850008': 0.62, '8860005': 0.26, '8860006': 0.72,
     '8860007': 0.30, '8860008': 1.90, '8870005': 1.35, '8870006': 0.70, '8870007': 0.85, '8880004': 0.12,
-    '8880005': 0.20, '8880006': 0.48, '8890004': 2.90, '8890005': 4.20, '8890006': 2.05
+    '8880005': 0.20, '8880006': 0.48, '8890004': 2.90, '8890005': 4.20, '8890006': 2.05,
+    '8850009': 0.42, '8850010': 0.82, '8850011': 0.22, '8850012': 0.46, '8860009': 0.58, '8860010': 1.70,
+    '8860011': 1.45, '8860012': 0.75, '8870008': 2.20, '8870009': 3.40, '8870010': 0.90, '8880007': 0.50,
+    '8880008': 0.33, '8880009': 1.60, '8890007': 8.40, '8890008': 4.30, '8890009': 3.90
 };
 const COSTS_KEY = 'pos_costs';
 const STOCK_COSTS_KEY = 'pos_stock_costs';
@@ -543,6 +546,26 @@ const DEFAULT_STAFF_COMPENSATION = {
         payType: 'monthly', baseSalaryUSD: 450, foodAllowanceUSD: 30, attendanceBonusUSD: 15,
         bankName: 'ABA Bank', accountName: 'MAO SREYNANG', accountNumber: '000 567 890'
     },
+    'CAS-04': {
+        employeeCode: 'EMP-007', phone: '016 727 340', joinedDate: '2026-04-20',
+        payType: 'monthly', baseSalaryUSD: 250, foodAllowanceUSD: 30, attendanceBonusUSD: 15,
+        bankName: 'ACLEDA Bank', accountName: 'PECH SOVANNARY', accountNumber: '000 678 901'
+    },
+    'CAS-05': {
+        employeeCode: 'EMP-008', phone: '070 515 662', joinedDate: '2026-06-01',
+        payType: 'monthly', baseSalaryUSD: 240, foodAllowanceUSD: 30, attendanceBonusUSD: 15,
+        bankName: 'ABA Bank', accountName: 'KIM VISAL', accountNumber: '000 789 012'
+    },
+    'CAS-06': {
+        employeeCode: 'EMP-009', phone: '096 330 184', joinedDate: '2026-09-15',
+        payType: 'monthly', baseSalaryUSD: 240, foodAllowanceUSD: 30, attendanceBonusUSD: 15,
+        bankName: 'Wing Bank', accountName: 'CHHIM RATANA', accountNumber: '000 890 123'
+    },
+    'MGR-03': {
+        employeeCode: 'EMP-010', phone: '011 606 275', joinedDate: '2026-05-10',
+        payType: 'monthly', baseSalaryUSD: 420, foodAllowanceUSD: 30, attendanceBonusUSD: 15,
+        bankName: 'ABA Bank', accountName: 'NUON SOKLY', accountNumber: '000 901 234'
+    },
     // ម្ចាស់ហាង៖ មិនស្ថិតក្នុងតារាងបៀវត្សរ៍ · គ្មានប្រាក់ខែ ឬគណនីធនាគារ
     'ADM-01': {
         employeeCode: 'EMP-006', phone: '012 999 000', joinedDate: '2025-08-01',
@@ -583,6 +606,31 @@ const SEED_PAYROLL_DISBURSEMENTS = [
         periodKey: '2026-09-01_2026-09-30', periodLabel: '01/09/2026 ដល់ 30/09/2026',
         baseSalaryUSD: 450, grossUSD: 520.92, deductionsUSD: 0, netUSD: 520.92,
         method: 'ABA Bank (ផ្ទេរ)', at: '2026-09-30T17:25:00', by: 'ADM-01'
+    },
+    {
+        id: 'PAY-CAS-04-202609', staffId: 'CAS-04', staffName: 'ពេជ្រ សុវណ្ណារី', role: 'cashier',
+        periodKey: '2026-09-01_2026-09-30', periodLabel: '01/09/2026 ដល់ 30/09/2026',
+        baseSalaryUSD: 250, grossUSD: 326.40, deductionsUSD: 0, netUSD: 326.40,
+        method: 'ACLEDA Bank (ផ្ទេរ)', at: '2026-09-30T17:27:00', by: 'ADM-01'
+    },
+    {
+        id: 'PAY-CAS-05-202609', staffId: 'CAS-05', staffName: 'គឹម វិសាល', role: 'cashier',
+        periodKey: '2026-09-01_2026-09-30', periodLabel: '01/09/2026 ដល់ 30/09/2026',
+        baseSalaryUSD: 240, grossUSD: 296.70, deductionsUSD: 0, netUSD: 296.70,
+        method: 'ABA Bank (ផ្ទេរ)', at: '2026-09-30T17:29:00', by: 'ADM-01'
+    },
+    // ចូលធ្វើការថ្ងៃទី 15 កញ្ញា៖ បើកតាមចំនួនថ្ងៃធ្វើការពិត (ពាក់កណ្តាលខែ វេនយប់)
+    {
+        id: 'PAY-CAS-06-202609', staffId: 'CAS-06', staffName: 'ឈឹម រតនា', role: 'cashier',
+        periodKey: '2026-09-01_2026-09-30', periodLabel: '01/09/2026 ដល់ 30/09/2026',
+        baseSalaryUSD: 240, grossUSD: 187.40, deductionsUSD: 0, netUSD: 187.40,
+        method: 'Wing Bank (ផ្ទេរ)', at: '2026-09-30T17:31:00', by: 'ADM-01'
+    },
+    {
+        id: 'PAY-MGR-03-202609', staffId: 'MGR-03', staffName: 'នួន សុខលី', role: 'manager',
+        periodKey: '2026-09-01_2026-09-30', periodLabel: '01/09/2026 ដល់ 30/09/2026',
+        baseSalaryUSD: 420, grossUSD: 465.00, deductionsUSD: 0, netUSD: 465.00,
+        method: 'ABA Bank (ផ្ទេរ)', at: '2026-09-30T17:33:00', by: 'ADM-01'
     },
     // ខែតុលា 2026 (ខែបច្ចុប្បន្ន)៖ បានបើកជូនអ្នកគ្រប់គ្រងម្នាក់រួចរាល់
     {

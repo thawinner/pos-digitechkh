@@ -212,8 +212,12 @@ const STAFF_SEED = [
     { id: 'CAS-01', name: 'ចន្ទ មករា', initials: 'ចម', pin: '1111', role: 'cashier' },
     { id: 'CAS-02', name: 'សុខ ដារ៉ា', initials: 'សដ', pin: '2222', role: 'cashier' },
     { id: 'CAS-03', name: 'លី សុភា', initials: 'លស', pin: '3333', role: 'cashier' },
+    { id: 'CAS-04', name: 'ពេជ្រ សុវណ្ណារី', initials: 'ពស', pin: '4444', role: 'cashier' },
+    { id: 'CAS-05', name: 'គឹម វិសាល', initials: 'គវ', pin: '5555', role: 'cashier' },
+    { id: 'CAS-06', name: 'ឈឹម រតនា', initials: 'ឈរ', pin: '6666', role: 'cashier' },
     { id: 'MGR-01', name: 'សុខ វណ្ណា', initials: 'សវ', pin: '2468', role: 'manager' },
     { id: 'MGR-02', name: 'ម៉ៅ ស្រីនាង', initials: 'មស', pin: '1357', role: 'manager' },
+    { id: 'MGR-03', name: 'នួន សុខលី', initials: 'នស', pin: '8642', role: 'manager' },
     { id: 'ADM-01', name: 'ហេង ចាន់ថា', initials: 'ហច', pin: '9999', role: 'admin' }
 ];
 const STAFF_KEY = 'pos_staff';
@@ -296,7 +300,7 @@ const POS_SETTINGS_DEFAULTS = {
     defaultFloatKHR: 400000,
     khqrSeconds: 300,
     holdLimit: 5,
-    discountLimits: { 'CAS-01': 5, 'CAS-02': 5, 'CAS-03': 3 },
+    discountLimits: { 'CAS-01': 5, 'CAS-02': 5, 'CAS-03': 3, 'CAS-04': 5, 'CAS-05': 3, 'CAS-06': 3 },
     /* វេនព្រឹក រសៀល យប់ — ហាងបើក 24 ម៉ោង · ចំនួនវេន = ម៉ោងបើកហាង ÷ ប្រមាណ 8 ម៉ោង (ស្រាវជ្រាវ §11) */
     shiftTemplates: [
         { code: 'A', name: 'វេនព្រឹក', start: '06:00', end: '14:00' },
@@ -321,13 +325,18 @@ const POS_SETTINGS_DEFAULTS = {
     countSchedule: 'weekly',
     /* វេនលំនាំដើមរបស់បុគ្គលិកម្នាក់ៗ — template '' = មិនមានវេនប្រចាំ (ឧ. អ្នកគ្រប់គ្រង)
        dayOff៖ 0 = អាទិត្យ … 6 = សៅរ៍ · ម្នាក់មួយវេន 8 ម៉ោង × 6 ថ្ងៃ = 48 ម៉ោង/សប្តាហ៍ (ត្រឹមកំណត់ច្បាប់)
+       វេនព្រឹក និងរសៀលមានអ្នកគិតលុយពីរនាក់ ថ្ងៃឈប់ខុសគ្នា · វេនយប់ទាំងពីរនាក់ឈប់ថ្ងៃអង្គារ ដូច្នេះអ្នកគ្រប់គ្រងជំនួស
        វេនយប់ (22:00–05:00 ជាម៉ោងយប់) ត្រូវបង់ប្រាក់ឈ្នួល 200% តាមច្បាប់ការងារ — ស្រាវជ្រាវ §11 */
     staffDefaults: {
         'CAS-01': { template: 'A', dayOff: 0 },
         'CAS-02': { template: 'B', dayOff: 1 },
         'CAS-03': { template: 'C', dayOff: 2 },
+        'CAS-04': { template: 'B', dayOff: 4 },
+        'CAS-05': { template: 'A', dayOff: 3 },
+        'CAS-06': { template: 'C', dayOff: 2 },
         'MGR-01': { template: '', dayOff: 6 },
-        'MGR-02': { template: '', dayOff: 0 }
+        'MGR-02': { template: '', dayOff: 0 },
+        'MGR-03': { template: '', dayOff: 3 }
     }
 };
 
@@ -362,6 +371,9 @@ function posSettings() {
     if (!s.reasons) s.reasons = clone(POS_SETTINGS_DEFAULTS.reasons);
     if (!s.reasons.cover) s.reasons.cover = clone(POS_SETTINGS_DEFAULTS.reasons.cover);
     if (!s.shiftCodeSeq) s.shiftCodeSeq = 4;
+    // ការកំណត់ដែលរក្សាទុកមុនពេលបន្ថែមបុគ្គលិកថ្មី៖ បុគ្គលិកដែលមិនទាន់មានក្នុងនោះប្រើតម្លៃលំនាំដើម
+    s.staffDefaults = Object.assign(clone(POS_SETTINGS_DEFAULTS.staffDefaults), s.staffDefaults || {});
+    s.discountLimits = Object.assign(clone(POS_SETTINGS_DEFAULTS.discountLimits), s.discountLimits || {});
     return s;
 }
 
@@ -526,6 +538,10 @@ const PRODUCTS = [
     { sku: '8850006', barcode: '8850006', name: 'ភេសជ្ជៈប៉ូវកម្លាំង ការ៉ាបាវ', category: 'drink', price: 0.60, unit: 'កំប៉ុង', opening: 150, icon: 'fa-bolt', tone: 'yellow' },
     { sku: '8850007', barcode: '8850007', name: 'តែបៃតង អូអ៊ីស៊ី 500 មីលីលីត្រ', category: 'drink', price: 0.90, unit: 'ដប', opening: 90, icon: 'fa-leaf', tone: 'emerald' },
     { sku: '8850008', barcode: '8850008', name: 'ទឹកដូង 350 មីលីលីត្រ', category: 'drink', price: 1.00, unit: 'ដប', opening: 60, icon: 'fa-glass-water', tone: 'lime' },
+    { sku: '8850009', barcode: '8850009', name: 'ភេសជ្ជៈស្ព្រាយ កំប៉ុង 330 មីលីលីត្រ', category: 'drink', price: 0.65, unit: 'កំប៉ុង', opening: 160, icon: 'fa-bottle-water', tone: 'slate' },
+    { sku: '8850010', barcode: '8850010', name: 'ភេសជ្ជៈប៉ូវកម្លាំង រេដប៊ុល 250 មីលីលីត្រ', category: 'drink', price: 1.20, unit: 'កំប៉ុង', opening: 72, icon: 'fa-bolt', tone: 'slate' },
+    { sku: '8850011', barcode: '8850011', name: 'ទឹកដោះគោជូរ យ៉ាគុលត៍ 80 មីលីលីត្រ', category: 'drink', price: 0.35, unit: 'ដប', opening: 120, icon: 'fa-bottle-droplet', tone: 'slate' },
+    { sku: '8850012', barcode: '8850012', name: 'ទឹកដោះគោ មីឡូ 180 មីលីលីត្រ', category: 'drink', price: 0.70, unit: 'ប្រអប់', opening: 144, icon: 'fa-glass-water', tone: 'slate' },
 
     { sku: '8860001', barcode: '8860001', name: 'នំប៉័ង សាំងវិច', category: 'snack', price: 1.50, unit: 'ដុំ', opening: 12, icon: 'fa-bread-slice', tone: 'amber' },
     { sku: '8860002', barcode: '8860002', name: 'ដំឡូងបំពង លេយ៍', category: 'snack', price: 1.20, unit: 'កញ្ចប់', opening: 120, icon: 'fa-cookie-bite', tone: 'yellow' },
@@ -535,6 +551,10 @@ const PRODUCTS = [
     { sku: '8860006', barcode: '8860006', name: 'នំខូឃី អូរីអូ', category: 'snack', price: 1.10, unit: 'កញ្ចប់', opening: 80, icon: 'fa-cookie', tone: 'slate' },
     { sku: '8860007', barcode: '8860007', name: 'ស្ករគ្រាប់ មេនតូស', category: 'snack', price: 0.50, unit: 'បំពង់', opening: 140, icon: 'fa-candy-cane', tone: 'sky' },
     { sku: '8860008', barcode: '8860008', name: 'គ្រាប់ស្វាយចន្ទីលីង 100 ក្រាម', category: 'snack', price: 2.80, unit: 'កញ្ចប់', opening: 36, icon: 'fa-seedling', tone: 'amber' },
+    { sku: '8860009', barcode: '8860009', name: 'សូកូឡា ឃីតខេត', category: 'snack', price: 0.90, unit: 'ដុំ', opening: 110, icon: 'fa-candy-cane', tone: 'slate' },
+    { sku: '8860010', barcode: '8860010', name: 'ដំឡូងបំពង ព្រីងហ្គលស៍ 107 ក្រាម', category: 'snack', price: 2.50, unit: 'កំប៉ុង', opening: 30, icon: 'fa-cookie-bite', tone: 'slate' },
+    { sku: '8860011', barcode: '8860011', name: 'នំឆូកូប៉ៃ អូរីយ៉ុន ប្រអប់ 6', category: 'snack', price: 2.20, unit: 'ប្រអប់', opening: 40, icon: 'fa-cookie', tone: 'slate' },
+    { sku: '8860012', barcode: '8860012', name: 'ស្ករកៅស៊ូ ហារីបូ 80 ក្រាម', category: 'snack', price: 1.20, unit: 'កញ្ចប់', opening: 6, icon: 'fa-candy-cane', tone: 'slate' },
 
     { sku: '8870001', barcode: '8870001', name: 'សាប៊ូបោកខោអាវ 1 គីឡូក្រាម', category: 'household', price: 3.40, unit: 'កញ្ចប់', opening: 52, icon: 'fa-soap', tone: 'emerald' },
     { sku: '8870002', barcode: '8870002', name: 'ក្រដាសអនាម័យ 10 ដុំ', category: 'household', price: 4.20, unit: 'កញ្ចប់', opening: 40, icon: 'fa-toilet-paper', tone: 'slate' },
@@ -543,6 +563,9 @@ const PRODUCTS = [
     { sku: '8870005', barcode: '8870005', name: 'ទឹកលាងចាន ស៊ុនឡាយ 750 មីលីលីត្រ', category: 'household', price: 1.95, unit: 'ដប', opening: 56, icon: 'fa-hand-sparkles', tone: 'lime' },
     { sku: '8870006', barcode: '8870006', name: 'ច្រាសដុសធ្មេញ ទន់', category: 'household', price: 1.10, unit: 'ដើម', opening: 70, icon: 'fa-tooth', tone: 'sky' },
     { sku: '8870007', barcode: '8870007', name: 'ក្រដាសជូតមុខ ហោប៉ៅ កញ្ចប់ 10', category: 'household', price: 1.30, unit: 'កញ្ចប់', opening: 90, icon: 'fa-box-tissue', tone: 'pink' },
+    { sku: '8870008', barcode: '8870008', name: 'សាប៊ូកក់សក់ 340 មីលីលីត្រ', category: 'household', price: 3.20, unit: 'ដប', opening: 36, icon: 'fa-pump-soap', tone: 'slate' },
+    { sku: '8870009', barcode: '8870009', name: 'ទឹកបោកខោអាវ 2 លីត្រ', category: 'household', price: 4.80, unit: 'ដប', opening: 24, icon: 'fa-bottle-droplet', tone: 'slate' },
+    { sku: '8870010', barcode: '8870010', name: 'ថង់សំរាម រមូរ 20 សន្លឹក', category: 'household', price: 1.50, unit: 'រមូរ', opening: 48, icon: 'fa-trash-can', tone: 'slate' },
 
     { sku: '8880001', barcode: '8880001', name: 'សៀវភៅសរសេរ 100 ទំព័រ', category: 'stationery', price: 0.75, unit: 'ក្បាល', opening: 200, icon: 'fa-book', tone: 'blue' },
     { sku: '8880002', barcode: '8880002', name: 'ប៊ិច ខៀវ ដំណក់', category: 'stationery', price: 0.35, unit: 'ដើម', opening: 320, icon: 'fa-pen', tone: 'indigo' },
@@ -550,13 +573,19 @@ const PRODUCTS = [
     { sku: '8880004', barcode: '8880004', name: 'ជ័រលុប', category: 'stationery', price: 0.25, unit: 'ដុំ', opening: 260, icon: 'fa-eraser', tone: 'pink' },
     { sku: '8880005', barcode: '8880005', name: 'បន្ទាត់ 30 សង់ទីម៉ែត្រ', category: 'stationery', price: 0.40, unit: 'ដើម', opening: 150, icon: 'fa-ruler', tone: 'cyan' },
     { sku: '8880006', barcode: '8880006', name: 'កាវបិទក្រដាស', category: 'stationery', price: 0.80, unit: 'ដើម', opening: 90, icon: 'fa-paste', tone: 'violet' },
+    { sku: '8880007', barcode: '8880007', name: 'កន្ត្រៃ', category: 'stationery', price: 0.90, unit: 'ដើម', opening: 60, icon: 'fa-scissors', tone: 'slate' },
+    { sku: '8880008', barcode: '8880008', name: 'ប៊ិចហ្វឺតពណ៌លឿង', category: 'stationery', price: 0.60, unit: 'ដើម', opening: 100, icon: 'fa-highlighter', tone: 'slate' },
+    { sku: '8880009', barcode: '8880009', name: 'ម៉ាស៊ីនកិបក្រដាស', category: 'stationery', price: 2.50, unit: 'គ្រឿង', opening: 18, icon: 'fa-paperclip', tone: 'slate' },
 
     { sku: '8890001', barcode: '8890001', name: 'ថ្មពិល ទំហំតូច កញ្ចប់ 4', category: 'electronic', price: 2.40, unit: 'កញ្ចប់', opening: 66, icon: 'fa-battery-full', tone: 'lime' },
     { sku: '8890002', barcode: '8890002', name: 'ខ្សែសាកទូរស័ព្ទ 1 ម៉ែត្រ', category: 'electronic', price: 3.90, unit: 'ខ្សែ', opening: 44, icon: 'fa-plug', tone: 'violet' },
     { sku: '8890003', barcode: '8890003', name: 'អំពូលបំភ្លឺ 9 វ៉ាត់', category: 'electronic', price: 2.20, unit: 'គ្រាប់', opening: 58, icon: 'fa-lightbulb', tone: 'yellow' },
     { sku: '8890004', barcode: '8890004', name: 'កាសស្តាប់ចម្រៀង', category: 'electronic', price: 4.50, unit: 'គ្រឿង', opening: 0, icon: 'fa-headphones', tone: 'slate' },
     { sku: '8890005', barcode: '8890005', name: 'ក្បាលសាកទូរស័ព្ទ 20 វ៉ាត់', category: 'electronic', price: 6.50, unit: 'គ្រឿង', opening: 20, icon: 'fa-plug-circle-bolt', tone: 'indigo' },
-    { sku: '8890006', barcode: '8890006', name: 'ពិលដៃ សាកបាន', category: 'electronic', price: 3.20, unit: 'ដើម', opening: 30, icon: 'fa-lightbulb', tone: 'amber' }
+    { sku: '8890006', barcode: '8890006', name: 'ពិលដៃ សាកបាន', category: 'electronic', price: 3.20, unit: 'ដើម', opening: 30, icon: 'fa-lightbulb', tone: 'amber' },
+    { sku: '8890007', barcode: '8890007', name: 'ថ្មសាកបម្រុង 10000 មីលីអំពែរម៉ោង', category: 'electronic', price: 12.00, unit: 'គ្រឿង', opening: 12, icon: 'fa-battery-half', tone: 'slate' },
+    { sku: '8890008', barcode: '8890008', name: 'ព្រីភ្លើង 8 រន្ធ', category: 'electronic', price: 6.50, unit: 'គ្រឿង', opening: 15, icon: 'fa-plug', tone: 'slate' },
+    { sku: '8890009', barcode: '8890009', name: 'ឧបករណ៍ផ្ទុកទិន្នន័យ 32 ជីកាបៃ', category: 'electronic', price: 6.00, unit: 'គ្រឿង', opening: 20, icon: 'fa-hard-drive', tone: 'slate' }
 ];
 
 /* ទម្ងន់លក់ដាច់របស់ទំនិញនីមួយៗ (ទិន្នន័យគំរូ និងកម្រិតស្តុកលំនាំដើម) */
@@ -568,7 +597,10 @@ const PRODUCT_WEIGHT = {
     '8890001': 1, '8890002': 0.5, '8890003': 0.6,
     '8850005': 6, '8850006': 5, '8850007': 3, '8850008': 1.5, '8860005': 5, '8860006': 2.5,
     '8860007': 2, '8860008': 0.8, '8870005': 1, '8870006': 0.8, '8870007': 1.5, '8880004': 1.5,
-    '8880005': 1, '8880006': 0.7, '8890004': 0.3, '8890005': 0.3, '8890006': 0.3
+    '8880005': 1, '8880006': 0.7, '8890004': 0.3, '8890005': 0.3, '8890006': 0.3,
+    '8850009': 4, '8850010': 2, '8850011': 3, '8850012': 4, '8860009': 2.5, '8860010': 1,
+    '8860011': 1.2, '8860012': 1, '8870008': 0.8, '8870009': 0.5, '8870010': 1, '8880007': 0.6,
+    '8880008': 1, '8880009': 0.3, '8890007': 0.2, '8890008': 0.2, '8890009': 0.25
 };
 
 /* ការកែកាតាឡុកដោយម្ចាស់ហាង (pos_catalog)៖ តម្លៃថ្មី ការផ្អាកលក់ កម្រិតស្តុកអប្បបរមា និងចំនួនបញ្ជាទិញ
@@ -612,10 +644,12 @@ function categoryLabel(id) {
 
 const PRODUCT_PHOTOS = [
     '8850001', '8850002', '8850003', '8850004', '8850005', '8850006', '8850007', '8850008',
-    '8860001', '8860002', '8860003', '8860004', '8860005', '8860006', '8860007', '8860008',
-    '8870001', '8870002', '8870003', '8870004', '8870005', '8870006', '8870007', '8880001',
-    '8880002', '8880003', '8880004', '8880005', '8880006', '8890001', '8890002', '8890003',
-    '8890004', '8890005', '8890006'
+    '8850009', '8850010', '8850011', '8850012', '8860001', '8860002', '8860003', '8860004',
+    '8860005', '8860006', '8860007', '8860008', '8860009', '8860010', '8860011', '8860012',
+    '8870001', '8870002', '8870003', '8870004', '8870005', '8870006', '8870007', '8870008',
+    '8870009', '8870010', '8880001', '8880002', '8880003', '8880004', '8880005', '8880006',
+    '8880007', '8880008', '8880009', '8890001', '8890002', '8890003', '8890004', '8890005',
+    '8890006', '8890007', '8890008', '8890009'
 ];
 const PRODUCT_SHORT = {
     '8870001': 'សាប៊ូម្សៅ', '8870002': 'ក្រដាស', '8870003': 'ថ្នាំដុស', '8870004': 'សាប៊ូ',
@@ -625,7 +659,10 @@ const PRODUCT_SHORT = {
     '8860005': 'មីកញ្ចប់', '8860006': 'ខូឃី', '8860007': 'ស្ករគ្រាប់', '8860008': 'ស្វាយចន្ទី',
     '8870005': 'ទឹកលាងចាន', '8870006': 'ច្រាសធ្មេញ', '8870007': 'ក្រដាសជូត', '8880004': 'ជ័រលុប',
     '8880005': 'បន្ទាត់', '8880006': 'កាវ', '8890004': 'កាស', '8890005': 'ក្បាលសាក',
-    '8890006': 'ពិលដៃ'
+    '8890006': 'ពិលដៃ',
+    '8850009': 'ស្ព្រាយ', '8850010': 'រេដប៊ុល', '8850011': 'យ៉ាគុលត៍', '8850012': 'មីឡូ', '8860009': 'ឃីតខេត', '8860010': 'ព្រីងហ្គលស៍',
+    '8860011': 'ឆូកូប៉ៃ', '8860012': 'ហារីបូ', '8870008': 'សាប៊ូកក់', '8870009': 'ទឹកបោកខោអាវ', '8870010': 'ថង់សំរាម', '8880007': 'កន្ត្រៃ',
+    '8880008': 'ហ្វឺត', '8880009': 'ម៉ាស៊ីនកិប', '8890007': 'ថ្មបម្រុង', '8890008': 'ព្រីភ្លើង', '8890009': 'ផ្ទុកទិន្នន័យ'
 };
 const CATEGORY_TILE = { drink: '#3f6f8f', snack: '#9a6a3a', household: '#4f7a68', stationery: '#5a6690', electronic: '#7a5f80' };
 
@@ -2098,7 +2135,7 @@ function defaultRoster(dateStr, code) {
     const list = owners.filter(p => Number(defs[p.id].dayOff) !== dow)
         .map(p => ({ cashierId: p.id }));
     // ថ្ងៃឈប់សម្រាករបស់អ្នកគិតលុយ៖ អ្នកគ្រប់គ្រងឈរបញ្ជរជំនួស (ហាងតូចមិនទុកវេនទទេ)
-    // ឆ្លាស់គ្នារវាងអ្នកគ្រប់គ្រងទាំងពីរ · ថ្ងៃមួយមានតែម្នាក់ឈប់ ដូច្នេះមិនលើស 12 ម៉ោង
+    // ឆ្លាស់គ្នារវាងអ្នកគ្រប់គ្រង · ថ្ងៃមួយមានតែម្នាក់ជំនួស ដូច្នេះមិនលើស 12 ម៉ោង
     if (!list.length && owners.length && MANAGERS.length) {
         const off = owners[0];
         const day = Math.floor(new Date(dateStr + 'T12:00').getTime() / 86400000);

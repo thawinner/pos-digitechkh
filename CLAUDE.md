@@ -12,8 +12,10 @@ There is no build system, no tests and no backend: all state lives in the browse
 python3 -m http.server 8000 --directory src   # then open localhost:8000 (login page)
 ```
 
-Demo PINs: ចន្ទ មករា 1111 · សុខ ដារ៉ា 2222 · លី សុភា 3333 (cashiers) · សុខ វណ្ណា 2468 · ម៉ៅ ស្រីនាង 1357 (managers) ·
-ហេង ចាន់ថា 9999 (owner).
+Demo PINs: ចន្ទ មករា 1111 · សុខ ដារ៉ា 2222 · លី សុភា 3333 · ពេជ្រ សុវណ្ណារី 4444 · គឹម វិសាល 5555 · ឈឹម រតនា 6666
+(cashiers) · សុខ វណ្ណា 2468 · ម៉ៅ ស្រីនាង 1357 · នួន សុខលី 8642 (managers) · ហេង ចាន់ថា 9999 (owner).
+Default roster: morning CAS-01 + CAS-05, afternoon CAS-02 + CAS-04, night CAS-03 + CAS-06 (both off Tuesday, so a
+manager covers that night).
 They are listed on the login page under «ព័ត៌មានសម្រាប់គំរូសាកល្បង», next to the reset-demo-data button.
 
 Deploy: Vercel only; `vercel.json` publishes `src/` as the site root. Never move pages out of `src/`, and keep every path relative so the site works under a subpath.

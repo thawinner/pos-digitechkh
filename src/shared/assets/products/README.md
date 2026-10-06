@@ -18,7 +18,7 @@
 
 ប្រព័ន្ធប្រើ `object-contain` ដូច្នេះរូបភាពបង្ហាញទាំងមូល **មិនត្រូវកាត់ឡើយ**។
 
-## បញ្ជីឯកសារទាំង 35
+## បញ្ជីឯកសារទាំង 52
 
 ### ភេសជ្ជៈ — បុព្វបទ `885`
 
@@ -32,6 +32,10 @@
 | `8850006.png` | ភេសជ្ជៈប៉ូវកម្លាំង ការ៉ាបាវ | $0.60 | ✅ មានរូបហើយ |
 | `8850007.png` | តែបៃតង អូអ៊ីស៊ី 500 មីលីលីត្រ | $0.90 | ✅ មានរូបហើយ |
 | `8850008.png` | ទឹកដូង 350 មីលីលីត្រ | $1.00 | ✅ មានរូបហើយ |
+| `8850009.png` | ភេសជ្ជៈស្ព្រាយ កំប៉ុង 330 មីលីលីត្រ | $0.65 | ✅ មានរូបហើយ |
+| `8850010.png` | ភេសជ្ជៈប៉ូវកម្លាំង រេដប៊ុល 250 មីលីលីត្រ | $1.20 | ✅ មានរូបហើយ |
+| `8850011.png` | ទឹកដោះគោជូរ យ៉ាគុលត៍ 80 មីលីលីត្រ | $0.35 | ✅ មានរូបហើយ |
+| `8850012.png` | ទឹកដោះគោ មីឡូ 180 មីលីលីត្រ | $0.70 | ✅ មានរូបហើយ |
 
 ### អាហារសម្រន់ — បុព្វបទ `886`
 
@@ -45,6 +49,10 @@
 | `8860006.png` | នំខូឃី អូរីអូ | $1.10 | ✅ មានរូបហើយ |
 | `8860007.png` | ស្ករគ្រាប់ មេនតូស | $0.50 | ✅ មានរូបហើយ |
 | `8860008.png` | គ្រាប់ស្វាយចន្ទីលីង 100 ក្រាម | $2.80 | ✅ មានរូបហើយ |
+| `8860009.png` | សូកូឡា ឃីតខេត | $0.90 | ✅ មានរូបហើយ |
+| `8860010.png` | ដំឡូងបំពង ព្រីងហ្គលស៍ 107 ក្រាម | $2.50 | ✅ មានរូបហើយ |
+| `8860011.png` | នំឆូកូប៉ៃ អូរីយ៉ុន ប្រអប់ 6 | $2.20 | ✅ មានរូបហើយ |
+| `8860012.png` | ស្ករកៅស៊ូ ហារីបូ 80 ក្រាម | $1.20 | ✅ មានរូបហើយ |
 
 ### របស់ប្រើប្រាស់ — បុព្វបទ `887`
 
@@ -57,6 +65,9 @@
 | `8870005.png` | ទឹកលាងចាន ស៊ុនឡាយ 750 មីលីលីត្រ | $1.95 | ✅ មានរូបហើយ |
 | `8870006.png` | ច្រាសដុសធ្មេញ ទន់ | $1.10 | ✅ មានរូបហើយ |
 | `8870007.png` | ក្រដាសជូតមុខ ហោប៉ៅ កញ្ចប់ 10 | $1.30 | ✅ មានរូបហើយ |
+| `8870008.png` | សាប៊ូកក់សក់ 340 មីលីលីត្រ | $3.20 | ✅ មានរូបហើយ |
+| `8870009.png` | ទឹកបោកខោអាវ 2 លីត្រ | $4.80 | ✅ មានរូបហើយ |
+| `8870010.png` | ថង់សំរាម រមូរ 20 សន្លឹក | $1.50 | ✅ មានរូបហើយ |
 
 ### សម្ភារសិក្សា — បុព្វបទ `888`
 
@@ -68,6 +79,9 @@
 | `8880004.png` | ជ័រលុប | $0.25 | ✅ មានរូបហើយ |
 | `8880005.png` | បន្ទាត់ 30 សង់ទីម៉ែត្រ | $0.40 | ✅ មានរូបហើយ |
 | `8880006.png` | កាវបិទក្រដាស | $0.80 | ✅ មានរូបហើយ |
+| `8880007.png` | កន្ត្រៃ | $0.90 | ✅ មានរូបហើយ |
+| `8880008.png` | ប៊ិចហ្វឺតពណ៌លឿង | $0.60 | ✅ មានរូបហើយ |
+| `8880009.png` | ម៉ាស៊ីនកិបក្រដាស | $2.50 | ✅ មានរូបហើយ |
 
 ### អេឡិចត្រូនិក — បុព្វបទ `889`
 
@@ -79,6 +93,9 @@
 | `8890004.png` | កាសស្តាប់ចម្រៀង | $4.50 | ✅ មានរូបហើយ |
 | `8890005.png` | ក្បាលសាកទូរស័ព្ទ 20 វ៉ាត់ | $6.50 | ✅ មានរូបហើយ |
 | `8890006.png` | ពិលដៃ សាកបាន | $3.20 | ✅ មានរូបហើយ |
+| `8890007.png` | ថ្មសាកបម្រុង 10000 មីលីអំពែរម៉ោង | $12.00 | ✅ មានរូបហើយ |
+| `8890008.png` | ព្រីភ្លើង 8 រន្ធ | $6.50 | ✅ មានរូបហើយ |
+| `8890009.png` | ឧបករណ៍ផ្ទុកទិន្នន័យ 32 ជីកាបៃ | $6.00 | ✅ មានរូបហើយ |
 
 ## បើរូបភាពមិនទាន់មាន
 
@@ -130,3 +147,20 @@ After adding `<sku>.png` here, add the SKU to `PRODUCT_PHOTOS` in `src/shared/sc
 | `8890002.png` | Wikimedia Commons | Fructibus | CC0 | <https://commons.wikimedia.org/wiki/File:USB-C_cable_2017_A.jpg> |
 | `8890004.png` | Wikimedia Commons | LG전자 | CC BY 2.0 | <https://commons.wikimedia.org/wiki/File:LG_G2_earphone_QuadBeat_2_(White).jpg> |
 | `8890005.png` | Wikimedia Commons | Raimond Spekking | CC BY-SA 4.0 | <https://commons.wikimedia.org/wiki/File:Plug-in_power_adapter_USB_for_Apple,_Model_A1300,_by_Flextronics-0812.jpg> |
+| `8850009.png` | Open Food Facts | Open Food Facts contributors | CC BY-SA 3.0 | <https://world.openfoodfacts.org/product/9555589216829> |
+| `8850010.png` | Open Food Facts | Open Food Facts contributors | CC BY-SA 3.0 | <https://world.openfoodfacts.org/product/0611269818994> |
+| `8850011.png` | Wikimedia Commons | Amin | CC BY-SA 4.0 | <https://commons.wikimedia.org/wiki/File:Yakult_drink.jpg> |
+| `8850012.png` | Open Food Facts | Open Food Facts contributors | CC BY-SA 3.0 | <https://world.openfoodfacts.org/product/9556001263759> |
+| `8860009.png` | Open Food Facts | Open Food Facts contributors | CC BY-SA 3.0 | <https://world.openfoodfacts.org/product/8901058868036> |
+| `8860010.png` | Wikimedia Commons | DiamondIIIXX | CC0 | <https://commons.wikimedia.org/wiki/File:Pringles-165g-to-134g.jpg> |
+| `8860011.png` | Wikimedia Commons | Quercus acuta | CC0 | <https://commons.wikimedia.org/wiki/File:ORION_-_Choco_Pie.jpg> |
+| `8860012.png` | Wikimedia Commons | Kai Schreiber from Solingen, Germany | CC BY-SA 2.0 | <https://commons.wikimedia.org/wiki/File:Comparison_between_European_(top)_and_American_Goldbears_(64830775).jpg> |
+| `8870008.png` | Wikimedia Commons | F. Kesselring, FKuR Willich | CC BY-SA 3.0 de | <https://commons.wikimedia.org/wiki/File:Shampoo_Bottle_made_of_PLA-Blend_Bio-Flex.jpg> |
+| `8870009.png` | Wikimedia Commons | Mk2010 | CC BY-SA 3.0 | <https://commons.wikimedia.org/wiki/File:Liquid_detergent.JPG> |
+| `8870010.png` | Wikimedia Commons | Wiki Farazi | Public domain | <https://commons.wikimedia.org/wiki/File:Blue_garbage_bag.jpg> |
+| `8880007.png` | Wikimedia Commons | ZooFari | CC BY-SA 3.0 | <https://commons.wikimedia.org/wiki/File:Small_pair_of_blue_scissors.jpg> |
+| `8880008.png` | Wikimedia Commons | Svdmolen | CC BY 2.5 | <https://commons.wikimedia.org/wiki/File:Markeerstift-01_(xndr).jpg> |
+| `8880009.png` | Wikimedia Commons | Justus Blümer from Deutschland | CC BY 2.0 | <https://commons.wikimedia.org/wiki/File:Leitz_stapler.jpg> |
+| `8890007.png` | Wikimedia Commons | Vernon Chan | CC BY 2.0 | <https://commons.wikimedia.org/wiki/File:Batterie_externe_Xiaomi_10400_mAh.jpg> |
+| `8890008.png` | Wikimedia Commons | Roy Zuo | CC BY-SA 4.0 | <https://commons.wikimedia.org/wiki/File:(20241007)_APC_power_strip.jpg> |
+| `8890009.png` | Wikimedia Commons | Thiemo Schuff | CC BY-SA 3.0 de | <https://commons.wikimedia.org/wiki/File:WLAN_USB_2.0_Stick_Sphairon_Turbolink_UB801R.jpg> |
