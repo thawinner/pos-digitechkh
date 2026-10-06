@@ -344,10 +344,10 @@ function currentActorId() {
 
 /* ធនាគារនៅកម្ពុជាដែលភ្ជាប់បាគង (កូដ KHQR មួយ អតិថិជនស្កេនពីកម្មវិធីធនាគារណាក៏បាន)
    ហាងជ្រើសគណនីទទួលប្រាក់នៅការកំណត់ → អ្នកគិតលុយជ្រើសធនាគារពេលបង្ហាញកូដ · ការលក់រក្សា pay.bank
-   short = អក្សរកាត់នៅលើប៊ូតុង · ការលក់ចាស់គ្មាន bank → «បាគង» */
+   short = អក្សរកាត់ (ពេលគ្មានឡូហ្គោ) · logo = រូបការ៉េក្នុង shared/assets · ការលក់ចាស់គ្មាន bank → «បាគង» */
 const PAY_BANKS = {
-    aba: { name: 'ABA', short: 'ABA' },
-    acleda: { name: 'ACLEDA', short: 'AC' },
+    aba: { name: 'ABA', short: 'ABA', logo: 'shared/assets/ABA.png' },
+    acleda: { name: 'ACLEDA', short: 'AC', logo: 'shared/assets/AC.png' },
     wing: { name: 'Wing', short: 'W' },
     canadia: { name: 'Canadia', short: 'CB' },
     prince: { name: 'Prince', short: 'PB' },
@@ -876,6 +876,17 @@ const PAY_LABEL = {
 
 function bankName(id) {
     return PAY_BANKS[id] ? PAY_BANKS[id].name : 'បាគង';
+}
+
+/* ឡូហ្គោធនាគារ (ឬអក្សរកាត់ពេលគ្មានរូប) · size = ថ្នាក់ទំហំ · tile = ថ្នាក់ប្រអប់អក្សរកាត់តាមផ្ទៃ */
+function bankMark(id, size, tile) {
+    const b = PAY_BANKS[id];
+    const sz = size || 'w-9 h-9';
+    if (b && b.logo) {
+        const root = (document.body && document.body.dataset.roleRoot) || '.';
+        return `<img src="${root}/${b.logo}" alt="${b.name}" class="${sz} rounded-lg object-cover flex-shrink-0">`;
+    }
+    return `<span class="${sz} rounded-lg border ${tile || 'border-slate-200 bg-slate-50 text-slate-600'} text-[12px] font-bold flex items-center justify-center flex-shrink-0">${b ? b.short : 'KH'}</span>`;
 }
 
 /* គណនីដែលបើក និងមានលេខសម្គាល់ — បញ្ជីទទេ = ហាងមិនទទួលកូដស្កេន */

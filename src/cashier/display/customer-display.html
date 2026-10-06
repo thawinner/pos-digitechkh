@@ -222,7 +222,7 @@
                         <p class="cfd-sub text-slate-500 dark:text-slate-400 text-center mt-5">ស្កេនបានពីកម្មវិធីធនាគារទាំងអស់</p>
                     </div>
                 </section>
-                ${panel(`<p class="cfd-mid font-semibold">${PAY_BANKS[k.bank] ? `ស្កេនដើម្បីទូទាត់ចូលគណនី ${e(bankName(k.bank))}` : 'ស្កេនដើម្បីទូទាត់ជាមួយបាគង'}</p>
+                ${panel(`<div class="flex items-center gap-4">${PAY_BANKS[k.bank] ? bankMark(k.bank, 'cfd-step') : ''}<p class="cfd-mid font-semibold">${PAY_BANKS[k.bank] ? `ស្កេនដើម្បីទូទាត់ចូលគណនី ${e(bankName(k.bank))}` : 'ស្កេនដើម្បីទូទាត់ជាមួយបាគង'}</p></div>
                     <div class="mt-8">
                         <p class="cfd-sub text-slate-500 dark:text-slate-400">ទឹកប្រាក់ត្រូវទូទាត់</p>
                         <p class="cfd-big font-bold mt-1">${fmtUSD(k.amount)}</p>
@@ -308,7 +308,9 @@
                 prevQty = Object.fromEntries(s.items.map(l => [l.sku, l.qty]));
                 drawn = { stage, qr: '' };
             } else if (stage === 'khqr') {
-                if (drawn.stage !== 'khqr') { stageEl.innerHTML = khqrHtml(s); drawn.qr = ''; }
+                // ប្តូរធនាគារ ឬទឹកប្រាក់នៅលើផ្ទាំងគិតលុយ → គូរឡើងវិញទាំងមូល (ឈ្មោះ ឡូហ្គោ និងកូដ)
+                const khqrKey = `${s.khqr.bank || ''}|${s.khqr.amount}`;
+                if (drawn.stage !== 'khqr' || drawn.khqrKey !== khqrKey) { stageEl.innerHTML = khqrHtml(s); drawn.qr = ''; drawn.khqrKey = khqrKey; }
                 drawQr(s.khqr);
                 drawn.stage = 'khqr';
                 tickKhqr();

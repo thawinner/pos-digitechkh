@@ -429,33 +429,33 @@
             return Object.assign({ summary: s }, v);
         }
 
+        /* ស្ថានភាពប្រាក់ខុស៖ ផ្ទៃធម្មតា ស៊ុមស្តើងតាមស្ថានភាព រូបតំណាងពណ៌ · ពណ៌តែលើទឹកប្រាក់ */
         function varianceTone(v) {
-            if (v.level === 'exact') return { text: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200', icon: 'fa-circle-check' };
-            if (v.level === 'small') return { text: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-200', icon: 'fa-triangle-exclamation' };
-            return { text: 'text-rose-700', bg: 'bg-rose-50', border: 'border-rose-200', icon: 'fa-circle-exclamation' };
+            if (v.level === 'exact') return { text: 'text-emerald-600', border: '', icon: 'fa-circle-check' };
+            if (v.level === 'small') return { text: 'text-amber-600', border: 'rgba(245, 158, 11, .7)', icon: 'fa-triangle-exclamation' };
+            return { text: 'text-rose-600', border: 'rgba(244, 63, 94, .7)', icon: 'fa-circle-exclamation' };
         }
 
         function renderVariance() {
             const v = varianceData();
             const tone = varianceTone(v);
             const tol = posSettings().varianceTolerance;
+            const amt = `<span class="sm-figure ${tone.text}">${fmtUSD(v.abs)}</span>`;
 
             document.getElementById('varianceBanner').innerHTML = `
-                <div class="p-5 rounded-2xl ${tone.bg} border ${tone.border} flex items-start gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-white/70 ${tone.text} flex items-center justify-center text-xl flex-shrink-0">
-                        <i class="fas ${tone.icon}"></i>
-                    </div>
+                <div class="px-5 py-4 rounded-xl bg-white border border-slate-200 flex items-start gap-3.5" ${tone.border ? `style="border-color: ${tone.border} !important"` : ''}>
+                    <i class="fas ${tone.icon} ${tone.text} text-lg mt-1 flex-shrink-0"></i>
                     <div class="min-w-0">
-                        <h3 class="sm-card-title ${tone.text}">
-                            ${v.level === 'exact' ? 'ត្រឹមត្រូវ! គ្មានភាពខុសគ្នា'
-                                : v.level === 'small' ? `មានភាពខុសគ្នាតូច ${fmtUSD(v.abs)}៖ សូមត្រួតពិនិត្យឡើងវិញ`
-                                : `មានភាពខុសគ្នាធំ ${fmtUSD(v.abs)}៖ ត្រូវពន្យល់មូលហេតុ`}
+                        <h3 class="sm-card-title text-slate-800">
+                            ${v.level === 'exact' ? 'ត្រឹមត្រូវ គ្មានភាពខុសគ្នា'
+                                : v.level === 'small' ? `ខុសគ្នាតិចតួច ${amt} · សូមពិនិត្យឡើងវិញ`
+                                : `ខុសគ្នាច្រើន ${amt} · ត្រូវពន្យល់មូលហេតុ`}
                         </h3>
-                        <p class="sm-card-sub ${tone.text} mt-1 opacity-90">
-                            ${v.level === 'exact' ? 'សាច់ប្រាក់ដែលរាប់បានស្មើនឹងអ្វីដែលប្រព័ន្ធរំពឹងទុក។'
-                                : v.level === 'small' ? `ទឹកប្រាក់នេះតិចជាង ${fmtUSD(tol)} ដូច្នេះលោកអ្នកអាចបន្តបាន ប៉ុន្តែសូមធីកទទួលស្គាល់ជាមុនសិន។`
-                                : `ទឹកប្រាក់នេះលើស ${fmtUSD(tol)} ដូច្នេះការពន្យល់នឹងត្រូវផ្ញើទៅអ្នកគ្រប់គ្រងដើម្បីត្រួតពិនិត្យ។`}
-                            ${firstCount ? '' : ' បើលោកអ្នកគិតថារាប់ខុស អាចចុច «រាប់ឡើងវិញ» បានតែម្តង។'}
+                        <p class="sm-card-sub text-slate-500 mt-1">
+                            ${v.level === 'exact' ? 'សាច់ប្រាក់ដែលរាប់បានស្មើនឹងចំនួនដែលប្រព័ន្ធរំពឹងទុក។'
+                                : v.level === 'small' ? `តិចជាង ${fmtUSD(tol)} អាចបន្តបាន ប៉ុន្តែសូមធីកទទួលស្គាល់ជាមុនសិន។`
+                                : `លើស ${fmtUSD(tol)} ការពន្យល់នឹងផ្ញើទៅអ្នកគ្រប់គ្រងដើម្បីត្រួតពិនិត្យ។`}
+                            ${firstCount ? '' : ' បើគិតថារាប់ខុស អាចចុច «រាប់ឡើងវិញ» បានតែម្តង។'}
                         </p>
                     </div>
                 </div>`;

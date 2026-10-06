@@ -1626,7 +1626,7 @@
                     <button onclick="setPayBank('${b.id}')" type="button" aria-pressed="${b.id === cur}"
                         class="!min-h-[52px] rounded-lg border bg-[#171717] px-3 flex items-center gap-2.5 text-left transition ${b.id === cur
                             ? 'border-blue-500 ring-1 ring-blue-500' : 'border-white/10 hover:border-blue-600'}">
-                        <span class="w-9 h-9 rounded-md bg-white/5 border border-white/10 text-slate-200 text-[12px] font-bold flex items-center justify-center flex-shrink-0">${PAY_BANKS[b.id].short}</span>
+                        ${bankMark(b.id, 'w-9 h-9', 'bg-white/5 border-white/10 text-slate-200')}
                         <span class="min-w-0"><span class="sm-td font-semibold text-white block truncate">${bankName(b.id)}</span>
                             <span class="sm-td-sub text-slate-400 block truncate">${escapeText(b.account)}</span></span>
                     </button>`).join('')}</div>
@@ -1672,6 +1672,11 @@
         }
 
         function renderCheckout(t) {
+            // ម្ចាស់ហាងបិទធនាគារទាំងអស់ពេលកំពុងទូទាត់ → ត្រឡប់ទៅដុល្លារ ហើយលុបទឹកប្រាក់តាមកូដស្កេនចេញ
+            if (!activePayBanks().length && (tenderMode === 'khqr' || pay.khqr > 0)) {
+                if (tenderMode === 'khqr') { tenderMode = 'usd'; entry = ''; pay = { usdCash: 0, khrCash: 0, khqr: 0 }; }
+                else pay.khqr = 0;
+            }
             const rate = fxRate();
             const due = t.gross;
             const paid = paidTotal(pay, rate);
@@ -1985,14 +1990,14 @@
             document.getElementById('khqrBank').innerHTML = `
                 <p class="sm-td-sub text-slate-400 mb-1.5">ប្រាក់ចូលគណនី</p>
                 <div class="rounded-xl border border-white/10 px-3 py-2.5 flex items-center gap-3">
-                    <span class="w-10 h-10 rounded-lg bg-white/5 border border-white/10 text-slate-200 text-[12px] font-bold flex items-center justify-center flex-shrink-0">${PAY_BANKS[pending.pay.bank] ? PAY_BANKS[pending.pay.bank].short : 'KH'}</span>
+                    ${bankMark(pending.pay.bank, 'w-10 h-10', 'bg-white/5 border-white/10 text-slate-200')}
                     <span class="min-w-0 flex-1"><span class="sm-value text-white block truncate">${bank}</span>
                         <span class="sm-td-sub text-slate-400 block truncate">${escapeText(account)}</span></span>
                 </div>
                 ${others.length ? `<div class="flex flex-wrap items-center gap-1.5 mt-2">
                     <span class="sm-td-sub text-slate-500 mr-1">ប្តូរទៅ</span>
                     ${others.map(b => `<button onclick="switchKhqrBank('${b.id}')" type="button"
-                        class="sm-badge !min-h-[36px] h-9 px-3 rounded-lg border border-white/15 text-slate-200 font-semibold hover:border-blue-500 transition">${bankName(b.id)}</button>`).join('')}
+                        class="sm-badge !min-h-[36px] h-9 pl-1.5 pr-3 rounded-lg border border-white/15 text-slate-200 font-semibold hover:border-blue-500 transition inline-flex items-center gap-2">${bankMark(b.id, 'w-6 h-6', 'bg-white/5 border-white/10 text-slate-200')}${bankName(b.id)}</button>`).join('')}
                 </div>` : ''}`;
             const cash = pending.pay.usdCash + toUSD(pending.pay.khrCash, rate);
             document.getElementById('khqrSplit').innerHTML = cash > 0.005

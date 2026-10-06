@@ -86,10 +86,18 @@ add("dark", f'''<div class="eyebrow">ដំណោះស្រាយ</div><h2>ម
 add(*split("Cashier · POS Terminal", "លក់បានលឿន ក្នុងប៉ុន្មានប៉ះ",
  ["ស្កេន Barcode ឬប៉ះរូបផលិតផល", "ទំនិញលក់ញឹកញាប់ នៅខាងលើ", "ស្លាក «ជិតអស់» ប្រាប់មុនអស់ Stock", "Hold ការលក់ ដើម្បីបម្រើអតិថិជនបន្ទាប់", "គ្រាប់ចុចរហ័ស F2 F8 លើប៊ូតុង"], "terminal", crop=False))
 
-# 5 payment + customer display
-add("", f'''<div class="eyebrow">Cashier · Payment និង Customer Display</div><h2>ទទួលលុយបានគ្រប់ប្រភេទ អតិថិជនឃើញច្បាស់</h2>
-<div class="split"><div class="txt">{lis(["សាច់ប្រាក់ដុល្លារ និងរៀល","អាប់ដូររៀល បង្គត់ជិត 100 រៀល","បង់តាម KHQR លើអេក្រង់តែមួយ","Customer Display បង្ហាញទំនិញ និងតម្លៃដល់អតិថិជន","សារស្វាគមន៍ កំណត់ដោយ Manager"])}</div>
-<div style="flex:none">{shot("cfd", False)}<div class="cap">Customer Display · មិនបង្ហាញតម្លៃដើម Stock ឬឈ្មោះបុគ្គលិក</div></div></div>{foot()}''')
+# 5 payment
+add(*split("Cashier · Payment", "ទទួលលុយបានគ្រប់ប្រភេទ",
+ ["សាច់ប្រាក់ដុល្លារ និងរៀល", "អាប់ដូររៀល បង្គត់ជិត 100 រៀល", "KHQR ជ្រើសគណនីធនាគារ ABA ACLEDA ...", "បង់ចម្រុះ៖ សាច់ប្រាក់ និង KHQR ក្នុងវិក្កយបត្រតែមួយ", "ប៊ូតុងបង្ហាញឈ្មោះធនាគារ មុនចុច"], "paybank", crop=False))
+
+# 6 KHQR + customer display
+add("dark", f'''<div class="eyebrow">KHQR · Customer Display</div><h2>អតិថិជនស្កេន KHQR ចូលគណនីហាងផ្ទាល់</h2>
+<div class="grid c2" style="gap:40px;flex:1;align-items:start">
+<div>{shot("khqr", False).replace("full","")}<div class="cap">អេក្រង់ Cashier · កូដ KHQR តាមស្តង់ដារបាគង</div></div>
+<div>{shot("cfdkhqr", False).replace("full","")}<div class="cap">Customer Display · អតិថិជនស្កេនពីកម្មវិធីធនាគារណាក៏បាន</div></div></div>
+<div class="grid c3" style="margin-top:8px"><div class="card" style="padding:26px 30px"><h3>កូដមានសុពលភាព 5 នាទី</h3><p>ផុតកំណត់ ចុចបង្កើតកូដថ្មី</p></div>
+<div class="card" style="padding:26px 30px"><h3>ប្តូរធនាគារបាន</h3><p>អតិថិជនចង់បង់ចូលគណនីផ្សេង</p></div>
+<div class="card" style="padding:26px 30px"><h3>Cashier បញ្ជាក់</h3><p>ចុច «បានទទួលប្រាក់» ពេលឃើញការជូនដំណឹងពីធនាគារ</p></div></div>{foot()}''')
 
 # 6 shift flow
 add("", f'''<div class="eyebrow">Cashier · Shift</div><h2>លុយក្នុងថតត្រូវជានិច្ច</h2>
@@ -115,7 +123,7 @@ add(*split("Manager · Approvals", "សកម្មភាពសំខាន់ �
 
 # 10 manager dashboard
 add(*split("Manager · Dashboard", "ដឹងថាត្រូវធ្វើអ្វី ពេលចូលមក",
- ["ការងាររង់ចាំអនុម័ត តាមលំដាប់ប្រញាប់", "ចំណូលថ្ងៃនេះ ប្រៀបធៀបម្សិលមិញ", "ស្ថានភាពបញ្ជរនីមួយៗ និង Cashier", "ករណីមិនប្រក្រតី ចុចទៅមើលលម្អិត"], "mgr"))
+ ["ការងាររង់ចាំអនុម័ត តាមលំដាប់ប្រញាប់", "ចំណូលថ្ងៃនេះ ប្រៀបធៀបម្សិលមិញ", "ស្ថានភាពបញ្ជរនីមួយៗ និង Cashier", "ចំណូលបំបែក សាច់ប្រាក់ និង KHQR តាមធនាគារ"], "mgr"))
 
 # 11 roster
 add(*split("Manager · Roster", "រៀបចំវេនបុគ្គលិក មិនជាន់គ្នា",
@@ -145,6 +153,10 @@ add(*split("Owner · Profit Report", "ចំណេញរាល់ថ្ងៃ �
 add(*split("Owner · Staff", "គ្រប់គ្រងបុគ្គលិក និងសិទ្ធិ",
  ["បន្ថែមបុគ្គលិក កំណត់តួនាទី និងបិទគណនី", "កំណត់ដែនកំណត់បញ្ចុះតម្លៃរៀងខ្លួន", "ប្តូរពាក្យសម្ងាត់ និង PIN", "ប្រាក់ខែ និងម៉ោងធ្វើការ"], "staff", dark=True))
 
+# owner banks
+add(*split("Owner · ធនាគារទទួលប្រាក់", "Owner កំណត់គណនីធនាគារ សម្រាប់ KHQR",
+ ["បើក ឬបិទធនាគារ ABA ACLEDA Wing Canadia ...", "លេខសម្គាល់គណនីបាគង របស់ហាង", "ធនាគារទីមួយ ជាលំនាំដើមនៅបញ្ជរ", "Report បំបែកចំណូលតាមធនាគារ"], "banks"))
+
 # 18 audit
 add(*split("Owner · Audit Log", "ដឹងថាអ្នកណាធ្វើអ្វី នៅពេលណា",
  ["កត់ត្រារាល់ការផ្លាស់ប្តូរតម្លៃ បុគ្គលិក និងច្បាប់", "មិនអាចលុប ឬកែបានទេ", "ស្វែងរកតាមអ្នកធ្វើ និងប្រភេទសកម្មភាព"], "audit"))
@@ -157,7 +169,8 @@ add("", f'''<div class="eyebrow">សុវត្ថិភាព · Permissions</
 <tr><td>អនុម័ត Void និង Refund</td><td>ស្នើ</td><td class="y">បាន</td><td class="y">បាន</td></tr>
 <tr><td>ត្រួតពិនិត្យ Shift ដែលបិទ</td><td>មិនបាន</td><td class="y">បាន</td><td class="y">បាន</td></tr>
 <tr><td>មើលតម្លៃដើម និងប្រាក់ចំណេញ</td><td>មិនបាន</td><td>មិនបាន</td><td class="y">បាន</td></tr>
-<tr><td>កែតម្លៃលក់ និងបុគ្គលិក</td><td>មិនបាន</td><td>មិនបាន</td><td class="y">បាន</td></tr></table>
+<tr><td>កែតម្លៃលក់ និងបុគ្គលិក</td><td>មិនបាន</td><td>មិនបាន</td><td class="y">បាន</td></tr>
+<tr><td>កំណត់ធនាគារទទួលប្រាក់</td><td>ជ្រើសពេលទូទាត់</td><td>មិនបាន</td><td class="y">បាន</td></tr></table>
 <p style="margin-top:28px;font-size:28px">Login ដោយលេខទូរស័ព្ទ ឬ Email និងពាក្យសម្ងាត់ · ចាក់សោ 1 នាទី បើខុស 5 ដង</p>{foot()}''')
 
 # 20 ease of use

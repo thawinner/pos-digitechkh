@@ -49,13 +49,20 @@ add("", head("តួនាទី", "អ្នកណាធ្វើអ្វី �
  '''<table class="sw"><tr><th style="width:16%"></th><th>មុនបើក</th><th>ពេលលក់</th><th>ពេលបិទ</th></tr>
 <tr><td>Cashier</td><td>Login · Open Shift រាប់ Float</td><td>លក់ · Hold · Cash Drop · ស្នើ Void ឬ Refund</td><td>Close Shift រាប់លុយ បោះពុម្ព Z-Report</td></tr>
 <tr><td>Manager</td><td>កំណត់អត្រាប្តូរប្រាក់ · ត្រួតពិនិត្យ Roster</td><td>អនុម័ត Void Refund និងបញ្ចុះតម្លៃ · បញ្ជាក់ Cash Drop</td><td>Review Shift ដែលបិទ · ដោះស្រាយ Exceptions</td></tr>
-<tr><td>Owner</td><td>កំណត់តម្លៃ ច្បាប់ និងបុគ្គលិក</td><td>មើល Dashboard ចំណូល និងចំណេញ</td><td>មើល Report Stock និង Audit Log</td></tr></table>''' + foot())
+<tr><td>Owner</td><td>កំណត់តម្លៃ ច្បាប់ បុគ្គលិក និងធនាគារ</td><td>មើល Dashboard ចំណូល និងចំណេញ</td><td>មើល Report Stock និង Audit Log</td></tr></table>''' + foot())
 
 # 4 sale flow
 add("", head("Cashier · Sale Flow", "ដំណើរការលក់ មួយវិក្កយបត្រ") +
- flow([step("ស្កេន","Barcode ឬប៉ះផលិតផល"), step("កន្ត្រក","កែចំនួន ឬលុបមុនបង់ប្រាក់"), step("ទូទាត់","សាច់ប្រាក់ USD KHR ឬ KHQR"), step("អាប់ដូរ","គិតជា USD និងរៀល"), step("Receipt","បោះពុម្ព 80mm និង Customer Display")]) +
+ flow([step("ស្កេន","Barcode ឬប៉ះផលិតផល"), step("កន្ត្រក","កែចំនួន ឬលុបមុនបង់ប្រាក់"), step("ទូទាត់","សាច់ប្រាក់ USD KHR ឬ KHQR តាមធនាគារ"), step("អាប់ដូរ","គិតជា USD និងរៀល"), step("Receipt","បោះពុម្ព 80mm និង Customer Display")]) +
  '''<div class="grid c2" style="margin-top:36px"><div class="card"><h3>បញ្ចុះតម្លៃលើសកំណត់?</h3><p>ត្រូវបញ្ចូល PIN របស់ Manager នៅលើអេក្រង់ Cashier</p></div>
 <div class="card"><h3>មានអតិថិជនបន្ទាប់?</h3><p>Hold ការលក់ ហើយបន្តវិញពេលក្រោយ</p></div></div>''' + foot())
+
+# KHQR flow
+add("dark", head("KHQR Payment Flow", "ទទួលប្រាក់តាម KHQR ចូលគណនីធនាគារហាង") +
+ flow([step("ជ្រើស «ធនាគារ»","Cashier ជ្រើសវិធីទូទាត់"), step("ជ្រើសគណនី","ABA ACLEDA ... លំនាំដើម = ធនាគារទីមួយ"), step("បង្ហាញ KHQR","លើអេក្រង់ Cashier និង Customer Display"), step("អតិថិជនស្កេន","ពីកម្មវិធីធនាគារណាក៏បាន"), step("បានទទួលប្រាក់","Cashier បញ្ជាក់ ហើយចេញ Receipt")]) +
+ '''<div class="grid c3" style="margin-top:36px"><div class="card"><h3>ផុតកំណត់ 5 នាទី</h3><p>ចុចបង្កើតកូដថ្មី លេខវិក្កយបត្រដដែល</p></div>
+<div class="card"><h3>ប្តូរធនាគារ</h3><p>បង្កើតកូដថ្មី ចូលគណនីដែលអតិថិជនចង់បាន</p></div>
+<div class="card"><h3>Report តាមធនាគារ</h3><p>Close Shift Dashboard និង Sales Report បំបែកតាមធនាគារ</p></div></div>''' + foot())
 
 # 5 approval flow
 add("dark", head("Approval Flow", "Void និង Refund ត្រូវមានអ្នកអនុម័ត") +
@@ -76,7 +83,8 @@ add("", head("Shift Lifecycle", "Shift មួយ ឆ្លងកាត់ 3 ស�
 add("dark", head("Cash Flow", "លុយចេញចូល តាមដានគ្រប់ជំហាន") +
  flow([step("Float","លុយចាប់ផ្តើម USD និង KHR"), step("លក់ជាសាច់ប្រាក់","លុយចូលថត"), step("Cash Drop","Cashier ផ្ទេរចូលទូដែក"), step("Manager បញ្ជាក់","ទទួលលុយទម្លាក់"), step("Close Shift","រាប់ ប្រៀបធៀប ចំនួនរំពឹងទុក")]) +
  '''<div class="grid c2" style="margin-top:36px"><div class="card"><h3>ខុសក្នុងកម្រិតអនុញ្ញាត</h3><p>បិទបានធម្មតា</p></div>
-<div class="card"><h3>ខុសលើសកំណត់</h3><p>ត្រូវមានកំណត់ចំណាំពី Manager ហើយបង្ហាញលើ Dashboard របស់ Owner</p></div></div>''' + foot())
+<div class="card"><h3>ខុសលើសកំណត់</h3><p>ត្រូវមានកំណត់ចំណាំពី Manager ហើយបង្ហាញលើ Dashboard របស់ Owner</p></div></div>
+<div class="note">KHQR ចូលគណនីធនាគាររបស់ហាងផ្ទាល់ · មិនរាប់ក្នុងថតប្រាក់ពេល Close Shift</div>''' + foot())
 
 # 8 stock flow
 add("", head("Stock Flow", "Stock មិនត្រូវបានកែដោយដៃ ទាំងស្រុង") +

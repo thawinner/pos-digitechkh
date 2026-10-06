@@ -455,7 +455,7 @@ function renderBanks(s) {
         const prev = saved.find(x => x.id === b.id) || {};
         const missing = b.on && !String(b.account || '').trim();
         return `<div class="py-3.5 border-b border-slate-100 last:border-0 flex flex-wrap md:flex-nowrap items-center gap-3 ${b.on ? '' : 'opacity-60'}">
-            <span class="w-10 h-10 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 text-[12px] font-bold flex items-center justify-center flex-shrink-0">${PAY_BANKS[b.id].short}</span>
+            ${bankMark(b.id, 'w-10 h-10')}
             <div class="min-w-0 flex-1 md:flex-none md:w-44">
                 <p class="sm-td font-semibold text-slate-800">${bankName(b.id)}</p>
                 <p class="sm-td-sub text-slate-500">${b.on ? (firstOn && firstOn.id === b.id ? 'លំនាំដើមនៅបញ្ជរ' : 'បើក') : 'បិទ'}</p>
