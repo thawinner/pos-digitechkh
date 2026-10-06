@@ -338,6 +338,12 @@ const POS_SETTINGS_DEFAULTS = {
     defaultFloatKHR: 400000,
     khqrSeconds: 300,
     holdLimit: 5,
+    /* សារនៅអេក្រង់អតិថិជនពេលគ្មានការលក់ (អតិបរមា 5) · icon៖ fa-tag fa-qrcode fa-money-bill-wave fa-receipt */
+    cfdMessages: [
+        { icon: 'fa-money-bill-wave', text: 'ទទួលសាច់ប្រាក់ជាដុល្លារ និងរៀល', on: true },
+        { icon: 'fa-qrcode', text: 'ទូទាត់ងាយស្រួលដោយស្កេនបាគង', on: true },
+        { icon: 'fa-receipt', text: 'សូមទទួលវិក្កយបត្រគ្រប់ពេលទិញទំនិញ', on: true }
+    ],
     discountLimits: { 'CAS-01': 5, 'CAS-02': 5, 'CAS-03': 3, 'CAS-04': 5, 'CAS-05': 3, 'CAS-06': 3 },
     /* វេនព្រឹក រសៀល យប់ — ហាងបើក 24 ម៉ោង · ចំនួនវេន = ម៉ោងបើកហាង ÷ ប្រមាណ 8 ម៉ោង (ស្រាវជ្រាវ §11) */
     shiftTemplates: [
@@ -388,6 +394,7 @@ const SETTING_LABELS = {
     defaultFloatKHR: 'ប្រាក់បាតថតស្តង់ដារជារៀល',
     khqrSeconds: 'សុពលភាពកូដស្កេនបាគង',
     holdLimit: 'ការលក់ព្យួរអតិបរមាក្នុងមួយវេន',
+    cfdMessages: 'សារនៅអេក្រង់អតិថិជន',
     discountLimits: 'ដែនកំណត់បញ្ចុះតម្លៃរបស់អ្នកគិតលុយ',
     shiftTemplates: 'គំរូវេន',
     reasons: 'បញ្ជីមូលហេតុ',
@@ -1192,6 +1199,27 @@ function loadPendingPayment() {
 
 function clearPendingPayment() {
     sessRemove(POS_KEYS.pending);
+}
+
+/* ===== អេក្រង់អតិថិជន (CFD) =====
+   ផ្ទាំងគិតលុយបោះផ្សាយរូបថតតូចមួយទៅ localStorage `pos_cfd` · ផ្ទាំងអតិថិជនអានតាមព្រឹត្តិការណ៍ storage
+   មានតែអ្វីដែលអតិថិជនគួរឃើញ៖ ទំនិញ តម្លៃ ចំនួន ការទូទាត់ — គ្មានតម្លៃដើម ស្តុក លេខសម្ងាត់ ឬហេតុផលអនុម័តទេ
+   stage៖ idle · sell · pay · khqr · thanks */
+const CFD_KEY = 'pos_cfd';
+const CFD_CMD_KEY = 'pos_cfd_cmd';
+const CFD_ALIVE_KEY = 'pos_cfd_alive';
+
+/* អេក្រង់អតិថិជនកំពុងបើក ប្រសិនបើវាបានផ្ញើសញ្ញាក្នុងរយៈពេល 6 វិនាទីចុងក្រោយ */
+function cfdIsOpen() {
+    return Date.now() - Number(localStorage.getItem(CFD_ALIVE_KEY) || 0) < 6000;
+}
+
+function publishCfd(state) {
+    posWrite(CFD_KEY, { ...state, at: Date.now() });
+}
+
+function loadCfd() {
+    return posRead(CFD_KEY, null);
 }
 
 /* ===== សង្ខេបវេន =====
@@ -2407,7 +2435,7 @@ const MY_REGISTER = resolveRegister(ME_CASHIER);
     const area = path.includes('/cashier/') ? 'cashier' : path.includes('/manager/') ? 'manager' : path.includes('/admin/') ? 'admin' : '';
     if (!area) return;
     const role = SESSION ? roleOf(SESSION.userId) : '';
-    if (area === 'cashier' && role === 'admin') {
+    if (area === 'cashier' && role === 'admin' && !path.includes('/display/')) {
         location.replace(`../../${ROLE_HOME.admin}`);
         return;
     }

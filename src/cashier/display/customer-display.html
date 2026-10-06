@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគិតលុយ - អេក្រង់អតិថិជន</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <link rel="manifest" href="manifest.webmanifest">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { colors: { primary: "#2563eb" }, fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] } } }
+        }
+        try { if (localStorage.getItem('bms_theme') === 'dark') document.documentElement.classList.add('dark'); } catch (e) { /* ប្រើពន្លឺ */ }
+    </script>
+    <style>
+        /* អេក្រង់អតិថិជន៖ អក្សរធំអានបានពីចម្ងាយប្រហែល 1 ម៉ែត្រ · មិនប្រើ custom.css ព្រោះវាបង្ខំទំហំអក្សរ */
+        html, body { height: 100%; margin: 0; overflow: hidden; }
+        body { font-family: 'Kantumruy Pro', sans-serif; font-variant-numeric: tabular-nums; }
+        .cfd-title { font-size: clamp(28px, 3.4vw, 56px); }
+        .cfd-big { font-size: clamp(56px, 8vw, 132px); line-height: 1.05; }
+        .cfd-mid { font-size: clamp(22px, 2.6vw, 42px); }
+        .cfd-row { font-size: clamp(18px, 1.9vw, 30px); }
+        .cfd-sub { font-size: clamp(15px, 1.4vw, 22px); }
+        .cfd-thumb { width: clamp(56px, 6vw, 96px); height: clamp(56px, 6vw, 96px); }
+        .cfd-flash { animation: cfdFlash 1.1s ease-out; }
+        @keyframes cfdFlash { from { background: #dbeafe; } to { background: transparent; } }
+        .dark .cfd-flash { animation-name: cfdFlashDark; }
+        @keyframes cfdFlashDark { from { background: #1e3a8a; } to { background: transparent; } }
+        .cfd-fade { animation: cfdFade .5s ease-out; }
+        @keyframes cfdFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+        .cfd-clamp { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .cfd-qty { min-width: clamp(40px, 3.6vw, 60px); height: clamp(40px, 3.6vw, 60px); }
+        .cfd-last { box-shadow: inset 4px 0 0 #2563eb; }
+        .cfd-bar { animation: cfdBar 8s linear forwards; transform-origin: left; }
+        @keyframes cfdBar { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+        .cfd-grid { display: grid; gap: 20px; padding: 20px; height: 100%; }
+        @media (max-width: 900px) { .cfd-grid { grid-template-columns: 1fr !important; grid-template-rows: minmax(0, 1fr) auto; } }
+        /* កាត KHQR (ទម្រង់បាគង)៖ ក្បាលក្រហមមានជ្រុងកាត់ ឈ្មោះហាង ទឹកប្រាក់ បន្ទាត់ចុចៗ និងកូដ */
+        .khqr-card { width: min(56vh, 40vw, 86vw); background: #fff; border-radius: 22px; overflow: hidden;
+                     box-shadow: 0 14px 40px rgba(15, 23, 42, .16); color: #0f172a; text-align: left; }
+        .khqr-head { position: relative; height: clamp(52px, 7.5vh, 76px); background: #e1232e; display: flex; align-items: center; justify-content: center; }
+        .khqr-head span { color: #fff; font: 800 clamp(20px, 2.6vh, 30px)/1 Arial, sans-serif; letter-spacing: .08em; }
+        .khqr-head::after { content: ''; position: absolute; right: 0; bottom: -1px; border-style: solid;
+                            border-width: 0 0 clamp(22px, 3vh, 32px) clamp(22px, 3vh, 32px); border-color: transparent transparent #fff transparent; }
+        .khqr-merchant { font-size: clamp(14px, 1.9vh, 20px); color: #334155; font-weight: 500; }
+        .khqr-amount { font-size: clamp(26px, 4vh, 42px); font-weight: 700; line-height: 1.25; }
+        .khqr-cur { font-size: clamp(14px, 1.9vh, 20px); font-weight: 600; color: #64748b; }
+        .khqr-cut { border-top: 2px dashed #cbd5e1; margin: 0 16px; }
+        .khqr-mark { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 14%; aspect-ratio: 1;
+                     border-radius: 9999px; background: #0f172a; color: #fff; border: 4px solid #fff; display: flex;
+                     align-items: center; justify-content: center; font: 700 clamp(14px, 2.2vh, 24px)/1 Arial, sans-serif; }
+        .cfd-step { width: clamp(36px, 4.4vh, 48px); height: clamp(36px, 4.4vh, 48px); }
+        #lines::-webkit-scrollbar { display: none; }
+        #lines { scrollbar-width: none; }
+    </style>
+</head>
+<body data-role-root="../.." class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+    <main id="stage" class="h-full w-full"></main>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script>
+        const stageEl = document.getElementById('stage');
+        const STALE_MS = 30000;
+        /* សារស្វាគមន៍ត្រូវបានកំណត់ដោយអ្នកគ្រប់គ្រងក្នុងការកំណត់ */
+        function welcomeSlides() {
+            return (posSettings().cfdMessages || []).filter(m => m.on && String(m.text || '').trim());
+        }
+
+        let state = null;
+        let drawn = { stage: '', qr: '' };
+        let prevQty = {};
+        let slideIdx = 0;
+
+        /* ===== ឧបករណ៍ជំនួយ ===== */
+
+        function e(s) {
+            return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+        }
+
+        function money(usd, rate) {
+            return `<span class="font-semibold">${fmtUSD(usd)}</span><span class="text-slate-400 dark:text-slate-500 font-medium"> · ${fmtKHR(toKHR(usd, rate))}</span>`;
+        }
+
+        function shopHead(size) {
+            return `<div class="flex items-center gap-4">
+                <span class="w-[72px] h-[72px] rounded-2xl bg-white border border-slate-200 flex items-center justify-center flex-shrink-0">
+                    <img src="../../${MERCHANT.logo}" alt="" class="w-12 h-12 object-contain"></span>
+                <div class="min-w-0"><p class="${size} font-semibold leading-tight truncate">${e(MERCHANT.nameKh)}</p>
+                <p class="cfd-sub text-slate-500 dark:text-slate-400 truncate">${e(MERCHANT.branch)}</p></div></div>`;
+        }
+
+        function panel(inner, cls) {
+            return `<section class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl ${cls || ''}">${inner}</section>`;
+        }
+
+        function totalRow(label, html, tone) {
+            return `<div class="flex items-baseline justify-between gap-6 cfd-row ${tone || 'text-slate-600 dark:text-slate-300'}">
+                <span>${label}</span><span class="font-medium">${html}</span></div>`;
+        }
+
+        function summaryRows(t, rate) {
+            const rows = [totalRow('សរុបរង', fmtUSD(t.list))];
+            if (t.discount > 0.005) rows.push(totalRow(`បញ្ចុះតម្លៃ ${t.discountPercent}%`, '−' + fmtUSD(t.discount), 'text-amber-600 dark:text-amber-400'));
+            rows.push(totalRow('អាករលើតម្លៃបន្ថែម 10% (រួមក្នុងតម្លៃ)', fmtUSD(t.vat)));
+            return rows.join('');
+        }
+
+        /* ===== ដំណាក់កាល ===== */
+
+        function clockText() {
+            const d = new Date();
+            return `${d.getDate()} ${MONTHS_KH[d.getMonth()]} ${d.getFullYear()} · ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+        }
+
+        function idleHtml() {
+            const slides = welcomeSlides();
+            const s = slides.length ? slides[slideIdx % slides.length] : null;
+            return `<div class="h-full flex flex-col items-center justify-center text-center px-10 cfd-fade">
+                <span class="w-36 h-36 rounded-3xl bg-white border border-slate-200 flex items-center justify-center mb-8">
+                    <img src="../../${MERCHANT.logo}" alt="" class="w-24 h-24 object-contain"></span>
+                <p class="cfd-title font-semibold">សូមស្វាគមន៍មកកាន់ ${e(MERCHANT.nameKh)}</p>
+                <p class="cfd-mid text-slate-500 dark:text-slate-400 mt-2">${e(MERCHANT.branch)}</p>
+                ${s ? `<div id="slide" class="mt-14 inline-flex items-center gap-4 px-8 py-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cfd-mid text-slate-700 dark:text-slate-200">
+                    <i class="fas ${e(s.icon)} text-primary"></i><span>${e(s.text)}</span></div>` : ''}
+                <p id="idleClock" class="cfd-sub text-slate-400 dark:text-slate-500 mt-10">${clockText()}</p>
+                <div class="flex gap-2 mt-4">${slides.length > 1 ? slides.map((_, i) =>
+                    `<span class="w-2.5 h-2.5 rounded-full ${i === slideIdx % slides.length ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600'}"></span>`).join('') : ''}</div>
+            </div>`;
+        }
+
+        function linesHtml(items) {
+            const lastSku = items.length ? items[items.length - 1].sku : '';
+            return items.map(l => {
+                const p = getProduct(l.sku);
+                const changed = prevQty[l.sku] !== l.qty;
+                return `<div data-sku="${e(l.sku)}" class="flex items-center gap-5 px-6 py-4 border-b border-slate-100 dark:border-slate-700 ${changed ? 'cfd-flash' : ''} ${l.sku === lastSku ? 'cfd-last' : ''}">
+                    <span class="cfd-thumb flex-shrink-0 rounded-xl bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 overflow-hidden">${p ? productImgHtml(p) : ''}</span>
+                    <div class="min-w-0 flex-1">
+                        <p class="cfd-row font-semibold leading-snug cfd-clamp">${e(p ? p.name : l.sku)}</p>
+                        <p class="cfd-sub text-slate-500 dark:text-slate-400">${fmtUSD(l.price)} ក្នុងមួយ</p></div>
+                    <span class="cfd-qty flex-shrink-0 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center cfd-row font-bold px-2">× ${l.qty}</span>
+                    <p class="cfd-row font-semibold w-[5.5em] text-right">${fmtUSD(l.price * l.qty)}</p></div>`;
+            }).join('') || `<div class="h-full flex items-center justify-center cfd-mid text-slate-400">កន្ត្រកទំនិញនៅទទេ</div>`;
+        }
+
+        function payBlock(s) {
+            const t = s.totals, p = s.pay, rate = s.rate;
+            const remain = t.gross - p.paid;
+            const hr = 'border-t border-slate-200 dark:border-slate-700 pt-5 mt-5';
+            if (p.paid < 0.005) {
+                return `<div class="${hr} flex items-center gap-3 cfd-mid text-slate-500 dark:text-slate-400">
+                    <i class="fas fa-hand-holding-dollar text-primary"></i><span>សូមបង់ប្រាក់ជូនអ្នកគិតលុយ</span></div>`;
+            }
+            const lines = [];
+            if (p.usd > 0.005) lines.push(totalRow('ទទួលជាដុល្លារ', fmtUSD(p.usd)));
+            if (p.khr > 0.5) lines.push(totalRow('ទទួលជារៀល', fmtKHR(p.khr)));
+            if (p.khqr > 0.005) lines.push(totalRow('បង់តាមបាគង', fmtUSD(p.khqr)));
+            let hero;
+            if (remain > 0.005) {
+                hero = `<p class="cfd-sub text-amber-600 dark:text-amber-400 mt-4">នៅខ្វះ</p>
+                    <p class="cfd-title font-bold text-amber-600 dark:text-amber-400">${fmtUSD(remain)} <span class="cfd-mid font-semibold">· ${fmtKHR(toKHR(remain, rate))}</span></p>`;
+            } else {
+                const ch = splitChange(-remain, rate, p.usd > 0.005 ? 'mixed' : 'riel');
+                hero = `<p class="cfd-sub text-slate-500 dark:text-slate-400 mt-4">ប្រាក់អាប់ជូនលោកអ្នក</p>
+                    <p class="cfd-title font-bold text-primary">${fmtChange(ch)}</p>`;
+            }
+            return `<div class="${hr} space-y-2">${lines.join('')}${hero}</div>`;
+        }
+
+        function sellHtml(s, fade) {
+            const t = s.totals, pay = s.stage === 'pay';
+            const left = panel(`<div class="px-6 py-5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-4">
+                    ${shopHead('cfd-mid')}
+                    <span class="cfd-sub px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold whitespace-nowrap">${s.items.length} មុខ · ${t.qty} ឯកតា</span></div>
+                <div id="lines" class="flex-1 overflow-y-auto">${linesHtml(s.items)}</div>`, 'flex flex-col min-h-0 overflow-hidden');
+            const right = panel(`<div>
+                    <p class="cfd-mid text-slate-500 dark:text-slate-400">${pay ? 'ទឹកប្រាក់ត្រូវបង់' : 'សរុបត្រូវបង់'}</p>
+                    <p class="cfd-big font-bold mt-1">${fmtUSD(t.gross)}</p>
+                    <p class="cfd-title font-semibold text-slate-500 dark:text-slate-400 mt-1">${fmtKHR(toKHR(t.gross, s.rate))}</p></div>
+                <div class="flex-1"></div>
+                <div class="border-t border-slate-200 dark:border-slate-700 pt-5 mt-6 space-y-2">${summaryRows(t, s.rate)}</div>
+                ${pay ? payBlock(s) : ''}`, 'p-8 flex flex-col min-h-0 overflow-y-auto');
+            return `<div class="cfd-grid ${fade ? 'cfd-fade' : ''}" style="grid-template-columns: 1.25fr 1fr">${left}${right}</div>`;
+        }
+
+        function khqrHtml(s) {
+            const k = s.khqr;
+            const cash = Math.max(s.totals.gross - k.amount, 0);
+            const step = (n, text) => `<li class="flex items-center gap-4"><span class="cfd-step flex-shrink-0 rounded-full border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center cfd-sub font-bold text-slate-600 dark:text-slate-300">${n}</span><span>${text}</span></li>`;
+            return `<div class="cfd-grid cfd-fade" style="grid-template-columns: 1fr 1fr">
+                <section class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 p-8 flex items-center justify-center">
+                    <div class="khqr-card">
+                        <div class="khqr-head"><span>KHQR</span></div>
+                        <div class="px-7 pt-5 pb-4">
+                            <p class="khqr-merchant">${e(MERCHANT.name)}</p>
+                            <p class="khqr-amount">${k.amount.toFixed(2)} <span class="khqr-cur">USD</span></p>
+                        </div>
+                        <div class="khqr-cut"></div>
+                        <div class="relative px-7 pt-6 pb-7">
+                            <div id="qrBox" class="w-full aspect-square"></div>
+                            <span class="khqr-mark" aria-hidden="true">$</span>
+                            <div id="qrExpired" class="hidden absolute inset-0 bg-white/95 flex flex-col items-center justify-center text-center p-6 gap-3 cfd-row font-semibold text-slate-700">
+                                <i class="fas fa-clock-rotate-left text-rose-500"></i>កូដផុតសុពលភាព<span class="cfd-sub font-normal text-slate-500">សូមរង់ចាំអ្នកគិតលុយបង្កើតកូដថ្មី</span></div>
+                        </div>
+                    </div>
+                </section>
+                ${panel(`<p class="cfd-mid font-semibold">ស្កេនដើម្បីទូទាត់ជាមួយបាគង</p>
+                    <div class="mt-8">
+                        <p class="cfd-sub text-slate-500 dark:text-slate-400">ទឹកប្រាក់ត្រូវទូទាត់</p>
+                        <p class="cfd-big font-bold mt-1">${fmtUSD(k.amount)}</p>
+                        <p class="cfd-title font-semibold text-slate-500 dark:text-slate-400 mt-1">${fmtKHR(toKHR(k.amount, s.rate))}</p>
+                        ${cash > 0.005 ? `<p class="cfd-sub text-slate-500 dark:text-slate-400 mt-3">សរុប ${fmtUSD(s.totals.gross)} · បានបង់សាច់ប្រាក់ ${fmtUSD(cash)}</p>` : ''}
+                    </div>
+                    <ol class="mt-auto pt-8 space-y-4 cfd-row text-slate-700 dark:text-slate-200">
+                        ${step(1, 'បើកកម្មវិធីធនាគារលើទូរស័ព្ទ')}
+                        ${step(2, 'ស្កេនកូដ KHQR ខាងឆ្វេង')}
+                        ${step(3, 'ពិនិត្យទឹកប្រាក់ ហើយបញ្ជាក់ការទូទាត់')}
+                    </ol>
+                    <div class="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
+                        <div class="flex items-center gap-3 cfd-sub text-slate-500 dark:text-slate-400">
+                            <span class="w-3 h-3 rounded-full bg-primary animate-pulse"></span>
+                            <span>កំពុងរង់ចាំការទូទាត់</span><span class="ml-auto">កូដផុតក្នុង <span id="qrTimer" class="font-semibold text-slate-800 dark:text-slate-100"></span></span></div>
+                        <div class="h-2 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden mt-3"><div id="qrBar" class="h-full rounded-full bg-primary transition-all duration-1000"></div></div>
+                    </div>`, 'p-8 flex flex-col min-h-0 overflow-y-auto')}
+            </div>`;
+        }
+
+        function thanksHtml(s) {
+            const th = s.thanks, ch = th.change || { usd: 0, khr: 0 };
+            const hasChange = ch.usd > 0.005 || ch.khr >= 1;
+            return `<div class="h-full flex flex-col items-center justify-center text-center px-10 cfd-fade">
+                <span class="w-28 h-28 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center mb-8">
+                    <i class="fas fa-check text-5xl text-green-600"></i></span>
+                <p class="cfd-title font-semibold">សូមអរគុណ សូមអញ្ជើញមកម្តងទៀត</p>
+                <p class="cfd-mid text-slate-500 dark:text-slate-400 mt-8">បានទូទាត់</p>
+                <p class="cfd-big font-bold">${fmtUSD(th.total)}</p>
+                <p class="cfd-title text-slate-500 dark:text-slate-400">${fmtKHR(toKHR(th.total, th.rate))}</p>
+                ${hasChange ? `<div class="mt-10 px-10 py-6 rounded-2xl bg-white dark:bg-slate-800 border-2 border-primary">
+                    <p class="cfd-row text-slate-500 dark:text-slate-400">ប្រាក់អាប់ជូនលោកអ្នក</p>
+                    <p class="cfd-title font-bold text-primary">${fmtChange(ch)}</p></div>` : ''}
+                <div class="w-64 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700 mt-12 overflow-hidden"><div class="cfd-bar h-full bg-slate-400 dark:bg-slate-500"></div></div>
+            </div>`;
+        }
+
+        /* ===== គូរ ===== */
+
+        function drawQr(k) {
+            const box = document.getElementById('qrBox');
+            if (!box || drawn.qr === k.payload) return;
+            drawn.qr = k.payload;
+            box.innerHTML = '';
+            const size = box.clientWidth || 360;
+            if (typeof QRCode !== 'undefined') {
+                new QRCode(box, { text: k.payload, width: size, height: size, colorDark: '#0f172a', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+                box.querySelectorAll('img, canvas').forEach(n => { n.style.width = '100%'; n.style.height = 'auto'; });
+            }
+        }
+
+        function tickKhqr() {
+            if (!state || state.stage !== 'khqr') return;
+            const left = Math.max(state.khqr.expiresAt - Date.now(), 0);
+            const secs = Math.ceil(left / 1000);
+            const t = document.getElementById('qrTimer');
+            if (t) t.textContent = `${Math.floor(secs / 60)}:${pad2(secs % 60)}`;
+            const bar = document.getElementById('qrBar');
+            if (bar) {
+                bar.style.width = `${(left / Math.max(state.khqr.expiresAt - state.khqr.createdAt, 1)) * 100}%`;
+                bar.className = `h-full rounded-full transition-all duration-1000 ${secs <= 15 ? 'bg-rose-500' : secs <= 60 ? 'bg-amber-400' : 'bg-primary'}`;
+            }
+            const x = document.getElementById('qrExpired');
+            if (x) x.classList.toggle('hidden', left > 0);
+        }
+
+        function render() {
+            const fresh = state && state.shiftOpen !== undefined && Date.now() - state.at < STALE_MS;
+            const s = fresh ? state : { stage: 'idle' };
+            const stage = s.stage;
+            document.body.classList.toggle('cfd-idle-ui', stage !== 'idle');
+            if (stage === 'idle') {
+                if (drawn.stage !== 'idle') stageEl.innerHTML = idleHtml();
+                prevQty = {}; drawn = { stage: 'idle', qr: '' };
+                return;
+            }
+            if (stage === 'sell' || stage === 'pay') {
+                const fade = drawn.stage !== 'sell' && drawn.stage !== 'pay';
+                stageEl.innerHTML = sellHtml(s, fade);
+                const lines = document.getElementById('lines');
+                const changed = lines && lines.querySelector('.cfd-flash');
+                if (lines) { if (changed) changed.scrollIntoView({ block: 'nearest' }); else lines.scrollTop = lines.scrollHeight; }
+                prevQty = Object.fromEntries(s.items.map(l => [l.sku, l.qty]));
+                drawn = { stage, qr: '' };
+            } else if (stage === 'khqr') {
+                if (drawn.stage !== 'khqr') { stageEl.innerHTML = khqrHtml(s); drawn.qr = ''; }
+                drawQr(s.khqr);
+                drawn.stage = 'khqr';
+                tickKhqr();
+            } else if (stage === 'thanks') {
+                stageEl.innerHTML = thanksHtml(s);
+                prevQty = {}; drawn = { stage: 'thanks', qr: '' };
+            }
+        }
+
+        let lastSig = '';
+        function load(force) {
+            state = loadCfd();
+            /* ជីពចរមិនផ្លាស់ប្តូរអ្វី → មិនគូរឡើងវិញ */
+            const sig = state ? JSON.stringify({ ...state, at: 0 }) : '';
+            if (!force && sig === lastSig) return;
+            lastSig = sig;
+            render();
+        }
+
+        /* ពេញអេក្រង់៖ កម្មវិធីរុករកតម្រូវឱ្យមានការប៉ះ ឬចុចក្នុងផ្ទាំងនេះផ្ទាល់ (ផ្ទាំងគិតលុយបញ្ជាពីចម្ងាយមិនបាន)
+           ដូច្នេះការប៉ះ ចុច ឬចុចគ្រាប់ចុចម្តងណាក៏បាន នឹងចូលពេញអេក្រង់ · ចុច Esc ដើម្បីចេញ */
+        function goFullscreen() {
+            if (document.fullscreenElement || !document.documentElement.requestFullscreen) return;
+            document.documentElement.requestFullscreen().catch(() => {});
+        }
+        ['pointerdown', 'keydown'].forEach(t => document.addEventListener(t, ev => { if (!(t === 'keydown' && ev.key === 'Escape')) goFullscreen(); }));
+
+        window.addEventListener('storage', ev => {
+            if (ev.key === CFD_CMD_KEY && ev.newValue) {
+                try { if (JSON.parse(ev.newValue).cmd === 'close') window.close(); } catch (e) { /* បញ្ជាមិនត្រឹមត្រូវ */ }
+                return;
+            }
+            if (ev.key === 'pos_settings') { drawn.stage = drawn.stage === 'idle' ? '' : drawn.stage; return load(true); }
+            if (ev.key === CFD_KEY || ev.key === 'bms_theme') {
+                if (ev.key === 'bms_theme') document.documentElement.classList.toggle('dark', ev.newValue === 'dark');
+                load();
+            }
+        });
+
+        setInterval(() => { if (state && drawn.stage !== 'idle' && Date.now() - state.at >= STALE_MS) load(true); tickKhqr(); const c = document.getElementById('idleClock'); if (c) c.textContent = clockText(); }, 1000);
+        let slideTick = 0;
+        setInterval(() => {
+            if (drawn.stage !== 'idle') return;
+            slideTick += 1;
+            if (slideTick % 6 === 0) { slideIdx += 1; drawn.stage = ''; render(); }
+        }, 1000);
+
+        /* សញ្ញាថាកំពុងបើក — ផ្ទាំងគិតលុយប្រើដើម្បីបង្ហាញប៊ូតុង បើក ឬ បិទ */
+        function beat(on) { try { localStorage.setItem(CFD_ALIVE_KEY, on ? String(Date.now()) : '0'); } catch (e) { /* មិនអាចសរសេរ */ } }
+        beat(true);
+        setInterval(() => beat(true), 2000);
+        window.addEventListener('pagehide', () => beat(false));
+
+        load(true);
+    </script>
+</body>
+</html>

@@ -65,7 +65,11 @@
         /* ទម្រង់ងងឹត៖ custom.css ប្តូរ .sm-td-sub ទៅប្រផេះ · រក្សាពណ៌ស្ថានភាព (ត្រូវគ្នា · លើស) */
         html.dark .os-shell .text-emerald-300 { color: #6ee7b7 !important; }
         html.dark .os-shell .text-amber-300 { color: #fcd34d !important; }
-    </style>
+            .os-sep { width: 1px; background: rgba(255, 255, 255, .22); }
+        html:not(.dark) .os-sep { background: #cbd5e1; }
+        html.dark header #darkModeToggleBtn { background-color: transparent !important; border-color: transparent !important; }
+        html.dark header #darkModeToggleBtn:hover { background-color: rgba(255, 255, 255, .1) !important; }
+</style>
 </head>
 <body id="posPortal" data-role-root="../.." data-active="pos" class="os-shell font-sans text-slate-100 text-[16px] flex flex-col">
 
@@ -78,19 +82,17 @@
                 <span id="regLabel" class="sm-td-sub text-slate-400 leading-tight whitespace-nowrap block"></span>
             </div>
         </div>
-        <span class="hidden sm:!inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10">
-            <i class="fas fa-clock text-blue-400 text-xs"></i>
-            <span id="liveClock" class="sm-badge text-white font-semibold sm-figure"></span>
-        </span>
+        <span id="liveClock" class="hidden sm:!inline sm-value text-white font-semibold sm-figure"></span>
         <div class="flex items-center gap-2 flex-shrink-0">
             <!-- Dark Mode Toggle Button -->
             <button onclick="toggleDarkMode()" type="button" aria-label="ប្តូររវាងទម្រង់ភ្លឺ និងទម្រង់ងងឹត" id="darkModeToggleBtn"
-                class="w-9 h-9 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 flex items-center justify-center transition cursor-pointer">
+                class="pos-tap-sm w-11 h-11 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 flex items-center justify-center transition cursor-pointer">
                 <iconify-icon id="darkModeIcon" icon="mdi:weather-night" class="text-lg"></iconify-icon>
             </button>
+            <span class="os-sep h-7 mx-1"></span>
             <span id="meChip" class="flex items-center gap-2"></span>
             <button onclick="handleLogout()" type="button" aria-label="ចាកចេញ"
-                class="px-3 rounded-xl text-slate-300 hover:text-rose-200 hover:bg-rose-500/10 inline-flex items-center gap-2 transition">
+                class="h-11 px-3 rounded-lg text-slate-300 hover:text-rose-200 hover:bg-rose-500/10 inline-flex items-center gap-2 transition">
                 <i class="fas fa-right-from-bracket"></i><span class="sm-badge hidden md:!inline">ចាកចេញ</span>
             </button>
         </div>
@@ -643,7 +645,7 @@
 
         function tick() {
             const now = new Date();
-            document.getElementById('liveClock').textContent = `${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}`;
+            document.getElementById('liveClock').textContent = `${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
             // អ្នកផ្សេងបើក ឬបិទបញ្ជរ (ផ្ទាំងផ្សេង) → គូរបញ្ជីបញ្ជរឡើងវិញ
             const sig = busySig();
             if (sig !== wasRegBusy) {

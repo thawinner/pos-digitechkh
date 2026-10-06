@@ -17,6 +17,7 @@ const ALL_SECTIONS = [
     { id: 'shifts', icon: 'fa-clock', label: 'គំរូវេន', keys: ['shiftTemplates'], admin: true },
     { id: 'till', icon: 'fa-cash-register', label: 'ដែនកំណត់បញ្ជរ', keys: ['khqrSeconds', 'holdLimit', 'discountLimits'], admin: true },
     { id: 'stock', icon: 'fa-boxes-stacked', label: 'ស្តុក', keys: ['allowNegativeStock', 'adjustLimitQty', 'adjustLimitUSD', 'countSchedule'], admin: true },
+    { id: 'display', icon: 'fa-desktop', label: 'អេក្រង់អតិថិជន', keys: ['cfdMessages'] },
     { id: 'quick', icon: 'fa-bolt', label: 'ទំនិញញឹកញាប់', keys: ['quickKeys'] },
     { id: 'reasons', icon: 'fa-list-check', label: 'បញ្ជីមូលហេតុ', keys: ['reasons'] },
     { id: 'rules', icon: 'fa-lock', label: 'ច្បាប់ពីម្ចាស់ហាង', keys: [], managerOnly: true },
@@ -444,6 +445,57 @@ function renderTill(s) {
     </div>`;
 }
 
+/* សារនៅអេក្រង់អតិថិជនពេលគ្មានការលក់ — បើក/បិទ ជ្រើសរូបតំណាង និងវាយអត្ថបទខ្លី */
+const CFD_ICONS = [['fa-tag', 'ការបញ្ចុះតម្លៃ'], ['fa-qrcode', 'បាគង'], ['fa-money-bill-wave', 'សាច់ប្រាក់'], ['fa-receipt', 'វិក្កយបត្រ']];
+
+function renderDisplay(s) {
+    const list = draft.cfdMessages;
+    const rows = list.map((m, i) => `<div class="rounded-xl border border-slate-200 bg-white p-3 flex flex-col gap-3 ${m.on ? '' : 'opacity-60'}">
+        <div class="flex items-center gap-2">
+            <span class="w-6 sm-td-sub text-slate-400 sm-figure text-center">${i + 1}</span>
+            <input value="${escapeText(m.text)}" maxlength="60" placeholder="វាយសារខ្លីៗ ឧ. ថ្ងៃនេះបញ្ចុះតម្លៃភេសជ្ជៈ 10%"
+                oninput="draft.cfdMessages[${i}].text = this.value; renderSaveBar()"
+                class="sm-td flex-1 min-w-0 h-11 px-3 rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-blue-500">
+            <button type="button" role="switch" aria-checked="${m.on}" aria-label="បើកឬបិទសារ" onclick="draft.cfdMessages[${i}].on = ${!m.on}; render()"
+                class="relative w-11 h-6 rounded-full transition flex-shrink-0 ${m.on ? 'bg-blue-600' : 'bg-slate-300'}"><span class="absolute top-0.5 ${m.on ? 'left-[22px]' : 'left-0.5'} w-5 h-5 rounded-full bg-white shadow transition-all"></span></button>
+            <button type="button" onclick="removeCfd(${i})" aria-label="លុបសារ" class="w-9 h-9 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex-shrink-0"><i class="fas fa-xmark text-xs"></i></button>
+        </div>
+        <div class="flex items-center gap-1.5 pl-8">${CFD_ICONS.map(([ic, label]) => `
+            <button type="button" onclick="draft.cfdMessages[${i}].icon = '${ic}'; render()" aria-pressed="${m.icon === ic}" aria-label="${label}"
+                class="w-10 h-10 rounded-lg border transition ${m.icon === ic ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-400 hover:text-slate-600 hover:bg-slate-50'}"><i class="fas ${ic}"></i></button>`).join('')}</div>
+    </div>`).join('');
+    return sectionHead(s, 'សារដែលបង្ហាញលើអេក្រង់អតិថិជនពេលគ្មានការលក់ · ប្តូរម្តងក្នុងមួយ 6 វិនាទី') + `<div class="px-5 sm:px-6 py-5 grid grid-cols-1 2xl:grid-cols-[minmax(0,1fr)_minmax(0,340px)] gap-6">
+        <div class="min-w-0">
+            <p class="sm-value text-slate-800">បញ្ជីសារ${changedDot('cfdMessages')}</p>
+            <p class="sm-td-sub text-slate-500 mb-3">អតិបរមា 5 សារ · សារទទេ ឬបិទ នឹងមិនបង្ហាញ</p>
+            <div class="space-y-2">${rows || '<p class="sm-td text-slate-400 py-4">មិនទាន់មានសារ · អេក្រង់បង្ហាញតែពាក្យស្វាគមន៍</p>'}</div>
+            <button type="button" onclick="addCfd()" ${list.length >= 5 ? 'disabled' : ''}
+                class="mt-3 h-11 px-4 rounded-xl border border-slate-200 bg-white sm-td font-semibold text-slate-700 hover:bg-slate-50 inline-flex items-center gap-2 disabled:opacity-40 disabled:hover:bg-white"><i class="fas fa-plus text-xs"></i>បន្ថែមសារ</button>
+        </div>
+        <div class="min-w-0">
+            <p class="sm-value text-slate-800 mb-3">ការមើលជាមុន</p>
+            <div class="rounded-2xl border border-slate-200 bg-slate-100 p-6 text-center">
+                <span class="w-16 h-16 rounded-2xl bg-white border border-slate-200 inline-flex items-center justify-center"><img src="../../${MERCHANT.logo}" alt="" class="w-10 h-10 object-contain"></span>
+                <p class="sm-value text-slate-800 mt-3">សូមស្វាគមន៍មកកាន់ ${escapeText(MERCHANT.nameKh)}</p>
+                ${(list.find(m => m.on && m.text.trim()) || null) ? (m => `<div class="mt-4 max-w-full inline-flex items-center gap-2.5 px-4 py-3 rounded-xl bg-white border border-slate-200 sm-td text-slate-700 text-left"><i class="fas ${m.icon} text-blue-600"></i><span>${escapeText(m.text)}</span></div>`)(list.find(m => m.on && m.text.trim())) : ''}
+            </div>
+            <button type="button" onclick="window.open('../../cashier/display/customer-display.html', 'pos_cfd_window', 'popup=yes,width=1280,height=800')"
+                class="mt-3 h-11 px-4 rounded-xl border border-slate-200 bg-white sm-td font-semibold text-slate-700 hover:bg-slate-50 inline-flex items-center gap-2"><i class="fas fa-up-right-from-square text-xs"></i>បើកអេក្រង់អតិថិជន</button>
+        </div>
+    </div>`;
+}
+
+function addCfd() {
+    if (draft.cfdMessages.length >= 5) return;
+    draft.cfdMessages.push({ icon: 'fa-tag', text: '', on: true });
+    render();
+}
+
+function removeCfd(i) {
+    draft.cfdMessages.splice(i, 1);
+    render();
+}
+
 /* ប៊ូតុងបិទ/បើក (switch) — ពណ៌ខៀវពេលបើក */
 function switchControl(key, on, onLabel, offLabel) {
     return `<button type="button" role="switch" aria-checked="${on}" onclick="draft['${key}'] = ${!on}; renderSaveBar(); render()"
@@ -600,6 +652,7 @@ function navSummary(id) {
         case 'shifts': return `${d.shiftTemplates.length} វេន · ${d.shiftTemplates.map(t => t.start).join(' ')}`;
         case 'till': return `KHQR ${Math.round(d.khqrSeconds / 60)} នាទី · ព្យួរ ${d.holdLimit}`;
         case 'stock': return `${d.allowNegativeStock ? 'លក់អវិជ្ជមាន' : 'ស្តុកវិជ្ជមាន'} · ដែន ${d.adjustLimitQty} · ${d.countSchedule === 'weekly' ? 'សប្តាហ៍' : 'ខែ'}`;
+        case 'display': return `${d.cfdMessages.filter(m => m.on).length} សារបើក`;
         case 'quick': return `${d.quickKeys.length} មុខ`;
         case 'rules': return 'មើលតែប៉ុណ្ណោះ';
         case 'reasons': return `${Object.values(d.reasons).reduce((n, l) => n + l.length, 0)} មូលហេតុ`;
@@ -624,7 +677,7 @@ function renderNav() {
 
 function render() {
     const s = SECTIONS.find(x => x.id === section) || SECTIONS[0];
-    const fn = { money: renderMoney, cash: renderCash, shifts: renderShifts, till: renderTill, stock: renderStock, quick: renderQuick, reasons: renderReasons, rules: renderRules, history: renderHistory }[s.id];
+    const fn = { money: renderMoney, cash: renderCash, shifts: renderShifts, till: renderTill, display: renderDisplay, stock: renderStock, quick: renderQuick, reasons: renderReasons, rules: renderRules, history: renderHistory }[s.id];
     document.getElementById('sectionBody').innerHTML = fn(s);
     renderNav();
     renderSaveBar();
@@ -758,6 +811,7 @@ function validate() {
     if (draft.fxRate < 3500 || draft.fxRate > 4500) return ['money', 'អត្រាប្ដូរប្រាក់គួរនៅចន្លោះ 3,500 ទៅ 4,500 ៛'];
     if (draft.khqrSeconds < 60 || draft.khqrSeconds > 600) return ['till', 'សុពលភាពកូដស្កេនត្រូវនៅចន្លោះ 60 ទៅ 600 វិនាទី'];
     if (draft.holdLimit < 1 || draft.holdLimit > 20) return ['till', 'ការលក់ព្យួរត្រូវនៅចន្លោះ 1 ទៅ 20'];
+    if (draft.cfdMessages.some(m => m.on && !m.text.trim())) return ['display', 'សារដែលបើកត្រូវមានអត្ថបទ ឬបិទវាចោល'];
     for (const t of draft.shiftTemplates) {
         if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(t.start) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(t.end)) return ['shifts', `ម៉ោងនៃ ${t.name} មិនត្រឹមត្រូវ (ឧ. 07:00)`];
         if (!t.name.trim()) return ['shifts', 'វេននីមួយៗត្រូវមានឈ្មោះ'];

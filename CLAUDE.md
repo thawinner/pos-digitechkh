@@ -36,6 +36,7 @@ Page titles start with «ប្រព័ន្ធគិតលុយ - ».
 src/
 ├── index.html                      login: top bar (brand + theme), one card with illustration + email-or-phone / password form (session in localStorage `pos_session`)
 ├── cashier/terminal/pos-terminal   sell, hold, discount override, Riel change, in-terminal KHQR, safe drop, lock
+├── cashier/display/customer-display  customer-facing screen (CFD), opened from the terminal header; read-only mirror of `pos_cfd`
 ├── cashier/receipts/receipts       shift receipts, void / return requests (manager PIN on the spot or queued)
 ├── cashier/shift/{open,close}-shift  float count + manager PIN · blind close with one recount + Z-report
 ├── manager/{dashboard,approvals,shifts,roster,cash,stock,stock-count,stock-history,exceptions,reports,settings}/…  (view-request, view-shift, create-movement, create-stock-in, create-adjustment, create-count)
@@ -127,6 +128,7 @@ src/
   count; each with `by`, `at`, `qty` ±, `reason`). Approvals write their moves in `applyApprovalToSale`; a return
   carries `restock` (false = damaged adjustment). Cashier pages use only `stockStatus()` (out / low by `p.minStock`),
   never quantities. Simulated registers' sales after the opening do not move stock.
+- **Customer display (CFD)**: the terminal's `syncCfd()` (called from `renderCart`, KHQR, success and lock handlers) writes a snapshot with `publishCfd()` to `pos_cfd` `{ stage: idle|sell|pay|khqr|thanks, items (sku, qty, price), totals, pay, khqr, thanks }`; the display listens to the `storage` event. The snapshot carries only what the customer should see: no cost, stock, PINs, reasons or staff names. The idle messages (max 5, with on/off and an icon) are `cfdMessages` in `posSettings()`, edited by the manager or owner in settings → «អេក្រង់អតិថិជន». The terminal republishes every 10 s as a heartbeat; the display falls back to idle after 30 s without an update. The owner may open the display page (exempt in `guardPage`).
 - Money: `saleTotals` (VAT-inclusive prices), `splitChange` ($ + ៛ rounded to 100), every sale stores `fxRate`,
   `cashierId`, `register`, `shiftId`, `change`, and each line its `price` (read with `linePrice`). Cost prices exist
   only in `admin-data.js`; cashier and manager pages never see them.
