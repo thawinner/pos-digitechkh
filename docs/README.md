@@ -12,6 +12,7 @@ this project. Some links inside them still point at the eBMS repo layout. Refere
 - [spec/v1-role_cashier_pos.md](spec/v1-role_cashier_pos.md) — original v1 deep study of the cashier role (offline PWA, 80mm printing, dual-currency maths, anti-theft controls)
 
 ## Planning
+- [planning/production-build-plan.md](planning/production-build-plan.md) — task list for building the real product from this prototype: phases 0–10 (decisions, foundation, cashier, manager, KHQR, stock, owner, hardware/offline, hardening, pilot), storage → table mapping, timeline
 - [planning/cashier-improvements.md](planning/cashier-improvements.md) — gap list for the built cashier pages, prioritised backlog (C1–C22) and open decisions (D1–D7)
 - [planning/stock-management.md](planning/stock-management.md) — stock feature: agreed requirements and decisions, data model (built), phase 2 manager / phase 3 owner plan, handoff notes
 - [planning/shift-scheduling-ux.md](planning/shift-scheduling-ux.md) — making it easy to add shifts: roster gap-filling with suggestions, one-screen assign dialog, undo, smarter shift templates (S1–S16)
