@@ -75,7 +75,9 @@ branches start empty with zero stock. A shop without a
 manager lets its owner approve at the till (`showManagerOverride`). There is no shop picker or «ប្តូរហាង»: a login opens the
 person's only shop. The session carries `shopId`; `CURRENT_SHOP_ID` copies that shop into `MERCHANT`.
 Till devices: the owner registers a computer as a register in settings → «ឧបករណ៍បញ្ជរ» (`registerThisDevice()`,
-`pos_devices` + `pos_device`); only a registered device offers PIN login (opens on the PIN pad, `verifyPinLogin()`).
+`pos_devices` + `pos_device`); only a registered device offers PIN login (`verifyPinLogin()`). On a till the login page
+always opens on the PIN pad (also with `?next=`, which still applies after login); it signs in automatically at the
+6th digit (no submit button), shakes and clears on a wrong PIN, and offers email/phone as a secondary link below.
 Strict login (decided 2026-10-07), one rule for password and PIN, `loginBlockReason(person, device)` in `data.js`:
 a registered till is that shop's login page, so only its shop's people log in there, and staff only at their own
 branch's till (owners at any branch) → `shop` / `branch`; off a till, owners and managers may log in but cashiers may

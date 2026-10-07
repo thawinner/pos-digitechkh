@@ -38,7 +38,15 @@
         html.dark .lock-art-wrap { background: #141414; border-color: #292929 !important; }
         html.dark .lock-art-wrap #todayLine { background: rgba(20,20,20,.6) !important; border-color: rgba(255,255,255,.12) !important; }
         .field { height: 52px; font-size: 16px !important; }
-        .pin-digit { font-size: 22px !important; }
+        .pin-digit { font-size: 24px !important; }
+        .pin-key { transition: background-color .12s ease, border-color .12s ease, transform .08s ease; }
+        .pin-key:not(:disabled):hover { border-color: #a2a2a2; }
+        .pin-key.pressed { animation: keyPress .16s ease; }
+        @keyframes keyPress { 50% { transform: scale(.95); background: #f4f4f4; } }
+        .pin-dot { transition: background-color .12s ease, transform .12s ease; }
+        .pin-dot.filled { transform: scale(1.1); }
+        html.dark .pin-key.bg-white { background: #171717; border-color: #333 !important; color: #fafafa; }
+        html.dark .pin-key.bg-slate-50 { background: #1f1f1f; color: #a2a2a2; }
         .field:focus { outline: none; border-color: #047857 !important; box-shadow: 0 0 0 3px rgba(4, 120, 87, .15); }
         .field.is-error { border-color: #fb7185 !important; }
         html.dark .field.is-error { border-color: #f43f5e !important; }
@@ -132,8 +140,8 @@
 
             <div id="loginPanel" class="relative flex-1 min-w-0 px-6 py-8 sm:px-12 sm:py-10 flex flex-col justify-center">
                 <!-- ទម្រង់អ៊ីមែល និងផ្ទាំង PIN ដាក់ជាន់គ្នាក្នុងក្រឡាតែមួយ ដូច្នេះកម្ពស់បណ្ណមិនប្តូរពេលប្តូរ -->
-                <div class="grid">
-                <div id="emailMode" class="w-full" style="grid-area:1/1">
+                <div class="grid grid-cols-[minmax(0,1fr)]">
+                <div id="emailMode" class="w-full min-w-0" style="grid-area:1/1">
                 <form id="loginForm" onsubmit="return submitLogin(event)" novalidate class="w-full">
                     <div class="flex items-start justify-between gap-4">
                         <div class="min-w-0">
@@ -197,19 +205,16 @@
                 </div>
 
                 </div>
-                <div id="pinMode" class="invisible w-full" style="grid-area:1/1" inert>
-                    <button type="button" onclick="showPinMode(false)" class="inline-flex items-center gap-2 h-9 sm-td-sub font-semibold text-slate-500 hover:text-slate-800">
-                        <i class="fas fa-arrow-left text-[12px]"></i> ប្រើអ៊ីមែល ឬលេខទូរស័ព្ទ
-                    </button>
-                    <h2 class="mt-3 text-[24px] leading-tight font-semibold text-slate-900 text-center">លេខកូដ PIN</h2>
-                    <span class="block sm-td text-slate-500 mt-2 text-center">វាយលេខកូដ 6 ខ្ទង់ផ្ទាល់ខ្លួនរបស់អ្នក</span>
-                    <span class="mt-3 flex justify-center"><span id="deviceChip" class="inline-flex items-center gap-2 h-8 px-3 rounded-full border border-slate-200 sm-td-sub font-semibold text-slate-600"></span></span>
+                <!-- បញ្ជរ៖ PIN ជាលំនាំដើម · ចូលដោយស្វ័យប្រវត្តិពេលគ្រប់ 6 ខ្ទង់ (គ្មានប៊ូតុងចូលប្រើ) -->
+                <div id="pinMode" class="invisible w-full min-w-0" style="grid-area:1/1" inert>
+                    <span class="flex justify-center min-w-0"><span id="deviceChip" class="inline-flex items-center gap-2 h-8 px-3 rounded-full bg-slate-100 sm-td-sub font-semibold text-slate-600 max-w-full min-w-0 overflow-hidden whitespace-nowrap"></span></span>
+                    <h2 class="mt-4 text-[24px] leading-tight font-semibold text-slate-900 text-center">វាយលេខកូដ PIN</h2>
+                    <span class="block sm-td text-slate-500 mt-1.5 text-center">លេខកូដ 6 ខ្ទង់ផ្ទាល់ខ្លួន · ចូលភ្លាមពេលវាយគ្រប់</span>
                     <div id="pinDots" class="mt-6 h-6 flex items-center justify-center gap-4" aria-live="polite"></div>
                     <p id="pinMsg" class="sm-td-sub mt-2 min-h-[22px] text-center"></p>
-                    <div id="pinKeys" class="grid grid-cols-3 gap-2.5 mt-2"></div>
-                    <button id="pinSubmit" type="button" onclick="submitPin()" disabled
-                        class="mt-4 w-full h-12 rounded-lg sm-td font-semibold inline-flex items-center justify-center gap-2 transition-colors">
-                        ចូលប្រើ <i class="fas fa-arrow-right text-[13px]"></i>
+                    <div id="pinKeys" class="grid grid-cols-3 gap-3 mt-2"></div>
+                    <button type="button" onclick="showPinMode(false)" class="mt-5 mx-auto flex items-center gap-2 h-10 px-3 rounded-lg sm-td-sub font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-50">
+                        <i class="fas fa-envelope text-[12px]"></i> ចូលដោយអ៊ីមែល ឬលេខទូរស័ព្ទ
                     </button>
                 </div>
                 <!-- ជ្រើសសាខា៖ ម្ចាស់ហាងប្តូរសាខា (index.html?branch=1) -->
@@ -432,30 +437,35 @@
             renderPinPad();
             if (!on) document.getElementById('ident').focus();
         }
+        let pinBusy = false;
         function renderPinPad(err) {
             const locked = lockedFor();
-            document.getElementById('pinDots').innerHTML = Array.from({ length: POS_PIN_LEN }, (_, i) => i).map(i => `<span class="w-4 h-4 rounded-full ${i < pin.length
-                ? (err ? 'bg-rose-500' : 'bg-blue-600') : (err || locked ? 'border-2 border-rose-300' : 'border-2 border-slate-300')}"></span>`).join('');
+            document.getElementById('pinDots').innerHTML = Array.from({ length: POS_PIN_LEN }, (_, i) => i).map(i => `<span class="pin-dot w-4 h-4 rounded-full ${i < pin.length
+                ? (err ? 'bg-rose-500' : 'bg-blue-600 filled') : (err || locked ? 'border-2 border-rose-300' : 'border-2 border-slate-300')}"></span>`).join('');
             const msg = document.getElementById('pinMsg');
             msg.innerHTML = locked ? `<i class="fas fa-lock mr-1.5"></i>វាយខុស ${MAX_TRIES} ដង · សូមរង់ចាំ ${locked} វិនាទី` : (err || '');
             msg.className = `sm-td-sub mt-2 min-h-[22px] text-center ${locked || err ? 'text-rose-600 font-semibold' : 'text-slate-500'}`;
-            const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '⌫'];
-            document.getElementById('pinKeys').innerHTML = keys.map(k => `<button type="button" onclick="pinPress('${k}')" ${locked ? 'disabled' : ''}
-                aria-label="${k === 'C' ? 'សម្អាត' : k === '⌫' ? 'លុបមួយខ្ទង់' : k}"
-                class="h-14 rounded-lg border border-slate-200 bg-white hover:border-slate-400 active:bg-slate-100 select-none transition-colors disabled:opacity-40 ${k === 'C' || k === '⌫' ? 'text-slate-500 sm-td-sub font-semibold' : 'pin-digit text-slate-800 font-semibold sm-figure'}">${k === 'C' ? 'សម្អាត' : k === '⌫' ? '<i class="fas fa-delete-left text-lg"></i>' : k}</button>`).join('');
-            const btn = document.getElementById('pinSubmit');
-            const ready = pin.length === POS_PIN_LEN && !locked;
-            btn.disabled = !ready;
-            btn.className = `mt-4 w-full h-12 rounded-lg sm-td font-semibold inline-flex items-center justify-center gap-2 transition-colors ${ready
-                ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`;
+            // គ្រាប់ចុចសាងម្តង (រក្សាការចុច និងការផ្តោត) · ធ្វើបច្ចុប្បន្នភាពតែស្ថានភាពបិទ
+            const keyBox = document.getElementById('pinKeys');
+            if (!keyBox.children.length) {
+                const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '⌫'];
+                keyBox.innerHTML = keys.map(k => `<button type="button" data-key="${k}" onclick="pinPress('${k}')"
+                    aria-label="${k === 'C' ? 'សម្អាត' : k === '⌫' ? 'លុបមួយខ្ទង់' : k}"
+                    class="pin-key h-16 rounded-xl border select-none disabled:opacity-40 ${k === 'C' || k === '⌫' ? 'border-transparent bg-slate-50 text-slate-500 sm-td-sub font-semibold' : 'border-slate-200 bg-white pin-digit text-slate-900 font-semibold sm-figure'}">${k === 'C' ? 'សម្អាត' : k === '⌫' ? '<i class="fas fa-delete-left text-lg"></i>' : k}</button>`).join('');
+            }
+            keyBox.querySelectorAll('button').forEach(b => { b.disabled = !!locked || pinBusy; });
             if (locked) setTimeout(() => { if (!document.getElementById('pinMode').classList.contains('invisible')) renderPinPad(); }, 1000);
         }
         function pinPress(k) {
-            if (lockedFor()) return;
+            if (lockedFor() || pinBusy) return;
+            const key = document.querySelector(`#pinKeys [data-key="${k}"]`);
+            if (key) { key.classList.remove('pressed'); void key.offsetWidth; key.classList.add('pressed'); }
             if (k === 'C') pin = '';
             else if (k === '⌫') pin = pin.slice(0, -1);
             else if (pin.length < POS_PIN_LEN) pin += k;
             renderPinPad();
+            // ខ្ទង់ចុងក្រោយ៖ បង្ហាញចំណុចពេញមួយភ្លែត រួចផ្ទៀងផ្ទាត់
+            if (pin.length === POS_PIN_LEN) { pinBusy = true; setTimeout(() => { pinBusy = false; submitPin(); }, 140); }
         }
         function submitPin() {
             if (pin.length !== POS_PIN_LEN || lockedFor() || !DEVICE) return;
@@ -468,9 +478,13 @@
             if (g.fails >= MAX_TRIES) { g.fails = 0; g.lockedUntil = Date.now() + 60000; }
             posWrite(GUARD_KEY, g);
             const left = MAX_TRIES - g.fails;
-            renderPinPad(g.lockedUntil > Date.now() ? '' : `លេខកូដមិនត្រឹមត្រូវ · នៅសល់ ${left} ដង`);
+            const msg = g.lockedUntil > Date.now() ? '' : `លេខកូដមិនត្រឹមត្រូវ · នៅសល់ ${left} ដង`;
+            renderPinPad(msg);
+            const dots = document.getElementById('pinDots');
+            dots.classList.remove('shake'); void dots.offsetWidth; dots.classList.add('shake');
             pin = '';
-            setTimeout(() => renderPinPad(document.getElementById('pinMsg').textContent ? document.getElementById('pinMsg').innerHTML : ''), 500);
+            pinBusy = true;
+            setTimeout(() => { pinBusy = false; renderPinPad(msg); }, 600);
         }
         let pickFor = null;
         function afterPassword(p) {
@@ -540,7 +554,7 @@
             if (/^[0-9]$/.test(e.key)) pinPress(e.key);
             else if (e.key === 'Backspace') pinPress('⌫');
             else if (e.key === 'Escape') showPinMode(false);
-            else if (e.key === 'Enter') { e.preventDefault(); submitPin(); }
+            else if (e.key === 'Enter') e.preventDefault();
         });
 
         function finishLogin(who, shopId, via) {
@@ -652,7 +666,8 @@
             }
             document.getElementById('pinAlt').classList.toggle('hidden', !DEVICE);
             document.getElementById('noDeviceNote').classList.toggle('hidden', !!DEVICE);
-            if (DEVICE) document.getElementById('deviceChip').innerHTML = `<i class="fas fa-cash-register text-slate-400"></i>${escapeText(shopById(DEVICE.shopId).nameKh)}${shopBranches().length > 1 ? ` · ${escapeText(branchName(DEVICE.branchId || 'BR-01'))}` : ''} · បញ្ជរ ${DEVICE.register}`;
+            // ឈ្មោះហាងនៅរបារខាងលើរួចហើយ · បន្ទះនេះប្រាប់តែបញ្ជរណា (និងសាខា ពេលមានច្រើន)
+            if (DEVICE) document.getElementById('deviceChip').innerHTML = `<i class="fas fa-cash-register text-slate-400"></i><span class="truncate">${shopBranches().length > 1 ? `${escapeText(branchName(DEVICE.branchId || 'BR-01'))} · ` : ''}បញ្ជរ ${DEVICE.register}</span>`;
             renderDemoDevice();
             tick();
             setInterval(tick, 10000);
@@ -694,7 +709,8 @@
             // ប្តូរសាខា (index.html?branch=1) · បញ្ជរដែលបានចុះឈ្មោះបើកផ្ទាំង PIN មុន · ឧបករណ៍ផ្សេងបើកទម្រង់ពាក្យសម្ងាត់
             const params = new URLSearchParams(location.search);
             if (params.get('branch') && SESSION && shopBranches().length > 1) showBranchPicker();
-            else if (DEVICE && !params.get('next')) showPinMode(true);
+            // បញ្ជរ៖ PIN ជានិច្ច (ទោះមកពីវគ្គផុតកំណត់ ?next=… ក៏ដោយ · next នៅតែប្រើក្រោយចូល)
+            else if (DEVICE) showPinMode(true);
             else setTimeout(() => document.getElementById(last ? 'pass' : 'ident').focus({ preventScroll: true }), 1300);
         });
 
