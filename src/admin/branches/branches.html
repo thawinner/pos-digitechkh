@@ -76,15 +76,16 @@
     <script src="../../shared/scripts/portal.js"></script>
     <script>
         /* សាខា (ម្ចាស់ហាង) — បញ្ជី · បន្ថែម និងកែជាទំព័រពេញ (create-branch · edit-branch) · ⋮ តែមួយក្នុងជួរ */
-        // ការលក់ និងវេនបើកថ្ងៃនេះ៖ ដូចផ្ទាំងគ្រប់គ្រង (branchTodayFor · សាខាផ្សេងតាម iframe សង្ខេប)
         function stats(b) {
-            const sum = branchTodayFor(b.id);
+            const today = isoDate(new Date());
+            const sales = (b.id === ACTIVE_BRANCH_ID ? liveSales() : posReadAt('pos_shift_sales', [], b.id) || []).filter(s => s.time && s.time.startsWith(today) && !isVoided(s));
+            const shifts = b.id === ACTIVE_BRANCH_ID ? liveShifts() : posReadAt('pos_shifts', [], b.id) || [];
             return {
                 regs: branchRegisters(b.id),
                 devices: deviceList().filter(d => d.shopId === CURRENT_SHOP_ID && (d.branchId || 'BR-01') === b.id).length,
                 staff: SHOP_STAFF.filter(p => p.active && p.role !== 'admin' && (p.branchId || 'BR-01') === b.id).length,
-                open: sum.open,
-                total: sum.total
+                open: shifts.filter(s => s.status === 'open').length,
+                total: sales.reduce((n, s) => n + saleTotals(s.items, s.discountPercent).gross, 0)
             };
         }
 
@@ -137,7 +138,7 @@
         }
 
         window.onStoreChanged = render;
-        document.addEventListener('DOMContentLoaded', () => { render(); flashViewedRow(); if (shopBranches().length > 1) loadBranchSummaries(render); });
+        document.addEventListener('DOMContentLoaded', () => { render(); flashViewedRow(); });
     </script>
 </body>
 </html>

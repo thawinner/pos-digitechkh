@@ -171,7 +171,7 @@ const DEMO_SALT = ACTIVE_SHOP_ID === 'SHOP-01' && ACTIVE_BRANCH_ID === 'BR-01' ?
 const BRANCH_KEYS = ['pos_shifts', 'pos_shift_sales', 'pos_held_sales', 'pos_approvals', 'pos_cash_movements', 'pos_events',
     'pos_terminal_lock', 'pos_roster', 'pos_stock_opening', 'pos_stock_moves', 'pos_stock_counts', 'pos_stock_costs',
     'pos_overlay', 'pos_seed_v3', 'pos_mgr_seed_v2', 'pos_cfd', 'pos_new_shift_notice', 'pos_purchase_orders'];
-const GLOBAL_KEYS = ['pos_session', 'pos_devices', 'pos_device', 'pos_device_seed', 'pos_login_guard', 'pos_last_login', 'pos_last_shop', 'pos_last_branch',
+const GLOBAL_KEYS = ['pos_session', 'pos_devices', 'pos_device', 'pos_login_guard', 'pos_last_login', 'pos_last_shop', 'pos_last_branch',
     'pos_staff', 'pos_pins', 'pos_passwords', 'pos_shop_profile', 'pos_shop_setup', 'pos_shops'];
 
 function storeKey(key, branchId, shopId) {
@@ -2971,24 +2971,10 @@ function verifyPinLogin(pin, shopId, branchId) {
 }
 
 /* ឧបករណ៍គំរូ៖ កម្មវិធីរុករកនេះជាបញ្ជរ POS-01 នៃហាងទីមួយ (ម្ចាស់ហាងដកចេញបាននៅការកំណត់) */
-/* បញ្ជរគំរូទាំងអស់បានចុះឈ្មោះ (មួយកុំព្យូទ័រ មួយបញ្ជរ) · កម្មវិធីរុករកនេះ = POS-01 នៃ DIGITECHKH
-   ប្តូរកុំព្យូទ័រនេះនៅផ្ទាំងគំរូនៃទំព័រចូល · កម្មវិធីរុករកដែលមានទិន្នន័យចាស់ទទួលបញ្ជរដែលខ្វះម្តង (pos_device_seed) */
-const DEMO_DEVICES = [
-    ['DEV-01', 'SHOP-01', 'BR-01', 'POS-01', 'ADM-01'], ['DEV-02', 'SHOP-01', 'BR-01', 'POS-02', 'ADM-01'], ['DEV-03', 'SHOP-01', 'BR-01', 'POS-03', 'ADM-01'],
-    ['DEV-04', 'SHOP-01', 'BR-02', 'POS-04', 'ADM-01'], ['DEV-05', 'SHOP-01', 'BR-02', 'POS-05', 'ADM-01'], ['DEV-06', 'SHOP-01', 'BR-03', 'POS-06', 'ADM-01'],
-    ['DEV-07', 'SHOP-02', 'BR-01', 'POS-01', 'ADM-02'], ['DEV-08', 'SHOP-02', 'BR-01', 'POS-02', 'ADM-02']
-];
 (function seedDevice() {
-    const fresh = posRead(DEVICES_KEY, null) === null;
-    if (!fresh && posRead('pos_device_seed', null)) return;
-    const list = posRead(DEVICES_KEY, []) || [];
-    const at = isoLocal(new Date());
-    DEMO_DEVICES.forEach(([id, shopId, branchId, register, by]) => {
-        if (!list.some(d => d.id === id || (d.shopId === shopId && d.register === register))) list.push({ id, shopId, branchId, register, at, by });
-    });
-    posWrite(DEVICES_KEY, list);
-    if (fresh) posWrite(THIS_DEVICE_KEY, 'DEV-01');
-    posWrite('pos_device_seed', { at });
+    if (posRead(DEVICES_KEY, null) !== null) return;
+    posWrite(DEVICES_KEY, [{ id: 'DEV-01', shopId: 'SHOP-01', branchId: 'BR-01', register: 'POS-01', at: isoLocal(new Date()), by: 'ADM-01' }]);
+    posWrite(THIS_DEVICE_KEY, 'DEV-01');
 })();
 
 function posLogout() {
