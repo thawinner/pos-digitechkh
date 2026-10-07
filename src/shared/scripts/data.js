@@ -2885,7 +2885,8 @@ function posSession() {
     // ហាងត្រូវបានផ្អាក ឬការជាវផុតកំណត់ពេលកំពុងប្រើ → ចេញពីប្រព័ន្ធនៅទំព័របន្ទាប់
     if (!isMemberOf(s.userId, s.shopId || 'SHOP-01') || shopBlocked(s.shopId || 'SHOP-01')) return null;
     // ច្បាប់ចូលប្រើដដែលគ្រប់ទំព័រ៖ បញ្ជរត្រូវបានដកចេញ ឬប្តូរហាង → អ្នកគិតលុយត្រូវចូលម្តងទៀត
-    return loginBlockReason(personById(s.userId), thisDevice()) ? null : s;
+    const p = personById(s.userId);
+    return loginBlockReason(p, thisDevice()) || tillBusyFor(p, thisDevice()) ? null : s;
 }
 
 function posLoginControl(userId) {
@@ -2952,6 +2953,22 @@ function removeDevice(id) {
 
 /* ចូលដោយ PIN លើឧបករណ៍ដែលបានចុះឈ្មោះ៖ រកតែក្នុងចំណោមសមាជិកហាងរបស់ឧបករណ៍ */
 /* បញ្ជរនៃសាខាមួយ៖ បុគ្គលិកនៃសាខានោះ ឬម្ចាស់ហាង */
+/* បញ្ជរកំពុងប្រើ៖ ថតប្រាក់បើកលើបញ្ជរនេះដោយអ្នកផ្សេង → មានតែម្ចាស់ថតប្រាក់ចូលបាន (រួមទាំងអ្នកគ្រប់គ្រង និងម្ចាស់ហាង)
+   អ្នកផ្សេងប្រើបញ្ជរទំនេរ · ការអនុម័តនៅបញ្ជរនេះប្រើផ្ទាំង PIN អ្នកគ្រប់គ្រង មិនមែនការចូលប្រើ */
+function tillBusyFor(p, dev) {
+    if (!p || !dev) return null;
+    const open = (posReadAt('pos_shifts', [], dev.branchId || 'BR-01', dev.shopId) || [])
+        .find(s => s.status === 'open' && s.register === dev.register);
+    return open && open.cashierId !== p.id ? open : null;
+}
+
+/* បញ្ជរទំនេរក្នុងសាខានៃបញ្ជរនេះ (គ្មានថតប្រាក់បើក) */
+function freeTillsNear(dev) {
+    if (!dev) return [];
+    const busy = (posReadAt('pos_shifts', [], dev.branchId || 'BR-01', dev.shopId) || []).filter(s => s.status === 'open').map(s => s.register);
+    return branchRegisters(dev.branchId || 'BR-01').filter(r => r !== dev.register && !busy.includes(r));
+}
+
 function verifyPinLogin(pin, shopId, branchId) {
     const dev = { shopId, branchId: branchId || 'BR-01' };
     return ALL_STAFF.find(p => p.active && !loginBlockReason(p, dev) && verifyPin(p.id, pin)) || null;

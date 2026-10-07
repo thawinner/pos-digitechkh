@@ -372,6 +372,8 @@
                 // ទំព័រចូលនេះជារបស់ហាង (បញ្ជរ) ឬអ្នកគិតលុយនៅក្រៅបញ្ជរ → មិនអនុញ្ញាត
                 const why = loginBlockReason(res.person, DEVICE);
                 if (why) { setBusy(false); showMsg(blockText(why, res.person), 'warn'); return false; }
+                const busy = tillBusyFor(res.person, DEVICE);
+                if (busy) { setBusy(false); showMsg(busyText(busy), 'warn'); return false; }
                 try {
                     localStorage.setItem('pos_last_login', ident);
                 } catch (err) { /* មិនអាចរក្សាទុក */ }
@@ -438,13 +440,15 @@
             if (!on) document.getElementById('ident').focus();
         }
         let pinBusy = false;
-        function renderPinPad(err) {
+        // tone 'warn' = ស្ថានភាព (បញ្ជរកំពុងប្រើ) មិនមែនកំហុស → ពណ៌ទឹកក្រូច ចំណុចមិនក្រហម
+        function renderPinPad(err, tone) {
             const locked = lockedFor();
+            const warn = tone === 'warn';
             document.getElementById('pinDots').innerHTML = Array.from({ length: POS_PIN_LEN }, (_, i) => i).map(i => `<span class="pin-dot w-4 h-4 rounded-full ${i < pin.length
-                ? (err ? 'bg-rose-500' : 'bg-blue-600 filled') : (err || locked ? 'border-2 border-rose-300' : 'border-2 border-slate-300')}"></span>`).join('');
+                ? (err && !warn ? 'bg-rose-500' : 'bg-blue-600 filled') : ((err && !warn) || locked ? 'border-2 border-rose-300' : 'border-2 border-slate-300')}"></span>`).join('');
             const msg = document.getElementById('pinMsg');
             msg.innerHTML = locked ? `<i class="fas fa-lock mr-1.5"></i>វាយខុស ${MAX_TRIES} ដង · សូមរង់ចាំ ${locked} វិនាទី` : (err || '');
-            msg.className = `sm-td-sub mt-2 min-h-[22px] text-center ${locked || err ? 'text-rose-600 font-semibold' : 'text-slate-500'}`;
+            msg.className = `sm-td-sub mt-2 min-h-[22px] text-center ${locked || (err && !warn) ? 'text-rose-600 font-semibold' : warn ? 'text-amber-700 font-semibold' : 'text-slate-500'}`;
             // គ្រាប់ចុចសាងម្តង (រក្សាការចុច និងការផ្តោត) · ធ្វើបច្ចុប្បន្នភាពតែស្ថានភាពបិទ
             const keyBox = document.getElementById('pinKeys');
             if (!keyBox.children.length) {
@@ -472,7 +476,13 @@
             if (shopBlocked(DEVICE.shopId)) { pin = ''; renderPinPad(`${escapeText(shopById(DEVICE.shopId).nameKh)} មិនអាចប្រើបានបណ្តោះអាសន្ន · សូមទាក់ទងម្ចាស់ហាង`); return; }
             // ឧបករណ៍ស្គាល់ហាងរបស់ខ្លួន ដូច្នេះ PIN រកតែក្នុងចំណោមសមាជិកហាងនោះ
             const who = verifyPinLogin(pin, DEVICE.shopId, DEVICE.branchId);
-            if (who) { posWrite(GUARD_KEY, { fails: 0, lockedUntil: 0 }); return finishLogin(who, DEVICE.shopId, 'pin'); }
+            if (who) {
+                posWrite(GUARD_KEY, { fails: 0, lockedUntil: 0 });
+                // PIN ត្រូវ តែបញ្ជរកំពុងប្រើដោយអ្នកផ្សេង → មិនរាប់ជាការវាយខុស
+                const busy = tillBusyFor(who, DEVICE);
+                if (busy) { pin = ''; renderPinPad(busyText(busy), 'warn'); return; }
+                return finishLogin(who, DEVICE.shopId, 'pin');
+            }
             const g = guard();
             g.fails += 1;
             if (g.fails >= MAX_TRIES) { g.fails = 0; g.lockedUntil = Date.now() + 60000; }
@@ -497,6 +507,13 @@
             if (why === 'shop') return `<i class="fas fa-store-slash mr-1.5"></i>គណនីនេះមិនអាចចូលនៅ ${escapeText(shopById(DEVICE.shopId).nameKh)} បានទេ · សូមចូលនៅហាងរបស់អ្នក`;
             if (why === 'branch') return `<i class="fas fa-code-branch mr-1.5"></i>បញ្ជរនេះជារបស់${escapeText(branchName(DEVICE.branchId || 'BR-01'))} · សូមចូលនៅបញ្ជរនៃសាខារបស់អ្នក`;
             return '<i class="fas fa-cash-register mr-1.5"></i>អ្នកគិតលុយចូលបានតែលើកុំព្យូទ័របញ្ជររបស់ហាង · សូមចូលនៅបញ្ជរ';
+        }
+
+        /* បញ្ជរនេះមានថតប្រាក់របស់អ្នកផ្សេង → ប្រាប់បញ្ជរទំនេរក្នុងសាខា */
+        function busyText(sh) {
+            const free = freeTillsNear(DEVICE);
+            return `<i class="fas fa-cash-register mr-1.5"></i>${sh.register} កំពុងប្រើដោយ ${escapeText(personName(sh.cashierId))} · ${free.length
+                ? `សូមប្រើបញ្ជរទំនេរ ${free.join(' ឬ ')}` : 'គ្មានបញ្ជរទំនេរ · សូមរង់ចាំគេបិទវេន'}`;
         }
 
         /* ហាងផ្អាក ឬការជាវផុតកំណត់៖ ម្ចាស់ហាងទាក់ទង DIGITECHKH · បុគ្គលិកទាក់ទងម្ចាស់ហាង */
@@ -675,7 +692,14 @@
             document.getElementById('pinAlt').classList.toggle('hidden', !DEVICE);
             document.getElementById('noDeviceNote').classList.toggle('hidden', !!DEVICE);
             // ឈ្មោះហាងនៅរបារខាងលើរួចហើយ · បន្ទះនេះប្រាប់តែបញ្ជរណា (និងសាខា ពេលមានច្រើន)
-            if (DEVICE) document.getElementById('deviceChip').innerHTML = `<i class="fas fa-cash-register text-slate-400"></i><span class="truncate">${shopBranches().length > 1 ? `${escapeText(branchName(DEVICE.branchId || 'BR-01'))} · ` : ''}បញ្ជរ ${DEVICE.register}</span>`;
+            if (DEVICE) {
+                // បញ្ជរកំពុងប្រើ៖ ប្រាប់មុនពេលវាយ PIN (មានតែម្ចាស់ថតប្រាក់ចូលបាន)
+                const openHere = liveShifts().find(x => x.status === 'open' && x.register === DEVICE.register);
+                const chip = document.getElementById('deviceChip');
+                chip.innerHTML = `<i class="fas fa-cash-register ${openHere ? 'text-amber-600' : 'text-slate-400'}"></i><span class="truncate">${shopBranches().length > 1 && !openHere ? `${escapeText(branchName(DEVICE.branchId || 'BR-01'))} · ` : ''}បញ្ជរ ${DEVICE.register}${openHere ? ` · កំពុងប្រើដោយ ${escapeText(personName(openHere.cashierId))}` : ''}</span>`;
+                if (openHere) chip.classList.replace('bg-slate-100', 'bg-amber-50');
+                if (openHere) chip.classList.replace('text-slate-600', 'text-amber-800');
+            }
             renderDemoDevice();
             tick();
             setInterval(tick, 10000);
@@ -695,8 +719,8 @@
                 const head = group !== lastGroup ? `<p class="pt-3 pb-1 px-1 sm-td-sub font-semibold text-slate-500">${shopId === 'CONTROL' ? 'អ្នកគ្រប់គ្រងប្រព័ន្ធ (DIGITECHKH)' : escapeText((shopById(shopId) || {}).nameKh || shopId) + br}</p>` : '';
                 lastGroup = group;
                 // គំរូ៖ បង្ហាញថាគណនីណាចូលមិនបាននៅទំព័រនេះ (ហាងផ្សេង សាខាផ្សេង ឬអ្នកគិតលុយក្រៅបញ្ជរ)
-                const why = loginBlockReason(p, DEVICE);
-                const whyText = { shop: 'ហាងផ្សេង · ចូលមិនបាននៅទីនេះ', branch: 'សាខាផ្សេង · ចូលមិនបាននៅបញ្ជរនេះ', till: 'ត្រូវចូលនៅបញ្ជរ' }[why];
+                const why = loginBlockReason(p, DEVICE) || (tillBusyFor(p, DEVICE) ? 'busy' : '');
+                const whyText = { shop: 'ហាងផ្សេង · ចូលមិនបាននៅទីនេះ', branch: 'សាខាផ្សេង · ចូលមិនបាននៅបញ្ជរនេះ', till: 'ត្រូវចូលនៅបញ្ជរ', busy: 'បញ្ជរនេះកំពុងប្រើ · ប្រើបញ្ជរទំនេរ' }[why];
                 return head + `<button type="button" onclick="fillDemo('${p.id}')" class="w-full text-left py-2 px-1 flex items-center gap-2.5 hover:bg-slate-50 rounded transition-colors ${why ? 'opacity-60' : ''}">
                     ${avatarHtml(p.id, 'w-7 h-7')}
                     <span class="flex-1 min-w-0"><span class="block sm-td-sub font-semibold text-slate-800 truncate">${p.name}</span>

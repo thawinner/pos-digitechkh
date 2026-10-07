@@ -80,6 +80,10 @@ always opens on the PIN pad (also with `?next=`, which still applies after login
 6th digit (no submit button), shakes and clears on a wrong PIN, and offers email/phone as a secondary link below.
 A registered till is one register (`deviceRegister()`): `MY_REGISTER` and `suggestRegister` use it, open-shift shows only
 that register (no picker), and a cashier whose shift is open on another till is told to close it there first.
+A busy till (open drawer on its register, `tillBusyFor()`) accepts only that drawer's owner; anyone else, managers and
+owners included, is refused by password or PIN (not counted as a wrong try) and told the free registers in the branch
+(`freeTillsNear()`). The PIN pad's till chip turns amber with «កំពុងប្រើដោយ …» before anyone types; `posSession()`
+applies the same rule on every page.
 The demo panel lists every register of both demo shops, by branch («ឧបករណ៍នេះ = ទំព័រចូលរបស់», `demoTills()`).
 Strict login (decided 2026-10-07), one rule for password and PIN, `loginBlockReason(person, device)` in `data.js`:
 a registered till is that shop's login page, so only its shop's people log in there, and staff only at their own
