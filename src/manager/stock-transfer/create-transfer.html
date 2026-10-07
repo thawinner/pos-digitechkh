@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគិតលុយ - ផ្ទេរស្តុក</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { blue: { 50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 400: '#34d399', 500: '#059669', 600: '#047857', 700: '#065f46', 800: '#064e3b', 900: '#053d30', 950: '#022c22' }, slate: { 50: '#fafafa', 100: '#f4f4f4', 200: '#e7e7e7', 300: '#d4d4d4', 400: '#a2a2a2', 500: '#737373', 600: '#545454', 700: '#404040', 800: '#292929', 900: '#171717', 950: '#070707' }, primary: "#047857", 'primary-dark': "#065f46", accent: "#34d399" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+    <style>
+        /* បណ្ណទម្រង់៖ មិនប្រើ .bg-white ព្រោះ custom.css §17 ពង្រីកប៊ូតុងទាំងអស់ក្នុង «.bg-white មាន submit» ពេញទទឹងលើទូរស័ព្ទ */
+        .form-card { background: #ffffff; }
+        html.dark .form-card { background: #171717; border-color: #292929 !important; }
+        .f-input { width: 100%; height: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid #d4d4d4; background: #fff; color: #171717; }
+        .f-input:focus { outline: none; border-color: #047857; box-shadow: 0 0 0 3px rgba(4, 120, 87, .15); }
+        .f-input.is-error { border-color: #fb7185; }
+        html.dark .f-input { background: #111111; border-color: #404040; color: #e7e7e7; }
+        .f-err { display: block; min-height: 20px; margin-top: 4px; font-size: 13.5px; color: #e11d48; }
+        .ctl-kpis { display: grid; gap: 1rem; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        @media (max-width: 1023px) { .ctl-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    </style>
+</head>
+<body id="managerPortal" data-role-root="../.." data-active="stock-transfer" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="ផ្ទេរស្តុក"
+             data-subtitle="ផ្ញើទំនិញពីសាខានេះទៅសាខាផ្សេង · ស្តុកចេញភ្លាមពេលផ្ញើ" data-back="transfers.html"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <form id="form" onsubmit="return submitForm(event)" novalidate class="w-full grid gap-5 xl:grid-cols-3">
+                <div class="xl:col-span-2 space-y-5">
+                    <section class="form-card rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="px-5 py-4 border-b border-slate-100"><h3 class="sm-card-title text-slate-800">ផ្ញើទៅ</h3><p class="sm-card-sub text-slate-500">សាខាដែលទទួលទំនិញ</p></div>
+                        <div id="toPick" class="px-5 py-4 grid gap-2.5 md:grid-cols-2"></div>
+                    </section>
+                    <section class="form-card rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="px-5 py-4 border-b border-slate-100"><h3 class="sm-card-title text-slate-800">ទំនិញ</h3><p class="sm-card-sub text-slate-500">ស្វែងរក ហើយចុចដើម្បីបន្ថែម · មិនអាចផ្ញើលើសស្តុកដែលមាន</p></div>
+                        <div class="px-5 pt-4">
+                            <label class="relative block"><i class="fas fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                                <input id="search" type="text" placeholder="ស្វែងរកឈ្មោះ ឬលេខកូដទំនិញ" autocomplete="off" class="f-input" style="padding-left:40px"></label>
+                            <div id="results" class="mt-2 divide-y divide-slate-100 rounded-xl border border-slate-200 hidden"></div>
+                        </div>
+                        <div class="px-5 py-4"><div id="lines"></div></div>
+                    </section>
+                </div>
+                <div class="space-y-5">
+                    <section class="form-card rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="px-5 py-4 border-b border-slate-100"><h3 class="sm-card-title text-slate-800">សង្ខេប</h3><p class="sm-card-sub text-slate-500">ពិនិត្យមុនផ្ញើ</p></div>
+                        <div class="px-5 py-4 space-y-3">
+                            <div id="summary" class="space-y-2"></div>
+                            <label class="block"><span class="sm-td font-semibold text-slate-700">ចំណាំ <span class="font-normal text-slate-400">មិនចាំបាច់</span></span>
+                                <input id="note" type="text" placeholder="ឧ. អ្នកដឹក៖ សុខ ចាន់" class="f-input mt-1.5"></label>
+                            <button type="submit" class="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white sm-td font-semibold inline-flex items-center justify-center gap-2"><i class="fas fa-truck-fast"></i> ផ្ញើស្តុក</button>
+                        </div>
+                    </section>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        /* បង្កើតការផ្ទេរស្តុក — ទំព័រពេញ (.ai/ui-rules §2) · ស្តុកចេញពីសាខានេះភ្លាម · សាខាទទួលរាប់ ហើយបញ្ជាក់ */
+        const others = shopBranches().filter(b => b.id !== ACTIVE_BRANCH_ID);
+        let to = others.length === 1 ? others[0].id : '';
+        let lines = [];
+        const LEVELS = onHandLevels();
+        const avail = sku => Math.max(0, LEVELS[sku] || 0);
+
+        function renderTo() {
+            document.getElementById('toPick').innerHTML = others.map(b => `<button type="button" onclick="to='${b.id}'; renderTo(); renderSummary()"
+                class="text-left px-4 py-3 rounded-xl border transition flex items-start gap-3 ${to === b.id ? 'border-blue-600 ring-1 ring-blue-600' : 'border-slate-200 hover:border-slate-300'}">
+                <i class="fas fa-code-branch mt-1 ${to === b.id ? 'text-blue-600' : 'text-slate-400'}"></i>
+                <span class="min-w-0"><span class="block sm-td font-semibold text-slate-800">${escapeText(b.name)}</span><span class="block sm-td-sub text-slate-500">${escapeText(b.address || '—')}</span></span></button>`).join('');
+        }
+
+        function renderResults() {
+            const q = document.getElementById('search').value.trim().toLowerCase();
+            const box = document.getElementById('results');
+            if (!q) { box.classList.add('hidden'); return; }
+            const found = PRODUCTS.filter(p => (p.name.toLowerCase().includes(q) || p.sku.includes(q)) && !lines.some(l => l.sku === p.sku)).slice(0, 6);
+            box.classList.remove('hidden');
+            box.innerHTML = found.length ? found.map(p => `<button type="button" onclick="addLine('${p.sku}')" ${avail(p.sku) ? '' : 'disabled'}
+                class="w-full text-left px-3 py-2.5 flex items-center gap-3 ${avail(p.sku) ? 'hover:bg-slate-50' : 'opacity-50 cursor-not-allowed'}">
+                <span class="w-9 h-9 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0">${productImgHtml(p)}</span>
+                <span class="flex-1 min-w-0 sm-td text-slate-800 truncate">${escapeText(p.name)}</span>
+                <span class="sm-td-sub text-slate-500 sm-figure flex-shrink-0">${avail(p.sku) ? `មាន ${avail(p.sku)} ${p.unit}` : 'អស់ស្តុក'}</span></button>`).join('')
+                : '<p class="px-3 py-3 sm-td-sub text-slate-400">រកមិនឃើញទំនិញ</p>';
+        }
+
+        function addLine(sku) {
+            const p = getProduct(sku);
+            lines.push({ sku, qty: Math.min(avail(sku), p.reorderQty || 12) || 1 });
+            document.getElementById('search').value = '';
+            renderResults(); renderLines(); renderSummary();
+            document.getElementById('search').focus();
+        }
+
+        function setQty(i, v) {
+            lines[i].qty = Math.max(0, parseInt(v, 10) || 0);
+            renderSummary();
+            const over = lines[i].qty > avail(lines[i].sku);
+            document.getElementById('q' + i).classList.toggle('is-error', over || !lines[i].qty);
+            document.getElementById('qe' + i).textContent = over ? `មានតែ ${avail(lines[i].sku)}` : !lines[i].qty ? 'យ៉ាងតិច 1' : '';
+        }
+
+        function removeLine(i) { lines.splice(i, 1); renderLines(); renderSummary(); }
+
+        function renderLines() {
+            document.getElementById('lines').innerHTML = lines.length ? `<div class="divide-y divide-slate-100 rounded-xl border border-slate-200">${lines.map((l, i) => {
+                const p = getProduct(l.sku);
+                return `<div class="px-3 py-2.5 flex items-center gap-3">
+                    <span class="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0">${productImgHtml(p)}</span>
+                    <span class="flex-1 min-w-0"><span class="block sm-td font-medium text-slate-800 truncate">${escapeText(p.name)}</span><span class="block sm-td-sub text-slate-500 sm-figure">មាន ${avail(l.sku)} ${p.unit}</span></span>
+                    <span class="w-24 flex-shrink-0"><input id="q${i}" type="text" inputmode="numeric" value="${l.qty}" oninput="setQty(${i}, this.value)" aria-label="ចំនួនផ្ញើ" class="f-input text-right sm-figure" style="height:44px"><span id="qe${i}" class="block sm-td-sub text-rose-600 text-right"></span></span>
+                    <button type="button" onclick="removeLine(${i})" aria-label="ដកចេញ" class="w-10 h-10 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center flex-shrink-0"><i class="fas fa-xmark"></i></button>
+                </div>`;
+            }).join('')}</div>` : emptyState('fa-boxes-stacked', 'មិនទាន់មានទំនិញ', 'ស្វែងរកខាងលើ ហើយចុចដើម្បីបន្ថែម');
+        }
+
+        function renderSummary() {
+            const row = (l, v) => `<div class="flex justify-between gap-3"><span class="sm-td-sub text-slate-500">${l}</span><span class="sm-td font-semibold text-slate-800 text-right">${v}</span></div>`;
+            document.getElementById('summary').innerHTML = row('ពី', escapeText(MERCHANT.branch)) + row('ទៅ', to ? escapeText(branchName(to)) : '<span class="text-slate-400 font-normal">ជ្រើសសាខា</span>')
+                + row('ទំនិញ', `<span class="sm-figure">${lines.length} មុខ · ${lines.reduce((n, l) => n + l.qty, 0)} ឯកតា</span>`);
+        }
+
+        async function submitForm(e) {
+            e.preventDefault();
+            if (!to) { showToast('សូមជ្រើសសាខាដែលទទួល', 'warning'); return false; }
+            if (!lines.length) { showToast('សូមបន្ថែមទំនិញយ៉ាងហោចណាស់ 1 មុខ', 'warning'); document.getElementById('search').focus(); return false; }
+            const bad = lines.findIndex(l => !l.qty || l.qty > avail(l.sku));
+            if (bad >= 0) { setQty(bad, lines[bad].qty); document.getElementById('q' + bad).focus(); return false; }
+            const ok = await showPinConfirm({ title: 'បញ្ជាក់ការផ្ទេរស្តុក', message: `${escapeText(MERCHANT.branch)} → ${escapeText(branchName(to))} · ${lines.length} មុខ`, userId: ME_MANAGER, confirmText: 'ផ្ញើ' });
+            if (!ok) return false;
+            const t = sendTransfer(to, lines, document.getElementById('note').value.trim());
+            markRecordViewed(t.id);
+            flashToast(`បានផ្ញើ ${t.lines.length} មុខទៅ ${branchName(to)} · កំពុងរង់ចាំអ្នកទទួលបញ្ជាក់`);
+            location.href = 'transfers.html?tab=out';
+            return false;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!others.length) { flashToast('ហាងមានសាខាតែមួយ'); location.replace('transfers.html'); return; }
+            renderTo(); renderLines(); renderSummary();
+            document.getElementById('search').addEventListener('input', renderResults);
+            const pre = new URLSearchParams(location.search).get('sku');
+            if (pre && getProduct(pre) && avail(pre)) addLine(pre);
+        });
+    </script>
+</body>
+</html>

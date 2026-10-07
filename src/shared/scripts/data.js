@@ -1785,8 +1785,55 @@ const STOCK_MOVE_TYPE = {
     return: { label: 'ប្រគល់ទំនិញវិញ', icon: 'fa-rotate-left', tone: 'amber' },
     stock_in: { label: 'ទទួលស្តុក', icon: 'fa-truck-ramp-box', tone: 'slate' },
     adjust: { label: 'កែតម្រូវស្តុក', icon: 'fa-sliders', tone: 'slate' },
-    count: { label: 'រាប់ស្តុក', icon: 'fa-clipboard-check', tone: 'slate' }
+    count: { label: 'រាប់ស្តុក', icon: 'fa-clipboard-check', tone: 'slate' },
+    transfer_out: { label: 'ផ្ទេរទៅសាខា', icon: 'fa-right-from-bracket', tone: 'slate' },
+    transfer_in: { label: 'ទទួលពីសាខា', icon: 'fa-right-to-bracket', tone: 'slate' }
 };
+
+/* ===== ផ្ទេរស្តុករវាងសាខា (pos_transfers · រួមទូទាំងហាង ដូច្នេះសាខាទាំងពីរឃើញ) =====
+   ផ្ញើ៖ ស្តុកចេញពីសាខាផ្ញើភ្លាម (transfer_out) · ទទួល៖ អ្នកគ្រប់គ្រងសាខាទទួលរាប់ ហើយបញ្ជាក់
+   មានតែចំនួនដែលទទួលពិតប្រាកដចូលស្តុក (transfer_in) · ខ្វះ = កត់លើការផ្ទេរ (បាត់ ឬខូចតាមផ្លូវ)
+   { id, from, to, lines: [{ sku, qty, received }], status: sent|received, note, sentBy, sentAt, receivedBy, receivedAt, receiveNote } */
+const TRANSFERS_KEY = 'pos_transfers';
+
+function shopTransfers() {
+    return (posRead(TRANSFERS_KEY, []) || []).slice().sort((a, b) => b.sentAt.localeCompare(a.sentAt));
+}
+
+function transferById(id) {
+    return shopTransfers().find(t => t.id === id) || null;
+}
+
+function incomingTransfers() {
+    return shopTransfers().filter(t => t.to === ACTIVE_BRANCH_ID && t.status === 'sent');
+}
+
+function sendTransfer(to, lines, note) {
+    const list = posRead(TRANSFERS_KEY, []) || [];
+    const d = isoDate(new Date()).replace(/-/g, '').slice(2);
+    const seq = list.filter(t => t.id.includes(d)).length + 1;
+    const t = { id: `TR-${d}-${pad2(seq)}`, from: ACTIVE_BRANCH_ID, to, lines: lines.map(l => ({ sku: l.sku, qty: Number(l.qty) })),
+        status: 'sent', note: note || '', sentBy: currentActorId(), sentAt: isoLocal(new Date()) };
+    list.push(t);
+    posWrite(TRANSFERS_KEY, list);
+    saveStockMoves(t.lines.map(l => stockMove({ type: 'transfer_out', sku: l.sku, qty: -l.qty, ref: t.id, reason: `ផ្ទេរទៅ ${branchName(to)}`, note: t.note })));
+    return t;
+}
+
+function receiveTransfer(id, received, note) {
+    const list = posRead(TRANSFERS_KEY, []) || [];
+    const t = list.find(x => x.id === id);
+    if (!t || t.status !== 'sent' || t.to !== ACTIVE_BRANCH_ID) return null;
+    t.lines.forEach(l => { l.received = Math.max(0, Math.min(l.qty, Number(received[l.sku]) || 0)); });
+    Object.assign(t, { status: 'received', receivedBy: currentActorId(), receivedAt: isoLocal(new Date()), receiveNote: note || '' });
+    posWrite(TRANSFERS_KEY, list);
+    saveStockMoves(t.lines.filter(l => l.received > 0).map(l => stockMove({ type: 'transfer_in', sku: l.sku, qty: l.received, ref: t.id, reason: `ទទួលពី ${branchName(t.from)}`, note: t.receiveNote })));
+    return t;
+}
+
+function transferShort(t) {
+    return t.status === 'received' ? t.lines.reduce((n, l) => n + (l.qty - (l.received || 0)), 0) : 0;
+}
 
 /* មូលហេតុកែតម្រូវ — sign = ទិសដៅនៃចលនា · shrink = រាប់ជាការបាត់បង់ */
 const STOCK_ADJUST_REASONS = {

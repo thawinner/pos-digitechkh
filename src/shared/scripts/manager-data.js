@@ -954,9 +954,20 @@ function totalPending() {
     return 0;
 }
 
+/* ការផ្ទេរស្តុកដែលរង់ចាំសាខានេះទទួល (ផ្លាកលេខ · ការជូនដំណឹង) */
+function mgrIncomingTransferCount() {
+    return typeof incomingTransfers === 'function' ? incomingTransfers().length : 0;
+}
+
 function portalNotifications() {
     const root = document.body.dataset.roleRoot || '../..';
     const list = [];
+    incomingTransfers().forEach(t => list.push({
+        icon: 'mdi:truck-delivery-outline', tone: 'warning',
+        title: `ស្តុកពី ${branchName(t.from)} រង់ចាំទទួល`,
+        note: `${t.lines.length} មុខ · ${t.lines.reduce((n, l) => n + l.qty, 0)} ឯកតា · រាប់ហើយបញ្ជាក់ការទទួល`,
+        time: fmtTime(t.sentAt), href: `${root}/manager/stock-transfer/view-transfer.html?id=${t.id}`
+    }));
     // ការជាវរបស់ហាង (ម្ចាស់ហាងតែប៉ុណ្ណោះ)៖ ជិតផុតកំណត់ · ហួសកំណត់ · សាកល្បងជិតចប់ · បង់តាមរយៈ DIGITECHKH
     if (document.body.id === 'adminPortal' && typeof shopSubscription === 'function') {
         const sub = shopSubscription(CURRENT_SHOP_ID);

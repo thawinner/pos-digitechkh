@@ -44,7 +44,11 @@ carry `branchId` (owners work in every branch); `CASHIERS`/`MANAGERS` are the ac
 Register numbers run across the shop (`branchRegisters`: branch 1 POS-01..03, branch 2 POS-04..). Devices store
 `branchId`; PIN login on a till accepts that branch's staff or an owner. The owner switches branch from the account
 menu (`index.html?branch=1`, `posSwitchBranch`) or the dashboard's «សាខាទាំងអស់» card; `posReadAt(key, fb, branchId,
-shopId)` reads another branch or shop. Demo history (`IS_DEMO_DATA`) exists only in the demo shop's first branch; new
+shopId)` reads another branch or shop. Stock transfer between branches: `manager/stock-transfer/{transfers,create-transfer,
+view-transfer}` (nav item only when the shop has 2+ branches, `multiBranch` in `PORTAL_CONFIGS`; badge
+`mgrIncomingTransferCount`). `pos_transfers` is shop-wide; `sendTransfer` writes `transfer_out` moves in the sending
+branch at once, `receiveTransfer` writes `transfer_in` only for the counted quantity; a shortfall needs a reason and
+stays on the transfer (`transferShort`). Demo history (`IS_DEMO_DATA`) exists only in the demo shop's first branch; new
 branches start empty with zero stock. A shop without a
 manager lets its owner approve at the till (`showManagerOverride`). A password login with more than one membership shows «ជ្រើសហាង»; the account menu offers
 «ប្តូរហាង» (`index.html?pick=1`). The session carries `shopId`; `CURRENT_SHOP_ID` copies that shop into `MERCHANT`.
@@ -94,7 +98,7 @@ src/
 ├── cashier/display/customer-display  customer-facing screen (CFD), opened from the terminal header; read-only mirror of `pos_cfd`
 ├── cashier/receipts/receipts       shift receipts, void / return requests (manager PIN on the spot or queued), return from an earlier shift by exact receipt number
 ├── cashier/shift/{open,close}-shift  float count + manager PIN · blind close with one recount + Z-report
-├── manager/{dashboard,approvals,shifts,roster,cash,stock,stock-count,stock-history,exceptions,reports,settings}/…  (view-request, view-shift, create-movement, create-stock-in, create-adjustment, create-count)
+├── manager/{dashboard,approvals,shifts,roster,cash,stock,stock-count,stock-history,stock-transfer,exceptions,reports,settings}/…  (view-request, view-shift, create-movement, create-stock-in, create-adjustment, create-count)
 ├── admin/{setup,dashboard,reports,branches,staff,products,settings,audit,stock}/…   owner: first-login setup wizard, getting-started checklist, branches, profit, stock value, shrinkage, stock-in cost, staff, prices, rules, audit log (view-stock-in, view-staff, create-product, create/edit-branch)
 ├── control/{dashboard,companies,billing,plans,audit}/…   Super Admin (DIGITECHKH): subscribing shops, payments, plans (view-company, create-company, create-payment, edit-plan)
 └── shared/{scripts,styles,assets}  assets/avatars/<personId>.svg = profile images
