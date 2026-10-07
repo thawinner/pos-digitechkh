@@ -114,10 +114,13 @@
 
                 <div class="bg-white rounded-2xl p-2 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-3">
                     <div id="methodTabs" class="flex flex-wrap items-center gap-2"></div>
-                    <div class="relative pr-1 w-full sm:w-auto">
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button id="earlierBtn" onclick="returnFromEarlier()" type="button" class="sm-badge h-9 px-3.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center gap-2 whitespace-nowrap flex-shrink-0"><i class="fas fa-rotate-left text-slate-400"></i> ប្រគល់ពីវេនមុន</button>
+                    <div class="relative pr-1 flex-1 sm:flex-none">
                         <i class="fas fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                         <input id="searchInput" type="text" oninput="renderReceipts()" placeholder="ស្វែងរកលេខវិក្កយបត្រ ឬឈ្មោះទំនិញ..."
                             class="sm-td h-9 pl-9 pr-3 w-full sm:w-[300px] max-w-full rounded-xl bg-slate-50 border border-slate-200 text-slate-700 focus:outline-none focus:border-blue-600 transition">
+                    </div>
                     </div>
                 </div>
 
@@ -515,18 +518,21 @@
 
         /* ===== ផ្ទាំងប្រគល់ទំនិញវិញ ===== */
 
-        function openReturn(id) {
+        function openReturn(id, earlierSale) {
             closeAllFloatingDropdowns();
-            const s = shiftSales().find(x => x.id === id);
-            if (!s || !canRequest(s)) return;
+            const s = earlierSale || shiftSales().find(x => x.id === id);
+            if (!s || (!earlierSale && !canRequest(s))) return;
             const m = methodOf(s);
             returnDraft = {
+                earlier: !!earlierSale,
                 sale: s,
                 qty: {},
                 method: m === 'split' ? (s.pay.usdCash > 0 ? 'usdCash' : s.pay.khrCash > 0 ? 'khrCash' : 'khqr') : m,
                 reason: ''
             };
-            document.getElementById('returnSub').textContent = `${s.id} · ${fmtTime(s.time)} · ${payMethodLabel(s.pay)}`;
+            document.getElementById('returnSub').textContent = earlierSale
+                ? `${s.id} · ${fmtDate(s.time)} ${fmtTime(s.time)} · ${s.register} · វេនមុន · សងពីថតនេះ`
+                : `${s.id} · ${fmtTime(s.time)} · ${payMethodLabel(s.pay)}`;
             renderReturn();
             const modal = document.getElementById('returnModal');
             modal.classList.remove('hidden');
@@ -591,12 +597,54 @@
             const amount = Math.round(returnAmount() * 100) / 100;
             const sale = d.sale;
             const req = { type: 'return', saleId: sale.id, lines, amount, method: d.method, reason: d.reason };
+            if (d.earlier) Object.assign(req, { earlier: true, saleShiftId: sale.shiftId });
             closeReturn();
             await submitRequest(req, [
-                ['វិក្កយបត្រ', `${sale.id} · ${fmtTime(sale.time)}`],
+                ['វិក្កយបត្រ', `${sale.id} · ${d.earlier ? `${fmtDate(sale.time)} ` : ''}${fmtTime(sale.time)}${d.earlier ? ' · វេនមុន' : ''}`],
                 ['ទំនិញ', lines.map(l => `${getProduct(l.sku).name} × ${l.qty}`).join(' · ')],
                 ['សងប្រាក់', `${fmtUSD(amount)} · ${d.method === 'khqr' ? khqrLabel(sale.pay) : PAY_LABEL[d.method]}`]
             ]);
+        }
+
+        /* ប្រគល់ទំនិញពីវេនមុន (D3)៖ វាយលេខវិក្កយបត្រពេញលេញ → ប្រព័ន្ធបង្ហាញតែវិក្កយបត្រនោះ → ជ្រើសទំនិញ → អ្នកគ្រប់គ្រងអនុម័ត
+           អ្នកគិតលុយមិនអាចរុករក ឬមើលវេនមុនផ្សេងទៀតបានទេ · ប្រាក់សងចេញពីថតនៃវេននេះ */
+        async function returnFromEarlier() {
+            const sh = currentShift();
+            if (!sh) return showToast('សូមបើកវេនជាមុនសិន · ប្រាក់សងចេញពីថតនៃវេនដែលកំពុងបើក', 'warning');
+            const check = q => {
+                const no = normReceiptNo(q);
+                if (no.length < 14) return { err: 'សូមវាយលេខវិក្កយបត្រពេញលេញ ឧ. RCP-01-1003-0012' };
+                const s = findSaleByReceipt(q);
+                if (!s) return { err: 'រកមិនឃើញវិក្កយបត្រនេះ · ពិនិត្យលេខលើវិក្កយបត្ររបស់អតិថិជន' };
+                if (s.shiftId === sh.id) return { err: 'វិក្កយបត្រនេះនៅក្នុងវេននេះ · ប្រើម៉ឺនុយ ⋮ លើជួរវិក្កយបត្រ' };
+                if (isVoided(s)) return { err: 'វិក្កយបត្រនេះត្រូវបានលុបចោលរួចហើយ' };
+                if (pendingRequestFor(s.id)) return { err: 'វិក្កយបត្រនេះមានសំណើរង់ចាំអនុម័តរួចហើយ' };
+                if (!returnableLines(s).length) return { err: 'ទំនិញក្នុងវិក្កយបត្រនេះត្រូវបានប្រគល់វិញអស់ហើយ' };
+                const days = Math.floor((Date.now() - new Date(s.time)) / 86400000);
+                if (days > RETURN_WINDOW_DAYS) return { err: `ហួសរយៈពេលប្រគល់ ${RETURN_WINDOW_DAYS} ថ្ងៃ (ទិញ ${days} ថ្ងៃមុន)` };
+                return { sale: s };
+            };
+            const v = await showFormDialog({
+                title: 'ប្រគល់ទំនិញពីវេនមុន',
+                icon: 'fa-rotate-left',
+                message: `វាយលេខលើវិក្កយបត្ររបស់អតិថិជន · ទិញក្នុងរយៈ ${RETURN_WINDOW_DAYS} ថ្ងៃ · អ្នកគ្រប់គ្រងត្រូវអនុម័ត`,
+                fields: [{ key: 'no', label: 'លេខវិក្កយបត្រ', value: 'RCP-', hint: 'ឧ. RCP-01-1003-0012' }],
+                validate: x => check(x.no).err || '',
+                preview: x => {
+                    const r = check(x.no);
+                    if (!r.sale) return '';
+                    const t = saleTotals(r.sale.items, r.sale.discountPercent);
+                    return `<div class="p-3 rounded-lg border border-slate-200 space-y-1">
+                        <div class="flex justify-between text-slate-600"><span>ថ្ងៃទិញ</span><span class="font-semibold text-slate-800 sm-figure">${fmtDate(r.sale.time)} ${fmtTime(r.sale.time)} · ${r.sale.register}</span></div>
+                        <div class="flex justify-between text-slate-600"><span>ទំនិញ</span><span class="font-semibold text-slate-800">${r.sale.items.length} មុខ · ${payMethodLabel(r.sale.pay)}</span></div>
+                        <div class="flex justify-between text-slate-600"><span>សរុប</span><span class="font-semibold text-slate-800 sm-figure">${fmtUSD(t.gross)}</span></div>
+                    </div>`;
+                },
+                confirmText: 'ជ្រើសទំនិញ'
+            });
+            if (!v) return;
+            const r = check(v.no);
+            if (r.sale) openReturn(r.sale.id, r.sale);
         }
 
         function refreshAll() {

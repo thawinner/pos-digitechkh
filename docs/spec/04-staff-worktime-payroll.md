@@ -56,7 +56,7 @@ the payroll.
 | Working days per month | 26 (so the hourly rate = base ÷ 208) | spec v1 |
 | Overtime, daytime | 150 % | Labour Law |
 | Overtime, at night | 200 % | Labour Law |
-| Night work 22:00–05:00 | 200 % (**to confirm**, D-P1) | R§11 |
+| Night work 22:00–05:00 (not overtime) | 130 % | Prakas No. 80 (1999); decided 2026-10-07 (D-P1) |
 | Work on the weekly rest day | 200 % | R§11 |
 | Grace before «late» / «left early» counts | 10 min | product rule |
 | Attendance bonus | no absence and at most 3 lates in the period | product rule |
@@ -137,7 +137,7 @@ works a short afternoon shift 14:00–17:50.
 
 | Bucket | Hours | Pay |
 |---|---|---|
-| night (22:14–05:00) | 6.8 | 6.8 × 1.2019 × 1.0 = **$8.17** premium |
+| night (22:14–05:00) | 6.8 | 6.8 × 1.2019 × 0.3 = **$2.45** premium |
 | regular (05:00–06:10) | 1.2 | in base |
 | attendance | late 14 min | counts toward the 3-late limit |
 
@@ -195,7 +195,7 @@ Mock history covers the last 14 days, so a month view before then has hours only
 
 | ID | Question | Recommendation |
 |---|---|---|
-| D-P1 | Night work premium: 200 % (research doc) or 130 % (some sources for non-overtime night work)? | **Confirm with an accountant**; it changes a night cashier's pay by ~$150 a month. One constant (`PAY_RULES.nightMult`) |
+| D-P1 | Night work premium: 200 % (research doc) or 130 % (some sources for non-overtime night work)? | **Decided 2026-10-07: 130 %** for normal night hours (Prakas No. 80, 1999); 200 % only for overtime at night. Still have an accountant confirm before the first real payroll. `PAY_RULES.nightMult` = 1.3 |
 | D-P2 | Are breaks (terminal locked) unpaid time? | **No** for now: the lock is short and the cashier stays at the till. Revisit if locks over 30 min become common |
 | D-P3 | Deduct cash shortages from pay? | **Only after** the manager's shift review says «cashier at fault» and the owner confirms per case. Until then: shown, not deducted |
 | D-P4 | NSSF and salary tax | Build when a real payroll is run; amounts are $0.00 placeholders today |
@@ -215,4 +215,5 @@ Mock history covers the last 14 days, so a month view before then has hours only
 | Payslip from real numbers, shortage as a note | Done |
 | Paid periods show the paid amount and flag recalculation | Done |
 | Cashier own-hours view (§7.3) | Not built |
-| D-P1 – D-P7 | Open |
+| D-P1 | Decided 2026-10-07: 130 % (code updated) |
+| D-P2 – D-P7 | Open |

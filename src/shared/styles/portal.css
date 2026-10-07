@@ -381,6 +381,7 @@ html.dark aside#portalSidebar {
 .sb-view-dot.view-cashier { background: #d4d4d4; }
 .sb-view-dot.view-manager { background: #34d399; }
 .sb-view-dot.view-admin   { background: #34d399; }
+.sb-view-dot.view-control { background: #34d399; }
 #portalSidebar .sb-view { color: var(--sb-muted); font-weight: 500; }
 .sb-menu .sb-check { color: var(--sb-accent); }
 

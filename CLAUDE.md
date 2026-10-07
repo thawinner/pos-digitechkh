@@ -14,7 +14,7 @@ python3 -m http.server 8000 --directory src   # then open localhost:8000 (login 
 
 Login: email or phone + password (`verifyLogin()` in `data.js`). Demo accounts: phone/email/password per person in
 `STAFF_SEED` (e.g. 012 345 678 · makara@digitechkh.com · makara2026; owner 012 999 000 · chantha2026). The 6-digit PIN (`POS_PIN_LEN` in `ui-components.js`)
-is only for manager approvals and unlocking the till. Demo PINs: ចន្ទ មករា 111111 · សុខ ដារ៉ា 222222 · លី សុភា 333333 · ពេជ្រ សុវណ្ណារី 444444 · គឹម វិសាល 555555 · ឈឹម រតនា 666666
+is for manager approvals, unlocking the till and logging in **on a registered till device** (see Many shops below). Demo PINs: ចន្ទ មករា 111111 · សុខ ដារ៉ា 222222 · លី សុភា 333333 · ពេជ្រ សុវណ្ណារី 444444 · គឹម វិសាល 555555 · ឈឹម រតនា 666666
 (cashiers) · សុខ វណ្ណា 246810 · ម៉ៅ ស្រីនាង 135791 · នួន សុខលី 864201 (managers) · ហេង ចាន់ថា 999999 (owner).
 Default roster: morning CAS-01 + CAS-05, afternoon CAS-02 + CAS-04, night CAS-03 + CAS-06 (both off Tuesday, so a
 manager covers that night).
@@ -25,6 +25,33 @@ Deploy: Vercel only; `vercel.json` publishes `src/` as the site root. Never move
 Verification is visual: open the page in a browser, or drive headless Chrome over the DevTools protocol. Serve over
 HTTP; `file://` storage is unreliable.
 
+Many shops (SaaS, decided 2026-10-07): one account per person, linked to shops by membership (`SHOPS`,
+`membershipsOf()`, `EXTRA_MEMBERSHIPS` in `data.js`; the owner also owns a second demo shop «កាហ្វេ ចាន់ថា», which
+reuses the same demo data). A password login with more than one membership shows «ជ្រើសហាង»; the account menu offers
+«ប្តូរហាង» (`index.html?pick=1`). The session carries `shopId`; `CURRENT_SHOP_ID` copies that shop into `MERCHANT`.
+Till devices: the owner registers a computer as a register in settings → «ឧបករណ៍បញ្ជរ» (`registerThisDevice()`,
+`pos_devices` + `pos_device`); only a registered device offers PIN login (opens on the PIN pad, PIN searched within its
+shop via `verifyPinLogin()`); other devices use email/phone + password. The demo seeds this browser as POS-01; the demo
+panel on the login page toggles it.
+
+Super Admin (DIGITECHKH's own console, `control/*`, body `controlPortal`): demo login admin@digitechkh.com · control2026
+(`CONTROL_ACCOUNTS` in `data.js`, no shop membership, can open only `control/*`). Pages: dashboard, companies (+ view,
+create), billing, plans, audit. Data in `control-data.js` (`pos_ctl_*`): plans with limits, subscribing shops, payments,
+support sessions, its own log. It never shows a shop's sales, costs or staff, only usage counts. Subscription status
+(`subscriptionStatus()` in `data.js`: active · trial · expiring · overdue (7-day grace) · expired · suspended) is mirrored to
+`pos_ctl_status`; a suspended or expired shop cannot log in (password, PIN, shop picker), and the owner gets a
+notification 7 days before the end. Support access needs a reason, lasts 30 minutes and appears in the owner's audit log.
+The console brands itself DIGITECHKH (the vendor), the one place where that name is not «អភិវឌ្ឍដោយ».
+First-login setup (`admin/setup/setup.html`): until `shopSetup(shopId).done`, `guardPage` sends the owner's admin pages
+there (unless «ធ្វើពេលក្រោយ» in this tab; the dashboard then shows a reminder). Steps: shop (name, KHQR name, branch,
+phone, VAT TIN → `saveShopProfile`, which overrides `SHOPS`/`MERCHANT`) · payments (rate, bank, Bakong ID) · registers
+(capped by `shopLimits()`) and opening hours · done with next steps. SHOP-01 counts as set up; SHOP-02 starts unset.
+Plan limits reach the shop through `pos_ctl_status` (`shopLimits`); registering a till or adding / reactivating staff
+beyond the plan is refused (`staffLimitReached()` in `staff-actions.js`).
+Earlier-shift returns (D3): the cashier types the exact receipt number (`findSaleByReceipt`, no browsing), within
+`RETURN_WINDOW_DAYS`; a manager always approves. Each return stores the `shiftId` that paid it, and `summarizeShift`
+counts refunds in that shift's drawer, not the sale's.
+
 Branding: DIGITECHKH is the dev team, not the shop. Staff screens show the shop from `MERCHANT` (`nameKh`, `branch`,
 `logo`; demo shop = «DIGITECHKH» with the team logo; Latin `name` only for KHQR). Static markup uses `.shop-name` / `.shop-branch` /
 `img.shop-logo`, filled by `portal.js`. DIGITECHKH appears only as «អភិវឌ្ឍដោយ DIGITECHKH» (login footer, splash, payslip).
@@ -34,13 +61,14 @@ Page titles start with «ប្រព័ន្ធគិតលុយ - ».
 
 ```
 src/
-├── index.html                      login: top bar (brand + theme), one card with illustration + email-or-phone / password form (session in localStorage `pos_session`)
+├── index.html                      login: top bar (brand + theme), one card with illustration + email-or-phone / password form, PIN pad on a registered till, shop picker (session in localStorage `pos_session`)
 ├── cashier/terminal/pos-terminal   sell, hold, discount override, Riel change, in-terminal KHQR, safe drop, lock
 ├── cashier/display/customer-display  customer-facing screen (CFD), opened from the terminal header; read-only mirror of `pos_cfd`
-├── cashier/receipts/receipts       shift receipts, void / return requests (manager PIN on the spot or queued)
+├── cashier/receipts/receipts       shift receipts, void / return requests (manager PIN on the spot or queued), return from an earlier shift by exact receipt number
 ├── cashier/shift/{open,close}-shift  float count + manager PIN · blind close with one recount + Z-report
 ├── manager/{dashboard,approvals,shifts,roster,cash,stock,stock-count,stock-history,exceptions,reports,settings}/…  (view-request, view-shift, create-movement, create-stock-in, create-adjustment, create-count)
-├── admin/{dashboard,reports,staff,products,settings,audit,stock}/…   owner: profit, stock value, shrinkage, stock-in cost, staff, prices, rules, audit log (view-stock-in, view-staff)
+├── admin/{setup,dashboard,reports,staff,products,settings,audit,stock}/…   owner: first-login setup wizard, profit, stock value, shrinkage, stock-in cost, staff, prices, rules, audit log (view-stock-in, view-staff)
+├── control/{dashboard,companies,billing,plans,audit}/…   Super Admin (DIGITECHKH): subscribing shops, payments, plans (view-company, create-company)
 └── shared/{scripts,styles,assets}  assets/avatars/<personId>.svg = profile images
 ```
 
@@ -62,7 +90,7 @@ src/
   (`ROLE_VIEW`): owner ⇄ manager, manager ⇄ cashier. The sidebar is never collapsible.
   `data-active` picks the highlighted nav item. Change nav in `PORTAL_CONFIGS`, never in pages.
 - Script order: `ui-components.js` → `data.js` → (`manager-data.js`, manager + owner pages) → (`admin-data.js`, owner
-  pages only) → `portal.js` → (`echarts.min.js` from cdnjs + `charts.js`, chart pages) → (`settings-page.js`, both
+  pages only) → (`control-data.js`, Super Admin pages only, never with manager/admin data) → `portal.js` → (`echarts.min.js` from cdnjs + `charts.js`, chart pages) → (`settings-page.js`, both
   settings pages) → (`staff-actions.js`, staff list + view-staff) → inline script.
 - Charts: always ECharts through `posChart(el, option)` in `charts.js` (owner override of the eBMS «no ECharts on
   dashboards» rule). Steppers: always `bmsStepper()` with `variant: 'icon'`, `tone: 'accent'`, `doneTone: 'accent'` (round icons;
@@ -115,7 +143,7 @@ src/
   `ADMINS` are active only. Use `loadStaff()` for a fresh list after an edit on the same page. Catalogue edits
   (`pos_catalog`: price, active) apply at load; `sellableProducts()` hides paused products.
 - localStorage keys (all `pos_*`): `session`, `settings`, `roster`, `shifts`, `shift_sales`, `held_sales`, `approvals`,
-  `cash_movements`, `events`, `terminal_lock`, `pins`, `passwords`, `login_guard`, `last_login`, `stock_opening`, `stock_moves`, `stock_counts`, `stock_costs`, `overlay`, `staff`, `catalog`, `costs`, `admin_log`, seeds. sessionStorage: `pos_cart`, `pos_pending_khqr`.
+  `cash_movements`, `events`, `terminal_lock`, `pins`, `passwords`, `login_guard`, `last_login`, `last_shop`, `devices`, `device`, `ctl_*` (Super Admin), `stock_opening`, `stock_moves`, `stock_counts`, `stock_costs`, `overlay`, `staff`, `catalog`, `costs`, `admin_log`, seeds. sessionStorage: `pos_cart`, `pos_pending_khqr`.
   A `storage` event re-renders other tabs (`window.onStoreChanged`).
 - **Shift model** (see `docs/spec/02-manager-pos.md` §11): shift template (time window) → staff default shift →
   roster per date (covers marked `cover`; default templates morning / afternoon / night, the night one overnight) → drawer shift (one cashier, one register, one drawer: open → closed →

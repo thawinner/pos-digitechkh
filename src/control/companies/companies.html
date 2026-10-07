@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគិតលុយ - ហាងដែលជាវ</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { blue: { 50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 400: '#34d399', 500: '#059669', 600: '#047857', 700: '#065f46', 800: '#064e3b', 900: '#053d30', 950: '#022c22' }, slate: { 50: '#fafafa', 100: '#f4f4f4', 200: '#e7e7e7', 300: '#d4d4d4', 400: '#a2a2a2', 500: '#737373', 600: '#545454', 700: '#404040', 800: '#292929', 900: '#171717', 950: '#070707' }, primary: "#047857", 'primary-dark': "#065f46", accent: "#34d399" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+    <style>
+        /* ផ្ទាំងតួលេខ៖ 4 ជួរលើកុំព្យូទ័រ 2 ជួរលើទូរស័ព្ទ (custom.css បង្ខំ .grid-cols-2 ទៅ 1 ជួរ ដូច្នេះប្រើថ្នាក់ផ្ទាល់) */
+        .ctl-kpis { display: grid; gap: 1rem; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        @media (max-width: 1023px) { .ctl-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        .ctl-meter { height: 6px; border-radius: 9999px; background: #f4f4f4; overflow: hidden; }
+        html.dark .ctl-meter { background: #292929; }
+    </style>
+</head>
+<body id="controlPortal" data-role-root="../.." data-active="companies" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="ហាងដែលជាវ"
+             data-subtitle="កញ្ចប់ ការប្រើប្រាស់ និងថ្ងៃផុតកំណត់របស់ហាងនីមួយៗ"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <div class="w-full space-y-5">
+                <div class="bg-white rounded-2xl p-2 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-2">
+                    <div id="tabs" class="flex flex-wrap gap-1"></div>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <label class="relative flex-1 sm:w-[240px]">
+                            <i class="fas fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input id="search" oninput="renderList()" type="text" placeholder="ស្វែងរកហាង ម្ចាស់ ឬលេខទូរស័ព្ទ"
+                                class="sm-td w-full h-9 pl-8 pr-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500 focus:outline-none">
+                        </label>
+                        <button onclick="location.href='create-company.html'" type="button" class="sm-badge h-9 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2 whitespace-nowrap"><i class="fas fa-plus"></i> បន្ថែមហាង</button>
+                    </div>
+                </div>
+                <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div class="max-md:hidden overflow-x-auto"><table class="w-full">
+                        <thead><tr class="border-b border-slate-100 bg-slate-50/60">
+                            <th class="sm-th py-2.5 px-5 text-left text-slate-500">ហាង</th>
+                            <th class="sm-th py-2.5 px-3 text-left text-slate-500">ម្ចាស់ហាង</th>
+                            <th class="sm-th py-2.5 px-3 text-left text-slate-500">កញ្ចប់</th>
+                            <th class="sm-th py-2.5 px-3 text-left text-slate-500">បញ្ជរ · បុគ្គលិក</th>
+                            <th class="sm-th py-2.5 px-3 text-left text-slate-500">ប្រើបានដល់</th>
+                            <th class="sm-th py-2.5 px-3 text-left text-slate-500">ស្ថានភាព</th>
+                            <th class="sm-th py-2.5 px-5 w-16"></th>
+                        </tr></thead>
+                        <tbody id="rows" class="divide-y divide-slate-100"></tbody>
+                    </table></div>
+                    <div id="cards" class="md:hidden divide-y divide-slate-100"></div>
+                    <div id="empty" class="hidden"></div>
+                    <div data-pager="companies" id="pager"></div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/control-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        /* ហាងដែលជាវ (P8-01 · P8-06)៖ ផ្ទាំង · ស្វែងរក · ⋮ សកម្មភាព · ការប្រើប្រាស់ធៀបដែនកំណត់កញ្ចប់ */
+        const TABS = [
+            { id: 'all', label: 'ទាំងអស់', test: () => true },
+            { id: 'active', label: 'កំពុងប្រើ', test: c => !c.trial && ['active', 'expiring', 'overdue'].includes(c.status) },
+            { id: 'trial', label: 'សាកល្បង', test: c => c.status === 'trial' },
+            { id: 'attention', label: 'ត្រូវតាមដាន', test: needsAttention },
+            { id: 'blocked', label: 'ផ្អាក ឬផុតកំណត់', test: c => c.status === 'expired' || c.status === 'suspended' }
+        ];
+        let tab = 'all';
+        let listReady = false;
+
+        function setTab(id) { tab = id; renderAll(); }
+
+        function renderTabs() {
+            const all = ctlCompanies();
+            document.getElementById('tabs').innerHTML = TABS.map(t => `<button type="button" onclick="setTab('${t.id}')"
+                class="sm-badge h-9 px-3.5 rounded-xl transition inline-flex items-center gap-2 ${tab === t.id ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'}">${t.label}
+                <span class="text-[12px] sm-figure ${tab === t.id ? 'text-blue-100' : 'text-slate-400'}">${all.filter(t.test).length}</span></button>`).join('');
+        }
+
+        function usageCell(c) {
+            return usageLines(c).filter(l => l.key !== 'branches').map(l => `<span class="block sm-td sm-figure ${l.used > l.limit ? 'text-amber-700 font-semibold' : 'text-slate-700'}">${l.used}/${l.limit} <span class="sm-td-sub font-normal text-slate-400">${l.label}</span></span>`).join('');
+        }
+
+        function visible() {
+            const q = document.getElementById('search').value.trim().toLowerCase();
+            const qd = normPhone(q);
+            const t = TABS.find(x => x.id === tab);
+            return ctlCompanies().filter(t.test)
+                .filter(c => !q || [c.nameKh, c.ownerName, c.city, c.id, c.ownerEmail].some(v => String(v || '').toLowerCase().includes(q)) || (qd.length >= 3 && normPhone(c.ownerPhone).includes(qd)))
+                .sort((a, b) => (needsAttention(b) - needsAttention(a)) || a.endsOn.localeCompare(b.endsOn));
+        }
+
+        function renderList() {
+            if (listReady) saveListState('ctl-companies', { tab, q: document.getElementById('search').value });
+            const all = visible();
+            const pg = pagerSlice('companies', all, { size: 25, render: 'renderList', sig: tab + '|' + document.getElementById('search').value });
+            const list = pg.rows;
+            const empty = document.getElementById('empty');
+            empty.classList.toggle('hidden', !!all.length);
+            empty.innerHTML = all.length ? '' : emptyState('fa-store', 'រកមិនឃើញហាង', 'សូមសាកល្បងផ្ទាំង ឬពាក្យស្វែងរកផ្សេង');
+            const open = id => `onclick="if (!event.target.closest('button, a')) openCompany('${id}')"`;
+            document.getElementById('rows').innerHTML = list.map(c => `<tr data-row-id="${c.id}" ${open(c.id)} class="cursor-pointer hover:bg-slate-50 transition">
+                    <td class="py-2.5 px-5"><p class="sm-td-strong text-slate-800 truncate max-w-[260px]">${escapeText(c.nameKh)}</p><p class="sm-td-sub text-slate-400">${escapeText(c.city)} · ${escapeText(c.branch)}</p></td>
+                    <td class="py-2.5 px-3 sm-td"><p class="text-slate-700">${escapeText(c.ownerName)}</p><p class="sm-td-sub text-slate-400 sm-figure">${escapeText(c.ownerPhone)}</p></td>
+                    <td class="py-2.5 px-3 sm-td"><p class="text-slate-700">${planById(c.plan).name}</p><p class="sm-td-sub text-slate-400 sm-figure">${fmtUSD(monthlyValue(c))}/ខែ${c.cycle === 'year' ? ' · ឆ្នាំ' : ''}</p></td>
+                    <td class="py-2.5 px-3">${usageCell(c)}</td>
+                    <td class="py-2.5 px-3 sm-td"><p class="text-slate-700 sm-figure">${fmtDate(c.endsOn)}</p><p class="sm-td-sub ${c.status === 'overdue' || c.status === 'expiring' ? 'text-amber-700' : 'text-slate-400'}">${attentionText(c)}</p></td>
+                    <td class="py-2.5 px-3">${subChip(c)}</td>
+                    <td class="py-2.5 px-5 text-right">${dotsBtn('m-' + c.id)}${companyMenu(c, 'm-' + c.id, 'renderAll')}</td>
+                </tr>`).join('');
+            document.getElementById('cards').innerHTML = list.map(c => `<div data-row-id="${c.id}" ${open(c.id)} class="p-4 flex items-start gap-3 cursor-pointer">
+                    <div class="min-w-0 flex-1">
+                        <p class="sm-value text-slate-800 truncate">${escapeText(c.nameKh)}</p>
+                        <p class="sm-td-sub text-slate-500">${planById(c.plan).name} · ${escapeText(c.ownerName)} · <span class="sm-figure">${escapeText(c.ownerPhone)}</span></p>
+                        <p class="sm-td-sub ${c.status === 'overdue' || c.status === 'expiring' ? 'text-amber-700' : 'text-slate-500'} mt-0.5">${attentionText(c)}</p>
+                        <div class="mt-1.5">${subChip(c)}</div>
+                    </div>
+                    ${dotsBtn('c-' + c.id)}${companyMenu(c, 'c-' + c.id, 'renderAll')}
+                </div>`).join('');
+            document.getElementById('pager').innerHTML = pg.html;
+        }
+
+        function renderAll() {
+            renderTabs();
+            renderList();
+            if (typeof updatePortalBadges === 'function') updatePortalBadges();
+        }
+
+        function init() {
+            const saved = loadListState('ctl-companies') || {};
+            const urlTab = new URLSearchParams(location.search).get('tab');
+            if (TABS.some(t => t.id === urlTab)) tab = urlTab;
+            else if (TABS.some(t => t.id === saved.tab)) tab = saved.tab;
+            if (saved.q && !urlTab) document.getElementById('search').value = saved.q;
+            listReady = true;
+            renderAll();
+            flashViewedRow();
+        }
+
+        window.onStoreChanged = renderAll;
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

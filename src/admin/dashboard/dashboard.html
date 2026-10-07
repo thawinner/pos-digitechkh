@@ -34,6 +34,7 @@
         <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
 
             <div class="w-full space-y-5">
+                <div id="setupBanner" class="hidden"></div>
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div id="periodTabs" class="inline-flex bg-white border border-slate-200/80 rounded-xl p-1 shadow-sm"></div>
                     <p id="periodNote" class="sm-td-sub text-slate-500"></p>
@@ -381,7 +382,22 @@
 
         window.onStoreChanged = () => location.reload();
         window.onThemeChanged = renderAll;
-        document.addEventListener('DOMContentLoaded', renderAll);
+        /* ហាងថ្មីដែលម្ចាស់ជ្រើស «ធ្វើពេលក្រោយ» នៅការរៀបចំហាង៖ រំលឹកនៅទីនេះរហូតដល់រួចរាល់ */
+        function renderSetupBanner() {
+            const box = document.getElementById('setupBanner');
+            const st = shopSetup(CURRENT_SHOP_ID);
+            box.classList.toggle('hidden', !!st.done);
+            if (st.done) return;
+            const stepNo = (st.draft && st.draft.step) || 1;
+            box.innerHTML = `<div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm px-5 py-4 flex flex-wrap items-center gap-4">
+                <span class="w-10 h-10 rounded-xl border border-slate-200 text-slate-500 flex items-center justify-center flex-shrink-0"><i class="fas fa-store"></i></span>
+                <div class="min-w-0 flex-1"><p class="sm-card-title text-slate-800">ការរៀបចំហាងមិនទាន់រួច</p>
+                    <p class="sm-card-sub text-slate-500">នៅសល់ ${4 - stepNo} ជំហាន · ឈ្មោះលើវិក្កយបត្រ គណនី KHQR និងបញ្ជរ</p></div>
+                <a href="../setup/setup.html" class="sm-badge h-10 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2 whitespace-nowrap">បន្តរៀបចំ <i class="fas fa-arrow-right text-[12px]"></i></a>
+            </div>`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => { renderSetupBanner(); renderAll(); });
     </script>
 </body>
 </html>

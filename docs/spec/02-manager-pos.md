@@ -426,7 +426,7 @@ Rules:
 - **Default staffing:** one cashier per shift: 8 h × 6 days = 48 h/week, exactly the legal limit. On each cashier's day off that shift is empty. The
   roster shows it in amber («ត្រូវរកអ្នកជំនួស») so the manager assigns a cover.
 - **Night shift** crosses midnight. It belongs to the date it starts on, and the business day rolls over at the first
-  template's start (06:00). Settings shows its night hours (22:00–05:00, paid at 200% under Cambodian labour law).
+  template's start (06:00). Settings shows its night hours (22:00–05:00, paid at 130% under Cambodian labour law; overtime at night 200%).
 
 ## 12. Build status (2026-10-04)
 
@@ -442,4 +442,4 @@ Everything in §§1–8 is built, plus these additions and deviations:
 | Change modes | Two: «ដុល្លារ + រៀល» and «រៀលទាំងអស់». An all-USD mode was dropped because coins don't circulate |
 | Charts | ECharts everywhere via `posChart()` (`shared/scripts/charts.js`) |
 | KHQR | In-terminal overlay with expiry and a stored QR hash; payment confirmation is manual (no Bakong API) |
-| Decisions taken | D1 blind count yes · D2 no separate card tender · D3 not built (no cross-shift receipt lookup yet) · D4 nearest 100 ៛ · D5 «អ្នកគ្រប់គ្រង» · D6 manager reopens with reason · D7 shifts are a setting, default 2 |
+| Decisions taken | D1 blind count yes · D2 no separate card tender · D3 built 2026-10-07 (exact receipt number, one sale only, manager approves, refund from the current drawer, 7 days) · D4 nearest 100 ៛ · D5 «អ្នកគ្រប់គ្រង» · D6 manager reopens with reason · D7 shifts are a setting, default 2 |

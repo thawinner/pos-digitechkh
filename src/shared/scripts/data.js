@@ -209,6 +209,100 @@ const MERCHANT = {
     city: 'PHNOM PENH'
 };
 
+/* ===== ហាងច្រើនក្នុងប្រព័ន្ធតែមួយ (លក់ឱ្យហាងច្រើន) =====
+   ប្រព័ន្ធពិត៖ pos_control រក្សាមនុស្ស (គណនីមួយក្នុងម្នាក់ · អ៊ីមែល និងលេខទូរស័ព្ទមិនជាន់គ្នាទូទាំងប្រព័ន្ធ)
+   និងសមាជិកភាព (មនុស្ស → ហាង → តួនាទី)។ ម្នាក់ធ្វើការច្រើនហាង = គណនីតែមួយ ហើយជ្រើសហាងក្រោយចូល។
+   គំរូនេះមានទិន្នន័យតែមួយឈុត៖ ហាងទីពីរប្រើវេន ការលក់ និងស្តុកដូចហាងទីមួយ (ខុសតែឈ្មោះ និងសាខា)
+   MERCHANT ប្តូរទៅជាហាងដែលកំពុងប្រើ (មើល CURRENT_SHOP_ID ខាងក្រោម) */
+const SHOPS = [
+    Object.assign({ id: 'SHOP-01' }, MERCHANT),
+    { id: 'SHOP-02', nameKh: 'កាហ្វេ ចាន់ថា', name: 'CHANTHA COFFEE', logo: MERCHANT.logo, branch: 'សាខាទួលគោក ភ្នំពេញ', tin: 'K001-907654321', phone: '023 777 666', account: 'chanthacoffee@aclb', city: 'PHNOM PENH' }
+];
+
+function shopById(id) {
+    return SHOPS.find(s => s.id === id) || null;
+}
+
+/* ព័ត៌មានហាងដែលម្ចាស់ហាងបញ្ចូលនៅការរៀបចំហាង (pos_shop_profile) ឈ្នះលើតម្លៃគំរូ */
+(function applyShopProfiles() {
+    const prof = posRead('pos_shop_profile', {}) || {};
+    SHOPS.forEach(sh => Object.assign(sh, prof[sh.id] || {}));
+})();
+
+function saveShopProfile(shopId, patch) {
+    const all = posRead('pos_shop_profile', {}) || {};
+    all[shopId] = Object.assign({}, all[shopId] || {}, patch);
+    posWrite('pos_shop_profile', all);
+}
+
+/* ===== ការរៀបចំហាងលើកដំបូង (admin/setup/setup.html) =====
+   ម្ចាស់ហាងនៃហាងថ្មីចូលលើកដំបូង → ជំនួយការរៀបចំ 3 ជំហាន (ហាង · ទទួលប្រាក់ · បញ្ជរ និងវេន)
+   ទំព័រម្ចាស់ហាងផ្សេងទៀតបញ្ជូនមកទីនេះ រហូតដល់រួចរាល់ ឬជ្រើស «ធ្វើពេលក្រោយ» (ចងចាំក្នុងផ្ទាំងកម្មវិធីរុករកនេះ)
+   ហាងចាស់ SHOP-01 រៀបចំរួចហើយ · SHOP-02 ជាហាងសាកល្បងថ្មី */
+const SETUP_SEED = { 'SHOP-01': { done: true } };
+
+function shopSetup(shopId) {
+    return (posRead('pos_shop_setup', {}) || {})[shopId] || SETUP_SEED[shopId] || { done: false };
+}
+
+function saveShopSetup(shopId, patch) {
+    const all = posRead('pos_shop_setup', {}) || {};
+    all[shopId] = Object.assign({}, shopSetup(shopId), patch);
+    posWrite('pos_shop_setup', all);
+}
+
+function setupLater() {
+    try { return sessionStorage.getItem('pos_setup_later') === '1'; } catch (e) { return false; }
+}
+
+/* ===== ការជាវរបស់ហាង =====
+   DIGITECHKH គ្រប់គ្រងការជាវនៅច្រកអ្នកគ្រប់គ្រងប្រព័ន្ធ (control/* · control-data.js) ហើយសរសេរស្ថានភាពទៅ pos_ctl_status។
+   ទំព័រហាងអានតែស្ថានភាពហាងខ្លួនឯង៖ ផ្អាក ឬផុតកំណត់ = ចូលប្រើមិនបាន · ជិតផុតកំណត់ = ម្ចាស់ហាងឃើញការជូនដំណឹង
+   ហួសកំណត់បង់ = នៅប្រើបាន SUB_GRACE_DAYS ថ្ងៃទៀត មុនផុតកំណត់ (ប្រព័ន្ធពិត៖ ម៉ាស៊ីនមេបដិសេធ) */
+const SUB_GRACE_DAYS = 7;
+const SUB_WARN_DAYS = 7;
+
+function addDaysIso(n, from) {
+    const d = from ? new Date(from + 'T12:00') : new Date();
+    d.setDate(d.getDate() + n);
+    return isoDate(d);
+}
+
+function daysUntil(dateStr) {
+    return Math.round((new Date(dateStr + 'T12:00') - new Date(isoDate(new Date()) + 'T12:00')) / 86400000);
+}
+
+/* limits = ដែនកំណត់កញ្ចប់ដែលហាងត្រូវដឹង (ច្រកអ្នកគ្រប់គ្រងប្រព័ន្ធសរសេរជាមួយស្ថានភាព) */
+const DEFAULT_SHOP_SUBS = {
+    'SHOP-01': { plan: 'standard', planName: 'ស្តង់ដារ', cycle: 'month', trial: false, endsOn: addDaysIso(23), suspended: false, limits: { registers: 3, staff: 15, branches: 1 } },
+    'SHOP-02': { plan: 'basic', planName: 'ចាប់ផ្តើម', cycle: 'month', trial: true, endsOn: addDaysIso(5), suspended: false, limits: { registers: 1, staff: 5, branches: 1 } }
+};
+
+function shopLimits(shopId) {
+    const sub = shopSubscription(shopId);
+    return (sub && sub.limits) || { registers: REGISTERS.length, staff: 99, branches: 1 };
+}
+
+function shopSubscription(shopId) {
+    return (posRead('pos_ctl_status', {}) || {})[shopId] || DEFAULT_SHOP_SUBS[shopId] || null;
+}
+
+/* active · trial · expiring (ជិតផុត) · overdue (ផុតហើយ តែក្នុងរយៈពេលអនុគ្រោះ) · expired · suspended */
+function subscriptionStatus(sub) {
+    if (!sub) return 'active';
+    if (sub.suspended) return 'suspended';
+    const left = daysUntil(sub.endsOn);
+    if (sub.trial) return left < 0 ? 'expired' : 'trial';
+    if (left < -SUB_GRACE_DAYS) return 'expired';
+    if (left < 0) return 'overdue';
+    return left <= SUB_WARN_DAYS ? 'expiring' : 'active';
+}
+
+function shopBlocked(shopId) {
+    const st = subscriptionStatus(shopSubscription(shopId));
+    return st === 'suspended' || st === 'expired';
+}
+
 /* បុគ្គលិក៖ តួនាទី 3 — ម្ចាស់ហាង (admin) · អ្នកគ្រប់គ្រង (manager) · អ្នកគិតលុយ (cashier)
    លេខសម្ងាត់សម្រាប់គំរូសាកល្បងប៉ុណ្ណោះ — ប្រព័ន្ធពិតរក្សាទុកជាសញ្ញាកូដនៅម៉ាស៊ីនមេ។
    ម្ចាស់ហាងបន្ថែមបុគ្គលិក ប្តូរតួនាទី ឬផ្អាកគណនីនៅទំព័រ «បុគ្គលិក» (រក្សាក្នុង pos_staff)។
@@ -227,6 +321,16 @@ const STAFF_SEED = [
     { id: 'ADM-01', name: 'ហេង ចាន់ថា', initials: 'ហច', pin: '999999', phone: '012 999 000', email: 'chantha@digitechkh.com', password: 'chantha2026', role: 'admin' }
 ];
 const STAFF_KEY = 'pos_staff';
+
+/* អ្នកគ្រប់គ្រងប្រព័ន្ធ (ក្រុម DIGITECHKH)៖ មិនមែនបុគ្គលិកហាង គ្មានសមាជិកភាពហាង · ចូលទៅច្រក control/* តែប៉ុណ្ណោះ
+   មិនឃើញការលក់ ថ្លៃដើម ឬបុគ្គលិករបស់ហាង (មើល control-data.js) */
+const CONTROL_ACCOUNTS = [
+    { id: 'SA-01', name: 'ស៊ាន វិចិត្រ', initials: 'សវ', phone: '010 888 777', email: 'admin@digitechkh.com', password: 'control2026' }
+];
+
+function isControlId(id) {
+    return CONTROL_ACCOUNTS.some(a => a.id === id);
+}
 
 function staffStore() {
     return posRead(STAFF_KEY, { added: [], changes: {} });
@@ -257,12 +361,26 @@ const ROLE_NAME = {
 };
 
 function personById(id) {
-    return ALL_STAFF.find(p => p.id === id) || null;
+    return ALL_STAFF.find(p => p.id === id) || CONTROL_ACCOUNTS.find(a => a.id === id) || null;
 }
 
 function personName(id) {
     const p = personById(id);
     return p ? p.name : '—';
+}
+
+/* សមាជិកភាព៖ បុគ្គលិកទាំងអស់ជាសមាជិក SHOP-01 តាមតួនាទីរបស់ខ្លួន · ម្ចាស់ហាងក៏ជាម្ចាស់ SHOP-02 ដែរ
+   (ម្ចាស់អាជីវកម្មពីរ = គណនីតែមួយ ជ្រើសហាងក្រោយចូល ឬប្តូរហាងពីរបារចំហៀង) */
+const EXTRA_MEMBERSHIPS = [{ personId: 'ADM-01', shopId: 'SHOP-02', role: 'admin' }];
+
+function membershipsOf(personId) {
+    const p = personById(personId);
+    if (!p || !p.active || isControlId(personId)) return [];
+    return [{ personId, shopId: 'SHOP-01', role: p.role }].concat(EXTRA_MEMBERSHIPS.filter(m => m.personId === personId));
+}
+
+function isMemberOf(personId, shopId) {
+    return membershipsOf(personId).some(m => m.shopId === shopId);
 }
 
 /* រូបប្រវត្តិរូប — shared/assets/avatars/<លេខសម្គាល់>.svg (ឬ .jpg ពេលមានរូបថតពិត)
@@ -319,15 +437,17 @@ function effectivePassword(id) {
 function findAccount(identifier) {
     const q = String(identifier || '').trim();
     if (!q) return null;
-    if (q.includes('@')) return ALL_STAFF.find(p => (p.email || '').toLowerCase() === q.toLowerCase()) || null;
+    const all = ALL_STAFF.concat(CONTROL_ACCOUNTS);
+    if (q.includes('@')) return all.find(p => (p.email || '').toLowerCase() === q.toLowerCase()) || null;
     const d = normPhone(q);
-    return d.length >= 9 ? ALL_STAFF.find(p => p.phone && normPhone(p.phone) === d) || null : null;
+    return d.length >= 9 ? all.find(p => p.phone && normPhone(p.phone) === d) || null : null;
 }
 
 /* ត្រឡប់ { person } ពេលត្រឹមត្រូវ · { error: 'bad' } មិនប្រាប់ថាខុសត្រង់ណា · { error: 'inactive' } គណនីផ្អាក */
 function verifyLogin(identifier, password) {
     const p = findAccount(identifier);
     if (!p || !effectivePassword(p.id) || effectivePassword(p.id) !== String(password)) return { error: 'bad' };
+    if (isControlId(p.id)) return { control: p };
     if (!p.active) return { error: 'inactive', person: p };
     return { person: p };
 }
@@ -407,7 +527,7 @@ const POS_SETTINGS_DEFAULTS = {
     /* វេនលំនាំដើមរបស់បុគ្គលិកម្នាក់ៗ — template '' = មិនមានវេនប្រចាំ (ឧ. អ្នកគ្រប់គ្រង)
        dayOff៖ 0 = អាទិត្យ … 6 = សៅរ៍ · ម្នាក់មួយវេន 8 ម៉ោង × 6 ថ្ងៃ = 48 ម៉ោង/សប្តាហ៍ (ត្រឹមកំណត់ច្បាប់)
        វេនព្រឹក និងរសៀលមានអ្នកគិតលុយពីរនាក់ ថ្ងៃឈប់ខុសគ្នា · វេនយប់ទាំងពីរនាក់ឈប់ថ្ងៃអង្គារ ដូច្នេះអ្នកគ្រប់គ្រងជំនួស
-       វេនយប់ (22:00–05:00 ជាម៉ោងយប់) ត្រូវបង់ប្រាក់ឈ្នួល 200% តាមច្បាប់ការងារ — ស្រាវជ្រាវ §11 */
+       វេនយប់ (22:00–05:00 ជាម៉ោងយប់) ត្រូវបង់ប្រាក់ឈ្នួល 130% · ម៉ោងបន្ថែមពេលយប់ 200% (ប្រកាសលេខ 80 ឆ្នាំ 1999) */
     staffDefaults: {
         'CAS-01': { template: 'A', dayOff: 0 },
         'CAS-02': { template: 'B', dayOff: 1 },
@@ -1052,6 +1172,23 @@ function findLiveSale(id) {
     return liveSales().find(s => s.id === id) || null;
 }
 
+/* ===== ប្រគល់ទំនិញពីវេនមុន (សម្រេច D3) =====
+   អ្នកគិតលុយមិនអាចរុករកវេនមុនបានទេ៖ ត្រូវវាយលេខវិក្កយបត្រពេញលេញ ហើយប្រព័ន្ធផ្តល់តែវិក្កយបត្រមួយនោះ
+   អ្នកគ្រប់គ្រងត្រូវអនុម័តជានិច្ច · ប្រាក់សងចេញពីថតនៃវេនបច្ចុប្បន្ន · ក្នុងរយៈ RETURN_WINDOW_DAYS ថ្ងៃ
+   ប្រព័ន្ធពិត៖ ម៉ាស៊ីនមេស្វែងរកតាមលេខពិតប្រាកដ (គំរូនេះរកបានតែការលក់ដែលកត់ត្រាលើកម្មវិធីរុករកនេះ) */
+const RETURN_WINDOW_DAYS = 7;
+
+function normReceiptNo(q) {
+    let v = String(q || '').toUpperCase().replace(/\s+/g, '');
+    if (v && !v.startsWith('RCP-')) v = 'RCP-' + v;
+    return v;
+}
+
+function findSaleByReceipt(q) {
+    const no = normReceiptNo(q);
+    return no.length >= 14 ? findLiveSale(no) : null;
+}
+
 /* RCP-01-1003-0012 = បញ្ជរ 01 · ថ្ងៃទី 3 ខែ 10 · លេខរៀងប្រចាំថ្ងៃ (លំដាប់ជាប់គ្នា — ស្រាវជ្រាវ §9) */
 function receiptPrefix(register, date) {
     return `RCP-${register.slice(-2)}-${pad2(date.getMonth() + 1)}${pad2(date.getDate())}-`;
@@ -1134,7 +1271,9 @@ function applyApprovalToSale(req, approverId, updateFn) {
         const returns = (sale.returns || []).concat([{
             id: req.id, lines: req.lines, amount: req.amount, method: req.method,
             amountKHR: req.method === 'khrCash' ? Math.round(toKHR(req.amount, sale.fxRate) / 100) * 100 : 0,
-            reason: req.reason, approvedBy: approverId, at, restock: req.restock !== false
+            reason: req.reason, approvedBy: approverId, at, restock: req.restock !== false,
+            // វេនដែលចេញប្រាក់សង (វេនបច្ចុប្បន្ន) · ប្រគល់ពីវេនមុន = មិនមែនវេននៃវិក្កយបត្រ
+            shiftId: req.shiftId || sale.shiftId, register: req.register || sale.register
         }]);
         update(req.saleId, { returns });
     }
@@ -1347,14 +1486,17 @@ function summarizeShift(shift, sales, movements) {
         acc.changeUSD += ch.usd;
         acc.changeKHR += ch.khr;
         acc.roundingKHR += ch.roundingKHR || 0;
-        (s.returns || []).forEach(r => {
-            acc.returnCount += 1;
-            acc.returnAmount += r.amount;
-            if (r.method === 'usdCash') acc.refundUSD += r.amount;
-            else if (r.method === 'khrCash') acc.refundKHR += r.amountKHR || 0;
-            else acc.refundKHQR += r.amount;
-        });
+        (s.returns || []).filter(r => !shift || (r.shiftId || s.shiftId) === shift.id).forEach(addReturn);
     });
+    // ប្រគល់ទំនិញពីវេនមុនដែលវេននេះចេញប្រាក់សង (ប្រាក់ចេញពីថតនេះ មិនមែនពីថតនៃវិក្កយបត្រ)
+    if (shift) liveSales().filter(x => x.shiftId !== shift.id).forEach(x => (x.returns || []).filter(r => r.shiftId === shift.id).forEach(addReturn));
+    function addReturn(r) {
+        acc.returnCount += 1;
+        acc.returnAmount += r.amount;
+        if (r.method === 'usdCash') acc.refundUSD += r.amount;
+        else if (r.method === 'khrCash') acc.refundKHR += r.amountKHR || 0;
+        else acc.refundKHQR += r.amount;
+    }
     (movements || []).forEach(m => {
         if (m.type === 'drop') {
             acc.dropUSD += m.usd;
@@ -2251,16 +2393,71 @@ function resetDemoData() {
 
 const SESSION_KEY = 'pos_session';
 
+/* វគ្គចូលប្រើ { userId, shopId, via: 'password'|'pin', deviceId, at } · ផុតពេលគណនីផ្អាក ឬលែងជាសមាជិកហាង */
 function posSession() {
     const s = posRead(SESSION_KEY, null);
     if (!s || !s.userId) return null;
-    const p = personById(s.userId);
-    return p && p.active ? s : null;
+    if (s.control) return isControlId(s.userId) ? s : null;
+    // ហាងត្រូវបានផ្អាក ឬការជាវផុតកំណត់ពេលកំពុងប្រើ → ចេញពីប្រព័ន្ធនៅទំព័របន្ទាប់
+    return isMemberOf(s.userId, s.shopId || 'SHOP-01') && !shopBlocked(s.shopId || 'SHOP-01') ? s : null;
 }
 
-function posLogin(userId) {
-    posWrite(SESSION_KEY, { userId, at: isoLocal(new Date()) });
+function posLoginControl(userId) {
+    posWrite(SESSION_KEY, { userId, control: true, via: 'password', at: isoLocal(new Date()) });
 }
+
+function posLogin(userId, shopId, via) {
+    const dev = thisDevice();
+    posWrite(SESSION_KEY, { userId, shopId: shopId || 'SHOP-01', via: via || 'password', deviceId: dev ? dev.id : null, at: isoLocal(new Date()) });
+    const last = posRead('pos_last_shop', {});
+    last[userId] = shopId || 'SHOP-01';
+    posWrite('pos_last_shop', last);
+}
+
+/* ===== ឧបករណ៍បញ្ជរដែលបានចុះឈ្មោះ =====
+   ម្ចាស់ហាងចុះឈ្មោះកុំព្យូទ័របញ្ជរម្តង (ការកំណត់ → ឧបករណ៍បញ្ជរ)។ ឧបករណ៍ចងចាំហាង និងបញ្ជររបស់ខ្លួន
+   ដូច្នេះអ្នកគិតលុយចូលដោយលេខកូដ PIN 6 ខ្ទង់តែប៉ុណ្ណោះ (PIN ត្រូវមិនជាន់គ្នាតែក្នុងហាងមួយ)។
+   ឧបករណ៍ដែលមិនបានចុះឈ្មោះ (ទូរស័ព្ទ ឬកុំព្យូទ័រផ្ទាល់ខ្លួន) ចូលបានតែដោយអ៊ីមែល ឬលេខទូរស័ព្ទ + ពាក្យសម្ងាត់។
+   ដកឧបករណ៍ចេញ (ឧ. បាត់) = ការចូលដោយ PIN លើឧបករណ៍នោះឈប់ភ្លាម។
+   ប្រព័ន្ធពិត៖ ម៉ាស៊ីនមេផ្តល់សោឧបករណ៍ · គំរូនេះ៖ pos_devices (បញ្ជី) + pos_device (ឧបករណ៍នេះ) */
+const DEVICES_KEY = 'pos_devices';
+const THIS_DEVICE_KEY = 'pos_device';
+
+function deviceList() {
+    return posRead(DEVICES_KEY, []);
+}
+
+function thisDevice() {
+    const id = posRead(THIS_DEVICE_KEY, null);
+    return id ? deviceList().find(d => d.id === id) || null : null;
+}
+
+/* បញ្ជរមួយ = ឧបករណ៍មួយ · ចុះឈ្មោះថ្មីលើបញ្ជរដដែល ជំនួសឧបករណ៍ចាស់ */
+function registerThisDevice(shopId, register, byId) {
+    const old = thisDevice();
+    const list = deviceList().filter(d => !(old && d.id === old.id) && !(d.shopId === shopId && d.register === register));
+    const dev = { id: newId('DEV'), shopId, register, at: isoLocal(new Date()), by: byId };
+    list.push(dev);
+    posWrite(DEVICES_KEY, list);
+    posWrite(THIS_DEVICE_KEY, dev.id);
+    return dev;
+}
+
+function removeDevice(id) {
+    posWrite(DEVICES_KEY, deviceList().filter(d => d.id !== id));
+}
+
+/* ចូលដោយ PIN លើឧបករណ៍ដែលបានចុះឈ្មោះ៖ រកតែក្នុងចំណោមសមាជិកហាងរបស់ឧបករណ៍ */
+function verifyPinLogin(pin, shopId) {
+    return ALL_STAFF.find(p => p.active && isMemberOf(p.id, shopId) && verifyPin(p.id, pin)) || null;
+}
+
+/* ឧបករណ៍គំរូ៖ កម្មវិធីរុករកនេះជាបញ្ជរ POS-01 នៃហាងទីមួយ (ម្ចាស់ហាងដកចេញបាននៅការកំណត់) */
+(function seedDevice() {
+    if (posRead(DEVICES_KEY, null) !== null) return;
+    posWrite(DEVICES_KEY, [{ id: 'DEV-01', shopId: 'SHOP-01', register: 'POS-01', at: isoLocal(new Date()), by: 'ADM-01' }]);
+    posWrite(THIS_DEVICE_KEY, 'DEV-01');
+})();
 
 function posLogout() {
     try { localStorage.removeItem(SESSION_KEY); } catch (e) { /* មិនអាចសម្អាត */ }
@@ -2516,6 +2713,10 @@ function suggestRegister(personId, dateStr, code) {
     const list = slot ? rosterFor(slot.date, slot.template.code) : [];
     const busy = busyRegisters().map(s => s.register);
     const free = r => r && !busy.includes(r);
+    // ឧបករណ៍ដែលបានចុះឈ្មោះ = បញ្ជរពិតដែលអ្នកចូលប្រើកំពុងឈរ (សម្រាប់តែខ្លួនឯង ពេលបើកវេនឥឡូវ)
+    const me = posRead(SESSION_KEY, null) || {};
+    const dev = thisDevice();
+    if (!dateStr && dev && me.userId === personId && dev.shopId === (me.shopId || 'SHOP-01') && free(dev.register)) return dev.register;
     const mine = list.find(a => a.cashierId === personId);
     if (mine && mine.pin && free(mine.register)) return mine.register;
     const pinnedByOthers = list.filter(a => a.pin && a.cashierId !== personId).map(a => a.register);
@@ -2526,6 +2727,9 @@ function suggestRegister(personId, dateStr, code) {
 }
 
 const SESSION = posSession();
+/* ហាងដែលកំពុងប្រើ៖ វគ្គចូលប្រើ → ឧបករណ៍បញ្ជរ → ហាងទីមួយ · ឈ្មោះ សាខា ឡូហ្គោលើគ្រប់ទំព័រមកពី MERCHANT */
+const CURRENT_SHOP_ID = (SESSION && SESSION.shopId) || (thisDevice() || {}).shopId || 'SHOP-01';
+Object.assign(MERCHANT, shopById(CURRENT_SHOP_ID) || {});
 const ME_CASHIER = SESSION ? SESSION.userId : 'CAS-01';
 // ម្ចាស់ហាងអាចមើលទំព័រអ្នកគ្រប់គ្រង ហើយសម្រេចក្នុងនាមខ្លួនឯង
 const ME_MANAGER = SESSION && (isManagerId(SESSION.userId) || isAdminId(SESSION.userId)) ? SESSION.userId : 'MGR-01';
@@ -2535,8 +2739,17 @@ const MY_REGISTER = resolveRegister(ME_CASHIER);
    ទំព័រអ្នកគ្រប់គ្រង = អ្នកគ្រប់គ្រង ឬម្ចាស់ហាង · ទំព័រម្ចាស់ហាង = ម្ចាស់ហាងប៉ុណ្ណោះ */
 (function guardPage() {
     const path = location.pathname;
-    const area = path.includes('/cashier/') ? 'cashier' : path.includes('/manager/') ? 'manager' : path.includes('/admin/') ? 'admin' : '';
+    const area = path.includes('/cashier/') ? 'cashier' : path.includes('/manager/') ? 'manager' : path.includes('/admin/') ? 'admin' : path.includes('/control/') ? 'control' : '';
     if (!area) return;
+    // អ្នកគ្រប់គ្រងប្រព័ន្ធចូលបានតែ control/* · អ្នកផ្សេងចូល control/* មិនបាន
+    if (SESSION && SESSION.control) {
+        if (area !== 'control') location.replace('../../control/dashboard/dashboard.html');
+        return;
+    }
+    if (area === 'control') {
+        location.replace(SESSION ? `../../${ROLE_HOME[roleOf(SESSION.userId)]}` : `../../index.html?next=${encodeURIComponent(path.split('/').slice(-3).join('/'))}`);
+        return;
+    }
     const role = SESSION ? roleOf(SESSION.userId) : '';
     if (area === 'cashier' && role === 'admin' && !path.includes('/display/')) {
         location.replace(`../../${ROLE_HOME.admin}`);
@@ -2544,6 +2757,8 @@ const MY_REGISTER = resolveRegister(ME_CASHIER);
     }
     const ok = area === 'cashier' ? !!SESSION : area === 'manager' ? role === 'manager' || role === 'admin' : role === 'admin';
     if (!ok) location.replace(`../../index.html?next=${encodeURIComponent(path.split('/').slice(-3).join('/'))}`);
+    // ហាងថ្មីដែលមិនទាន់រៀបចំ៖ ម្ចាស់ហាងទៅជំនួយការរៀបចំមុន
+    else if (area === 'admin' && !path.includes('/setup/') && !shopSetup(CURRENT_SHOP_ID).done && !setupLater()) location.replace('../../admin/setup/setup.html');
 })();
 
 

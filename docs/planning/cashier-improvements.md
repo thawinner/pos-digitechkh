@@ -1,6 +1,6 @@
 # Cashier POS — Improvement Plan
 
-> **Date:** 2026-10-03 · **Status:** Implemented 2026-10-04, except C16 (partly), C17–C21 and D3; see §0
+> **Date:** 2026-10-03 · **Status:** Implemented 2026-10-04, except C16 (partly) and C17–C21; D3 built 2026-10-07; see §0
 > **Inputs:** the four built pages (read and screenshotted at 1440×900 and 390×844), [spec/01-cashier-pos.md](../spec/01-cashier-pos.md),
 > [spec/v1-role_cashier_pos.md](../spec/v1-role_cashier_pos.md), [research/pos-market-research.md](../research/pos-market-research.md) (cited below as **R§n**).
 > **Companion:** [spec/02-manager-pos.md](../spec/02-manager-pos.md). Many cashier items here hand work to the manager.
@@ -30,7 +30,8 @@ Line numbers are as of 2026-10-03 and will drift.
 | C15 role names | Done |
 | C16 VAT-registered credit customer prints a tax invoice | Done for the receipt; customer VATTIN is mock data |
 | C22 shift templates, overrun chip, terminal lock | Done, extended into the roster model (manager spec §11) |
-| C17–C21, D3 | Not built |
+| C17–C21 | Not built |
+| D3 | Built 2026-10-07: receipts → «ប្រគល់ពីវេនមុន» (`findSaleByReceipt`, `RETURN_WINDOW_DAYS` = 7) |
 
 ## 1. Where the cashier stood on 2026-10-03
 

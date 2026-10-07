@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគិតលុយ - ព័ត៌មានហាង</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { blue: { 50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 400: '#34d399', 500: '#059669', 600: '#047857', 700: '#065f46', 800: '#064e3b', 900: '#053d30', 950: '#022c22' }, slate: { 50: '#fafafa', 100: '#f4f4f4', 200: '#e7e7e7', 300: '#d4d4d4', 400: '#a2a2a2', 500: '#737373', 600: '#545454', 700: '#404040', 800: '#292929', 900: '#171717', 950: '#070707' }, primary: "#047857", 'primary-dark': "#065f46", accent: "#34d399" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+    <style>
+        /* ផ្ទាំងតួលេខ៖ 4 ជួរលើកុំព្យូទ័រ 2 ជួរលើទូរស័ព្ទ (custom.css បង្ខំ .grid-cols-2 ទៅ 1 ជួរ ដូច្នេះប្រើថ្នាក់ផ្ទាល់) */
+        .ctl-kpis { display: grid; gap: 1rem; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        @media (max-width: 1023px) { .ctl-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        .ctl-meter { height: 6px; border-radius: 9999px; background: #f4f4f4; overflow: hidden; }
+        html.dark .ctl-meter { background: #292929; }
+    </style>
+</head>
+<body id="controlPortal" data-role-root="../.." data-active="companies" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="ព័ត៌មានហាង"
+             data-subtitle="ការជាវ ការប្រើប្រាស់ ការបង់ប្រាក់ និងសកម្មភាព" data-back="companies.html"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <div id="page" class="w-full space-y-5"></div>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/control-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        /* ព័ត៌មានហាងមួយ (P8-01 · P8-06 · P8-07 · P8-08)
+           សកម្មភាពចម្បងប្តូរតាមស្ថានភាព៖ ហួសកំណត់ ឬជិតផុត → កត់ត្រាការបង់ប្រាក់ · ផ្អាក → បើកវិញ · សាកល្បង → កត់ត្រាការបង់ប្រាក់ (ជាវ) */
+        const ID = new URLSearchParams(location.search).get('id');
+
+        function card(title, sub, body, action) {
+            return `<section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm">
+                <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3"><div class="min-w-0"><h3 class="sm-card-title text-slate-800">${title}</h3>${sub ? `<p class="sm-card-sub text-slate-500">${sub}</p>` : ''}</div>${action || ''}</div>
+                ${body}</section>`;
+        }
+
+        function kv(label, value) {
+            return `<div class="flex justify-between gap-4 py-2"><span class="sm-td-sub text-slate-500">${label}</span><span class="sm-td text-slate-800 text-right min-w-0 break-words">${value}</span></div>`;
+        }
+
+        function primaryAction(c) {
+            const btn = (label, icon, act) => `<button type="button" onclick="${act}" class="sm-badge h-10 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2 whitespace-nowrap"><i class="fas ${icon}"></i> ${label}</button>`;
+            if (c.status === 'suspended') return btn('បើកហាងវិញ', 'fa-store', `ctlResumeDialog('${c.id}').then(ok => ok && render())`);
+            return btn(c.trial ? 'កត់ត្រាការបង់ប្រាក់ (ជាវ)' : 'កត់ត្រាការបង់ប្រាក់', 'fa-receipt', `ctlPaymentDialog('${c.id}').then(ok => ok && render())`);
+        }
+
+        function secondaryActions(c) {
+            const b = (label, icon, act, danger) => `<button type="button" onclick="${act}" class="sm-badge h-10 px-3.5 rounded-xl border ${danger ? 'border-rose-200 text-rose-700 hover:bg-rose-50' : 'border-slate-200 text-slate-700 hover:bg-slate-50'} bg-white font-semibold inline-flex items-center gap-2 whitespace-nowrap"><i class="fas ${icon} ${danger ? '' : 'text-slate-400'}"></i> ${label}</button>`;
+            return [
+                b('ប្តូរកញ្ចប់', 'fa-box', `ctlPlanDialog('${c.id}').then(ok => ok && render())`),
+                c.trial && c.status !== 'suspended' ? b('បន្ថែមថ្ងៃសាកល្បង', 'fa-hourglass-half', `ctlTrialDialog('${c.id}').then(ok => ok && render())`) : '',
+                ctlActiveSupport(c.id) ? '' : b('ចូលមើលដើម្បីជួយ', 'fa-life-ring', `startSupport('${c.id}')`),
+                c.suspended ? '' : b('ផ្អាកហាង', 'fa-store-slash', `ctlSuspendDialog('${c.id}').then(ok => ok && render())`, true)
+            ].join('');
+        }
+
+        function supportBanner(c) {
+            const s = ctlActiveSupport(c.id);
+            if (!s) return '';
+            const left = Math.max(0, Math.round((new Date(s.until) - new Date()) / 60000));
+            return `<div class="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-3.5 flex flex-wrap items-center gap-3">
+                <i class="fas fa-life-ring text-amber-700"></i>
+                <p class="sm-td text-amber-900 flex-1 min-w-0">កំពុងចូលមើលដើម្បីជួយ (មើលតែប៉ុណ្ណោះ) · នៅសល់ <span class="sm-figure font-semibold">${left}</span> នាទី · ${escapeText(s.reason)}</p>
+                <button type="button" onclick="endSupport('${c.id}')" class="sm-badge h-9 px-3.5 rounded-xl border border-amber-300 bg-white hover:bg-amber-100 text-amber-900 font-semibold">បញ្ចប់ការចូលមើល</button>
+            </div>`;
+        }
+
+        function usageCard(c) {
+            return card('ការប្រើប្រាស់', `ធៀបនឹងដែនកំណត់កញ្ចប់${planById(c.plan).name}`, `<div class="px-5 py-4 space-y-4">${usageLines(c).map(l => {
+                // ប្រើពេញ = ធម្មតា (ពណ៌អព្យាក្រឹត) · លើសកញ្ចប់ = ករណីមិនប្រក្រតី (ពណ៌លឿង)
+                const pct = Math.min(100, l.used / l.limit * 100);
+                const over = l.used > l.limit;
+                const full = l.used === l.limit && l.key !== 'branches';
+                return `<div><div class="flex items-baseline justify-between"><span class="sm-td text-slate-700">${l.label}</span>
+                    <span class="sm-td sm-figure ${over ? 'text-amber-700 font-semibold' : 'text-slate-800'}">${l.used} / ${l.limit}</span></div>
+                    <div class="ctl-meter mt-1.5"><div class="h-full ${over ? 'bg-amber-500' : 'bg-blue-600'}" style="width:${pct}%"></div></div>
+                    ${over ? `<p class="sm-td-sub text-amber-700 mt-1">លើសកញ្ចប់ · សូមប្តូរទៅកញ្ចប់ធំជាងនេះ</p>`
+                        : full ? `<p class="sm-td-sub text-slate-500 mt-1">ប្រើពេញ · បន្ថែម${l.label}ទៀតត្រូវប្តូរកញ្ចប់</p>` : ''}</div>`;
+            }).join('')}</div>`);
+        }
+
+        function paymentsCard(c) {
+            const all = ctlPayments(c.id);
+            const pg = pagerSlice('ctl-company-pay', all, { size: 15, render: 'render', sig: c.id });
+            const body = all.length ? `<div class="overflow-x-auto"><table class="w-full">
+                <thead><tr class="border-b border-slate-100 bg-slate-50/60">
+                    <th class="sm-th py-2.5 px-5 text-left text-slate-500">ថ្ងៃបង់</th>
+                    <th class="sm-th py-2.5 px-3 text-left text-slate-500 max-sm:hidden">រយៈពេល</th>
+                    <th class="sm-th py-2.5 px-3 text-left text-slate-500">វិធីបង់</th>
+                    <th class="sm-th py-2.5 px-5 text-right text-slate-500">ចំនួន</th>
+                </tr></thead>
+                <tbody class="divide-y divide-slate-100">${pg.rows.map(p => `<tr>
+                    <td class="py-2.5 px-5 sm-td sm-figure text-slate-700">${fmtDate(p.at)}</td>
+                    <td class="py-2.5 px-3 sm-td text-slate-700 max-sm:hidden"><span class="sm-figure">${fmtDate(p.periodFrom)} – ${fmtDate(p.periodTo)}</span><span class="block sm-td-sub text-slate-400">${p.months} ខែ</span></td>
+                    <td class="py-2.5 px-3 sm-td text-slate-700">${PAY_METHODS[p.method].label}${p.ref ? `<span class="block sm-td-sub text-slate-400 sm-figure">${escapeText(p.ref)}</span>` : ''}</td>
+                    <td class="py-2.5 px-5 sm-td sm-figure text-right font-medium text-slate-800">${fmtUSD(p.amount)}</td>
+                </tr>`).join('')}</tbody></table></div><div data-pager="ctl-company-pay">${pg.html}</div>`
+                : emptyState('fa-receipt', c.trial ? 'កំពុងសាកល្បង · មិនទាន់បង់' : 'មិនទាន់មានការបង់ប្រាក់', c.trial ? `សាកល្បងចប់ ${fmtDate(c.endsOn)}` : '');
+            return card('ការបង់ប្រាក់', `សរុប ${fmtUSD(all.reduce((s, p) => s + p.amount, 0))} · ${all.length} ដង`, body);
+        }
+
+        function logCard(c) {
+            const list = ctlLog(c.id);
+            return card('សកម្មភាព', 'អ្នកណាធ្វើអ្វី និងពេលណា · មិនអាចលុបបាន', list.length ? `<div class="divide-y divide-slate-100">${list.slice(0, 20).map(x => `
+                <div class="px-5 py-3 flex gap-3">
+                    <span class="w-8 h-8 rounded-lg border border-slate-200 text-slate-400 flex items-center justify-center flex-shrink-0"><i class="fas ${(CTL_LOG_TYPES[x.type] || CTL_LOG_TYPES.company).icon} text-[13px]"></i></span>
+                    <div class="min-w-0"><p class="sm-td text-slate-700">${escapeText(x.note)}</p>
+                    <p class="sm-td-sub text-slate-400"><span class="sm-figure">${fmtDate(x.at)} ${fmtTime(x.at)}</span> · ${personName(x.by)}</p></div>
+                </div>`).join('')}</div>` : emptyState('fa-clock-rotate-left', 'មិនទាន់មានសកម្មភាព', ''));
+        }
+
+        function render() {
+            const c = ctlCompany(ID);
+            const host = document.getElementById('page');
+            if (!c) {
+                host.innerHTML = `<section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm">${emptyState('fa-store-slash', 'រកមិនឃើញហាងនេះ', 'ហាងអាចត្រូវបានលុប ឬតំណមិនត្រឹមត្រូវ', '<a href="companies.html" class="inline-flex mt-4 sm-badge h-10 px-4 rounded-xl bg-blue-600 text-white font-semibold items-center">ទៅបញ្ជីហាង</a>')}</section>`;
+                return;
+            }
+            markRecordViewed(c.id);
+            setPortalTitle(c.nameKh);
+            setPortalSubtitle(`${c.city} · ${c.branch}`);
+            const left = daysUntil(c.endsOn);
+            host.innerHTML = `
+                ${supportBanner(c)}
+                <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm px-5 py-4 flex flex-wrap items-center gap-4">
+                    <div class="min-w-0 flex-1">
+                        <div class="flex flex-wrap items-center gap-2">${subChip(c)}<span class="sm-td text-slate-700">${planLabel(c)}</span></div>
+                        <p class="sm-td-sub ${c.status === 'overdue' || c.status === 'expiring' ? 'text-amber-700 font-semibold' : c.status === 'expired' || c.status === 'suspended' ? 'text-rose-600 font-semibold' : 'text-slate-500'} mt-1.5">${attentionText(c)}${c.status === 'active' ? '' : ` · <span class="sm-figure">${fmtDate(c.endsOn)}</span>`}</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">${secondaryActions(c)}${primaryAction(c)}</div>
+                </section>
+                <div class="grid gap-5 xl:grid-cols-3">
+                    <div class="xl:col-span-2 space-y-5">${paymentsCard(c)}${logCard(c)}</div>
+                    <div class="space-y-5">
+                        ${card('ការជាវ', '', `<div class="px-5 py-2 divide-y divide-slate-100">
+                            ${kv('កញ្ចប់', planById(c.plan).name)}
+                            ${kv('តម្លៃ', `<span class="sm-figure">${fmtUSD(c.cycle === 'year' ? priceFor(c.plan, 12) : planById(c.plan).price)}</span> / ${c.cycle === 'year' ? 'ឆ្នាំ' : 'ខែ'}`)}
+                            ${kv(c.trial ? 'សាកល្បងដល់' : 'ប្រើបានដល់', `<span class="sm-figure">${fmtDate(c.endsOn)}</span>${left >= 0 ? ` <span class="sm-td-sub text-slate-400">(${left} ថ្ងៃ)</span>` : ''}`)}
+                            ${kv('ចុះឈ្មោះ', `<span class="sm-figure">${fmtDate(c.createdAt)}</span>`)}
+                            ${kv('រៀបចំហាង', ctlSetupState(c).done ? `រួចរាល់${ctlSetupState(c).at ? ` <span class="sm-td-sub text-slate-400 sm-figure">${fmtDate(ctlSetupState(c).at)}</span>` : ''}` : '<span class="text-amber-700 font-semibold">មិនទាន់</span> <span class="sm-td-sub text-slate-400">ទូរស័ព្ទជួយម្ចាស់ហាង</span>')}
+                            ${c.suspended ? kv('មូលហេតុផ្អាក', escapeText(c.suspendReason)) : ''}
+                        </div>`)}
+                        ${usageCard(c)}
+                        ${card('ម្ចាស់ហាង', 'គណនីតែមួយ ប្រើបានគ្រប់ហាងរបស់គាត់', `<div class="px-5 py-2 divide-y divide-slate-100">
+                            ${kv('ឈ្មោះ', escapeText(c.ownerName))}
+                            ${kv('ទូរស័ព្ទ', `<span class="sm-figure">${escapeText(c.ownerPhone)}</span>`)}
+                            ${kv('អ៊ីមែល', escapeText(c.ownerEmail || '—'))}
+                            ${kv('ទីតាំង', `${escapeText(c.city)} · ${escapeText(c.branch)}`)}
+                        </div>`)}
+                    </div>
+                </div>`;
+            if (typeof updatePortalBadges === 'function') updatePortalBadges();
+        }
+
+        async function startSupport(id) {
+            const c = ctlCompany(id);
+            const reason = await showReasonPrompt({
+                title: `ចូលមើលដើម្បីជួយ · ${c.nameKh}`,
+                message: `មើលតែប៉ុណ្ណោះ ${SUPPORT_MINUTES} នាទី · ម្ចាស់ហាងនឹងឃើញការចូលមើលនេះ និងមូលហេតុក្នុងកំណត់ហេតុសវនកម្មរបស់ខ្លួន`,
+                placeholder: 'ឧ. ម្ចាស់ហាងទូរស័ព្ទមកសួរពីរបាយការណ៍…',
+                reasons: ['ម្ចាស់ហាងស្នើសុំជំនួយ', 'ពិនិត្យបញ្ហាការបោះពុម្ព', 'ជួយរៀបចំហាងថ្មី'],
+                confirmText: 'ចាប់ផ្តើម'
+            });
+            if (!reason) return;
+            ctlStartSupport(id, reason);
+            render();
+            showToast(`ចាប់ផ្តើមចូលមើល ${c.nameKh} · ${SUPPORT_MINUTES} នាទី`, 'success');
+        }
+
+        function endSupport(id) {
+            ctlEndSupport(id);
+            render();
+            showToast('បានបញ្ចប់ការចូលមើល', 'success');
+        }
+
+        window.onStoreChanged = render;
+        document.addEventListener('DOMContentLoaded', () => { render(); setInterval(() => { if (ctlActiveSupport(ID)) render(); }, 30000); });
+    </script>
+</body>
+</html>

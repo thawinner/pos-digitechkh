@@ -955,6 +955,17 @@ function totalPending() {
 function portalNotifications() {
     const root = document.body.dataset.roleRoot || '../..';
     const list = [];
+    // ការជាវរបស់ហាង (ម្ចាស់ហាងតែប៉ុណ្ណោះ)៖ ជិតផុតកំណត់ · ហួសកំណត់ · សាកល្បងជិតចប់ · បង់តាមរយៈ DIGITECHKH
+    if (document.body.id === 'adminPortal' && typeof shopSubscription === 'function') {
+        const sub = shopSubscription(CURRENT_SHOP_ID);
+        const st = subscriptionStatus(sub);
+        const left = sub ? daysUntil(sub.endsOn) : 99;
+        if (st === 'overdue') list.push({ icon: 'mdi:store-alert-outline', tone: 'danger', title: `ការជាវហួសកំណត់ ${-left} ថ្ងៃ`,
+            note: `ហាងនឹងចូលប្រើមិនបានក្នុង ${SUB_GRACE_DAYS + left} ថ្ងៃ · សូមបង់ប្រាក់ទៅ DIGITECHKH` });
+        else if (st === 'expiring' || (st === 'trial' && left <= SUB_WARN_DAYS)) list.push({ icon: 'mdi:calendar-clock', tone: 'warning',
+            title: st === 'trial' ? `សាកល្បងនៅសល់ ${left} ថ្ងៃ` : `ការជាវផុតកំណត់ក្នុង ${left} ថ្ងៃ`,
+            note: `${st === 'trial' ? 'ជាវដើម្បីបន្តប្រើ' : 'បង់ប្រាក់ដើម្បីបន្ត'} · ទាក់ទង DIGITECHKH 010 888 777`, time: fmtDate(sub.endsOn) });
+    }
     pendingApprovals().slice(0, 4).forEach(a => list.push({
         icon: 'mdi:shield-alert-outline', tone: 'warning',
         title: `${APPROVAL_TYPE[a.type].label} · ${fmtUSD(a.amount)}`,

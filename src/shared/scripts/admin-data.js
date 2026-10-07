@@ -308,7 +308,7 @@ const AUDIT_KINDS = {
 function auditTrail() {
     const out = [];
     adminLogList().forEach(x => out.push({
-        at: x.at, by: x.by, kind: x.type === 'pin' ? 'security' : x.type === 'cost' || x.type === 'stock_cost' ? 'stock' : x.type,
+        at: x.at, by: x.by, kind: x.type === 'pin' || x.type === 'device' || x.type === 'support' ? 'security' : x.type === 'cost' || x.type === 'stock_cost' ? 'stock' : x.type,
         title: x.note, detail: x.extra && x.extra.invoice ? `វិក្កយបត្រ: ${x.extra.invoice}` : ''
     }));
     settingsHistory().forEach(h => h.changes.forEach(c => out.push(c.key === 'pin'
@@ -765,7 +765,7 @@ const PAY_RULES = {
     monthHours: 208,      // 26 × 8
     otMult: 1.5,          // ម៉ោងបន្ថែមពេលថ្ងៃ
     nightOtMult: 2.0,     // ម៉ោងបន្ថែមពេលយប់
-    nightMult: 2.0,       // ម៉ោងយប់ធម្មតា 22:00–05:00 (ស្រាវជ្រាវ §11 · ត្រូវផ្ទៀងផ្ទាត់ជាមួយគណនេយ្យករ D-P1)
+    nightMult: 1.3,       // ម៉ោងយប់ធម្មតា 22:00–05:00 = 130% (ប្រកាសលេខ 80 ឆ្នាំ 1999) · ម៉ោងបន្ថែមពេលយប់ = nightOtMult 200%
     dayOffMult: 2.0,      // ធ្វើការថ្ងៃឈប់សម្រាកប្រចាំសប្តាហ៍
     graceMin: 10,         // យឺត ឬចេញមុន លើសពីនេះទើបរាប់
     bonusMaxLate: 3       // រង្វាន់ឧស្សាហ៍ព្យាយាម៖ គ្មានអវត្តមាន និងយឺតមិនលើស 3 ដង

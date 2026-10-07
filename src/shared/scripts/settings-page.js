@@ -21,6 +21,7 @@ const ALL_SECTIONS = [
     { id: 'display', icon: 'fa-desktop', label: 'អេក្រង់អតិថិជន', keys: ['cfdMessages'] },
     { id: 'quick', icon: 'fa-bolt', label: 'ទំនិញញឹកញាប់', keys: ['quickKeys'] },
     { id: 'reasons', icon: 'fa-list-check', label: 'បញ្ជីមូលហេតុ', keys: ['reasons'] },
+    { id: 'devices', icon: 'fa-tablet-screen-button', label: 'ឧបករណ៍បញ្ជរ', keys: [], admin: true },
     { id: 'rules', icon: 'fa-lock', label: 'ច្បាប់ពីម្ចាស់ហាង', keys: [], managerOnly: true },
     { id: 'history', icon: 'fa-clock-rotate-left', label: 'ប្រវត្តិការកែប្រែ', keys: [] }
 ];
@@ -385,7 +386,7 @@ function renderShifts(s) {
                 <button type="button" onclick="stepTime(${i}, 'end', 30)" class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-xs"><i class="fas fa-plus text-[10px]"></i></button>
             </div>
             <button onclick="removeTemplate(${i})" type="button" aria-label="លុបវេន" class="w-11 h-11 rounded-xl hover:bg-rose-50 text-slate-400 hover:text-rose-600 ${draft.shiftTemplates.length <= 1 ? 'invisible' : ''}"><i class="fas fa-trash-can text-xs"></i></button>
-            <p class="col-span-4 sm-td-sub ${tone} -mt-1">${!valid || h > 12 ? '<i class="fas fa-circle-exclamation mr-1"></i>' : h > 8 ? '<i class="fas fa-triangle-exclamation mr-1"></i>' : ''}${!valid ? 'ម៉ោងត្រូវសរសេរជា 24 ម៉ោង ឧ. 07:00' : `${h} ម៉ោង${h > 12 ? ' · លើសកំណត់ច្បាប់ 12 ម៉ោង' : h > 8 ? ' · លើស 8 ម៉ោងធម្មតា ត្រូវគិតម៉ោងបន្ថែម' : ' · ក្នុងម៉ោងធម្មតា'}${nightHours(t) ? ` · ម៉ោងយប់ ${nightHours(t)} ម៉ោង (ប្រាក់ឈ្នួល 200%)` : ''}`}</p>
+            <p class="col-span-4 sm-td-sub ${tone} -mt-1">${!valid || h > 12 ? '<i class="fas fa-circle-exclamation mr-1"></i>' : h > 8 ? '<i class="fas fa-triangle-exclamation mr-1"></i>' : ''}${!valid ? 'ម៉ោងត្រូវសរសេរជា 24 ម៉ោង ឧ. 07:00' : `${h} ម៉ោង${h > 12 ? ' · លើសកំណត់ច្បាប់ 12 ម៉ោង' : h > 8 ? ' · លើស 8 ម៉ោងធម្មតា ត្រូវគិតម៉ោងបន្ថែម' : ' · ក្នុងម៉ោងធម្មតា'}${nightHours(t) ? ` · ម៉ោងយប់ ${nightHours(t)} ម៉ោង (ប្រាក់ឈ្នួល 130%)` : ''}`}</p>
         </div>`;
     }).join('');
 
@@ -684,6 +685,79 @@ function renderHistory(s) {
         </div>`).join('') : emptyState('fa-clock-rotate-left', 'មិនទាន់មានការកែប្រែ', 'ការកំណត់ទាំងអស់នៅតម្លៃលំនាំដើម')}</div>`;
 }
 
+/* ឧបករណ៍បញ្ជរ៖ កុំព្យូទ័រដែលអ្នកគិតលុយចូលបានដោយលេខកូដ PIN (data.js registerThisDevice)
+   មានប្រសិទ្ធភាពភ្លាម មិនឆ្លងកាត់របាររក្សាទុក · រាល់ការចុះឈ្មោះ និងការដកចេញ កត់ក្នុងកំណត់ហេតុសវនកម្ម */
+function shopDevices() {
+    return deviceList().filter(d => d.shopId === CURRENT_SHOP_ID)
+        .sort((a, b) => REGISTERS.indexOf(a.register) - REGISTERS.indexOf(b.register));
+}
+
+function renderDevices(s) {
+    const here = thisDevice();
+    const list = shopDevices();
+    const hereIsOurs = here && here.shopId === CURRENT_SHOP_ID;
+    return sectionHead(s, 'កុំព្យូទ័របញ្ជរដែលអ្នកគិតលុយចូលបានដោយលេខកូដ PIN · ទូរស័ព្ទ និងកុំព្យូទ័រផ្សេងទៀតចូលបានតែដោយអ៊ីមែល ឬលេខទូរស័ព្ទ') + `
+        <div class="divide-y divide-slate-100">${list.length ? list.map(d => `
+            <div class="px-5 sm:px-6 py-4 flex items-center gap-4">
+                <span class="w-10 h-10 rounded-xl border border-slate-200 text-slate-500 flex items-center justify-center flex-shrink-0"><i class="fas fa-cash-register"></i></span>
+                <div class="min-w-0 flex-1">
+                    <p class="sm-td font-semibold text-slate-800">បញ្ជរ ${d.register}${here && here.id === d.id ? '<span class="ml-2 sm-td-sub font-semibold text-slate-500 border border-slate-200 rounded-full px-2 py-0.5">ឧបករណ៍នេះ</span>' : ''}</p>
+                    <p class="sm-td-sub text-slate-500 mt-0.5">ចុះឈ្មោះដោយ ${personName(d.by)} · <span class="sm-figure">${fmtDate(d.at)}</span></p>
+                </div>
+                <button type="button" onclick="removeDeviceUi('${d.id}')" class="h-10 px-3 rounded-lg sm-td-sub font-semibold text-slate-600 hover:text-rose-700 hover:bg-rose-50 transition">ដកចេញ</button>
+            </div>`).join('') : emptyState('fa-cash-register', 'មិនទាន់មានបញ្ជរចុះឈ្មោះ', 'បើកទំព័រនេះលើកុំព្យូទ័របញ្ជរ ហើយចុះឈ្មោះ ដើម្បីឱ្យអ្នកគិតលុយចូលដោយលេខកូដ PIN')}</div>
+        <div class="px-5 sm:px-6 py-4 border-t border-slate-100 flex flex-wrap items-center gap-3">
+            ${hereIsOurs
+                ? `<p class="sm-td-sub text-slate-500"><i class="fas fa-circle-check text-slate-400 mr-1.5"></i>ឧបករណ៍នេះជាបញ្ជរ ${here.register} រួចហើយ · ដើម្បីប្តូរបញ្ជរ ដកវាចេញ រួចចុះឈ្មោះម្តងទៀត</p>`
+                : `<button type="button" onclick="registerDeviceUi()" class="sm-value h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2"><i class="fas fa-plus"></i> ចុះឈ្មោះឧបករណ៍នេះជាបញ្ជរ</button>
+                   <p class="sm-td-sub text-slate-500">ធ្វើលើកុំព្យូទ័រនៅបញ្ជរតែប៉ុណ្ណោះ មិនមែនលើទូរស័ព្ទផ្ទាល់ខ្លួន</p>`}
+        </div>`;
+}
+
+async function registerDeviceUi() {
+    const taken = shopDevices();
+    const limit = shopLimits(CURRENT_SHOP_ID).registers;
+    const reg = await showOptionDialog({
+        title: 'ចុះឈ្មោះឧបករណ៍នេះជាបញ្ជរ',
+        message: 'ជ្រើសបញ្ជរដែលកុំព្យូទ័រនេះនៅ · បន្ទាប់មក អ្នកគិតលុយចូលលើឧបករណ៍នេះដោយលេខកូដ PIN',
+        options: REGISTERS.map(r => {
+            const t = taken.find(d => d.register === r);
+            return { value: r, icon: 'fa-cash-register', label: `បញ្ជរ ${r}`, desc: t ? 'មានឧបករណ៍រួចហើយ · ឧបករណ៍ចាស់នឹងចូលដោយ PIN លែងបាន' : 'ទំនេរ' };
+        })
+    });
+    if (!reg) return;
+    // ដែនកំណត់កញ្ចប់៖ បញ្ជរថ្មី (មិនមែនជំនួសឧបករណ៍លើបញ្ជរដដែល) មិនអាចលើសចំនួនដែលកញ្ចប់អនុញ្ញាត
+    if (!taken.some(d => d.register === reg) && taken.length >= limit) {
+        const sub = shopSubscription(CURRENT_SHOP_ID) || {};
+        await showCustomConfirm({ title: 'លើសដែនកំណត់កញ្ចប់', confirmText: 'យល់ព្រម', hideCancel: true,
+            message: `កញ្ចប់${sub.planName || ''} អនុញ្ញាត ${limit} បញ្ជរ ហើយហាងប្រើគ្រប់ហើយ។ ដកបញ្ជរមួយចេញ ឬទាក់ទង DIGITECHKH ដើម្បីប្តូរកញ្ចប់។` });
+        return;
+    }
+    const ok = await showPinConfirm({ title: 'ចុះឈ្មោះបញ្ជរ', message: `ឧបករណ៍នេះ → បញ្ជរ ${reg}`, userId: ME_MANAGER, confirmText: 'ចុះឈ្មោះ' });
+    if (!ok) return;
+    registerThisDevice(CURRENT_SHOP_ID, reg, ME_MANAGER);
+    adminLog('device', `ចុះឈ្មោះឧបករណ៍នេះជាបញ្ជរ ${reg}`, { target: reg });
+    render();
+    showToast(`ឧបករណ៍នេះជាបញ្ជរ ${reg} · អ្នកគិតលុយចូលបានដោយលេខកូដ PIN`, 'success');
+}
+
+async function removeDeviceUi(id) {
+    const d = deviceList().find(x => x.id === id);
+    if (!d) return;
+    const here = thisDevice();
+    const ok = await showCustomConfirm({
+        title: `ដកបញ្ជរ ${d.register} ចេញ`,
+        message: `${here && here.id === id ? 'ឧបករណ៍នេះ' : 'ឧបករណ៍នោះ'}នឹងចូលដោយលេខកូដ PIN លែងបានភ្លាម។ ប្រើពេលកុំព្យូទ័របាត់ ខូច ឬប្តូរថ្មី។ អាចចុះឈ្មោះម្តងទៀតបាន។`,
+        confirmText: 'ដកចេញ',
+        danger: true
+    });
+    if (!ok) return;
+    removeDevice(id);
+    adminLog('device', `ដកឧបករណ៍បញ្ជរ ${d.register} ចេញ`, { target: d.register });
+    render();
+    showToast(`បានដកបញ្ជរ ${d.register} ចេញ`, 'success');
+}
+
 /* ===== គូរ ===== */
 
 /* តម្លៃបច្ចុប្បន្នក្រោមឈ្មោះផ្នែក ដើម្បីឃើញការរៀបចំទាំងមូលដោយមិនចាំបាច់ចុច */
@@ -700,6 +774,7 @@ function navSummary(id) {
         case 'quick': return `${d.quickKeys.length} មុខ`;
         case 'rules': return 'មើលតែប៉ុណ្ណោះ';
         case 'reasons': return `${Object.values(d.reasons).reduce((n, l) => n + l.length, 0)} មូលហេតុ`;
+        case 'devices': return `${shopDevices().length} បញ្ជរបានចុះឈ្មោះ`;
         case 'history': return `${settingsHistory().length} ដង`;
         default: return '';
     }
@@ -721,7 +796,7 @@ function renderNav() {
 
 function render() {
     const s = SECTIONS.find(x => x.id === section) || SECTIONS[0];
-    const fn = { money: renderMoney, cash: renderCash, shifts: renderShifts, till: renderTill, banks: renderBanks, display: renderDisplay, stock: renderStock, quick: renderQuick, reasons: renderReasons, rules: renderRules, history: renderHistory }[s.id];
+    const fn = { money: renderMoney, cash: renderCash, shifts: renderShifts, till: renderTill, banks: renderBanks, display: renderDisplay, stock: renderStock, quick: renderQuick, reasons: renderReasons, rules: renderRules, devices: renderDevices, history: renderHistory }[s.id];
     document.getElementById('sectionBody').innerHTML = fn(s);
     renderNav();
     renderSaveBar();

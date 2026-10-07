@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគិតលុយ - រៀបចំហាង</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { blue: { 50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 400: '#34d399', 500: '#059669', 600: '#047857', 700: '#065f46', 800: '#064e3b', 900: '#053d30', 950: '#022c22' }, slate: { 50: '#fafafa', 100: '#f4f4f4', 200: '#e7e7e7', 300: '#d4d4d4', 400: '#a2a2a2', 500: '#737373', 600: '#545454', 700: '#404040', 800: '#292929', 900: '#171717', 950: '#070707' }, primary: "#047857", 'primary-dark': "#065f46", accent: "#34d399" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+    <style>
+        /* ជំនួយការរៀបចំហាង៖ ទំព័រផ្តោតតែមួយ (គ្មានរបារចំហៀង) · បណ្ណកណ្តាល · ជំហានខាងលើ · ប៊ូតុងថយក្រោយ/បន្ទាប់ខាងក្រោម */
+        #loginPortal > header, body > header { background: transparent !important; border: 0 !important; box-shadow: none !important; }
+        .setup-card { background: #ffffff; }
+        html.dark .setup-card { background: #171717; border-color: #292929 !important; }
+        .field { width: 100%; height: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid #d4d4d4; background: #fff; color: #171717; font-size: 16px !important; }
+        .field:focus { outline: none; border-color: #047857; box-shadow: 0 0 0 3px rgba(4, 120, 87, .15); }
+        .field.is-error { border-color: #fb7185; }
+        html.dark .field { background: #111111; border-color: #404040; color: #e7e7e7; }
+        .err { display: block; min-height: 20px; margin-top: 4px; font-size: 13.5px; color: #e11d48; }
+        .preview { background: #fafafa; }
+        /* custom.css បង្ខំធាតុមូលជា 13.5px · សញ្ញាធីកនៅអេក្រង់រួចរាល់ត្រូវធំ */
+        .done-icon i { font-size: 26px !important; }
+        html.dark .preview { background: #111111; border-color: #292929 !important; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+        .fade-up { animation: fadeUp .2s ease; }
+        @media (prefers-reduced-motion: reduce) { .fade-up { animation: none; } }
+    </style>
+</head>
+<body id="adminPortal" data-role-root="../.." class="min-h-screen bg-slate-50 font-sans text-slate-800 text-[16px] flex flex-col">
+
+    <header class="h-[72px] px-6 flex-shrink-0 flex items-center gap-3">
+        <img src="../../shared/assets/logo-mark-transparent.png" alt="" class="shop-logo w-10 h-10 object-contain flex-shrink-0">
+        <span class="min-w-0">
+            <span id="topName" class="block sm-card-title text-slate-900 leading-tight truncate"></span>
+            <span class="block sm-td-sub text-slate-500 truncate">រៀបចំហាងលើកដំបូង</span>
+        </span>
+        <button id="laterBtn" type="button" onclick="later()" class="ml-auto sm-td-sub font-semibold text-slate-500 hover:text-slate-800 h-10 px-3 rounded-xl hover:bg-slate-100 whitespace-nowrap">ធ្វើពេលក្រោយ</button>
+        <button onclick="toggleDarkMode()" type="button" aria-label="ប្តូររវាងទម្រង់ភ្លឺ និងទម្រង់ងងឹត" id="darkModeToggleBtn"
+            class="w-10 h-10 flex-shrink-0 rounded-xl bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 flex items-center justify-center transition">
+            <iconify-icon id="darkModeIcon" icon="mdi:weather-night" class="text-xl"></iconify-icon>
+        </button>
+    </header>
+
+    <main class="w-full flex-1 flex flex-col items-center px-4 pb-10 pt-2">
+        <div class="w-full max-w-[880px] space-y-5">
+            <div id="steps"></div>
+            <section class="setup-card rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(23,23,23,.04),0_8px_24px_-12px_rgba(23,23,23,.12)]">
+                <div id="stepBody" class="px-5 py-6 sm:px-8 sm:py-8"></div>
+                <div id="stepFoot" class="px-5 py-4 sm:px-8 border-t border-slate-100 flex items-center justify-between gap-3"></div>
+            </section>
+        </div>
+    </main>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        /* ការរៀបចំហាងលើកដំបូង (ផែនការ P8-05)
+           ជំហាន 1 ហាង (ឈ្មោះ ឈ្មោះ KHQR សាខា ទូរស័ព្ទ លេខអាករ) → MERCHANT តាមរយៈ saveShopProfile
+           ជំហាន 2 ទទួលប្រាក់ (អត្រាប្តូរប្រាក់ ធនាគារ និងគណនីបាគង) · ជំហាន 3 បញ្ជរ (≤ ដែនកំណត់កញ្ចប់) និងម៉ោងបើក
+           ជំហាន 4 រួចរាល់ + ជំហានបន្ទាប់ (ចុះឈ្មោះបញ្ជរ ទំនិញ បុគ្គលិក)
+           ហាងគំរូប្រើទិន្នន័យរួម ដូច្នេះអត្រា បញ្ជរ និងវេនរក្សាទុកក្នុងកំណត់ត្រារៀបចំ (pos_shop_setup) មិនសរសេរជាន់ការកំណត់របស់ហាងទីមួយទេ */
+
+        const SHOP_ID = CURRENT_SHOP_ID;
+        const shop = shopById(SHOP_ID);
+        const sub = shopSubscription(SHOP_ID) || {};
+        const LIMITS = shopLimits(SHOP_ID);
+        const HOURS = [
+            { id: 'day', label: 'ពេលថ្ងៃ 07:00–21:00', note: '2 វេន · ព្រឹក 07:00–14:00 · រសៀល 14:00–21:00' },
+            { id: 'long', label: 'ពេលថ្ងៃ 06:00–22:00', note: '2 វេន · ព្រឹក 06:00–14:00 · រសៀល 14:00–22:00' },
+            { id: '24h', label: 'បើក 24 ម៉ោង', note: '3 វេន · ព្រឹក · រសៀល · យប់ 22:00–06:00 (ម៉ោងយប់គុណ 130%)' },
+            { id: 'one', label: 'វេនតែមួយ 08:00–17:00', note: '1 វេន · ម្ចាស់ហាង ឬបុគ្គលិកម្នាក់' }
+        ];
+
+        const saved = shopSetup(SHOP_ID).draft || {};
+        const v = Object.assign({
+            nameKh: shop.nameKh, nameLatin: shop.name, branch: shop.branch, phone: shop.phone || '', tin: shop.tin || '',
+            fxRate: String(posSettings().fxRate || 4100), bank: 'aba', account: '', cashOnly: false,
+            registers: 1, hours: 'day'
+        }, saved);
+        let step = shopSetup(SHOP_ID).done ? 4 : (saved.step || 1);
+
+        function persist() {
+            const d = Object.assign({}, v, { step });
+            saveShopSetup(SHOP_ID, { draft: d });
+        }
+
+        function renderSteps() {
+            bmsStepper('steps', {
+                dark: document.documentElement.classList.contains('dark'),
+                variant: 'icon', size: 'md', tone: 'accent', doneTone: 'accent',
+                current: step,
+                steps: [{ icon: 'fa-store', label: 'ហាង' }, { icon: 'fa-qrcode', label: 'ទទួលប្រាក់' }, { icon: 'fa-cash-register', label: 'បញ្ជរ និងវេន' }, { icon: 'fa-flag-checkered', label: 'រួចរាល់' }],
+                onStep: n => { if (n < step && step < 4) { collect(); step = n; render(); } }
+            });
+        }
+
+        function field(id, label, opts = {}) {
+            return `<label class="block ${opts.wide ? 'md:col-span-2' : ''}"><span class="sm-td font-semibold text-slate-700">${label}${opts.optional ? ' <span class="font-normal text-slate-400">មិនចាំបាច់</span>' : ''}</span>
+                <input id="${id}" type="text" ${opts.mode ? `inputmode="${opts.mode}"` : ''} value="${escapeText(v[id])}" placeholder="${opts.ph || ''}" class="field mt-1.5" oninput="clearErr('${id}'); ${opts.live ? 'livePreview()' : ''}">
+                <span id="${id}Err" class="err"></span>
+                ${opts.hint ? `<span class="block sm-td-sub text-slate-500 -mt-1 mb-3">${opts.hint}</span>` : ''}</label>`;
+        }
+
+        function clearErr(id) {
+            document.getElementById(id).classList.remove('is-error');
+            document.getElementById(id + 'Err').textContent = '';
+        }
+
+        function setErr(id, msg) {
+            if (!msg) return 0;
+            document.getElementById(id).classList.add('is-error');
+            document.getElementById(id + 'Err').textContent = msg;
+            return 1;
+        }
+
+        /* ===== ជំហាន 1៖ ហាង ===== */
+        function stepShop() {
+            return `<h1 class="text-[24px] leading-tight font-semibold text-slate-900">សួស្តី ${escapeText(personName(ME_MANAGER))} · តោះរៀបចំហាងរបស់អ្នក</h1>
+                <p class="sm-td text-slate-500 mt-2">ព័ត៌មាននេះបង្ហាញលើវិក្កយបត្រ អេក្រង់អតិថិជន និងកូដ KHQR · កែបានពេលក្រោយ</p>
+                <div class="mt-6 grid gap-6 lg:grid-cols-[1fr_260px]">
+                    <div class="grid gap-x-4 md:grid-cols-2">
+                        ${field('nameKh', 'ឈ្មោះហាង', { ph: 'ឧ. កាហ្វេ ចាន់ថា', live: true })}
+                        ${field('nameLatin', 'ឈ្មោះសម្រាប់ KHQR', { ph: 'ឧ. CHANTHA COFFEE', live: true, hint: 'អក្សរឡាតាំងធំ · ធនាគារបង្ហាញឈ្មោះនេះពេលអតិថិជនស្កេន' })}
+                        ${field('branch', 'សាខា ឬទីតាំង', { ph: 'ឧ. សាខាទួលគោក', live: true })}
+                        ${field('phone', 'ទូរស័ព្ទហាង', { ph: 'ឧ. 023 777 666', mode: 'tel', live: true })}
+                        ${field('tin', 'លេខអត្តសញ្ញាណកម្មអាករ', { ph: 'ឧ. K001-907654321', optional: true, wide: true, live: true, hint: 'ត្រូវការពេលចេញវិក្កយបត្រអាករឱ្យក្រុមហ៊ុន' })}
+                    </div>
+                    <div>
+                        <p class="sm-td-sub font-semibold text-slate-500 mb-2">មើលជាមុន · ក្បាលវិក្កយបត្រ</p>
+                        <div id="preview" class="preview rounded-xl border border-slate-200 px-4 py-5 text-center"></div>
+                    </div>
+                </div>`;
+        }
+
+        function livePreview() {
+            const el = document.getElementById('preview');
+            if (!el) return;
+            const g = id => (document.getElementById(id) || {}).value || '';
+            el.innerHTML = `<img src="../../${shop.logo}" alt="" class="w-12 h-12 object-contain mx-auto">
+                <p class="sm-value text-slate-900 mt-2">${escapeText(g('nameKh')) || '—'}</p>
+                <p class="sm-td-sub text-slate-500">${escapeText(g('branch'))}</p>
+                ${g('tin') ? `<p class="sm-td-sub text-slate-500 sm-figure">លេខអាករ ${escapeText(g('tin'))}</p>` : ''}
+                ${g('phone') ? `<p class="sm-td-sub text-slate-500 sm-figure">ទូរស័ព្ទ ${escapeText(g('phone'))}</p>` : ''}
+                <div class="border-t border-dashed border-slate-300 my-3"></div>
+                <p class="sm-td-sub text-slate-400">KHQR · <span class="sm-figure">${escapeText(g('nameLatin').toUpperCase()) || '—'}</span></p>`;
+        }
+
+        function checkShop() {
+            let bad = 0;
+            bad += setErr('nameKh', v.nameKh.length < 2 ? 'សូមវាយឈ្មោះហាង' : '');
+            bad += setErr('nameLatin', !/^[A-Z0-9 &'.-]{3,25}$/.test(v.nameLatin) ? 'អក្សរឡាតាំងធំ ឬលេខ 3 ដល់ 25 តួ' : '');
+            bad += setErr('branch', v.branch.length < 2 ? 'សូមវាយសាខា ឬទីតាំង' : '');
+            bad += setErr('phone', normPhone(v.phone).length < 9 ? 'លេខទូរស័ព្ទមិនគ្រប់ខ្ទង់ · ឧ. 023 777 666' : '');
+            bad += setErr('tin', v.tin && !/^[A-Z]\d{3}-\d{9}$/.test(v.tin) ? 'ទម្រង់ K001-123456789 (អក្សរ 1 លេខ 3 សញ្ញា - លេខ 9)' : '');
+            return bad;
+        }
+
+        /* ===== ជំហាន 2៖ ទទួលប្រាក់ ===== */
+        function stepMoney() {
+            return `<h1 class="text-[24px] leading-tight font-semibold text-slate-900">ទទួលប្រាក់</h1>
+                <p class="sm-td text-slate-500 mt-2">អត្រាប្តូរប្រាក់សម្រាប់ប្រាក់អាប់ជារៀល និងគណនីដែលទទួលប្រាក់តាម KHQR</p>
+                <div class="mt-6 grid gap-x-4 md:grid-cols-2">
+                    ${field('fxRate', 'អត្រាប្តូរប្រាក់ថ្ងៃនេះ (៛ ក្នុង $1)', { mode: 'numeric', ph: '4100', hint: 'កែបានរៀងរាល់ថ្ងៃនៅ ការកំណត់ → អត្រាប្តូរប្រាក់' })}
+                </div>
+                <div class="mt-4">
+                    <p class="sm-td font-semibold text-slate-700">ធនាគារទទួលប្រាក់ KHQR</p>
+                    <div class="mt-2 flex flex-wrap gap-2 ${v.cashOnly ? 'opacity-40 pointer-events-none' : ''}">${Object.keys(PAY_BANKS).map(k => `<button type="button" onclick="collect(); v.bank='${k}'; render()"
+                        class="sm-badge h-10 px-4 rounded-xl border transition ${v.bank === k ? 'bg-blue-600 border-blue-600 text-white font-semibold' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'}">${PAY_BANKS[k].name}</button>`).join('')}</div>
+                    <div class="mt-4 grid gap-x-4 md:grid-cols-2 ${v.cashOnly ? 'opacity-40 pointer-events-none' : ''}">
+                        ${field('account', 'លេខសម្គាល់គណនីបាគង', { ph: 'ឧ. chanthacoffee@aba', hint: 'មើលក្នុងកម្មវិធីធនាគារ → KHQR របស់ខ្ញុំ · ទម្រង់ ឈ្មោះ@ធនាគារ' })}
+                    </div>
+                    <label class="mt-3 inline-flex items-center gap-2.5 sm-td text-slate-700 cursor-pointer select-none">
+                        <input id="cashOnly" type="checkbox" ${v.cashOnly ? 'checked' : ''} onchange="collect(); v.cashOnly = this.checked; render()" class="w-5 h-5 accent-[#047857]">
+                        មិនទាន់មានគណនីបាគង · ទទួលតែសាច់ប្រាក់សិន
+                    </label>
+                </div>`;
+        }
+
+        function checkMoney() {
+            let bad = 0;
+            const r = Number(v.fxRate);
+            bad += setErr('fxRate', !(r >= 3500 && r <= 4500) ? 'អត្រាគួរនៅចន្លោះ 3,500 ដល់ 4,500 ៛' : '');
+            if (!v.cashOnly) bad += setErr('account', !/^[a-z0-9_.]{3,}@[a-z]{2,}$/.test(v.account) ? 'ទម្រង់ ឈ្មោះ@ធនាគារ ឧ. chanthacoffee@aba' : '');
+            return bad;
+        }
+
+        /* ===== ជំហាន 3៖ បញ្ជរ និងវេន ===== */
+        function stepTill() {
+            const n = Math.min(v.registers, LIMITS.registers);
+            return `<h1 class="text-[24px] leading-tight font-semibold text-slate-900">បញ្ជរ និងម៉ោងបើក</h1>
+                <p class="sm-td text-slate-500 mt-2">ចំនួនកុំព្យូទ័រគិតលុយ និងវេនបុគ្គលិក · កែបាននៅការកំណត់</p>
+                <div class="mt-6">
+                    <p class="sm-td font-semibold text-slate-700">ចំនួនបញ្ជរ</p>
+                    <div class="mt-2 flex flex-wrap items-center gap-4">
+                        <div class="inline-flex items-center rounded-xl border border-slate-200 overflow-hidden">
+                            <button type="button" onclick="v.registers = Math.max(1, ${n} - 1); render()" ${n <= 1 ? 'disabled' : ''} aria-label="បន្ថយ" class="w-12 h-12 text-slate-600 hover:bg-slate-50 disabled:opacity-30"><i class="fas fa-minus"></i></button>
+                            <span class="w-14 text-center text-[20px] font-semibold text-slate-900 sm-figure">${n}</span>
+                            <button type="button" onclick="v.registers = Math.min(${LIMITS.registers}, ${n} + 1); render()" ${n >= LIMITS.registers ? 'disabled' : ''} aria-label="បន្ថែម" class="w-12 h-12 text-slate-600 hover:bg-slate-50 disabled:opacity-30"><i class="fas fa-plus"></i></button>
+                        </div>
+                        <p class="sm-td-sub text-slate-500">កញ្ចប់${escapeText(sub.planName || '')} អនុញ្ញាត <span class="sm-figure">${LIMITS.registers}</span> បញ្ជរ${n >= LIMITS.registers ? ' · ត្រូវការច្រើនជាងនេះ ទាក់ទង DIGITECHKH ដើម្បីប្តូរកញ្ចប់' : ''}</p>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <p class="sm-td font-semibold text-slate-700">ម៉ោងបើកហាង</p>
+                    <div class="mt-2 grid gap-2.5 md:grid-cols-2">${HOURS.map(h => `<button type="button" onclick="v.hours='${h.id}'; render()"
+                        class="w-full text-left px-4 py-3 rounded-xl border transition flex items-start gap-3 ${v.hours === h.id ? 'border-blue-600 ring-1 ring-blue-600' : 'border-slate-200 hover:border-slate-300'}">
+                        <span class="mt-1 w-4 h-4 rounded-full border-2 flex-shrink-0 ${v.hours === h.id ? 'border-blue-600 bg-blue-600 ring-2 ring-inset ring-white' : 'border-slate-300'}"></span>
+                        <span class="min-w-0"><span class="block sm-td font-semibold text-slate-800">${h.label}</span><span class="block sm-td-sub text-slate-500 mt-0.5">${h.note}</span></span></button>`).join('')}</div>
+                </div>`;
+        }
+
+        /* ===== ជំហាន 4៖ រួចរាល់ ===== */
+        function stepDone() {
+            const dev = thisDevice();
+            const devHere = dev && dev.shopId === SHOP_ID;
+            const h = HOURS.find(x => x.id === v.hours) || HOURS[0];
+            const next = [
+                { done: devHere, icon: 'fa-cash-register', title: 'ចុះឈ្មោះកុំព្យូទ័រនេះជាបញ្ជរ', note: devHere ? `ឧបករណ៍នេះជាបញ្ជរ ${dev.register} រួចហើយ` : 'ធ្វើលើកុំព្យូទ័រនៅបញ្ជរ · បន្ទាប់មកអ្នកគិតលុយចូលដោយលេខកូដ PIN', href: '../settings/settings.html?s=devices' },
+                { icon: 'fa-tags', title: 'បន្ថែមទំនិញ និងតម្លៃ', note: 'បញ្ចូលម្តងមួយៗ ឬនាំចូលពីឯកសារ Excel', href: '../products/products.html' },
+                { icon: 'fa-user-plus', title: 'បន្ថែមបុគ្គលិក', note: 'អ្នកគិតលុយ និងអ្នកគ្រប់គ្រង · ម្នាក់មានលេខកូដ PIN ផ្ទាល់ខ្លួន', href: '../staff/staff.html' }
+            ];
+            return `<div class="text-center fade-up">
+                    <span class="done-icon w-16 h-16 rounded-full bg-blue-600 text-white inline-flex items-center justify-center"><i class="fas fa-check"></i></span>
+                    <h1 class="mt-4 text-[24px] leading-tight font-semibold text-slate-900">${escapeText(shop.nameKh)} រៀបចំរួចរាល់</h1>
+                    <p class="sm-td text-slate-500 mt-2">${v.cashOnly ? 'ទទួលសាច់ប្រាក់' : `ទទួល KHQR តាម ${PAY_BANKS[v.bank].name} និងសាច់ប្រាក់`} · ${Math.min(v.registers, LIMITS.registers)} បញ្ជរ · ${h.label}</p>
+                </div>
+                <p class="mt-8 sm-td font-semibold text-slate-700">ជំហានបន្ទាប់</p>
+                <div class="mt-2 divide-y divide-slate-100 rounded-xl border border-slate-200">${next.map((x, i) => `
+                    <a href="${x.href}" class="px-4 py-3.5 flex items-center gap-4 hover:bg-slate-50 transition">
+                        <span class="w-9 h-9 rounded-full border ${x.done ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-300 text-slate-500'} flex items-center justify-center flex-shrink-0 sm-figure font-semibold">${x.done ? '<i class="fas fa-check text-sm"></i>' : i + 1}</span>
+                        <span class="min-w-0 flex-1"><span class="block sm-td font-semibold text-slate-800">${x.title}</span><span class="block sm-td-sub text-slate-500">${x.note}</span></span>
+                        <i class="fas fa-arrow-right text-slate-300"></i>
+                    </a>`).join('')}</div>`;
+        }
+
+        /* ===== ចរន្ត ===== */
+        function collect() {
+            ['nameKh', 'nameLatin', 'branch', 'phone', 'tin', 'fxRate', 'account'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) v[id] = el.value.trim();
+            });
+            v.nameLatin = (v.nameLatin || '').toUpperCase();
+            v.tin = (v.tin || '').toUpperCase();
+            v.account = (v.account || '').toLowerCase();
+        }
+
+        function render() {
+            renderSteps();
+            const body = document.getElementById('stepBody');
+            body.innerHTML = [null, stepShop, stepMoney, stepTill, stepDone][step]();
+            body.classList.remove('fade-up'); void body.offsetWidth; body.classList.add('fade-up');
+            if (step === 1) livePreview();
+            const back = step > 1 && step < 4 ? `<button type="button" onclick="go(-1)" class="sm-value h-12 px-5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center gap-2"><i class="fas fa-arrow-left text-[13px]"></i> ថយក្រោយ</button>` : '<span></span>';
+            const label = step === 3 ? 'បញ្ចប់ការរៀបចំ' : step === 4 ? 'ទៅផ្ទាំងម្ចាស់ហាង' : `បន្ទាប់៖ ${['', 'ទទួលប្រាក់', 'បញ្ជរ និងវេន'][step]}`;
+            document.getElementById('stepFoot').innerHTML = `${back}
+                <span class="flex items-center gap-3"><span class="sm-td-sub text-slate-400 max-sm:hidden">${step < 4 ? `ជំហាន ${step} / 3` : ''}</span>
+                <button type="button" onclick="go(1)" class="sm-value h-12 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2">${label} <i class="fas fa-arrow-right text-[13px]"></i></button></span>`;
+            const first = body.querySelector('input.field');
+            if (first && step < 4) first.focus({ preventScroll: true });
+        }
+
+        function go(d) {
+            if (step === 4) { location.href = '../dashboard/dashboard.html'; return; }
+            collect();
+            if (d > 0) {
+                const bad = step === 1 ? checkShop() : step === 2 ? checkMoney() : 0;
+                if (bad) { const el = document.querySelector('.field.is-error'); if (el) el.focus(); return; }
+            }
+            if (d > 0 && step === 3) return finish();
+            step = Math.min(Math.max(1, step + d), 3);
+            persist();
+            render();
+        }
+
+        function finish() {
+            saveShopProfile(SHOP_ID, { nameKh: v.nameKh, name: v.nameLatin, branch: v.branch, phone: v.phone, tin: v.tin, account: v.cashOnly ? '' : v.account });
+            Object.assign(shop, { nameKh: v.nameKh, name: v.nameLatin, branch: v.branch });
+            saveShopSetup(SHOP_ID, { done: true, at: isoLocal(new Date()), by: ME_MANAGER, fxRate: Number(v.fxRate), bank: v.cashOnly ? '' : v.bank,
+                cashOnly: v.cashOnly, registers: Math.min(v.registers, LIMITS.registers), hours: v.hours, draft: null });
+            try { sessionStorage.removeItem('pos_setup_later'); } catch (e) { /* មិនអាចសម្អាត */ }
+            document.getElementById('topName').textContent = v.nameKh;
+            document.getElementById('laterBtn').classList.add('hidden');
+            step = 4;
+            render();
+            showToast('រៀបចំហាងរួចរាល់', 'success');
+        }
+
+        /* ធ្វើពេលក្រោយ៖ មិនបញ្ជូនមកទីនេះទៀតក្នុងផ្ទាំងនេះ · ផ្ទាំងម្ចាស់ហាងបង្ហាញការរំលឹក */
+        function later() {
+            collect();
+            if (step < 4) persist();
+            try { sessionStorage.setItem('pos_setup_later', '1'); } catch (e) { /* មិនអាចរក្សាទុក */ }
+            location.href = '../dashboard/dashboard.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initDarkMode();
+            document.getElementById('topName').textContent = shop.nameKh;
+            if (step === 4) document.getElementById('laterBtn').classList.add('hidden');
+            render();
+        });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && e.target.matches('input.field')) { e.preventDefault(); go(1); }
+        });
+    </script>
+</body>
+</html>

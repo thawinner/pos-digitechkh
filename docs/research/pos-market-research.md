@@ -164,7 +164,7 @@ plan C4, C11).
 ## 11. How many shifts per day
 
 - **Labour law:** in Cambodia the normal working day is 8 hours (48 h per week, six days). Including overtime a day may
-  not exceed **12 hours**. Night time (22:00–05:00) and rest-day work pay at 200 %. (Rivermate, WageIndicator)
+  not exceed **12 hours**. Rest-day work and overtime at night pay at 200 %; normal night work (22:00–05:00) pays at least 130 % (Prakas No. 80, 1999; corrected 2026-10-07). (Rivermate, WageIndicator)
 - **Every handover is a full count.** A count is due whenever drawer responsibility changes. The handover record holds
   expected, counted, variance, outgoing and incoming cashier, time and approval. **One drawer, one accountable cashier.**
   Sharing a drawer makes accountability "quietly break down". (Taqtics, BMI Leisure, Odoo shift-handover modules)

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគិតលុយ - ផ្ទាំងគ្រប់គ្រងប្រព័ន្ធ</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { blue: { 50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 400: '#34d399', 500: '#059669', 600: '#047857', 700: '#065f46', 800: '#064e3b', 900: '#053d30', 950: '#022c22' }, slate: { 50: '#fafafa', 100: '#f4f4f4', 200: '#e7e7e7', 300: '#d4d4d4', 400: '#a2a2a2', 500: '#737373', 600: '#545454', 700: '#404040', 800: '#292929', 900: '#171717', 950: '#070707' }, primary: "#047857", 'primary-dark': "#065f46", accent: "#34d399" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+    <style>
+        /* ផ្ទាំងតួលេខ៖ 4 ជួរលើកុំព្យូទ័រ 2 ជួរលើទូរស័ព្ទ (custom.css បង្ខំ .grid-cols-2 ទៅ 1 ជួរ ដូច្នេះប្រើថ្នាក់ផ្ទាល់) */
+        .ctl-kpis { display: grid; gap: 1rem; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        @media (max-width: 1023px) { .ctl-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        .ctl-meter { height: 6px; border-radius: 9999px; background: #f4f4f4; overflow: hidden; }
+        html.dark .ctl-meter { background: #292929; }
+    </style>
+</head>
+<body id="controlPortal" data-role-root="../.." data-active="dashboard" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="ផ្ទាំងគ្រប់គ្រង"
+             data-subtitle="ហាងដែលជាវ ចំណូលប្រចាំខែ និងអ្វីដែលត្រូវតាមដានថ្ងៃនេះ"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <div class="w-full space-y-5">
+                <div id="kpis" class="ctl-kpis"></div>
+                <div class="grid gap-5 xl:grid-cols-3">
+                    <section class="xl:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
+                            <div class="min-w-0"><h3 class="sm-card-title text-slate-800">ត្រូវតាមដាន</h3><p class="sm-card-sub text-slate-500">ជិតផុតកំណត់ ហួសកំណត់បង់ និងសាកល្បងជិតចប់</p></div>
+                            <a href="../companies/companies.html?tab=attention" class="sm-td-sub font-semibold text-blue-700 hover:underline whitespace-nowrap">មើលទាំងអស់</a>
+                        </div>
+                        <div id="attention" class="divide-y divide-slate-100"></div>
+                    </section>
+                    <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="px-5 py-4 border-b border-slate-100"><h3 class="sm-card-title text-slate-800">តាមកញ្ចប់</h3><p class="sm-card-sub text-slate-500">ហាងបង់ប្រាក់ និងចំណូលប្រចាំខែ</p></div>
+                        <div id="byPlan" class="divide-y divide-slate-100"></div>
+                    </section>
+                </div>
+                <div class="grid gap-5 xl:grid-cols-3">
+                    <section class="xl:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
+                            <div class="min-w-0"><h3 class="sm-card-title text-slate-800">ប្រាក់ទទួលបាន</h3><p class="sm-card-sub text-slate-500">6 ខែចុងក្រោយ តាមថ្ងៃបង់</p></div>
+                            <a href="../billing/billing.html?tab=paid" class="sm-td-sub font-semibold text-blue-700 hover:underline whitespace-nowrap">ការបង់ប្រាក់ទាំងអស់</a>
+                        </div>
+                        <div id="revChart" class="px-3 py-3" style="height: 280px"></div>
+                    </section>
+                    <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="px-5 py-4 border-b border-slate-100"><h3 class="sm-card-title text-slate-800">ហាងថ្មីៗ</h3><p class="sm-card-sub text-slate-500">ចុះឈ្មោះ 60 ថ្ងៃចុងក្រោយ</p></div>
+                        <div id="recent" class="divide-y divide-slate-100"></div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/control-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+    <script src="../../shared/scripts/charts.js"></script>
+    <script>
+        /* ផ្ទាំងគ្រប់គ្រងប្រព័ន្ធ (Phase 1B)៖ ហាងដែលជាវ · ចំណូលប្រចាំខែ · ត្រូវប្រមូល · ត្រូវតាមដាន
+           មិនបង្ហាញការលក់របស់ហាងទេ (DIGITECHKH មិនឃើញទិន្នន័យអាជីវកម្មរបស់អតិថិជន) */
+
+        function renderKpis() {
+            const all = ctlCompanies();
+            const live = all.filter(c => ['active', 'expiring', 'overdue'].includes(c.status) && !c.trial);
+            const trials = all.filter(c => c.status === 'trial');
+            const due = all.filter(c => c.status === 'expiring' || c.status === 'overdue');
+            const dueAmt = due.reduce((s, c) => s + (c.cycle === 'year' ? priceFor(c.plan, 12) : priceFor(c.plan, 1)), 0);
+            const blocked = all.filter(c => c.status === 'expired' || c.status === 'suspended');
+            document.getElementById('kpis').innerHTML = [
+                kpiCard('ហាងកំពុងប្រើ', live.length, `សាកល្បង ${trials.length} · សរុប ${all.length} ហាង`, '', '../companies/companies.html'),
+                kpiCard('ចំណូលប្រចាំខែ', fmtUSD(ctlMrr(all)), `ប្រចាំឆ្នាំប្រហែល ${fmtUSD(ctlMrr(all) * 12)}`, '', '../plans/plans.html'),
+                kpiCard('ត្រូវប្រមូលក្នុង 7 ថ្ងៃ', fmtUSD(dueAmt), `${due.length} ហាង${due.some(c => c.status === 'overdue') ? ` · ហួសកំណត់ ${due.filter(c => c.status === 'overdue').length}` : ''}`, due.length ? 'text-amber-700' : '', '../billing/billing.html'),
+                kpiCard('ផ្អាក ឬផុតកំណត់', blocked.length, blocked.length ? 'ចូលប្រើមិនបាន' : 'គ្មាន', blocked.length ? 'text-rose-600' : '', '../companies/companies.html?tab=blocked')
+            ].join('');
+        }
+
+        function renderAttention() {
+            const list = ctlCompanies().filter(needsAttention).sort((a, b) => a.endsOn.localeCompare(b.endsOn));
+            document.getElementById('attention').innerHTML = list.length ? list.slice(0, 8).map(c => `
+                <div class="px-5 py-3.5 flex items-center gap-4 hover:bg-slate-50 cursor-pointer transition" onclick="if (!event.target.closest('button')) openCompany('${c.id}')">
+                    <div class="min-w-0 flex-1">
+                        <p class="sm-td-strong text-slate-800 truncate">${escapeText(c.nameKh)}</p>
+                        <p class="sm-td-sub text-slate-500 truncate">${escapeText(c.city)} · ${planById(c.plan).name} · ${escapeText(c.ownerName)} <span class="sm-figure">${escapeText(c.ownerPhone)}</span></p>
+                    </div>
+                    <div class="text-right flex-shrink-0 max-sm:hidden">
+                        <p class="sm-td-sub font-semibold ${c.status === 'overdue' ? 'text-amber-700' : 'text-slate-700'}">${attentionText(c)}</p>
+                        <p class="sm-td-sub text-slate-400 sm-figure">${fmtDate(c.endsOn)}</p>
+                    </div>
+                    ${c.status === 'trial'
+                        ? `<button type="button" onclick="openCompany('${c.id}')" class="sm-badge h-9 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold whitespace-nowrap">មើល</button>`
+                        : `<button type="button" onclick="ctlPaymentDialog('${c.id}').then(ok => ok && renderAll())" class="sm-badge h-9 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold whitespace-nowrap"><i class="fas fa-receipt mr-1.5 text-slate-400"></i>កត់ត្រាការបង់</button>`}
+                </div>`).join('') : emptyState('fa-circle-check', 'គ្មានអ្វីត្រូវតាមដានទេ', 'គ្មានហាងជិតផុតកំណត់ ឬហួសកំណត់បង់');
+        }
+
+        function renderByPlan() {
+            const all = ctlCompanies().filter(c => !c.trial && ['active', 'expiring', 'overdue'].includes(c.status));
+            const total = ctlMrr(all) || 1;
+            document.getElementById('byPlan').innerHTML = ctlPlans().map(p => {
+                const list = all.filter(c => c.plan === p.id);
+                const mrr = ctlMrr(list);
+                return `<div class="px-5 py-3.5">
+                    <div class="flex items-baseline justify-between gap-3">
+                        <span class="sm-td font-semibold text-slate-800">${p.name} <span class="sm-td-sub font-normal text-slate-400">${fmtUSD(p.price)}/ខែ</span></span>
+                        <span class="sm-td sm-figure font-semibold text-slate-800">${fmtUSD(mrr)}</span>
+                    </div>
+                    <div class="ctl-meter mt-2"><div class="h-full bg-blue-600" style="width:${(mrr / total * 100).toFixed(1)}%"></div></div>
+                    <p class="sm-td-sub text-slate-500 mt-1.5">${list.length} ហាង · ${p.registers} បញ្ជរ · ${p.staff} បុគ្គលិក</p>
+                </div>`;
+            }).join('');
+        }
+
+        function renderRevenue() {
+            const now = new Date();
+            const months = Array.from({ length: 6 }, (_, i) => new Date(now.getFullYear(), now.getMonth() - 5 + i, 1));
+            const key = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`;
+            const pays = ctlPayments();
+            const data = months.map(m => pays.filter(p => p.at.startsWith(key(m))).reduce((s, p) => s + p.amount, 0));
+            posChart('revChart', {
+                xAxis: chartCategoryAxis(months.map(m => MONTHS_KH[m.getMonth()])),
+                yAxis: chartValueAxis(v => '$' + v),
+                tooltip: { formatter: ps => chartTipTitle(ps[0].name) + chartTipRow(CHART_TONE.accent, 'ទទួលបាន', fmtUSD(ps[0].value)) },
+                series: [{ type: 'bar', data, barMaxWidth: 40, itemStyle: { color: CHART_TONE.accent, borderRadius: [4, 4, 0, 0] } }]
+            });
+        }
+
+        function renderRecent() {
+            const since = addDaysIso(-60);
+            const list = ctlCompanies().filter(c => c.createdAt >= since).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+            document.getElementById('recent').innerHTML = list.length ? list.slice(0, 6).map(c => `
+                <a href="../companies/view-company.html?id=${c.id}" class="px-5 py-3 flex items-center gap-3 hover:bg-slate-50 transition">
+                    <span class="min-w-0 flex-1"><span class="block sm-td font-medium text-slate-800 truncate">${escapeText(c.nameKh)}</span>
+                        <span class="block sm-td-sub text-slate-500 sm-figure">${fmtDate(c.createdAt)} · ${escapeText(c.city)}</span></span>
+                    ${subChip(c)}
+                </a>`).join('') : emptyState('fa-store', 'គ្មានហាងថ្មី', '60 ថ្ងៃចុងក្រោយ');
+        }
+
+        function renderAll() {
+            renderKpis(); renderAttention(); renderByPlan(); renderRevenue(); renderRecent();
+            if (typeof updatePortalBadges === 'function') updatePortalBadges();
+        }
+
+        window.onStoreChanged = renderAll;
+        document.addEventListener('DOMContentLoaded', renderAll);
+    </script>
+</body>
+</html>

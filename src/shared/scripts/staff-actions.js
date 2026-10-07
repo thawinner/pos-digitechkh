@@ -288,7 +288,8 @@ async function editCompensation(id) {
             return `<div class="p-3 rounded-lg border border-slate-200 text-xs space-y-1">
                 ${line('មួយម៉ោងធម្មតា', 1)}
                 ${line('មួយម៉ោងបន្ថែម · 150%', PAY_RULES.otMult)}
-                ${line('មួយម៉ោងយប់ ឬថ្ងៃឈប់ · 200%', PAY_RULES.nightMult)}
+                ${line('មួយម៉ោងយប់ 22:00–05:00 · 130%', PAY_RULES.nightMult)}
+                ${line('ម៉ោងបន្ថែមពេលយប់ ឬថ្ងៃឈប់ · 200%', PAY_RULES.nightOtMult)}
                 ${line('កាត់អវត្តមានមួយថ្ងៃ', PAY_RULES.monthHours / PAY_RULES.workDays)}
             </div>`;
         },
@@ -330,8 +331,28 @@ async function deactivate(id) {
     else showToast(`បានផ្អាកគណនី ${p.name}`);
 }
 
+/* ដែនកំណត់កញ្ចប់ (shopLimits)៖ បុគ្គលិកសកម្មរបស់ហាងមិនអាចលើសចំនួនដែលកញ្ចប់អនុញ្ញាត
+   សមាជិកភាព៖ បុគ្គលិកទាំងអស់ជាសមាជិក SHOP-01 · ហាងផ្សេងរាប់តែសមាជិកបន្ថែម (membershipsOf ក្នុង data.js) */
+function shopStaffCount() {
+    return loadStaff().filter(p => p.active && (CURRENT_SHOP_ID === 'SHOP-01'
+        || EXTRA_MEMBERSHIPS.some(m => m.personId === p.id && m.shopId === CURRENT_SHOP_ID))).length;
+}
+
+async function staffLimitReached() {
+    const limit = shopLimits(CURRENT_SHOP_ID).staff;
+    const n = shopStaffCount();
+    if (n < limit) return false;
+    const sub = shopSubscription(CURRENT_SHOP_ID) || {};
+    await showCustomConfirm({
+        title: 'លើសដែនកំណត់កញ្ចប់', confirmText: 'យល់ព្រម', hideCancel: true,
+        message: `កញ្ចប់${sub.planName || ''} អនុញ្ញាតបុគ្គលិក ${limit} នាក់ ហើយហាងមាន ${n} នាក់សកម្មរួចហើយ។ ផ្អាកគណនីដែលលែងប្រើ ឬទាក់ទង DIGITECHKH ដើម្បីប្តូរកញ្ចប់។`
+    });
+    return true;
+}
+
 async function reactivate(id) {
     const p = findStaff(id);
+    if (await staffLimitReached()) return;
     const ok = await showCustomConfirm({ title: `បើកគណនី ${p.name} វិញ?`, message: 'គាត់អាចចូលប្រើដោយលេខសម្ងាត់ចាស់', confirmText: 'បើកវិញ', type: 'success' });
     if (!ok) return;
     const pin = posRead('pos_pins', {})[id] || p.pin;

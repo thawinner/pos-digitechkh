@@ -170,11 +170,17 @@
 
                 <!-- ជម្រើសចូលរហ័សនៅបញ្ជរ៖ លេខកូដ PIN 6 ខ្ទង់ (មិនជាន់គ្នា ដូច្នេះស្គាល់អ្នកប្រើ) -->
                 <div id="altLogin">
+                    <div id="pinAlt">
                     <div class="my-5 flex items-center gap-3 sm-td-sub text-slate-400"><span class="flex-1 h-px bg-slate-200"></span>ឬ<span class="flex-1 h-px bg-slate-200"></span></div>
                     <button type="button" onclick="showPinMode(true)"
                         class="w-full h-12 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 sm-td font-semibold inline-flex items-center justify-center gap-2.5 transition-colors">
                         <i class="fas fa-table-cells text-[14px] text-slate-500"></i> ចូលប្រើដោយលេខកូដ PIN
                     </button>
+                    </div>
+                    <!-- ឧបករណ៍មិនទាន់ចុះឈ្មោះ៖ គ្មាន PIN (មិនដឹងថាជាហាងណា) -->
+                    <p id="noDeviceNote" class="hidden mt-5 rounded-lg border border-slate-200 px-3 py-2.5 sm-td-sub text-slate-500 leading-relaxed">
+                        <i class="fas fa-circle-info mr-1.5 text-slate-400"></i>ការចូលដោយលេខកូដ PIN ប្រើបានតែលើកុំព្យូទ័របញ្ជរដែលម្ចាស់ហាងបានចុះឈ្មោះ
+                    </p>
                     <p class="mt-6 flex items-center justify-center gap-2 sm-td-sub text-slate-400">
                         <i class="fas fa-shield-halved text-[12px]"></i> ចាក់សោស្វ័យប្រវត្តិ ពេលវាយខុស 5 ដង
                     </p>
@@ -187,12 +193,22 @@
                     </button>
                     <h2 class="mt-3 text-[24px] leading-tight font-semibold text-slate-900 text-center">លេខកូដ PIN</h2>
                     <span class="block sm-td text-slate-500 mt-2 text-center">វាយលេខកូដ 6 ខ្ទង់ផ្ទាល់ខ្លួនរបស់អ្នក</span>
+                    <span class="mt-3 flex justify-center"><span id="deviceChip" class="inline-flex items-center gap-2 h-8 px-3 rounded-full border border-slate-200 sm-td-sub font-semibold text-slate-600"></span></span>
                     <div id="pinDots" class="mt-6 h-6 flex items-center justify-center gap-4" aria-live="polite"></div>
                     <p id="pinMsg" class="sm-td-sub mt-2 min-h-[22px] text-center"></p>
                     <div id="pinKeys" class="grid grid-cols-3 gap-2.5 mt-2"></div>
                     <button id="pinSubmit" type="button" onclick="submitPin()" disabled
                         class="mt-4 w-full h-12 rounded-lg sm-td font-semibold inline-flex items-center justify-center gap-2 transition-colors">
                         ចូលប្រើ <i class="fas fa-arrow-right text-[13px]"></i>
+                    </button>
+                </div>
+                <!-- ជ្រើសហាង៖ បង្ហាញតែពេលគណនីជាសមាជិកច្រើនហាង -->
+                <div id="shopMode" class="invisible w-full" style="grid-area:1/1" inert>
+                    <h2 class="text-[24px] leading-tight font-semibold text-slate-900">ជ្រើសហាង</h2>
+                    <span id="shopHello" class="block sm-td text-slate-500 mt-2"></span>
+                    <div id="shopList" class="mt-6 space-y-2.5"></div>
+                    <button type="button" id="shopBack" onclick="cancelShopPick()" class="mt-5 inline-flex items-center gap-2 h-9 sm-td-sub font-semibold text-slate-500 hover:text-slate-800">
+                        <i class="fas fa-arrow-left text-[12px]"></i> <span id="shopBackText">ចូលដោយគណនីផ្សេង</span>
                     </button>
                 </div>
                 </div>
@@ -217,6 +233,7 @@
         </div>
         <span class="block sm-td-sub text-slate-500 mb-2">ចុចលើឈ្មោះ ដើម្បីបំពេញទម្រង់ · PIN សម្រាប់ចូលរហ័ស និងអនុម័ត</span>
         <div id="demoAccounts" class="divide-y divide-slate-100"></div>
+        <div id="demoDevice" class="mt-3 rounded-lg border border-slate-200 px-3 py-2.5 flex items-center gap-3"></div>
         <button onclick="resetDemo()" type="button"
             class="mt-3 w-full h-10 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 sm-td-sub font-semibold text-slate-700 inline-flex items-center justify-center gap-2 transition-colors">
             <i class="fas fa-rotate-left text-[12px]"></i> កំណត់ទិន្នន័យគំរូឡើងវិញ
@@ -228,11 +245,14 @@
     <script src="shared/scripts/portal.js"></script>
     <script>
         /* ទំព័រចូលប្រើ៖ អ៊ីមែល ឬលេខទូរស័ព្ទ + ពាក្យសម្ងាត់ (verifyLogin ក្នុង data.js)
+           គណនីធ្វើការច្រើនហាង → ជ្រើសហាង (ចងចាំហាងចុងក្រោយ pos_last_shop)
+           កុំព្យូទ័របញ្ជរដែលបានចុះឈ្មោះ (thisDevice) → ផ្ទាំង PIN មុន · ឧបករណ៍ផ្សេងគ្មាន PIN
            សារខុសមិនប្រាប់ថាខុសត្រង់ណា · ខុស 5 ដង → ចាក់សោ 1 នាទី (pos_login_guard)
            ចងចាំអ៊ីមែល ឬលេខទូរស័ព្ទចុងក្រោយលើឧបករណ៍នេះ (pos_last_login) ដើម្បីវាយតែពាក្យសម្ងាត់
            គ្មានម៉ាស៊ីនមេទេ ដូច្នេះផ្ទៀងផ្ទាត់ក្នុងកម្មវិធីរុករក (គំរូសាកល្បងប៉ុណ្ណោះ) */
 
         const GUARD_KEY = 'pos_login_guard';
+        const DEVICE = thisDevice();   // កុំព្យូទ័របញ្ជរដែលម្ចាស់ហាងបានចុះឈ្មោះ ឬ null
         const MAX_TRIES = 5;
         let lockTick = null;
 
@@ -329,13 +349,18 @@
 
             setBusy(true);
             const res = verifyLogin(ident, pass);
-            if (!res.person) setTimeout(() => setBusy(false), 0);
+            if (!res.person && !res.control) setTimeout(() => setBusy(false), 0);
             if (res.person) {
                 posWrite(GUARD_KEY, { fails: 0, lockedUntil: 0 });
                 try {
                     localStorage.setItem('pos_last_login', ident);
                 } catch (err) { /* មិនអាចរក្សាទុក */ }
-                return finishLogin(res.person);
+                return afterPassword(res.person);
+            }
+            if (res.control) {
+                posWrite(GUARD_KEY, { fails: 0, lockedUntil: 0 });
+                try { localStorage.setItem('pos_last_login', ident); } catch (err) { /* មិនអាចរក្សាទុក */ }
+                return finishControl(res.control);
             }
             if (res.error === 'inactive') {
                 showMsg(`<i class="fas fa-user-slash mr-1.5"></i>គណនីរបស់ ${res.person.name} ត្រូវបានផ្អាក · សូមទាក់ទងម្ចាស់ហាង`, 'warn');
@@ -423,9 +448,11 @@
             renderPinPad();
         }
         function submitPin() {
-            if (pin.length !== POS_PIN_LEN || lockedFor()) return;
-            const who = ALL_STAFF.find(p => p.active && verifyPin(p.id, pin));
-            if (who) { posWrite(GUARD_KEY, { fails: 0, lockedUntil: 0 }); return finishLogin(who); }
+            if (pin.length !== POS_PIN_LEN || lockedFor() || !DEVICE) return;
+            if (shopBlocked(DEVICE.shopId)) { pin = ''; renderPinPad(`${escapeText(shopById(DEVICE.shopId).nameKh)} មិនអាចប្រើបានបណ្តោះអាសន្ន · សូមទាក់ទងម្ចាស់ហាង`); return; }
+            // ឧបករណ៍ស្គាល់ហាងរបស់ខ្លួន ដូច្នេះ PIN រកតែក្នុងចំណោមសមាជិកហាងនោះ
+            const who = verifyPinLogin(pin, DEVICE.shopId);
+            if (who) { posWrite(GUARD_KEY, { fails: 0, lockedUntil: 0 }); return finishLogin(who, DEVICE.shopId, 'pin'); }
             const g = guard();
             g.fails += 1;
             if (g.fails >= MAX_TRIES) { g.fails = 0; g.lockedUntil = Date.now() + 60000; }
@@ -435,7 +462,76 @@
             pin = '';
             setTimeout(() => renderPinPad(document.getElementById('pinMsg').textContent ? document.getElementById('pinMsg').innerHTML : ''), 500);
         }
+        /* ===== ជ្រើសហាង (គណនីមួយ ធ្វើការច្រើនហាង) ===== */
+        let pickFor = null, pickIsSwitch = false;
+        function afterPassword(p) {
+            const ms = membershipsOf(p.id);
+            if (ms.length > 1) { showShopPicker(p, false); return false; }
+            if (shopBlocked(ms[0].shopId)) { setBusy(false); showMsg(blockedMsg(ms[0]), 'warn'); return false; }
+            return finishLogin(p, ms[0].shopId, 'password');
+        }
+        /* ហាងផ្អាក ឬការជាវផុតកំណត់៖ ម្ចាស់ហាងទាក់ទង DIGITECHKH · បុគ្គលិកទាក់ទងម្ចាស់ហាង */
+        function blockedMsg(m) {
+            const sh = shopById(m.shopId);
+            const st = subscriptionStatus(shopSubscription(m.shopId));
+            const what = st === 'suspended' ? 'ត្រូវបានផ្អាក' : 'ការជាវបានផុតកំណត់';
+            return `<i class="fas fa-store-slash mr-1.5"></i>${escapeText(sh.nameKh)} ${what} · ${m.role === 'admin' ? 'សូមទាក់ទង DIGITECHKH ដើម្បីបន្តការជាវ' : 'សូមទាក់ទងម្ចាស់ហាង'}`;
+        }
+        function showShopPicker(p, isSwitch) {
+            pickFor = p; pickIsSwitch = isSwitch;
+            const ms = membershipsOf(p.id);
+            const last = (posRead('pos_last_shop', {}) || {})[p.id];
+            const ordered = ms.slice().sort((a, b) => shopBlocked(a.shopId) - shopBlocked(b.shopId) || (b.shopId === last) - (a.shopId === last));
+            document.getElementById('shopHello').textContent = `${p.name} · អ្នកធ្វើការនៅ ${ms.length} ហាង`;
+            document.getElementById('shopBackText').textContent = isSwitch ? 'បោះបង់' : 'ចូលដោយគណនីផ្សេង';
+            document.getElementById('shopList').innerHTML = ordered.map((m, i) => {
+                const sh = shopById(m.shopId);
+                const blocked = shopBlocked(m.shopId);
+                const st = subscriptionStatus(shopSubscription(m.shopId));
+                return `<button type="button" onclick="pickShop('${m.shopId}')" data-shop="${m.shopId}" ${blocked ? 'disabled' : ''}
+                    class="w-full text-left px-4 py-3 rounded-lg border border-slate-200 bg-white transition-colors flex items-center gap-3 ${blocked ? 'opacity-60 cursor-not-allowed' : 'hover:border-slate-400'}">
+                    <img src="${sh.logo}" alt="" class="w-10 h-10 object-contain flex-shrink-0">
+                    <span class="flex-1 min-w-0">
+                        <span class="block sm-td font-semibold text-slate-900 truncate">${escapeText(sh.nameKh)}</span>
+                        <span class="block sm-td-sub text-slate-500 truncate">${escapeText(sh.branch)} · ${ROLE_NAME[m.role]}</span>
+                    </span>
+                    ${blocked ? `<span class="sm-td-sub font-semibold text-rose-600 flex-shrink-0">${st === 'suspended' ? 'បានផ្អាក' : 'ផុតកំណត់'}</span>`
+                        : m.shopId === last ? '<span class="sm-td-sub text-slate-500 flex-shrink-0">ប្រើចុងក្រោយ</span>' : ''}
+                    <span class="kbd flex-shrink-0">${i + 1}</span>
+                </button>`;
+            }).join('');
+            ['emailMode', 'pinMode'].forEach(id => { const el = document.getElementById(id); el.classList.add('invisible'); el.inert = true; });
+            const sm = document.getElementById('shopMode');
+            sm.classList.remove('invisible', 'fade-up'); sm.inert = false; void sm.offsetWidth; sm.classList.add('fade-up');
+            setTimeout(() => { const b = sm.querySelector('[data-shop]:not([disabled])'); if (b) b.focus(); }, 50);
+        }
+        function pickShop(shopId) {
+            if (!pickFor) return;
+            if (pickIsSwitch && SESSION) {
+                posLogin(pickFor.id, shopId, SESSION.via);
+                location.href = ROLE_HOME[roleOf(pickFor.id)];
+                return;
+            }
+            finishLogin(pickFor, shopId, 'password');
+        }
+        function cancelShopPick() {
+            if (pickIsSwitch) { location.href = ROLE_HOME[roleOf(pickFor.id)]; return; }
+            pickFor = null;
+            const sm = document.getElementById('shopMode');
+            sm.classList.add('invisible'); sm.inert = true;
+            const em = document.getElementById('emailMode');
+            em.classList.remove('invisible'); em.inert = false;
+            clearIdent();
+        }
+
         document.addEventListener('keydown', e => {
+            if (!document.getElementById('shopMode').classList.contains('invisible')) {
+                const btns = [...document.querySelectorAll('#shopList [data-shop]')];
+                const n = Number(e.key);
+                if (n >= 1 && n <= btns.length && !btns[n - 1].disabled) btns[n - 1].click();
+                else if (e.key === 'Escape') cancelShopPick();
+                return;
+            }
             if (document.getElementById('pinMode').classList.contains('invisible')) return;
             if (/^[0-9]$/.test(e.key)) pinPress(e.key);
             else if (e.key === 'Backspace') pinPress('⌫');
@@ -443,8 +539,11 @@
             else if (e.key === 'Enter') { e.preventDefault(); submitPin(); }
         });
 
-        function finishLogin(who) {
-            posLogin(who.id);
+        function finishLogin(who, shopId, via) {
+            posLogin(who.id, shopId, via);
+            const sm = document.getElementById('shopMode');
+            sm.classList.add('invisible'); sm.inert = true;
+            const shopNote = membershipsOf(who.id).length > 1 ? ` · ${escapeText(shopById(shopId).nameKh)}` : '';
             const next = new URLSearchParams(location.search).get('next');
             const role = roleOf(who.id);
             const area = next && (next.match(/^(cashier|manager|admin)\/[a-z-]+\/[a-z-]+\.html$/) || [])[1];
@@ -460,8 +559,24 @@
             form.insertAdjacentHTML('beforeend', `<div class="pt-10 pb-6 flex flex-col items-center text-center fade-up">
                 ${avatarHtml(who.id, 'w-20 h-20 ring-1 ring-slate-200')}
                 <span class="block mt-4 text-[22px] leading-tight font-semibold text-slate-900">សូមស្វាគមន៍ ${who.name}</span>
-                <span class="block sm-td-sub text-slate-500 mt-1">${ROLE_NAME[role]} · កំពុងបើក${destinationOf(who)}…</span></div>`);
+                <span class="block sm-td-sub text-slate-500 mt-1">${ROLE_NAME[role]}${shopNote} · កំពុងបើក${destinationOf(who)}…</span></div>`);
             setTimeout(() => { location.href = allowed ? next : ROLE_HOME[role]; }, 650);
+            return false;
+        }
+
+        /* អ្នកគ្រប់គ្រងប្រព័ន្ធ (DIGITECHKH)៖ គ្មានហាង · ទៅច្រក control/* */
+        function finishControl(who) {
+            posLoginControl(who.id);
+            const next = new URLSearchParams(location.search).get('next');
+            const ok = next && /^control\/[a-z-]+\/[a-z-]+\.html$/.test(next);
+            const form = document.getElementById('loginForm');
+            [...form.children].forEach(el => el.remove());
+            document.getElementById('altLogin').classList.add('hidden');
+            form.insertAdjacentHTML('beforeend', `<div class="pt-10 pb-6 flex flex-col items-center text-center fade-up">
+                ${avatarHtml(who.id, 'w-20 h-20 ring-1 ring-slate-200')}
+                <span class="block mt-4 text-[22px] leading-tight font-semibold text-slate-900">សូមស្វាគមន៍ ${who.name}</span>
+                <span class="block sm-td-sub text-slate-500 mt-1">អ្នកគ្រប់គ្រងប្រព័ន្ធ · កំពុងបើកបញ្ជីហាង…</span></div>`);
+            setTimeout(() => { location.href = ok ? next : 'control/dashboard/dashboard.html'; }, 650);
             return false;
         }
 
@@ -481,6 +596,21 @@
             syncClear();
             toggleDemo();
             document.getElementById('loginBtn').focus();
+        }
+
+        /* គំរូ៖ ប្តូររវាង «កុំព្យូទ័របញ្ជរដែលបានចុះឈ្មោះ» និង «ឧបករណ៍ផ្ទាល់ខ្លួន» ដើម្បីសាកការចូលទាំងពីរ
+           (ក្នុងផលិតផល ម្ចាស់ហាងធ្វើនៅ ការកំណត់ → ឧបករណ៍បញ្ជរ) */
+        function renderDemoDevice() {
+            const d = thisDevice();
+            document.getElementById('demoDevice').innerHTML = `<i class="fas ${d ? 'fa-cash-register' : 'fa-laptop'} text-slate-400"></i>
+                <span class="flex-1 min-w-0 sm-td-sub text-slate-600">${d ? `ឧបករណ៍នេះ = បញ្ជរ ${d.register} · ${escapeText(shopById(d.shopId).nameKh)}` : 'ឧបករណ៍នេះមិនទាន់ចុះឈ្មោះជាបញ្ជរ'}</span>
+                <button type="button" onclick="demoToggleDevice()" class="sm-td-sub font-semibold text-blue-600 hover:text-blue-700 flex-shrink-0">${d ? 'ដកការចុះឈ្មោះ' : 'ចុះឈ្មោះជា POS-01'}</button>`;
+        }
+        function demoToggleDevice() {
+            const d = thisDevice();
+            if (d) removeDevice(d.id);
+            else registerThisDevice('SHOP-01', 'POS-01', 'ADM-01');
+            location.reload();
         }
 
         async function resetDemo() {
@@ -507,17 +637,21 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof initDarkMode === 'function') initDarkMode();
-            document.getElementById('branchLabel').textContent = MERCHANT.branch;
+            document.getElementById('branchLabel').textContent = MERCHANT.branch + (DEVICE ? ` · ${DEVICE.register}` : '');
+            document.getElementById('pinAlt').classList.toggle('hidden', !DEVICE);
+            document.getElementById('noDeviceNote').classList.toggle('hidden', !!DEVICE);
+            if (DEVICE) document.getElementById('deviceChip').innerHTML = `<i class="fas fa-cash-register text-slate-400"></i>${escapeText(shopById(DEVICE.shopId).nameKh)} · បញ្ជរ ${DEVICE.register}`;
+            renderDemoDevice();
             tick();
             setInterval(tick, 10000);
-            document.getElementById('demoAccounts').innerHTML = CASHIERS.concat(MANAGERS, ADMINS).map(p =>
+            document.getElementById('demoAccounts').innerHTML = CASHIERS.concat(MANAGERS, ADMINS, CONTROL_ACCOUNTS).map(p =>
                 `<button type="button" onclick="fillDemo('${p.id}')" class="w-full text-left py-2 px-1 flex items-center gap-2.5 hover:bg-slate-50 rounded transition-colors">
                     ${avatarHtml(p.id, 'w-7 h-7')}
                     <span class="flex-1 min-w-0"><span class="block sm-td-sub font-semibold text-slate-800 truncate">${p.name}</span>
-                    <span class="block sm-td-sub text-slate-500 truncate">${p.phone} · ${p.email}</span></span>
+                    <span class="block sm-td-sub text-slate-500 truncate">${p.phone} · ${p.email}${membershipsOf(p.id).length > 1 ? ` · ${membershipsOf(p.id).length} ហាង` : ''}</span></span>
                     <span class="text-right flex-shrink-0">
                         <span class="block sm-figure sm-td-sub text-slate-900 font-semibold">${effectivePassword(p.id)}</span>
-                        <span class="block sm-figure sm-td-sub text-slate-500">PIN ${effectivePin(p.id)}</span>
+                        <span class="block sm-figure sm-td-sub text-slate-500">${isControlId(p.id) ? 'DIGITECHKH' : `PIN ${effectivePin(p.id)}`}</span>
                     </span>
                 </button>`).join('');
             const last = (() => { try { return localStorage.getItem('pos_last_login') || ''; } catch (err) { return ''; } })();
@@ -526,7 +660,11 @@
             renderPinPad();   // គូរផ្ទាំង PIN ជាមុន ដើម្បីឱ្យកម្ពស់បណ្ណថេរ
             document.getElementById('footYear').textContent = new Date().getFullYear();
             renderLock();
-            setTimeout(() => document.getElementById(last ? 'pass' : 'ident').focus({ preventScroll: true }), 1300);
+            // ប្តូរហាងពីរបារចំហៀង (index.html?pick=1) · បញ្ជរដែលបានចុះឈ្មោះបើកផ្ទាំង PIN មុន · ឧបករណ៍ផ្សេងបើកទម្រង់ពាក្យសម្ងាត់
+            const params = new URLSearchParams(location.search);
+            if (params.get('pick') && SESSION && membershipsOf(SESSION.userId).length > 1) showShopPicker(personById(SESSION.userId), true);
+            else if (DEVICE && !params.get('next')) showPinMode(true);
+            else setTimeout(() => document.getElementById(last ? 'pass' : 'ident').focus({ preventScroll: true }), 1300);
         });
 
         /* ផ្ទាំងចាប់ផ្តើមបង្ហាញរាល់ពេលបើកទំព័រ យ៉ាងតិច 1.2 វិនាទី រួចរលាយបាត់ */

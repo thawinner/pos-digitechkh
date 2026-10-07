@@ -95,6 +95,25 @@ const PORTAL_CONFIGS = {
             { id: 'settings', label: 'ច្បាប់ និងការកំណត់', icon: 'mdi:tune-variant', href: 'admin/settings/settings.html' },
             { group: 'ត្រួតពិនិត្យ', id: 'audit', label: 'កំណត់ហេតុសវនកម្ម', icon: 'mdi:clipboard-text-clock-outline', href: 'admin/audit/audit.html' }
         ]
+    },
+    /* អ្នកគ្រប់គ្រងប្រព័ន្ធ (ក្រុម DIGITECHKH · pos_control) — ហាងដែលជាវ កញ្ចប់ និងការបង់ប្រាក់
+       badgeFn ស្ថិតក្នុង control-data.js */
+    controlPortal: {
+        sidebarV2: true,
+        title: 'អ្នកគ្រប់គ្រងប្រព័ន្ធ',
+        roleName: 'អ្នកគ្រប់គ្រងប្រព័ន្ធ',
+        roleIcon: 'mdi:server-network',
+        userInitials: 'សវ',
+        userName: 'ស៊ាន វិចិត្រ',
+        userRole: 'អ្នកគ្រប់គ្រងប្រព័ន្ធ',
+        policyNote: 'គ្រប់គ្រងហាងដែលជាវ កញ្ចប់ និងការបង់ប្រាក់ · មិនឃើញការលក់ ថ្លៃដើម ឬបុគ្គលិករបស់ហាង · ការចូលមើលដើម្បីជួយត្រូវមានមូលហេតុ ហើយម្ចាស់ហាងឃើញក្នុងកំណត់ហេតុរបស់ខ្លួន។',
+        nav: [
+            { group: 'ទិដ្ឋភាពរួម', id: 'dashboard', label: 'ផ្ទាំងគ្រប់គ្រង', icon: 'mdi:view-dashboard-outline', href: 'control/dashboard/dashboard.html' },
+            { group: 'អតិថិជន', id: 'companies', label: 'ហាងដែលជាវ', icon: 'mdi:storefront-outline', href: 'control/companies/companies.html', badgeFn: 'ctlAttentionCount', badgeTone: 'amber' },
+            { id: 'billing', label: 'ការបង់ប្រាក់', icon: 'mdi:receipt-text-outline', href: 'control/billing/billing.html', badgeFn: 'ctlDueCount', badgeTone: 'amber' },
+            { id: 'plans', label: 'កញ្ចប់ និងតម្លៃ', icon: 'mdi:package-variant', href: 'control/plans/plans.html' },
+            { group: 'ត្រួតពិនិត្យ', id: 'audit', label: 'កំណត់ហេតុ', icon: 'mdi:clipboard-text-clock-outline', href: 'control/audit/audit.html' }
+        ]
     }
 };
 
@@ -140,6 +159,7 @@ function sessionPortalConfig(cfg, portalId) {
     const session = posSession();
     const person = session && personById(session.userId);
     if (!person) return cfg;
+    if (session.control) return Object.assign({}, cfg, { userId: person.id, userInitials: person.initials, userName: person.name, userRole: 'អ្នកគ្រប់គ្រងប្រព័ន្ធ', views: [] });
     const role = roleOf(person.id);
     const out = Object.assign({}, cfg, {
         userId: person.id,
@@ -245,10 +265,10 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
     const avatar = cfg.userId && typeof avatarHtml === 'function'
         ? avatarHtml(cfg.userId, 'w-8 h-8')
         : `<div class="w-8 h-8 rounded-full sb-avatar border flex items-center justify-center font-semibold text-xs flex-shrink-0">${cfg.userInitials}</div>`;
-    const roleLabel = { adminPortal: 'ម្ចាស់ហាង', managerPortal: 'អ្នកគ្រប់គ្រង', posPortal: 'ផ្ទាំងគិតលុយ' }[portalId] || cfg.title;
+    const roleLabel = { adminPortal: 'ម្ចាស់ហាង', managerPortal: 'អ្នកគ្រប់គ្រង', posPortal: 'ផ្ទាំងគិតលុយ', controlPortal: 'អ្នកគ្រប់គ្រងប្រព័ន្ធ' }[portalId] || cfg.title;
     const canSwitch = (cfg.views || []).length > 1;
     // ចំណុចពណ៌ទិដ្ឋភាព៖ សម្គាល់ទិដ្ឋភាពនីមួយៗ (របារចំហៀងខ្លួនឯងនៅតែអព្យាក្រឹត)
-    const viewOf = { adminPortal: 'admin', managerPortal: 'manager', posPortal: 'cashier' };
+    const viewOf = { adminPortal: 'admin', managerPortal: 'manager', posPortal: 'cashier', controlPortal: 'control' };
     const dot = id => `<span class="sb-view-dot view-${id}" aria-hidden="true"></span>`;
     const menuItem = (icon, label, attrs, tone) => `<button type="button" ${attrs}
         class="sb-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-md text-left ${tone || ''}">
@@ -263,7 +283,7 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
                         <img src="${sharedRoot}/assets/logo-mark-transparent.png" alt="" class="w-5 h-5 object-contain">
                     </span>
                     <span class="min-w-0 flex-1 sb-brand-text">
-                        <span class="block text-[15px] font-semibold sb-strong leading-tight truncate">${typeof MERCHANT !== 'undefined' ? MERCHANT.nameKh : ''}</span>
+                        <span class="block text-[15px] font-semibold sb-strong leading-tight truncate">${portalId === 'controlPortal' ? 'DIGITECHKH' : typeof MERCHANT !== 'undefined' ? MERCHANT.nameKh : ''}</span>
                         <span class="flex items-center gap-1.5 sb-sub sb-view truncate">${dot(viewOf[portalId] || 'cashier')}${roleLabel}</span>
                     </span>
                     ${canSwitch ? '<iconify-icon icon="mdi:unfold-more-horizontal" class="text-lg sb-muted flex-shrink-0"></iconify-icon>' : ''}
@@ -306,6 +326,8 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
                 </div>
                 <div class="sb-divider h-px my-1"></div>
                 ${(cfg.views || []).filter(v => !v.current).map(v => menuItem(v.icon, `ប្តូរទៅ${v.label}`, `onclick="location.href='${roleRoot}/${v.href}'"`)).join('')}
+                ${typeof SESSION !== 'undefined' && SESSION && typeof membershipsOf === 'function' && membershipsOf(SESSION.userId).length > 1
+                    ? menuItem('mdi:store-cog-outline', 'ប្តូរហាង', `onclick="location.href='${roleRoot}/index.html?pick=1'"`) : ''}
                 ${menuItem('mdi:theme-light-dark', 'ទម្រង់ភ្លឺ ឬងងឹត', 'onclick="toggleDarkMode(); closeSidebarMenus()"')}
                 ${menuItem('mdi:shield-check-outline', 'គោលការណ៍សិទ្ធិ', "onclick=\"document.getElementById('sbPolicyBody').classList.toggle('hidden')\"")}
                 <p id="sbPolicyBody" class="hidden mx-3 mb-1.5 mt-0.5 sb-sub leading-relaxed">${cfg.policyNote}</p>
