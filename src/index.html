@@ -670,12 +670,14 @@
             }).join('') + `<button type="button" onclick="demoSetDevice(-1)" class="w-full h-9 px-2.5 rounded-md border sm-td-sub inline-flex items-center gap-2 ${d ? 'border-slate-200 text-slate-600 hover:bg-slate-50' : 'border-blue-600 bg-blue-50 text-blue-700 font-semibold'}">
                     <i class="fas ${d ? 'fa-laptop text-slate-400' : 'fa-check'} text-[12px]"></i>កុំព្យូទ័រផ្ទាល់ខ្លួន (មិនមែនបញ្ជរ)</button>`;
         }
+        // ប្តូរតែ «កុំព្យូទ័រនេះជាបញ្ជរណា» · មិនដកការចុះឈ្មោះបញ្ជរណាមួយចេញ
         function demoSetDevice(gi, register) {
             const g = demoTills()[gi];
-            const d = thisDevice();
-            if (d) removeDevice(d.id);
-            if (g) registerThisDevice(g.shopId, register, g.by, g.branch.id);
-            else posWrite('pos_device', null);
+            if (g) {
+                const dev = deviceList().find(d => d.shopId === g.shopId && d.register === register);
+                if (dev) posWrite('pos_device', dev.id);
+                else registerThisDevice(g.shopId, register, g.by, g.branch.id);
+            } else posWrite('pos_device', null);
             posLogout();
             location.href = 'index.html';
         }

@@ -1041,3 +1041,38 @@ function getStaffTimesheet(staffId, range) {
         };
     });
 }
+
+
+/* ===== ការលក់ថ្ងៃនេះតាមសាខា (ផ្ទាំងគ្រប់គ្រង · ទំព័រសាខា) =====
+   សាខាដែលកំពុងមើល៖ ទិន្នន័យពេញ (mgrAllSales) · សាខាផ្សេង៖ iframe លាក់ admin/branches/branch-summary.html
+   ដែលដំណើរការជាសាខានោះ ហើយផ្ញើ { total, count, open } មកវិញ (ប្រព័ន្ធពិត៖ ម៉ាស៊ីនមេគណនាតាមសាខា) */
+const BRANCH_SUMMARIES = {};
+
+function branchTodayFor(branchId) {
+    if (BRANCH_SUMMARIES[branchId]) return BRANCH_SUMMARIES[branchId];
+    const today = businessDate();
+    const here = branchId === ACTIVE_BRANCH_ID;
+    const sales = (here ? mgrAllSales() : posReadAt('pos_shift_sales', [], branchId) || []).filter(s => s.time && s.time.startsWith(today) && !isVoided(s));
+    const shifts = here ? mgrAllShifts() : posReadAt('pos_shifts', [], branchId) || [];
+    const sum = { total: sales.reduce((n, s) => n + saleTotals(s.items, s.discountPercent).gross, 0), count: sales.length,
+        open: shifts.filter(s => s.status === 'open').length, ready: here };
+    if (here) BRANCH_SUMMARIES[branchId] = sum;
+    return sum;
+}
+
+function loadBranchSummaries(onUpdate) {
+    window.addEventListener('message', e => {
+        if (e.origin !== location.origin || !e.data || e.data.type !== 'branchSummary') return;
+        BRANCH_SUMMARIES[e.data.branchId] = Object.assign({ ready: true }, e.data);
+        onUpdate();
+    });
+    shopBranches().filter(b => b.id !== ACTIVE_BRANCH_ID).forEach(b => {
+        const f = document.createElement('iframe');
+        f.src = `../branches/branch-summary.html?summaryBranch=${encodeURIComponent(b.id)}`;
+        f.setAttribute('aria-hidden', 'true');
+        f.tabIndex = -1;
+        f.style.cssText = 'position:absolute;width:0;height:0;border:0;visibility:hidden';
+        f.onload = () => setTimeout(() => f.remove(), 0);
+        document.body.appendChild(f);
+    });
+}

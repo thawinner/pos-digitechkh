@@ -36,8 +36,8 @@ coffee categories and 19 products, shifts 06:00–14:00 / 14:00–21:00, 4 suppl
 MGR-04 + CAS-07..10 (BR-02), MGR-05 + CAS-11..12 (BR-03); coffee: MGR-06 + CAS-13..15. Generated history is salted per
 branch (`DEMO_SALT` in `rngFor`; BR-01 unchanged), uses the branch's manager (`demoManagerId()`), and opening stock
 scales with `openingQty(p)`. `ensureDemoTransfers()` seeds one received transfer (central → Toul Kork, 2 short) and one
-in transit (central → Sen Sok). The owner dashboard's «សាខាទាំងអស់» card gets other branches' figures from hidden
-iframes of `admin/branches/branch-summary.html?summaryBranch=…` (not a visible page; the only URL that overrides
+in transit (central → Sen Sok). The owner dashboard's «សាខាទាំងអស់» card and the branches page share `branchTodayFor()` /
+`loadBranchSummaries()` (`admin-data.js`); other branches' figures come from hidden iframes of `admin/branches/branch-summary.html?summaryBranch=…` (not a visible page; the only URL that overrides
 `ACTIVE_BRANCH_ID`).
 DIGITECHKH (SHOP-01) is the only demo shop with generated data. Every other shop has its own storage: `posRead`/`posWrite`
 add `@SHOP-NN` to shop keys (`storeKey`, `ACTIVE_SHOP_ID`, `IS_DEMO_SHOP`); `GLOBAL_KEYS` (session, devices, people,
@@ -89,8 +89,9 @@ Strict login (decided 2026-10-07), one rule for password and PIN, `loginBlockRea
 a registered till is that shop's login page, so only its shop's people log in there, and staff only at their own
 branch's till (owners at any branch) → `shop` / `branch`; off a till, owners and managers may log in but cashiers may
 not (`till`). The message appears only after a correct password. `posSession()` re-applies the rule on every page, so
-removing or changing the till logs its cashier out. The demo seeds this browser as POS-01; the demo panel on the login
-page switches it between every till of both shops or «កុំព្យូទ័រផ្ទាល់ខ្លួន» and greys out accounts that cannot log in there.
+removing or changing the till logs its cashier out. The demo registers all 8 demo tills (`DEMO_DEVICES`, DEV-01..08; older browsers get the
+missing ones once, `pos_device_seed`) and makes this browser POS-01; the demo panel on the login
+page only switches which till this browser is (never removes a registration) between every till of both shops or «កុំព្យូទ័រផ្ទាល់ខ្លួន» and greys out accounts that cannot log in there.
 
 Super Admin (DIGITECHKH's own console, `control/*`, body `controlPortal`): demo login admin@digitechkh.com · control2026
 (`CONTROL_ACCOUNTS` in `data.js`, no shop membership, can open only `control/*`). It logs in on the normal login page,
