@@ -27,8 +27,8 @@
         /* ទូរស័ព្ទ: ប៊ូតុងពីរនៅជួរលើ ប៊ូតុងចម្បងពេញទទឹងនៅក្រោម */
         @media (max-width: 639px) {
             main div.stock-actions.stock-actions { display: grid !important; grid-template-columns: 1fr 1fr; width: 100%; }
-            .stock-actions > a { justify-content: center; padding-left: .75rem !important; padding-right: .75rem !important; }
-            .stock-actions > a:last-child { grid-column: span 2; }
+            .stock-actions > * { justify-content: center; padding-left: .75rem !important; padding-right: .75rem !important; }
+            .stock-actions > *:last-child { grid-column: span 2; }
         }
     </style>
 </head>
@@ -38,18 +38,23 @@
 
     <div class="flex-1 flex flex-col h-full overflow-hidden">
         <div id="headerHost" data-title="ស្តុកទំនិញ"
-             data-subtitle="ទំនិញក្នុងស្តុក បរិមាណអប្បបរមា និងបញ្ជីត្រូវបញ្ជាទិញ"></div>
+             data-subtitle="ការងារត្រូវធ្វើ និងចំនួនទំនិញក្នុងស្តុក"></div>
         <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
             <div class="w-full space-y-5">
                 <div class="flex flex-wrap items-center justify-end gap-3">
                     <div class="flex flex-wrap items-center gap-2.5 max-sm:w-full stock-actions">
-                        <a href="create-adjustment.html" class="sm-value h-11 px-4 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center gap-2 shadow-sm transition"><i class="fas fa-sliders text-blue-600"></i> កែតម្រូវស្តុក</a>
-                        <a href="../purchase/create-order.html" class="sm-value h-11 px-4 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center gap-2 shadow-sm transition"><i class="fas fa-cart-arrow-down text-blue-600"></i> បញ្ជាទិញ</a>
-                        <a href="create-stock-in.html" class="sm-value h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2 shadow-sm transition"><i class="fas fa-truck-ramp-box"></i> ទទួលស្តុកថ្មី</a>
+                        <!-- ទទួលទំនិញ = ប៊ូតុងតែមួយ៖ សួរថាមកពីការបញ្ជាទិញណា ឬគ្មាន (openReceiveChooser) -->
+                        <button type="button" onclick="location.href='create-adjustment.html'" class="sm-value h-11 px-4 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center gap-2 shadow-sm transition"><i class="fas fa-sliders text-slate-400"></i> កែតម្រូវ</button>
+                        <button type="button" onclick="location.href='../purchase/create-order.html'" class="sm-value h-11 px-4 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center gap-2 shadow-sm transition"><i class="fas fa-cart-arrow-down text-slate-400"></i> បញ្ជាទិញ</button>
+                        <button type="button" onclick="openReceiveChooser('../..')" class="sm-value h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2 shadow-sm transition"><i class="fas fa-truck-ramp-box"></i> ទទួលទំនិញ</button>
                     </div>
                 </div>
 
-                <div id="kpiRow" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
+                <div id="untrackedBanner" class="hidden"></div>
+
+                <div id="expiryCard" class="hidden"></div>
+
+                <section id="todoCard" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden"></section>
 
                 <div class="bg-white rounded-2xl p-3 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-3">
                     <div id="statusTabs" class="flex flex-wrap items-center gap-2"></div>
@@ -78,7 +83,6 @@
                                 <tr>
                                     <th class="sm-th py-2.5 px-4">ទំនិញ</th>
                                     <th class="sm-th py-2.5 px-4">ប្រភេទ</th>
-                                    <th class="sm-th py-2.5 px-4 text-right">តម្លៃលក់</th>
                                     <th class="sm-th py-2.5 px-4 text-right">ក្នុងស្តុក</th>
                                     <th class="sm-th py-2.5 px-4 text-right">អប្បបរមា</th>
                                     <th class="sm-th py-2.5 px-4 text-center">ស្ថានភាព</th>
@@ -108,27 +112,82 @@
         let searchTerm = '';
         let listReady = false; // រក្សាទុកតម្រងបន្ទាប់ពីស្តារឡើងវិញរួចប៉ុណ្ណោះ
 
-        function renderKpis() {
-            const levels = onHandLevels();
-            const prods = sellableProducts();
-            const total = prods.length;
-            let okCount = 0;
-            let lowCount = 0;
-            let outCount = 0;
+        /* សាខាដែលមិនទាន់កត់ត្រាស្តុកសោះ៖ មិនបង្ហាញ «អស់» លើគ្រប់ទំនិញទេ (ដូចបញ្ជរ) តែប្រាប់ពីរបៀបចាប់ផ្តើម */
+        const NOT_TRACKED = { label: 'មិនទាន់កត់ត្រា', cls: 'bg-slate-50 text-slate-500 border-slate-200' };
+        const statusOf = (p, levels) => stockTracked() ? stockStatusOf(p, levels[p.sku] || 0) : 'none';
+        const statusMeta = s => STOCK_STATUS[s] || NOT_TRACKED;
 
-            prods.forEach(p => {
-                const s = stockStatusOf(p, levels[p.sku] || 0);
-                if (s === 'ok') okCount++;
-                else if (s === 'low') lowCount++;
-                else if (s === 'out') outCount++;
-            });
-
-            document.getElementById('kpiRow').innerHTML =
-                kpiCard('មុខទំនិញសរុប', `${total}`, 'ទំនិញសកម្មទាំងអស់') +
-                kpiCard('ស្តុកគ្រប់គ្រាន់', `${okCount}`, `${total ? Math.round(okCount / total * 100) : 0}% នៃទំនិញ`) +
-                kpiCard('ជិតអស់ស្តុក', `${lowCount}`, 'ដល់ ឬក្រោមអប្បបរមា', lowCount ? 'text-amber-600' : 'text-slate-800') +
-                kpiCard('អស់ពីស្តុក', `${outCount}`, outCount ? 'ត្រូវបំពេញស្តុកជាបន្ទាន់' : 'គ្មានទំនិញអស់ស្តុក', outCount ? 'text-rose-600' : 'text-slate-800');
+        /* ទំនិញជិតផុតកំណត់ ឬហួសរួច (តាមកាលបរិច្ឆេទពេលទទួលស្តុក) → កាត់ចេញជា «ផុតកំណត់» */
+        function renderExpiry() {
+            const host = document.getElementById('expiryCard');
+            const lots = expiringLots();
+            host.classList.toggle('hidden', !lots.length);
+            if (!lots.length) return;
+            const when = d => d < 0 ? `ផុតកំណត់ ${-d} ថ្ងៃហើយ` : d === 0 ? 'ផុតកំណត់ថ្ងៃនេះ' : `នៅសល់ ${d} ថ្ងៃ`;
+            host.innerHTML = `<section id="expiry" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                <div class="px-5 py-4 border-b border-slate-100 flex items-center gap-3">
+                    <i class="fas fa-calendar-xmark text-amber-500"></i>
+                    <div class="min-w-0"><h3 class="sm-card-title text-slate-800">ជិតផុតកំណត់</h3>
+                    <p class="sm-card-sub text-slate-500">ក្នុង ${EXPIRY_WARN_DAYS} ថ្ងៃខាងមុខ · ដាក់លក់មុនគេ ឬដកចេញពីធ្នើពេលហួស</p></div>
+                </div>
+                <div class="divide-y divide-slate-100">${lots.map(x => {
+                    const p = getProduct(x.sku) || { name: x.sku, unit: '' };
+                    return `<div class="px-5 py-3 flex flex-wrap items-center gap-3">
+                        <span class="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0">${productImgHtml(p)}</span>
+                        <span class="flex-1 min-w-0"><span class="block sm-td font-medium text-slate-800 truncate">${escapeText(p.name)}</span>
+                            <span class="block sm-td-sub sm-figure ${x.daysLeft < 0 ? 'text-rose-600 font-semibold' : 'text-amber-700'}">${x.qty} ${p.unit} · ${fmtDate(x.expiry)} · ${when(x.daysLeft)}</span></span>
+                        ${x.daysLeft < 0 ? `<button type="button" onclick="markRecordViewed('${x.sku}'); location.href='create-adjustment.html?sku=${x.sku}&reason=expired&qty=${x.qty}'" class="sm-badge h-10 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold">កាត់ចេញពីស្តុក</button>` : ''}
+                    </div>`;
+                }).join('')}</div>
+            </section>`;
         }
+
+        function renderUntrackedBanner() {
+            const host = document.getElementById('untrackedBanner');
+            const tracked = stockTracked();
+            host.classList.toggle('hidden', tracked);
+            if (tracked) return;
+            host.innerHTML = `<div class="bg-white border border-slate-200 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-start gap-3 min-w-0">
+                    <i class="fas fa-boxes-stacked text-slate-400 mt-1"></i>
+                    <div class="min-w-0">
+                        <h4 class="sm-card-title text-slate-800">${shopBranches().length > 1 ? branchName(ACTIVE_BRANCH_ID) : 'ហាងនេះ'} មិនទាន់មានចំនួនស្តុក</h4>
+                        <p class="sm-td-sub text-slate-500 mt-0.5">ទទួលស្តុកដែលមកដល់ ឬរាប់ស្តុកលើធ្នើ ដើម្បីចាប់ផ្តើមតាមដាន · ការជូនដំណឹងជិតអស់ចាប់ផ្តើមបន្ទាប់ពីនោះ</p>
+                    </div>
+                </div>
+                <a href="../stock-count/create-count.html" class="sm-badge h-10 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center gap-2 transition"><i class="fas fa-clipboard-check text-slate-400"></i> រាប់ស្តុក</a>
+            </div>`;
+        }
+
+        /* ការងារត្រូវធ្វើ៖ មួយបន្ទាត់ក្នុងមួយការងារ ប៊ូតុងមួយ · គ្មានការងារ = ប្រាប់ថាល្អ */
+        function renderTodo() {
+            const host = document.getElementById('todoCard');
+            if (!stockTracked()) { host.classList.add('hidden'); return; }
+            host.classList.remove('hidden');
+            const items = stockTodo('../..');
+            const toneIcon = { rose: 'text-rose-600', amber: 'text-amber-500', slate: 'text-slate-400' };
+            const head = `<div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between gap-3">
+                <h3 class="sm-card-title text-slate-800">ត្រូវធ្វើ</h3>
+                <span class="sm-td-sub text-slate-400">${items.length ? `${items.length} ការងារ` : ''}</span></div>`;
+            if (!items.length) {
+                host.innerHTML = head + `<div class="px-5 py-4 flex items-center gap-3">
+                    <i class="fas fa-circle-check text-slate-400"></i>
+                    <span class="sm-td text-slate-600">គ្មានអ្វីត្រូវធ្វើ · ស្តុកគ្រប់គ្រាន់ គ្មានទំនិញរង់ចាំទទួល</span></div>`;
+                return;
+            }
+            host.innerHTML = head + `<div class="divide-y divide-slate-100">${items.map(t => {
+                const go = t.action ? t.action : `location.href='${t.href}'`;
+                return `<div class="px-5 py-3 flex items-center gap-3.5">
+                    <span class="w-9 flex-shrink-0 text-center"><i class="fas ${t.icon} ${toneIcon[t.tone]}"></i></span>
+                    <span class="flex-1 min-w-0">
+                        <span class="block sm-td font-semibold text-slate-800">${escapeText(t.title)}</span>
+                        <span class="block sm-td-sub ${t.tone === 'rose' ? 'text-rose-600' : 'text-slate-500'} truncate">${escapeText(t.note)}</span>
+                    </span>
+                    <button type="button" onclick="${go}" class="sm-badge h-10 px-4 rounded-xl ${t === items[0] ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'border border-slate-200 hover:bg-slate-50 text-slate-700'} font-semibold whitespace-nowrap flex-shrink-0">${t.cta}</button>
+                </div>`;
+            }).join('')}</div>`;
+        }
+
 
         function renderTabs() {
             const levels = onHandLevels();
@@ -136,16 +195,17 @@
             let low = 0;
             let out = 0;
             prods.forEach(p => {
-                const s = stockStatusOf(p, levels[p.sku] || 0);
+                const s = statusOf(p, levels);
                 if (s === 'low') low++;
                 if (s === 'out') out++;
             });
+            const reorder = mgrReorderProducts(levels).length;
 
             const tabs = [
                 { id: 'all', label: `ទាំងអស់ (${prods.length})` },
                 { id: 'low', label: `ជិតអស់ (${low})` },
                 { id: 'out', label: `អស់ស្តុក (${out})` },
-                { id: 'reorder', label: `បញ្ជីត្រូវបញ្ជាទិញ (${low + out})` }
+                { id: 'reorder', label: `ត្រូវបញ្ជាទិញ (${reorder})` }
             ];
 
             document.getElementById('statusTabs').innerHTML = tabs.map(t => `
@@ -187,11 +247,13 @@
             }
 
             if (tab === 'low') {
-                list = list.filter(p => stockStatusOf(p, levels[p.sku] || 0) === 'low');
+                list = list.filter(p => statusOf(p, levels) === 'low');
             } else if (tab === 'out') {
-                list = list.filter(p => stockStatusOf(p, levels[p.sku] || 0) === 'out');
+                list = list.filter(p => statusOf(p, levels) === 'out');
             } else if (tab === 'reorder') {
-                list = list.filter(p => stockStatusOf(p, levels[p.sku] || 0) !== 'ok');
+                // ជិតអស់ ឬអស់ ហើយមិនទាន់បញ្ជាទិញ (ទំនិញដែលកំពុងដឹកមក នៅក្នុងផ្ទាំងជិតអស់ · អស់ស្តុក)
+                const need = new Set(mgrReorderProducts(levels).map(p => p.sku));
+                list = list.filter(p => need.has(p.sku));
             }
 
             const empty = document.getElementById('empty');
@@ -200,6 +262,11 @@
                 document.getElementById('rows').innerHTML = '';
                 document.getElementById('cards').innerHTML = '';
                 empty.classList.remove('hidden');
+                // ផ្ទាំងត្រូវបញ្ជាទិញទទេ ដោយគ្មានតម្រង = ដំណឹងល្អ មិនមែនកំហុសស្វែងរកទេ
+                if (tab === 'reorder' && selectedCategory === 'all' && !searchTerm) {
+                    empty.innerHTML = emptyState('fa-circle-check', 'គ្មានទំនិញត្រូវបញ្ជាទិញ', 'ទំនិញជិតអស់ទាំងអស់ មានការបញ្ជាទិញកំពុងដឹកមករួចហើយ ឬស្តុកនៅគ្រប់គ្រាន់');
+                    return;
+                }
                 empty.innerHTML = emptyState('fa-boxes-stacked', 'រកមិនឃើញមុខទំនិញ', 'សូមសាកល្បងជម្រះតម្រង ឬស្វែងរកពាក្យផ្សេង',
                     `<button onclick="tab='all'; selectedCategory='all'; searchTerm=''; document.getElementById('searchInput').value=''; selectCategory('all'); renderTabs(); renderList()" type="button" class="sm-badge mt-4 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold">ជម្រះតម្រងទាំងអស់</button>`);
                 return;
@@ -214,20 +281,23 @@
             const onOrder = onOrderBySku();
             const supOf = sku => shopSuppliers().find(s => s.active !== false && (s.skus || []).includes(sku));
             const orderHref = sku => { const sp = supOf(sku); return `../purchase/create-order.html?sku=${sku}${sp ? `&supplier=${sp.id}` : ''}`; };
+            const levelsNow = onHandLevels();
             // ត្រូវទិញ: បានបញ្ជាទិញហើយ → ថ្ងៃមកដល់ · មិនទាន់ → ចំនួនណែនាំ (តំណទៅបញ្ជាទិញ)
             const reorderCell = (p, needReorder) => {
                 const o = onOrder[p.sku];
                 if (o) return `<a onclick="markRecordViewed('${p.sku}')" href="../purchase/view-order.html?id=${o.poId}" class="text-slate-600 hover:text-blue-700 hover:underline">បានបញ្ជាទិញ ${o.qty} · មកដល់ ${fmtDate(o.expectedOn).slice(0, 5)}</a>`;
                 if (!needReorder) return '<span class="text-slate-400">—</span>';
-                return `<a onclick="markRecordViewed('${p.sku}')" href="${orderHref(p.sku)}" class="font-semibold text-blue-700 hover:underline">ទិញ ${p.reorderQty || 24} ${p.unit || ''}</a>`;
+                // ចំនួនណែនាំតាមល្បឿនលក់ (មិនមែនចំនួនថេរ)
+                const sg = suggestOrderQty(p, levelsNow, onOrder);
+                return `<a onclick="markRecordViewed('${p.sku}')" href="${orderHref(p.sku)}" class="font-semibold text-blue-700 hover:underline">ទិញ ${sg.qty} ${p.unit || ''}</a><span class="block text-xs text-slate-400 font-normal">${suggestNote(sg, p.unit)}</span>`;
             };
 
             document.getElementById('rows').innerHTML = list.map((p, idx) => {
                 const qty = levels[p.sku] || 0;
-                const status = stockStatusOf(p, qty);
-                const sMeta = STOCK_STATUS[status];
+                const status = statusOf(p, levels);
+                const sMeta = statusMeta(status);
                 const menuId = `stockRowMenu-${p.sku}`;
-                const needReorder = status !== 'ok';
+                const needReorder = status === 'low' || status === 'out';
 
                 return `
                 <tr data-row-id="${p.sku}" class="hover:bg-slate-50 transition">
@@ -245,8 +315,7 @@
                     <td class="py-2.5 px-4 sm-td">
                         <span class="inline-flex items-center px-2 py-0.5 rounded-lg bg-slate-100 text-slate-600 text-xs">${catLabel(p.category)}</span>
                     </td>
-                    <td class="py-2.5 px-4 text-right sm-td sm-figure font-medium">${fmtUSD(p.price)}</td>
-                    <td class="py-2.5 px-4 text-right sm-td sm-figure font-bold ${qty <= 0 ? 'text-rose-600' : (status === 'low' ? 'text-amber-600' : 'text-slate-800')}">${qty} ${p.unit || 'ឯកតា'}</td>
+                    <td class="py-2.5 px-4 text-right sm-td sm-figure font-bold ${status === 'out' ? 'text-rose-600' : (status === 'low' ? 'text-amber-600' : 'text-slate-800')}">${qty} ${p.unit || 'ឯកតា'}</td>
                     <td class="py-2.5 px-4 text-right sm-td sm-figure text-slate-500">${p.minStock || 5} ${p.unit || 'ឯកតា'}</td>
                     <td class="py-2.5 px-4 text-center">
                         <span class="sm-badge px-2.5 py-0.5 rounded-full border text-xs font-medium ${sMeta.cls}">${sMeta.label}</span>
@@ -266,7 +335,7 @@
                                 <i class="fas fa-sliders text-slate-400 text-xs w-4"></i>កែតម្រូវស្តុក
                             </button>
                             <button onclick="markRecordViewed('${p.sku}'); location.href='create-stock-in.html?sku=${p.sku}'" type="button" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-50 text-left transition sm-td">
-                                <i class="fas fa-truck-ramp-box text-slate-400 text-xs w-4"></i>ទទួលស្តុក
+                                <i class="fas fa-truck-ramp-box text-slate-400 text-xs w-4"></i>ទទួលទំនិញ
                             </button>
                             <button onclick="markRecordViewed('${p.sku}'); location.href='${orderHref(p.sku)}'" type="button" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-50 text-left transition sm-td">
                                 <i class="fas fa-cart-shopping text-slate-400 text-xs w-4"></i>បញ្ជាទិញ
@@ -278,9 +347,9 @@
 
             document.getElementById('cards').innerHTML = list.map(p => {
                 const qty = levels[p.sku] || 0;
-                const status = stockStatusOf(p, qty);
-                const sMeta = STOCK_STATUS[status];
-                const needReorder = status !== 'ok';
+                const status = statusOf(p, levels);
+                const sMeta = statusMeta(status);
+                const needReorder = status === 'low' || status === 'out';
 
                 return `
                 <div data-row-id="${p.sku}" class="p-4 space-y-3">
@@ -296,10 +365,9 @@
                         </div>
                         <span class="sm-badge px-2.5 py-0.5 rounded-full border text-xs font-medium ${sMeta.cls}">${sMeta.label}</span>
                     </div>
-                    <div class="grid grid-cols-3 gap-2 bg-slate-50 rounded-xl p-2.5 text-center">
-                        <div><p class="text-xs text-slate-400">ក្នុងស្តុក</p><p class="sm-value font-bold ${qty <= 0 ? 'text-rose-600' : 'text-slate-800'} mt-0.5">${qty} ${p.unit || ''}</p></div>
+                    <div class="grid grid-cols-2 gap-2 bg-slate-50 rounded-xl p-2.5 text-center">
+                        <div><p class="text-xs text-slate-400">ក្នុងស្តុក</p><p class="sm-value font-bold ${status === 'out' ? 'text-rose-600' : 'text-slate-800'} mt-0.5">${qty} ${p.unit || ''}</p></div>
                         <div><p class="text-xs text-slate-400">អប្បបរមា</p><p class="sm-value text-slate-600 mt-0.5">${p.minStock || 5} ${p.unit || ''}</p></div>
-                        <div><p class="text-xs text-slate-400">តម្លៃលក់</p><p class="sm-value text-slate-700 mt-0.5">${fmtUSD(p.price)}</p></div>
                     </div>
                     ${onOrder[p.sku] || needReorder ? `<p class="text-xs">${reorderCell(p, needReorder)}</p>` : ''}
                     <div class="flex items-center justify-end gap-2 pt-1">
@@ -312,7 +380,9 @@
         }
 
         function renderAll() {
-            renderKpis();
+            renderUntrackedBanner();
+            renderTodo();
+            renderExpiry();
             renderTabs();
             renderCategories();
             renderList();

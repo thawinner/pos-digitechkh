@@ -34,7 +34,7 @@
         <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
             <div class="w-full space-y-5">
                 <div class="flex flex-wrap items-center justify-end gap-3">
-                    <a href="create-count.html" class="sm-value h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2 shadow-sm transition"><i class="fas fa-clipboard-check"></i> ចាប់ផ្តើមរាប់ស្តុកថ្មី</a>
+                    <button type="button" onclick="startCount()" class="sm-value h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2 shadow-sm transition"><i class="fas fa-clipboard-check"></i> ចាប់ផ្តើមរាប់ស្តុកថ្មី</button>
                 </div>
 
                 <div id="kpiRow" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
@@ -78,6 +78,20 @@
     <script src="../../shared/scripts/portal.js"></script>
     <script>
         let sessions = [];
+
+        /* រាប់ទាំងអស់ (តាមកាលវិភាគ) ឬរាប់តែប្រភេទមួយ (ពិនិត្យរហ័ស ដោយមិនបិទហាង) */
+        async function startCount() {
+            const prods = sellableProducts();
+            const cats = CATEGORIES.filter(c => c.id !== 'all').map(c => ({ c, n: prods.filter(p => p.category === c.id).length })).filter(x => x.n);
+            const v = await showOptionDialog({
+                title: 'រាប់អ្វីខ្លះ?',
+                message: 'ការរាប់ទាំងអស់ រាប់តាមកាលវិភាគ · រាប់មួយប្រភេទ សម្រាប់ពិនិត្យរហ័សរវាងពេលនោះ',
+                options: [{ value: 'all', icon: 'fa-boxes-stacked', label: 'ទំនិញទាំងអស់', desc: `${prods.length} មុខ · កំណត់ថ្ងៃរាប់បន្ទាប់ឡើងវិញ` }]
+                    .concat(cats.map(x => ({ value: x.c.id, icon: x.c.icon || 'fa-tag', label: x.c.label, desc: `${x.n} មុខ` })))
+            });
+            if (!v) return;
+            location.href = v === 'all' ? 'create-count.html' : `create-count.html?cat=${encodeURIComponent(v)}`;
+        }
 
         function renderScheduleBanner() {
             const st = stockCountScheduleStatus();
@@ -173,7 +187,7 @@
                         <span class="text-xs text-slate-400">${fmtTime(s.at)}</span>
                     </td>
                     <td class="py-2.5 px-4 sm-td">${personChip(s.by)}</td>
-                    <td class="py-2.5 px-4 text-center sm-td sm-figure font-medium">${lines.length} មុខ</td>
+                    <td class="py-2.5 px-4 text-center sm-td sm-figure font-medium">${lines.length} មុខ<span class="block text-xs text-slate-400 font-sans">${escapeText(countScopeLabel(s.scope))}</span></td>
                     <td class="py-2.5 px-4 text-center">
                         ${hasDiff
                             ? `<span class="sm-badge px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-semibold">${diffLines.length} មុខខុសគ្នា</span>`
@@ -203,7 +217,7 @@
                 return `
                 <div data-row-id="${s.id}" onclick="openCount('${s.id}')" class="p-4 space-y-2.5 cursor-pointer">
                     <div class="flex items-center justify-between gap-2">
-                        <span class="sm-td font-medium text-slate-800">${fmtDate(s.at)} <span class="text-slate-400">${fmtTime(s.at)}</span></span>
+                        <span class="sm-td font-medium text-slate-800">${fmtDate(s.at)} <span class="text-slate-400">${fmtTime(s.at)}</span> <span class="text-xs text-slate-400">· ${escapeText(countScopeLabel(s.scope))}</span></span>
                         <i class="fas fa-chevron-right text-xs text-slate-400"></i>
                     </div>
                     <div class="flex items-center justify-between">

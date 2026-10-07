@@ -35,14 +35,23 @@
 
             <div class="w-full space-y-5">
                 <div id="setupBanner" class="hidden"></div>
-                <section id="branchCompare" class="hidden bg-white rounded-2xl border border-slate-200/80 shadow-sm"></section>
-                <div class="flex flex-wrap items-center justify-between gap-3">
+                <!-- រយៈពេលប៉ះពាល់តែកាតខាងក្រោម (KPI បុគ្គលិក ទំនិញ) · សាខា ស្តុក និងការងាររង់ចាំ បង្ហាញស្ថានភាពឥឡូវ -->
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
                     <div id="periodTabs" class="inline-flex bg-white border border-slate-200/80 rounded-xl p-1 shadow-sm"></div>
                     <p id="periodNote" class="sm-td-sub text-slate-500"></p>
                 </div>
                 <div id="kpiRow" class="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
-                <div id="stockKpiRow" class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4"></div>
-                <div class="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-5 items-start">
+                <div class="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-5 items-start">
+                    <!-- ទូរស័ព្ទ៖ ការងាររង់ចាំមកមុនក្រាហ្វ · កុំព្យូទ័រ៖ នៅខាងស្តាំ -->
+                    <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm min-w-0 xl:order-last">
+                        <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex items-start justify-between gap-3">
+                            <div>
+                                <p class="sm-card-title text-slate-800">ត្រូវពិនិត្យ</p>
+                                <p id="attentionSub" class="sm-card-sub text-slate-500">ការងារដែលកំពុងរង់ចាំនៅក្នុងហាង</p>
+                            </div>
+                        </div>
+                        <div id="attention" class="divide-y divide-slate-100"></div>
+                    </section>
                     <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm min-w-0">
                         <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex flex-wrap items-start justify-between gap-3">
                             <div>
@@ -59,15 +68,12 @@
                             <div id="chart" class="h-[240px] w-full"></div>
                         </div>
                     </section>
-                    <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm">
-                        <div class="px-5 pt-4 pb-3 border-b border-slate-100">
-                            <p class="sm-card-title text-slate-800">ត្រូវពិនិត្យ</p>
-                            <p class="sm-card-sub text-slate-500">ការងារដែលកំពុងរង់ចាំនៅក្នុងហាង</p>
-                        </div>
-                        <div id="attention" class="divide-y divide-slate-100"></div>
-                    </section>
                 </div>
-                <div class="grid grid-cols-1 xl:grid-cols-2 gap-5 items-start">
+                <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-5 items-start">
+                    <section id="branchCompare" class="hidden bg-white rounded-2xl border border-slate-200/80 shadow-sm min-w-0"></section>
+                    <section id="stockCard" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm min-w-0"></section>
+                </div>
+                <div class="grid grid-cols-1 2xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-5 items-start">
                     <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm min-w-0">
                         <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex items-start justify-between gap-3">
                             <div>
@@ -75,14 +81,14 @@
                                 <p id="staffSub" class="sm-card-sub text-slate-500"></p>
                             </div>
                         </div>
-                        <div class="overflow-x-auto"><table class="w-full min-w-[560px]">
+                        <div class="overflow-x-auto"><table class="no-min-width w-full md:min-w-[540px]">
                             <thead><tr class="border-b border-slate-100 bg-slate-50/60">
-                                <th class="sm-th py-2.5 px-5 text-left text-slate-500">បុគ្គលិក</th>
-                                <th class="sm-th py-2.5 px-3 text-right text-slate-500">វេន</th>
+                                <th class="sm-th py-2.5 pl-4 pr-2 md:px-5 text-left text-slate-500">បុគ្គលិក</th>
+                                <th class="sm-th py-2.5 px-3 text-right text-slate-500 max-md:hidden">វេន</th>
                                 <th class="sm-th py-2.5 px-3 text-right text-slate-500">លក់សរុប</th>
-                                <th class="sm-th py-2.5 px-3 text-right text-slate-500">មធ្យម</th>
-                                <th class="sm-th py-2.5 px-3 text-right text-slate-500">លុបចោល</th>
-                                <th class="sm-th py-2.5 px-5 text-right text-slate-500">ខុសគ្នាសាច់ប្រាក់</th>
+                                <th class="sm-th py-2.5 px-3 text-right text-slate-500 max-md:hidden">មធ្យម</th>
+                                <th class="sm-th py-2.5 px-3 text-right text-slate-500">លុប</th>
+                                <th class="sm-th py-2.5 pl-2 pr-4 md:px-5 text-right text-slate-500 whitespace-nowrap">សាច់ប្រាក់</th>
                             </tr></thead>
                             <tbody id="staffRows" class="divide-y divide-slate-100"></tbody>
                         </table></div>
@@ -156,6 +162,11 @@
             return { now: stats(periodDates('all')), before: null, note: 'ទិន្នន័យទាំងអស់ដែលមាន' };
         }
 
+        // ខុសគ្នាសាច់ប្រាក់៖ +$1.20 / -$0.08 (fmtUSD ដាក់សញ្ញាដកក្រោយ $)
+        function signedUSD(v) {
+            return (v > 0.005 ? '+' : v < -0.005 ? '-' : '') + fmtUSD(Math.abs(v));
+        }
+
         function delta(now, before, invert) {
             const pct = before ? pctChange(now, before) : null;
             if (pct == null || !isFinite(pct)) return '<span class="text-slate-400">គ្មានទិន្នន័យប្រៀបធៀប</span>';
@@ -185,7 +196,7 @@
                 kpi('ប្រាក់ចំណេញដុល', fmtUSD(a.profit), `${delta(a.profit, b.profit)}<span>អត្រា ${a.margin.toFixed(1)}%</span>`,
                     `<div class="h-1.5 rounded-full bg-slate-100 mt-3 overflow-hidden"><div class="h-full bg-blue-600" style="width:${Math.min(Math.max(a.margin, 0), 100)}%"></div></div>`, '../reports/profit-report.html') +
                 kpi('មធ្យមក្នុងមួយវិក្កយបត្រ', fmtUSD(a.avg), `${delta(a.avg, b.avg)}<span>លុបចោល ${a.voids}</span>`, '', '../reports/profit-report.html') +
-                (a.counted ? kpi('ខុសគ្នាសាច់ប្រាក់', `<span class="${Math.abs(v) > tol ? (v < 0 ? 'text-rose-600' : 'text-amber-600') : 'text-slate-800'}">${v > 0.005 ? '+' : ''}${fmtUSD(v)}</span>`,
+                (a.counted ? kpi('ខុសគ្នាសាច់ប្រាក់', `<span class="${Math.abs(v) > tol ? (v < 0 ? 'text-rose-600' : 'text-amber-600') : 'text-slate-800'}">${signedUSD(v)}</span>`,
                     `<span>${v < -0.005 ? 'ខ្វះ' : v > 0.005 ? 'លើស' : 'ត្រូវគ្នា'} · ${a.counted} វេនដែលបានរាប់</span>`, '', '../../manager/shifts/shifts.html')
                     : kpi('ខុសគ្នាសាច់ប្រាក់', '<span class="text-slate-400">—</span>', '<span>មិនទាន់មានវេនបិទ និងរាប់ប្រាក់</span>'));
         }
@@ -277,6 +288,7 @@
             if (!fx || fx.at.slice(0, 10) !== businessDate()) {
                 rows.push(attentionRow('fa-money-bill-transfer', 'slate', 'អត្រាប្ដូរប្រាក់មិនទាន់ធ្វើបច្ចុប្បន្នភាពថ្ងៃនេះ', `កំពុងប្រើ ${fxRate()} រៀល · ${fx ? 'កែចុងក្រោយ ' + fmtDate(fx.at) : 'មិនដែលកែ'}`, '../settings/settings.html', null));
             }
+            document.getElementById('attentionSub').textContent = rows.length ? `${rows.length} ការងារកំពុងរង់ចាំ · ចុចដើម្បីដោះស្រាយ` : 'ការងារដែលកំពុងរង់ចាំនៅក្នុងហាង';
             document.getElementById('attention').innerHTML = rows.length ? rows.join('') :
                 `<div class="px-5 py-10 text-center"><p class="sm-value text-slate-700">គ្មានអ្វីរង់ចាំទេ</p><p class="sm-td-sub text-slate-500">ហាងដំណើរការធម្មតា</p></div>`;
         }
@@ -296,12 +308,12 @@
             const list = Object.values(rows).map(r => Object.assign(r, profitOf(r.sales))).sort((a, b) => b.gross - a.gross);
             document.getElementById('staffSub').textContent = `${PERIODS.find(p => p.id === period).label} · តម្លៃលក់រួមអាករ`;
             document.getElementById('staffRows').innerHTML = list.length ? list.map(r => `<tr>
-                <td class="py-2.5 px-5 sm-td">${personChip(r.id)}<span class="sm-td-sub text-slate-400 ml-9 block -mt-1">${ROLE_NAME[roleOf(r.id)] || ''}</span></td>
-                <td class="py-2.5 px-3 text-right sm-td sm-figure">${r.shifts}</td>
+                <td class="py-2.5 pl-4 pr-2 md:px-5 sm-td">${personChip(r.id)}<span class="sm-td-sub text-slate-400 ml-9 block -mt-1">${ROLE_NAME[roleOf(r.id)] || ''}</span></td>
+                <td class="py-2.5 px-3 text-right sm-td sm-figure max-md:hidden">${r.shifts}</td>
                 <td class="py-2.5 px-3 text-right sm-td-strong sm-figure">${fmtUSD(r.gross)}</td>
-                <td class="py-2.5 px-3 text-right sm-td sm-figure">${fmtUSD(r.avg)}</td>
+                <td class="py-2.5 px-3 text-right sm-td sm-figure max-md:hidden">${fmtUSD(r.avg)}</td>
                 <td class="py-2.5 px-3 text-right sm-td sm-figure ${r.voids ? 'text-amber-700' : ''}">${r.voids}</td>
-                <td class="py-2.5 px-5 text-right sm-td-strong sm-figure ${!r.counted ? 'text-slate-400' : Math.abs(r.variance) > tol ? 'text-rose-600' : 'text-slate-700'}">${r.counted ? (r.variance > 0.005 ? '+' : '') + fmtUSD(r.variance) : 'មិនទាន់រាប់'}</td>
+                <td class="py-2.5 pl-2 pr-4 md:px-5 text-right sm-td-strong sm-figure whitespace-nowrap ${!r.counted ? 'text-slate-400' : Math.abs(r.variance) > tol ? 'text-rose-600' : 'text-slate-700'}">${r.counted ? signedUSD(r.variance) : 'មិនទាន់រាប់'}</td>
             </tr>`).join('') : `<tr><td colspan="6">${emptyState('fa-users', 'គ្មានការលក់ក្នុងរយៈពេលនេះ', '')}</td></tr>`;
         }
 
@@ -316,7 +328,7 @@
                     const x = t[l.sku] = t[l.sku] || { qty: 0, net: 0, cost: 0 };
                     x.qty += q;
                     x.net += exVat(linePrice(l) * q * keep);
-                    x.cost += costOf(l.sku) * q;
+                    x.cost += costAt(l.sku, s.time) * q;
                 });
             });
             const list = Object.keys(t).map(sku => Object.assign({ sku, profit: t[sku].net - t[sku].cost }, t[sku])).sort((a, b) => b.profit - a.profit).slice(0, 6);
@@ -338,30 +350,27 @@
             }).join('') : emptyState('fa-box-open', 'គ្មានការលក់ក្នុងរយៈពេលនេះ', '');
         }
 
-        function renderStockKpis() {
+        /* ស្តុក៖ តម្លៃតាមថ្លៃដើម និងការខាតបង់ខែនេះ · ស្តុកចូលរង់ចាំបញ្ជាក់ថ្លៃដើមនៅក្នុង «ត្រូវពិនិត្យ» រួចហើយ */
+        function renderStock() {
             const stockVal = typeof totalStockValueAtCost === 'function' ? totalStockValueAtCost() : { totalValue: 0, totalUnits: 0, productCount: 0 };
             const mStart = businessDate().slice(0, 7) + '-01';
-            const mEnd = businessDate();
-            const shrink = typeof shrinkageStats === 'function' ? shrinkageStats({ start: mStart, end: mEnd }) : { totalValue: 0, totalQty: 0, eventsCount: 0 };
-            const unconfirmed = typeof unconfirmedStockInCount === 'function' ? unconfirmedStockInCount() : 0;
-
-            // កាតដូចទំព័រផ្សេងទៀត (kpiCard)៖ គ្មានរូបតំណាង · ពណ៌លើតួលេខបង្ហាញពេលត្រូវយកចិត្តទុកដាក់
-            const card = (tone, label, value, sub, href) => `
-                <a href="${href}" class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm hover:border-slate-300 transition block group min-w-0">
-                    <span class="sm-kpi-label text-slate-500">${label}</span>
-                    <h3 class="sm-kpi-value ${tone} mt-1 sm-figure">${value}</h3>
-                    <p class="sm-kpi-sub text-slate-500 mt-1 flex items-center justify-between gap-2">
-                        <span>${sub}</span>
-                        <i class="fas fa-arrow-right text-[10px] text-slate-300 group-hover:text-slate-600 transition"></i>
-                    </p>
-                </a>
-            `;
+            const shrink = typeof shrinkageStats === 'function' ? shrinkageStats({ start: mStart, end: businessDate() }) : { totalValue: 0, totalQty: 0, eventsCount: 0 };
             const n = v => Number(v || 0).toLocaleString('en-US');
-
-            document.getElementById('stockKpiRow').innerHTML =
-                card('text-slate-800', 'តម្លៃស្តុកសរុប · ថ្លៃដើម', fmtUSD(stockVal.totalValue), `${n(stockVal.totalUnits)} ឯកតា · ${stockVal.productCount} មុខទំនិញ`, '../reports/stock-value.html') +
-                card(unconfirmed > 0 ? 'text-amber-700' : 'text-slate-800', 'ស្តុកចូលរង់ចាំបញ្ជាក់ថ្លៃដើម', `${unconfirmed} វិក្កយបត្រ`, unconfirmed > 0 ? 'ត្រូវការបញ្ចូលថ្លៃដើម' : 'បានបញ្ជាក់រួចរាល់', '../stock/stock-in.html') +
-                card(shrink.totalValue > 0 ? 'text-rose-600' : 'text-slate-800', 'ការខាតបង់ស្តុកខែនេះ', fmtUSD(shrink.totalValue), `${n(shrink.totalQty)} ឯកតា · ${shrink.eventsCount} ករណី`, '../reports/shrinkage.html');
+            const tile = (label, value, tone, sub, href) => `<a href="${href}" class="group block p-5 hover:bg-slate-50 transition min-w-0">
+                <span class="sm-kpi-label text-slate-500 flex items-center justify-between gap-2">${label}<i class="fas fa-arrow-right text-[10px] text-slate-300 group-hover:text-slate-600 transition"></i></span>
+                <span class="sm-kpi-value sm-figure block mt-1 ${tone}">${value}</span>
+                <span class="sm-kpi-sub text-slate-500 block mt-1">${sub}</span>
+            </a>`;
+            const card = document.getElementById('stockCard');
+            card.classList.toggle('xl:col-span-2', shopBranches().length < 2);
+            card.innerHTML = `<div class="px-5 pt-4 pb-3 border-b border-slate-100">
+                    <p class="sm-card-title text-slate-800">ស្តុក</p>
+                    <p class="sm-card-sub text-slate-500">${escapeText(MERCHANT.branch)} · ស្ថានភាពឥឡូវ</p>
+                </div>
+                <div class="grid grid-cols-2 divide-x divide-slate-100">
+                    ${tile('តម្លៃស្តុក · ថ្លៃដើម', fmtUSD(stockVal.totalValue), 'text-slate-800', `${n(stockVal.totalUnits)} ឯកតា · ${stockVal.productCount} មុខ`, '../reports/stock-value.html')}
+                    ${tile('ខាតបង់សុទ្ធខែនេះ', fmtUSD(shrink.netValue != null ? shrink.netValue : shrink.totalValue), (shrink.netValue != null ? shrink.netValue : shrink.totalValue) > 0 ? 'text-rose-600' : 'text-slate-800', shrink.eventsCount ? `${n(shrink.totalQty)} ឯកតា · ${shrink.eventsCount} ករណី` : 'គ្មានការខាតបង់', '../reports/shrinkage.html')}
+                </div>`;
         }
 
         function renderTabs() {
@@ -374,7 +383,7 @@
             renderTabs();
             document.getElementById('periodNote').textContent = c.note;
             renderKpis(c);
-            renderStockKpis();
+            renderStock();
             renderChart();
             renderAttention();
             renderStaff(c);
@@ -400,7 +409,11 @@
                     <div class="w-40 h-1.5 rounded-full bg-slate-100 overflow-hidden"><div class="h-full bg-blue-600" style="width:${done / items.length * 100}%"></div></div>
                     ${all ? '<button type="button" onclick="hideChecklist(); renderSetupBanner()" class="sm-badge h-9 px-3.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold">លាក់</button>' : ''}
                 </div>
+                ${done && !all ? `<div class="px-5 py-2.5 border-b border-slate-100 flex flex-wrap items-center gap-x-4 gap-y-1 sm-td-sub text-slate-500">
+                    ${items.filter(x => x.done).map(x => `<span class="inline-flex items-center gap-1.5"><i class="fas fa-check text-[11px] text-slate-400"></i>${x.title}</span>`).join('')}
+                </div>` : ''}
                 <div class="divide-y divide-slate-100">${items.map((x, i) => {
+                    if (x.done && !all) return '';
                     const isNext = x === next;
                     return `<div class="px-5 py-3 flex items-center gap-4">
                         <span class="w-8 h-8 rounded-full border flex items-center justify-center flex-shrink-0 sm-figure font-semibold ${x.done ? 'border-slate-300 text-slate-500' : isNext ? 'border-blue-600 text-blue-700' : 'border-slate-200 text-slate-400'}">${x.done ? '<i class="fas fa-check text-[12px]"></i>' : i + 1}</span>

@@ -215,6 +215,11 @@ src/
   `profitOf`, `adminDays`), staff / catalogue / cost edits that write `pos_admin_log`, and `auditTrail()`. Pay data
   (`getStaffCompensation`, `calculateStaffPayroll`) covers cashiers and managers only: the owner has no salary, no bank
   details and no payroll record (`staffOnPayroll()` in `staff-actions.js`).
+  Cost is a **weighted average**, replayed from history (`costTimelines()`, never stored): base (`COST_SEED` or legacy
+  `pos_costs`) → each confirmed stock-in (`pos_stock_costs`, weighted with the on-hand before it) → owner corrections
+  (`pos_cost_edits`, `setCost`, effective from that minute). Profit uses `costAt(sku, sale.time)`, so confirming an
+  invoice or editing a cost never rewrites earlier profit; `costOf(sku)` is the current average. Confirming a stock-in
+  defaults to `lastPurchaseCost` and previews the new average (`previewAverage`); it no longer overwrites the cost.
 - Staff: `STAFF_SEED` + `pos_staff` `{ added, changes }` → `ALL_STAFF` (includes deactivated); `CASHIERS` / `MANAGERS` /
   `ADMINS` are active only. Use `loadStaff()` for a fresh list after an edit on the same page. Catalogue edits
   (`pos_catalog`: price, active) apply at load; `sellableProducts()` hides paused products.
@@ -232,7 +237,24 @@ src/
   count; each with `by`, `at`, `qty` ±, `reason`). Approvals write their moves in `applyApprovalToSale`; a return
   carries `restock` (false = damaged adjustment). Cashier pages use only `stockStatus()` (out / low by `p.minStock`),
   never quantities. Simulated registers' sales after the opening do not move stock. Generated stock-ins older than
-3 days count as cost-confirmed, so the owner's queue holds only recent deliveries.
+3 days count as cost-confirmed, so the owner's queue holds only recent deliveries. Generated stock history exists only
+  where `IS_DEMO_DATA`. A stock count stores the minute each line was typed and compares it with `onHandLevelsAt(at)`, so
+  selling during a count is not deducted twice; the recount is blind (only the lines to recount, no system figure) and
+  system figures appear only on the final review. A delivery is identified by supplier + invoice
+  (`stockInShipmentKey`); the same supplier + invoice cannot be received twice (stock-in and purchase-order receiving).
+  `mgrReorderProducts()` (low/out, not on an open order, none while `!stockTracked()`) drives the nav badge, dashboard
+  and the «ត្រូវបញ្ជាទិញ» tab. Its «ទិញ N» comes from sales speed (`suggestOrderQty`: 14-day daily sales × (supplier
+  `leadDays` + 7) + minStock − on hand − on order; no sales → `reorderQty`). A count may cover one category
+  (`create-count.html?cat=`, session `scope`); only full counts reset the count schedule. Receiving may exceed the order
+  or transfer (`extra` on the PO receipt; a transfer surplus also writes `transfer_out` in the sending branch,
+  `appendStockMovesAt`). Stock-in lines take an optional expiry (`expiry`); `expiringLots()` assumes oldest sells first
+  and drives the stock page card, dashboard item and notification. Shrinkage reports net loss: «រកឃើញវិញ» and count
+  surpluses offset it, and a damaged return counts against the sale's cashier.
+  The manager's stock page opens on «ត្រូវធ្វើ» (`stockTodo(root)` in manager-data.js: transfers to receive, open
+  orders, products to order, expiring stock, count due; urgent first, one button each), and the manager dashboard lists
+  the same items. Goods arriving always start from one «ទទួលទំនិញ» button (`openReceiveChooser(root)`): pick the open
+  order (→ `view-order.html#receive`) or «គ្មានការបញ្ជាទិញ» (→ `create-stock-in.html`, titled «ទទួលទំនិញគ្មានការបញ្ជាទិញ»).
+  Suppliers are not in the sidebar; they open from the purchase orders page (`data-active="purchase"`).
 - **Customer display (CFD)**: the terminal's `syncCfd()` (called from `renderCart`, KHQR, success and lock handlers) writes a snapshot with `publishCfd()` to `pos_cfd` `{ stage: idle|sell|pay|khqr|thanks, items (sku, qty, price), totals, pay, khqr, thanks }`; the display listens to the `storage` event. The snapshot carries only what the customer should see: no cost, stock, PINs, reasons or staff names. The idle messages (max 5, with on/off and an icon) are `cfdMessages` in `posSettings()`, edited by the manager or owner in settings → «អេក្រង់អតិថិជន». The terminal republishes every 10 s as a heartbeat; the display falls back to idle after 30 s without an update. The owner may open the display page (exempt in `guardPage`).
 - Banks: KHQR payments go to a shop bank account chosen at the till. `PAY_BANKS` (ABA, ACLEDA, Wing, …) + `payBanks` in
   `posSettings()` (owner settings → «ធនាគារទទួលប្រាក់»: on/off, Bakong account ID, order; first = default). The sale stores

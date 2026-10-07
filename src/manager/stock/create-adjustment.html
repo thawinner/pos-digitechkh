@@ -138,6 +138,11 @@
             internal: { icon: 'fa-shop', help: 'យកទៅប្រើក្នុងហាង · មិនរាប់ជាការបាត់បង់', notes: ['ប្រើសម្អាតហាង', 'ផ្តល់ឱ្យបុគ្គលិក', 'គំរូសាកល្បង'] }
         };
 
+        // ?qty= (ឧ. ពីបញ្ជីជិតផុតកំណត់) បំពេញចំនួនជាមុន
+        document.addEventListener('DOMContentLoaded', () => {
+            const n = parseInt(q.get('qty'), 10);
+            if (n > 0) document.getElementById('qtyInput').value = n;
+        });
         const qtyOf = () => Math.max(1, parseInt(document.getElementById('qtyInput').value, 10) || 1);
 
         /* ===== ជ្រើសទំនិញ ===== */

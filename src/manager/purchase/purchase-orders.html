@@ -47,7 +47,11 @@
             <div class="w-full space-y-5">
                 <div class="bg-white rounded-2xl p-2 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-2">
                     <div id="tabs" class="flex flex-wrap gap-1"></div>
-                    <button type="button" onclick="location.href='create-order.html'" class="sm-badge h-9 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2 whitespace-nowrap"><i class="fas fa-plus"></i> បញ្ជាទិញ</button>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" onclick="location.href='../suppliers/suppliers.html'" class="sm-badge h-9 px-3.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center gap-2 whitespace-nowrap"><i class="fas fa-truck text-slate-400"></i> អ្នកផ្គត់ផ្គង់</button>
+                        <button type="button" onclick="openReceiveChooser('../..')" class="sm-badge h-9 px-3.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center gap-2 whitespace-nowrap"><i class="fas fa-truck-ramp-box text-slate-400"></i> ទទួលទំនិញ</button>
+                        <button type="button" onclick="location.href='create-order.html'" class="sm-badge h-9 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2 whitespace-nowrap"><i class="fas fa-plus"></i> បញ្ជាទិញ</button>
+                    </div>
                 </div>
                 <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm">
                     <div class="max-md:hidden overflow-x-auto"><table class="w-full">

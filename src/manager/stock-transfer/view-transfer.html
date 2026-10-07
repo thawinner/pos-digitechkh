@@ -57,6 +57,8 @@
         function statusChip(t) {
             if (t.status === 'sent') return `<span class="sm-badge inline-flex px-2.5 py-0.5 rounded-full border whitespace-nowrap bg-amber-50 text-amber-800 border-amber-200">${t.to === ACTIVE_BRANCH_ID ? 'រង់ចាំអ្នកទទួល' : 'កំពុងដឹក'}</span>`;
             const short = transferShort(t);
+            const over = transferOver(t);
+            if (!short && over) return `<span class="sm-badge inline-flex px-2.5 py-0.5 rounded-full border whitespace-nowrap bg-amber-50 text-amber-800 border-amber-200">ទទួលលើស ${over}</span>`;
             return short ? `<span class="sm-badge inline-flex px-2.5 py-0.5 rounded-full border whitespace-nowrap bg-rose-50 text-rose-700 border-rose-200">ទទួលខ្វះ ${short}</span>`
                 : '<span class="sm-badge inline-flex px-2.5 py-0.5 rounded-full border whitespace-nowrap bg-slate-50 text-slate-700 border-slate-200">បានទទួល</span>';
         }
@@ -86,8 +88,8 @@
                             return `<div class="px-5 py-3 flex items-center gap-3">
                                 <span class="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0">${productImgHtml(p)}</span>
                                 <span class="flex-1 min-w-0"><span class="block sm-td font-medium text-slate-800 truncate">${escapeText(p.name)}</span><span class="block sm-td-sub text-slate-500 sm-figure">ផ្ញើ ${l.qty} ${p.unit}</span></span>
-                                ${receiving ? `<span class="w-28 flex-shrink-0"><input type="text" inputmode="numeric" value="${r}" oninput="got['${l.sku}'] = Math.max(0, Math.min(${l.qty}, parseInt(this.value, 10) || 0)); renderShort()" aria-label="ចំនួនទទួល" class="f-input text-right sm-figure" style="height:44px"></span>`
-                                    : t.status === 'received' ? `<span class="sm-td sm-figure text-right ${r < l.qty ? 'text-rose-600 font-semibold' : 'text-slate-700'}">ទទួល ${r}</span>` : ''}
+                                ${receiving ? `<span class="w-28 flex-shrink-0"><input type="text" inputmode="numeric" value="${r}" oninput="got['${l.sku}'] = Math.max(0, parseInt(this.value, 10) || 0); renderShort()" aria-label="ចំនួនទទួល" class="f-input text-right sm-figure" style="height:44px"></span>`
+                                    : t.status === 'received' ? `<span class="sm-td sm-figure text-right ${r < l.qty ? 'text-rose-600 font-semibold' : 'text-slate-700'}">ទទួល ${r}${r > l.qty ? ` · លើស ${r - l.qty}` : ''}</span>` : ''}
                             </div>`;
                         }).join('')}</div>
                     </section>
@@ -112,12 +114,17 @@
             if (receiving) renderShort();
         }
 
+        function overOf(t) {
+            return t.lines.reduce((n, l) => n + Math.max(0, (Number(got[l.sku]) || 0) - l.qty), 0);
+        }
         function renderShort() {
             const t = transferById(ID);
             const short = t.lines.reduce((n, l) => n + Math.max(0, l.qty - (Number(got[l.sku]) || 0)), 0);
+            const over = overOf(t);
             const el = document.getElementById('shortNote');
-            el.className = `sm-td-sub ${short ? 'text-rose-600 font-semibold' : 'text-slate-500'}`;
-            el.textContent = short ? `ខ្វះ ${short} ឯកតា ធៀបនឹងចំនួនផ្ញើ · សូមសរសេរមូលហេតុ` : 'ទទួលគ្រប់ចំនួន';
+            el.className = `sm-td-sub ${short ? 'text-rose-600 font-semibold' : over ? 'text-amber-700 font-semibold' : 'text-slate-500'}`;
+            el.textContent = [short ? `ខ្វះ ${short} ឯកតា ធៀបនឹងចំនួនផ្ញើ · សូមសរសេរមូលហេតុ` : '',
+                over ? `លើស ${over} ឯកតា · ស្តុក ${branchName(t.from)} នឹងកាត់បន្ថែមតាមចំនួនលើស` : ''].filter(Boolean).join(' · ') || 'ទទួលគ្រប់ចំនួន';
         }
 
         async function confirmReceive() {
@@ -125,10 +132,11 @@
             const short = t.lines.reduce((n, l) => n + Math.max(0, l.qty - (Number(got[l.sku]) || 0)), 0);
             const note = document.getElementById('rnote').value.trim();
             if (short && note.length < 3) { showToast('ទទួលខ្វះ · សូមសរសេរមូលហេតុ', 'warning'); document.getElementById('rnote').focus(); return; }
-            const ok = await showPinConfirm({ title: 'បញ្ជាក់ការទទួលស្តុក', message: `ពី ${escapeText(branchName(t.from))}${short ? ` · ខ្វះ ${short}` : ''}`, userId: ME_MANAGER, confirmText: 'បញ្ជាក់' });
+            const over = overOf(t);
+            const ok = await showPinConfirm({ title: 'បញ្ជាក់ការទទួលស្តុក', message: `ពី ${escapeText(branchName(t.from))}${short ? ` · ខ្វះ ${short}` : ''}${over ? ` · លើស ${over}` : ''}`, userId: ME_MANAGER, confirmText: 'បញ្ជាក់' });
             if (!ok) return;
             receiveTransfer(ID, got, note);
-            flashToast(short ? `បានទទួល · ខ្វះ ${short} ឯកតា ត្រូវបានកត់ត្រា` : 'បានទទួលគ្រប់ចំនួន · ស្តុកសាខានេះបានបូកចូល');
+            flashToast(short ? `បានទទួល · ខ្វះ ${short} ឯកតា ត្រូវបានកត់ត្រា` : over ? `បានទទួល · លើស ${over} ឯកតា ត្រូវបានកត់ត្រា` : 'បានទទួលគ្រប់ចំនួន · ស្តុកសាខានេះបានបូកចូល');
             location.href = 'transfers.html?tab=in';
         }
 

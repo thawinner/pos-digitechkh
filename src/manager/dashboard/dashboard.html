@@ -91,7 +91,7 @@
             if (!before) return '<span class="text-slate-400">គ្មានទិន្នន័យម្សិលមិញ</span>';
             const pct = (now - before) / before * 100;
             const up = pct >= 0;
-            return `<span class="${up ? 'text-emerald-600' : 'text-rose-600'} font-semibold"><i class="fas fa-arrow-${up ? 'up' : 'down'} text-[10px]"></i> ${Math.abs(pct).toFixed(0)}%</span> <span class="text-slate-400">ធៀបម្សិលមិញ ${money ? fmtUSD(before) : before}</span>`;
+            return `<span class="${up ? 'text-emerald-600' : 'text-rose-600'} font-semibold"><i class="fas fa-arrow-${up ? 'up' : 'down'} text-[10px]"></i> ${Math.abs(pct).toFixed(0)}%</span> <span class="text-slate-400">ធៀបម្សិលមិញ<span class="max-md:hidden"> ${money ? fmtUSD(before) : before}</span></span>`;
         }
 
         function renderKpis() {
@@ -153,18 +153,9 @@
                 if (gaps.length) items.push({ icon: 'fa-user-slash', tone: 'rose', title: `${gaps.map(t => t.name).join(' · ')} គ្មានអ្នកគិតលុយ`,
                     note: 'ត្រូវរកអ្នកជំនួសក្នុងកាលវិភាគ', href: '../roster/roster.html', cta: 'ចាត់តាំង' });
             }
-            const lowStock = mgrLowStockCount();
-            if (lowStock) {
-                items.push({ icon: 'fa-boxes-packing', tone: 'amber', title: `ទំនិញ ${lowStock} មុខជិតអស់ ឬអស់ស្តុក`,
-                    note: 'ពិនិត្យបញ្ជីត្រូវបញ្ជាទិញឡើងវិញ', href: '../stock/stock.html?tab=reorder', cta: 'បញ្ជាទិញ' });
-            }
-            const sched = stockCountScheduleStatus();
-            if (sched.isDue) {
-                items.push({ icon: 'fa-clipboard-check', tone: sched.isOverdue ? 'rose' : 'slate',
-                    title: sched.isOverdue ? `រាប់ស្តុកហួសកំណត់ ${sched.overdueDays} ថ្ងៃ` : 'ដល់កាលបរិច្ឆេទរាប់ស្តុក',
-                    note: `កាលវិភាគ${sched.schedule === 'monthly' ? 'ប្រចាំខែ' : 'ប្រចាំសប្តាហ៍'}`,
-                    href: '../stock-count/stock-count.html', cta: 'រាប់ស្តុក' });
-            }
+            // ការងារស្តុក = បញ្ជីដដែលនឹងទំព័រស្តុក (stockTodo) ដូច្នេះទំព័រទាំងពីរបង្ហាញដូចគ្នាជានិច្ច
+            stockTodo('../..').forEach(t => items.push({ icon: t.icon, tone: t.tone, title: t.title, note: t.note, cta: t.cta,
+                href: t.href || '../purchase/purchase-orders.html' }));
             // ការងារបន្ទាន់ (ក្រហម) នៅខាងលើ · ជួរធម្មតា៖ រូបតំណាងប្រផេះ · ប៊ូតុងសកម្មភាពមើលឃើញជានិច្ច
             items.sort((a, b) => (b.tone === 'rose') - (a.tone === 'rose'));
             const sub = x => `
@@ -218,6 +209,19 @@
             </div>`;
         }
 
+        /* សាច់ប្រាក់ក្នុងថតធៀបនឹងកំណត់ថត (ដុល្លារ ឬរៀល មួយណាជិតជាង) · ក្រហមពេលលើស = ត្រូវផ្ទេរចូលទូដែក */
+        function drawerBar(s, st, over) {
+            const pct = Math.max(s.expectedUSD / (st.drawerLimitUSD || 1), s.expectedKHR / (st.drawerLimitKHR || 1)) * 100;
+            return `<div class="mt-4 pt-4 border-t border-slate-100">
+                <div class="flex items-baseline justify-between gap-2">
+                    <p class="sm-td-sub text-slate-500">សាច់ប្រាក់ក្នុងថត</p>
+                    <p class="sm-td-strong sm-figure ${over ? 'text-rose-600' : 'text-slate-800'}">${fmtUSD(s.expectedUSD)} · ${fmtKHR(s.expectedKHR)}</p>
+                </div>
+                <div class="h-1.5 rounded-full bg-slate-100 mt-2 overflow-hidden"><div class="h-full ${over ? 'bg-rose-500' : 'bg-blue-600'}" style="width:${Math.min(pct, 100).toFixed(0)}%"></div></div>
+                <p class="sm-td-sub mt-1.5 ${over ? 'text-rose-600 font-semibold' : 'text-slate-500'}">${over ? 'លើសកំណត់ថត · ត្រូវផ្ទេរចូលទូដែក' : `${Math.round(pct)}% នៃកំណត់ថត ${fmtUSD(st.drawerLimitUSD)}`}</p>
+            </div>`;
+        }
+
         /* បញ្ជរគិតលុយ — កាតមួយក្នុងមួយបញ្ជរ · ផ្ទៃសាមញ្ញ តួលេខជាស្លាក/តម្លៃ គ្មានប្រអប់ក្នុងប្រអប់ */
         function renderRegisters() {
             const st = posSettings();
@@ -240,14 +244,15 @@
                         <div class="grid grid-cols-2 gap-x-4 gap-y-3 mt-4 pt-4 border-t border-slate-100">
                             ${stat('លក់', fmtUSD(s.netSales))}
                             ${stat('វិក្កយបត្រ', s.count)}
-                            ${stat('សាច់ប្រាក់ក្នុងថត', `${fmtUSD(s.expectedUSD)} · ${fmtKHR(s.expectedKHR)}`, over ? 'text-rose-600' : '')}
+                            ${stat('មធ្យម', fmtUSD(s.count ? s.netSales / s.count : 0))}
                             ${stat('លក់ចុងក្រោយ', lastSale ? `${fmtDuration(now - new Date(lastSale.time))}មុន` : '—')}
                         </div>
-                        ${over || held ? `<p class="sm-td-sub mt-3 ${over ? 'text-rose-600' : 'text-amber-700'}">${[over ? 'លើសកំណត់ថត · ត្រូវផ្ទេរចូលទូដែក' : '', held ? `ការលក់ព្យួរ ${held}` : ''].filter(Boolean).join(' · ')}</p>` : ''}`;
+                        ${drawerBar(s, st, over)}
+                        ${held ? `<p class="sm-td-sub mt-3 text-amber-700">ការលក់ព្យួរ ${held}</p>` : ''}`;
                     footer = `<a href="../shifts/view-shift.html?id=${open.id}" class="sm-badge h-9 w-full rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium inline-flex items-center justify-center">របាយការណ៍ពាក់កណ្តាលវេន</a>`;
                 } else {
                     const v = last && shiftVariance(last);
-                    status = statusDot('មិនទាន់បើក', 'slate');
+                    status = last && last.status === 'closed' ? statusDot('រង់ចាំត្រួតពិនិត្យ', 'amber') : statusDot('មិនទាន់បើក', 'slate');
                     if (last) {
                         const s = summaryOf(last);
                         const diff = !v ? '—' : v.direction === 'exact' ? 'ត្រូវគ្នា' : `${DIRECTION_LABEL[v.direction]} ${fmtUSD(v.abs)}`;
@@ -257,7 +262,7 @@
                             ${stat('លក់', fmtUSD(s.netSales))}
                             ${stat('វិក្កយបត្រ', s.count)}
                             ${stat('ពេលរាប់ប្រាក់បិទវេន', diff, v && v.level === 'large' ? 'text-rose-600' : v && v.level === 'small' ? 'text-amber-700' : '')}
-                            ${stat('ស្ថានភាព', SHIFT_STATUS[last.status] ? SHIFT_STATUS[last.status].label : '—', last.status === 'closed' ? 'text-amber-700' : '')}
+                            ${stat('មធ្យម', fmtUSD(s.count ? s.netSales / s.count : 0))}
                         </div>`;
                     } else {
                         body = '<p class="sm-td text-slate-500 mt-4">មិនទាន់មានវេននៅបញ្ជរនេះទេ</p>';
@@ -357,6 +362,7 @@
             if (!host) return;
             const bd = businessDate();
             const events = (typeof liveEvents === 'function' ? liveEvents() : []).filter(e => e.type === 'shift_blocked' && (e.time || '').startsWith(bd));
+            host.hidden = !events.length;
             if (!events.length) {
                 host.innerHTML = '';
                 return;
@@ -393,6 +399,7 @@
                 }
             }
 
+            host.hidden = !handoverT;
             if (!handoverT) {
                 host.innerHTML = '';
                 return;
@@ -465,7 +472,8 @@
             const bd = businessDate();
             const now = new Date();
             const templates = shiftTemplates();
-            const allLiveOpen = liveShifts().filter(s => s.status === 'open');
+            // ថតកំពុងបើកទាំងអស់ (រួមទាំងបញ្ជរផ្សេង) · liveShifts() តែម្នាក់ឯងមើលមិនឃើញវេនបើកនៅបញ្ជរផ្សេង ហើយបង្ហាញថា «យឺត»
+            const allLiveOpen = mgrAllShifts().filter(s => s.status === 'open');
 
             // គណនាទិន្នន័យបុគ្គលិកតាមវេននីមួយៗ (យ៉ាងតិច 1 នាក់ក្នុងមួយវេន)
             const templateData = templates.map(t => {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ប្រព័ន្ធគិតលុយ - ទទួលស្តុកថ្មី</title>
+    <title>ប្រព័ន្ធគិតលុយ - ទទួលទំនិញគ្មានការបញ្ជាទិញ</title>
     <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,8 +29,8 @@
     <div id="sidebarHost"></div>
 
     <div class="flex-1 flex flex-col h-full overflow-hidden">
-        <div id="headerHost" data-title="ទទួលស្តុកថ្មី"
-             data-subtitle="ទម្រង់ទទួលទំនិញពីអ្នកផ្គត់ផ្គង់ចូលស្តុក"
+        <div id="headerHost" data-title="ទទួលទំនិញគ្មានការបញ្ជាទិញ"
+             data-subtitle="ទំនិញមកដល់ដោយមិនបានបញ្ជាទិញក្នុងប្រព័ន្ធ"
              data-back="stock.html"></div>
         <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
             <div class="w-full grid grid-cols-1 xl:grid-cols-3 gap-5 items-start">
@@ -69,6 +69,7 @@
                                     <span class="sm-label text-slate-700 font-semibold">លេខវិក្កយបត្រអ្នកផ្គត់ផ្គង់ <span class="text-rose-500">*</span></span>
                                     <input id="invoiceInput" type="text" placeholder="ឧ. INV-2026-0891" oninput="renderSummary()" class="sm-td w-full h-12 mt-1.5 px-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-blue-500 font-mono">
                                 </label>
+                                <p id="dupInvoice" class="hidden sm-td-sub text-rose-600 mt-1.5 flex items-start gap-1.5"></p>
                             </div>
                             <div>
                                 <label class="block">
@@ -410,6 +411,10 @@
                                 <i class="fas fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200"></i>
                             </button>
                         </div>
+                        ${p ? `<label class="mt-1.5 flex items-center gap-2 sm-td-sub text-slate-500">
+                            <span class="whitespace-nowrap">ផុតកំណត់</span>
+                            <input type="text" inputmode="numeric" value="${escapeText(l.exp || '')}" oninput="lines[${idx}].exp = this.value; this.classList.remove('border-rose-400')" placeholder="ថ្ងៃ/ខែ/ឆ្នាំ · បើមាន" aria-label="កាលបរិច្ឆេទផុតកំណត់" class="exp-input h-9 w-40 px-2.5 rounded-lg bg-white border border-slate-200 sm-td-sub sm-figure text-slate-800 focus:outline-none focus:border-blue-500">
+                        </label>` : ''}
                     </td>
                     <td class="py-2.5 px-3 text-right sm-td sm-figure font-medium text-slate-600 max-sm:hidden">
                         ${l.sku ? `${cur} ${unit}` : '—'}
@@ -444,10 +449,41 @@
             </div>`;
         }
 
+        /* វិក្កយបត្រនេះពីអ្នកផ្គត់ផ្គង់នេះ បានទទួលរួចហើយ? (ការពារការបញ្ចូលការដឹកតែមួយពីរដង) */
+        function receivedInvoice(supplier, invoice) {
+            if (!supplier || !invoice) return null;
+            const norm = v => String(v || '').trim().toLowerCase();
+            return mgrStockMoves().find(m => m.type === 'stock_in' && norm(m.supplier) === norm(supplier) && norm(m.invoice) === norm(invoice)) || null;
+        }
+
+        function renderDupInvoice(sup, inv) {
+            const el = document.getElementById('dupInvoice');
+            const dup = receivedInvoice(sup, inv);
+            el.classList.toggle('hidden', !dup);
+            document.getElementById('invoiceInput').classList.toggle('border-rose-400', !!dup);
+            if (dup) el.innerHTML = `<i class="fas fa-circle-exclamation mt-1"></i><span>វិក្កយបត្រនេះបានទទួលរួចហើយ ${fmtDate(dup.at.slice(0, 10))} ម៉ោង ${dup.at.slice(11, 16)} ដោយ ${escapeText(personName(dup.by))} · ពិនិត្យលេខវិក្កយបត្រម្តងទៀត</span>`;
+            return dup;
+        }
+
+        /* "25/12/2026" · "25-12-26" · "2026-12-25" → 'YYYY-MM-DD' ឬ null */
+        function parseExpiry(text) {
+            const t = String(text || '').trim();
+            let d, m, y;
+            const iso = t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+            const dmy = t.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2}|\d{4})$/);
+            if (iso) [, y, m, d] = iso.map(Number);
+            else if (dmy) { [, d, m, y] = dmy.map(Number); if (y < 100) y += 2000; }
+            else return null;
+            const dt = new Date(y, m - 1, d);
+            if (dt.getFullYear() !== y || dt.getMonth() !== m - 1 || dt.getDate() !== d) return null;
+            return isoDate(dt);
+        }
+
         function renderSummary() {
             const sup = document.getElementById('supplierInput').value.trim();
             renderPoBanner(sup);
             const inv = document.getElementById('invoiceInput').value.trim();
+            renderDupInvoice(sup, inv);
             const dt = document.getElementById('deliveryDate').value;
 
             document.getElementById('sumSupplier').textContent = sup || '—';
@@ -482,10 +518,52 @@
                 return;
             }
 
+            if (renderDupInvoice(supplier, invoice)) {
+                showToast('វិក្កយបត្រនេះបានទទួលរួចហើយ · មិនអាចបញ្ចូលពីរដងបានទេ', 'error');
+                document.getElementById('invoiceInput').focus();
+                return;
+            }
+
             const validLines = lines.filter(l => l.sku && l.qty > 0);
             if (!validLines.length) {
                 showToast('សូមជ្រើសរើសមុខទំនិញយ៉ាងហោចណាស់ 1 មុខ និងចំនួនត្រឹមត្រូវ', 'warning');
                 return;
+            }
+
+            // កាលបរិច្ឆេទផុតកំណត់ (មិនចាំបាច់)៖ ត្រូវជាថ្ងៃពិត ហើយមិនទាន់ហួស
+            const today = isoDate(new Date());
+            for (const l of validLines) {
+                l.expiry = '';
+                if (!(l.exp || '').trim()) continue;
+                const iso = parseExpiry(l.exp);
+                const name = (getProduct(l.sku) || {}).name || '';
+                const bad = !iso ? `កាលបរិច្ឆេទផុតកំណត់ ${name} មិនត្រឹមត្រូវ · វាយជា ថ្ងៃ/ខែ/ឆ្នាំ ឧ. 25/12/2026`
+                    : iso < today ? `${name} ផុតកំណត់រួចហើយ (${fmtDate(iso)}) · មិនគួរទទួលចូលស្តុកទេ` : '';
+                if (bad) {
+                    showToast(bad, 'warning');
+                    const inputs = document.querySelectorAll('#lineRows .exp-input');
+                    const el = inputs[lines.filter(x => x.sku).indexOf(l)];
+                    if (el) { el.classList.add('border-rose-400'); el.focus(); }
+                    return;
+                }
+                l.expiry = iso;
+            }
+            // ទំនិញទាំងនេះកំពុងរង់ចាំក្នុងការបញ្ជាទិញ → ទទួលតាមការបញ្ជាទិញ ដើម្បីកុំឱ្យទទួលពីរដង
+            const sp = shopSuppliers().find(x => x.name === supplier);
+            const skus = new Set(validLines.map(l => l.sku));
+            const po = sp && purchaseOrders().filter(o => poOpen(o) && o.supplierId === sp.id)
+                .find(o => o.lines.some(l => skus.has(l.sku) && l.received < l.qty));
+            if (po) {
+                const choice = await showOptionDialog({
+                    title: 'ទំនិញនេះមានក្នុងការបញ្ជាទិញ',
+                    message: `ការបញ្ជាទិញពី ${escapeText(supplier)} មកដល់ ${fmtDate(po.expectedOn)} កំពុងរង់ចាំទំនិញទាំងនេះ។ បើជាការដឹកនោះ សូមទទួលតាមការបញ្ជាទិញ ដើម្បីកុំឱ្យស្តុកចូលពីរដង។`,
+                    options: [
+                        { value: 'po', icon: 'fa-cart-shopping', label: 'ទទួលតាមការបញ្ជាទិញ', desc: 'ការបញ្ជាទិញនឹងបិទ ពេលទំនិញមកគ្រប់' },
+                        { value: 'separate', icon: 'fa-truck-ramp-box', label: 'ជាការដឹកផ្សេង', desc: 'ការបញ្ជាទិញនៅតែរង់ចាំទំនិញដដែល' }
+                    ]
+                });
+                if (choice === 'po') { location.href = `../purchase/view-order.html?id=${po.id}#receive`; return; }
+                if (choice !== 'separate') return;
             }
 
             const totalUnits = validLines.reduce((n, l) => n + Number(l.qty), 0);
@@ -509,6 +587,7 @@
                 supplier,
                 invoice,
                 date,
+                expiry: l.expiry || '',
                 costConfirmed: false,
                 reason: 'ទទួលទំនិញចូលស្តុក',
                 ref: invoice,

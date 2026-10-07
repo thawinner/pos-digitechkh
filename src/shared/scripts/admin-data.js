@@ -32,13 +32,106 @@ function isStockMoveConfirmed(move) {
     return Boolean(costs[move.id] || move.costConfirmed);
 }
 
+/* ថ្លៃក្នុងមួយឯកតានៃចលនាស្តុក៖ ការទទួលដែលបានបញ្ជាក់ = ថ្លៃតាមវិក្កយបត្រ · ផ្សេងទៀត = ថ្លៃដើមមធ្យមនៅពេលនោះ */
 function stockMoveUnitCost(move) {
     if (!move) return 0;
     const costs = getStockCosts();
     if (costs[move.id] && costs[move.id].cost != null) {
         return Number(costs[move.id].cost);
     }
-    return costOf(move.sku);
+    return costAt(move.sku, move.at);
+}
+
+/* ===== ថ្លៃដើមមធ្យម (មធ្យមភាគថ្លឹងទម្ងន់) =====
+   ពេលម្ចាស់ហាងបញ្ជាក់ថ្លៃដើមការទទួលស្តុក៖
+   មធ្យមថ្មី = (ស្តុកមុនទទួល × មធ្យមចាស់ + ចំនួនទទួល × ថ្លៃទិញ) ÷ (ស្តុកមុនទទួល + ចំនួនទទួល)
+   គណនាឡើងវិញពីប្រវត្តិរាល់ពេល (មិនរក្សាទុកលទ្ធផល) ដូច្នេះការបញ្ជាក់វិក្កយបត្រចាស់ក្រោយ ក៏នៅត្រឹមត្រូវ។
+   ការលក់នីមួយៗប្រើថ្លៃដើមនៅពេលលក់ (costAt) → ការកែថ្លៃដើមថ្ងៃនេះ មិនប្តូរប្រាក់ចំណេញខែមុនទេ។
+   • ការទទួលដែលមិនទាន់បញ្ជាក់ មិនប្តូរមធ្យម (ប្រើមធ្យមបច្ចុប្បន្នជាបណ្តោះអាសន្ន)
+   • ម្ចាស់ហាងកែថ្លៃដើមដោយដៃ (pos_cost_edits) = មធ្យមថ្មីចាប់ពីពេលនោះទៅ
+   • ការផ្ទេររវាងសាខាមិនប្តូរមធ្យមរបស់សាខាទទួលទេ */
+const COST_EDITS_KEY = 'pos_cost_edits';
+let COST_TL_CACHE = null;
+
+/* ថ្លៃដើមមុនព្រឹត្តិការណ៍ទាំងអស់៖ ថ្លៃដែលកែតាមរបៀបចាស់ (pos_costs) ឬថ្លៃគំរូ */
+function baseCost(sku) {
+    const legacy = posRead(COSTS_KEY, {}) || {};
+    return legacy[sku] != null ? Number(legacy[sku]) : (COST_SEED[sku] || 0);
+}
+
+function costEdits() {
+    return posRead(COST_EDITS_KEY, {}) || {};
+}
+
+/* { sku: [{ at, cost }] } តាមលំដាប់ពេល — រក្សាទុកក្នុង cache រហូតដល់ទិន្នន័យថ្លៃដើម ឬស្តុកប្រែប្រួល */
+function costTimelines() {
+    const now = Date.now();
+    if (COST_TL_CACHE && now - COST_TL_CACHE.checkedAt < 500) return COST_TL_CACHE.map;
+    const raw = k => { try { return localStorage.getItem(storeKey(k)) || ''; } catch (e) { return ''; } };
+    const sig = [raw(STOCK_COSTS_KEY), raw(COST_EDITS_KEY), raw(COSTS_KEY),
+        raw(STOCK_KEYS.moves).length, raw('pos_shift_sales').length, ACTIVE_SHOP_ID, ACTIVE_BRANCH_ID].join('|');
+    if (COST_TL_CACHE && COST_TL_CACHE.sig === sig) {
+        COST_TL_CACHE.checkedAt = now;
+        return COST_TL_CACHE.map;
+    }
+    const stockCosts = getStockCosts();
+    const events = {};
+    const push = (sku, e) => (events[sku] = events[sku] || []).push(e);
+    allStockMovesList().forEach(m => {
+        const c = m.type === 'stock_in' && stockCosts[m.id];
+        if (!c || c.cost == null) return;
+        const qty = Number(m.qty) || 0;
+        push(m.sku, { at: m.at, kind: 'in', qty, before: m.balanceAfter != null ? m.balanceAfter - qty : 0, cost: Number(c.cost) });
+    });
+    const edits = costEdits();
+    Object.keys(edits).forEach(sku => (edits[sku] || []).forEach(e => push(sku, { at: e.at, kind: 'set', cost: Number(e.cost) })));
+    const map = {};
+    Object.keys(events).forEach(sku => {
+        let avg = baseCost(sku);
+        map[sku] = events[sku].sort((a, b) => a.at.localeCompare(b.at)).map(e => {
+            if (e.kind === 'set' || !(avg > 0)) avg = e.cost;
+            else {
+                const before = Math.max(0, e.before);
+                avg = before + e.qty > 0 ? (before * avg + e.qty * e.cost) / (before + e.qty) : e.cost;
+            }
+            return { at: e.at, cost: avg, kind: e.kind };
+        });
+    });
+    COST_TL_CACHE = { sig, map, checkedAt: now };
+    return map;
+}
+
+/* ថ្លៃដើមមធ្យមនៅពេលមួយ (ឧ. ពេលលក់) */
+function costAt(sku, at) {
+    const tl = costTimelines()[sku];
+    let cost = baseCost(sku);
+    if (tl) for (const e of tl) { if (e.at <= at) cost = e.cost; else break; }
+    return cost;
+}
+
+/* ថ្លៃទិញចុងក្រោយតាមវិក្កយបត្រដែលបានបញ្ជាក់ (តម្លៃដើមលំនាំដើមពេលបញ្ជាក់ការទទួលថ្មី) */
+function lastPurchaseCost(sku) {
+    const costs = getStockCosts();
+    const last = allStockMovesList().filter(m => m.type === 'stock_in' && m.sku === sku && costs[m.id] && costs[m.id].cost != null)
+        .sort((a, b) => b.at.localeCompare(a.at))[0];
+    return last ? Number(costs[last.id].cost) : costOf(sku);
+}
+
+/* ថ្លៃដើមមធ្យមមុនពេលមួយ (មិនរាប់ព្រឹត្តិការណ៍នៅពេលនោះ) */
+function costBefore(sku, at) {
+    const tl = costTimelines()[sku];
+    let cost = baseCost(sku);
+    if (tl) for (const e of tl) { if (e.at < at) cost = e.cost; else break; }
+    return cost;
+}
+
+/* មធ្យមថ្មីបើបញ្ជាក់ការទទួលនេះ (មើលជាមុនលើទំព័របញ្ជាក់ថ្លៃដើម) */
+function previewAverage(move, unitCost) {
+    const qty = Number(move.qty) || 0;
+    const before = Math.max(0, move.balanceAfter != null ? move.balanceAfter - qty : 0);
+    const avg = costBefore(move.sku, move.at);
+    if (!(avg > 0)) return unitCost;
+    return before + qty > 0 ? (before * avg + qty * unitCost) / (before + qty) : unitCost;
 }
 
 function allStockMovesList() {
@@ -51,16 +144,24 @@ function allStockMovesList() {
     return stored.concat(hist);
 }
 
-/* ប្រមូលការទទួលស្តុកចូលទាំងអស់ (ទាំងទិន្នន័យផ្ទុក និងប្រវត្តិ) ចងក្រងតាមវិក្កយបត្រ */
+/* លេខសម្គាល់ការទទួលស្តុកមួយ = អ្នកផ្គត់ផ្គង់ + លេខវិក្កយបត្រ
+   (អ្នកផ្គត់ផ្គង់ពីរអាចប្រើលេខវិក្កយបត្រដូចគ្នា ឧ. «001» ដូច្នេះលេខវិក្កយបត្រតែឯងមិនគ្រប់គ្រាន់) */
+function stockInShipmentKey(m) {
+    const inv = m.invoice || m.ref || ('IN-' + (m.date || m.at.slice(0, 10)));
+    return `${(m.supplier || '').trim().toLowerCase()}|${inv.trim().toLowerCase()}`;
+}
+
+/* ប្រមូលការទទួលស្តុកចូលទាំងអស់ (ទាំងទិន្នន័យផ្ទុក និងប្រវត្តិ) ចងក្រងតាមអ្នកផ្គត់ផ្គង់ + វិក្កយបត្រ */
 function allStockInShipments() {
     const all = allStockMovesList().filter(m => m.type === 'stock_in');
     const groups = {};
 
     all.forEach(m => {
         const inv = m.invoice || m.ref || ('IN-' + (m.date || m.at.slice(0, 10)));
-        if (!groups[inv]) {
-            groups[inv] = {
-                id: inv,
+        const key = stockInShipmentKey(m);
+        if (!groups[key]) {
+            groups[key] = {
+                id: key,
                 invoice: inv,
                 supplier: m.supplier || 'អ្នកផ្គត់ផ្គង់ទូទៅ',
                 date: m.date || m.at.slice(0, 10),
@@ -74,7 +175,7 @@ function allStockInShipments() {
                 unconfirmedCount: 0
             };
         }
-        const g = groups[inv];
+        const g = groups[key];
         g.lines.push(m);
         g.totalQty += Number(m.qty) || 0;
         const unitCost = stockMoveUnitCost(m);
@@ -93,37 +194,45 @@ function unconfirmedStockInCount() {
     return allStockInShipments().filter(s => !s.confirmed).length;
 }
 
-function findStockInShipment(invoice) {
-    return allStockInShipments().find(s => s.invoice === invoice || s.id === invoice) || null;
+/* រកតាមលេខសម្គាល់ (អ្នកផ្គត់ផ្គង់ + វិក្កយបត្រ) · តំណចាស់ ?invoice= នៅតែដំណើរការបើវិក្កយបត្រនោះមានតែមួយ */
+function findStockInShipment(id) {
+    const list = allStockInShipments();
+    const byId = list.find(s => s.id === id);
+    if (byId) return byId;
+    const byInvoice = list.filter(s => s.invoice === id);
+    return byInvoice.length === 1 ? byInvoice[0] : null;
 }
 
-/* បញ្ជាក់ថ្លៃដើមសម្រាប់ការទទួលស្តុកមួយវិក្កយបត្រ */
-function confirmStockInShipment(invoice, lineCostMap, note) {
+/* បញ្ជាក់ថ្លៃដើមសម្រាប់ការទទួលស្តុកមួយ (អ្នកផ្គត់ផ្គង់ + វិក្កយបត្រ) */
+function confirmStockInShipment(id, lineCostMap, note) {
     const costs = getStockCosts();
-    const shipment = findStockInShipment(invoice);
+    const shipment = findStockInShipment(id);
+    const invoice = shipment ? shipment.invoice : id;
     const nowIso = isoLocal(new Date());
+    const actor = typeof currentActorId === 'function' ? currentActorId() : ME_MANAGER;
 
     if (shipment) {
         shipment.lines.forEach(line => {
             const unitCost = Number(lineCostMap[line.id] != null ? lineCostMap[line.id] : (lineCostMap[line.sku] != null ? lineCostMap[line.sku] : stockMoveUnitCost(line)));
-            costs[line.id] = { cost: unitCost, by: ME_MANAGER, at: nowIso };
-            // ធ្វើបច្ចុប្បន្នភាពថ្លៃដើមទំនិញចុងក្រោយ
-            setCost(line.sku, unitCost, note || `បញ្ជាក់ថ្លៃដើមតាមវិក្កយបត្រ ${invoice}`);
+            // ថ្លៃដើមមធ្យមគណនាឡើងវិញពីការទទួលនេះ (costTimelines) · មិនសរសេរជាន់ថ្លៃដើមទំនិញទេ
+            costs[line.id] = { cost: unitCost, by: actor, at: nowIso };
         });
     } else {
         Object.keys(lineCostMap).forEach(k => {
             const unitCost = Number(lineCostMap[k]);
-            costs[k] = { cost: unitCost, by: ME_MANAGER, at: nowIso };
+            costs[k] = { cost: unitCost, by: actor, at: nowIso };
         });
     }
 
     posWrite(STOCK_COSTS_KEY, costs);
+    COST_TL_CACHE = null;
 
-    // ប្រសិនបើមានក្នុង storedStockMoves កត់ត្រាជា costConfirmed: true
+    // កត់ត្រា costConfirmed: true តែលើបន្ទាត់នៃការទទួលនេះ (មិនមែនគ្រប់បន្ទាត់ដែលមានលេខវិក្កយបត្រដូចគ្នាទេ)
+    const lineIds = new Set(shipment ? shipment.lines.map(l => l.id) : Object.keys(lineCostMap));
     const stored = typeof storedStockMoves === 'function' ? storedStockMoves() : [];
     let storedChanged = false;
     stored.forEach(m => {
-        if ((m.invoice === invoice || m.ref === invoice) && m.type === 'stock_in') {
+        if (m.type === 'stock_in' && lineIds.has(m.id)) {
             m.costConfirmed = true;
             storedChanged = true;
         }
@@ -141,6 +250,7 @@ function totalStockValueAtCost() {
     let totalValue = 0;
     let totalUnits = 0;
     let unconfirmedCount = 0;
+    const negative = [];   // ស្តុកក្រោម 0 ក្នុងប្រព័ន្ធ (លក់លើសស្តុក) → មិនរាប់ក្នុងតម្លៃ ប៉ុន្តែត្រូវរាប់ស្តុក
     const byCategory = {};
     const productList = [];
 
@@ -153,11 +263,13 @@ function totalStockValueAtCost() {
         const cost = costOf(p.sku);
         const val = Math.max(0, qty) * cost;
         const status = typeof stockStatusOf === 'function' ? stockStatusOf(p, qty) : 'ok';
-        const confirmed = COST_SEED[p.sku] != null || posRead(COSTS_KEY, {})[p.sku] != null;
+        // គ្មានថ្លៃដើម = តម្លៃស្តុកមិនពេញលេញ (ម្ចាស់ហាងត្រូវបញ្ចូលថ្លៃដើម)
+        const confirmed = cost > 0;
 
         totalValue += val;
         totalUnits += Math.max(0, qty);
         if (!confirmed) unconfirmedCount += 1;
+        if (qty < 0) negative.push({ sku: p.sku, name: p.name, qty, unit: p.unit });
 
         if (byCategory[p.category]) {
             byCategory[p.category].units += Math.max(0, qty);
@@ -186,6 +298,7 @@ function totalStockValueAtCost() {
         totalUnits,
         productCount: PRODUCTS.length,
         unconfirmedCount,
+        negative,
         byCategory: Object.values(byCategory),
         products: productList
     };
@@ -194,6 +307,8 @@ function totalStockValueAtCost() {
 function shrinkReasonLabel(rk) {
     if (rk === 'count_shortage') return 'ខ្វះពេលរាប់ស្តុក';
     if (rk === 'transfer_short') return 'ខ្វះពេលផ្ទេរ';
+    if (rk === 'count_surplus') return 'រាប់លើសពេលរាប់ស្តុក';
+    if (rk === 'damaged_return') return 'ទំនិញប្រគល់វិញខូច';
     return STOCK_ADJUST_REASONS[rk] ? STOCK_ADJUST_REASONS[rk].label : rk;
 }
 
@@ -204,6 +319,17 @@ function shrinkageStats(range) {
     const endStr = toIsoDateStr(range && range.end);
 
     const list = [];
+    const gains = [];   // រកឃើញវិញ · រាប់លើស → កាត់បន្ថយការខាតបង់សុទ្ធ
+    // ទំនិញប្រគល់វិញខូច៖ ទទួលខុសត្រូវដោយអ្នកគិតលុយដែលលក់ (មិនមែនអ្នកគ្រប់គ្រងដែលអនុម័ត)
+    let saleById = null;
+    // លេខវិក្កយបត្រអាចដដែលក្នុងវេនផ្សេងគ្នា → រកតាមវិក្កយបត្រ + វេន
+    const saleCashier = (id, shiftId) => {
+        if (!saleById) {
+            saleById = {};
+            (typeof mgrAllSales === 'function' ? mgrAllSales() : liveSales()).forEach(x => { saleById[`${x.id}|${x.shiftId}`] = x; });
+        }
+        return (saleById[`${id}|${shiftId}`] || {}).cashierId || '';
+    };
     all.forEach(m => {
         const mDate = (m.date || m.at.slice(0, 10));
         if (startStr && mDate < startStr) return;
@@ -211,12 +337,22 @@ function shrinkageStats(range) {
 
         let isShrink = false;
         let shrinkReason = m.reason || '';
+        let by = m.by || ME_MANAGER;
 
         if (m.type === 'adjust' && STOCK_ADJUST_REASONS[m.reason] && STOCK_ADJUST_REASONS[m.reason].shrink) {
             isShrink = true;
+            if (m.reason === 'damaged' && m.saleId) {
+                shrinkReason = 'damaged_return';
+                by = saleCashier(m.saleId, m.shiftId) || by;
+            }
         } else if (m.type === 'count' && m.qty < 0) {
             isShrink = true;
             shrinkReason = 'count_shortage';
+        } else if ((m.type === 'adjust' && m.reason === 'found') || (m.type === 'count' && m.qty > 0)) {
+            const p = getProduct(m.sku);
+            const unitCost = stockMoveUnitCost(m);
+            gains.push({ id: m.id, sku: m.sku, name: p ? p.name : m.sku, unit: p ? p.unit : 'ឯកតា', qty: Math.abs(m.qty), unitCost,
+                costValue: Math.abs(m.qty) * unitCost, reason: m.type === 'count' ? 'count_surplus' : 'found', by, at: m.at });
         }
 
         if (isShrink) {
@@ -237,7 +373,7 @@ function shrinkageStats(range) {
                 costValue,
                 retailValue,
                 reason: shrinkReason,
-                by: m.by || ME_MANAGER,
+                by,
                 at: m.at,
                 ref: m.ref || '',
                 note: m.note || ''
@@ -303,10 +439,24 @@ function shrinkageStats(range) {
         byProduct[x.sku].value += x.costValue;
     });
 
+    // រកឃើញវិញ តាមមូលហេតុ (បង្ហាញជាបន្ទាត់កាត់បន្ថយ)
+    const gainByReason = {};
+    gains.forEach(g => {
+        const r = gainByReason[g.reason] = gainByReason[g.reason] || { key: g.reason, label: shrinkReasonLabel(g.reason), count: 0, qty: 0, value: 0 };
+        r.count += 1;
+        r.qty += g.qty;
+        r.value += g.costValue;
+    });
+    const gainValue = gains.reduce((n, g) => n + g.costValue, 0);
+
     return {
         totalValue,
         totalQty,
         totalRetail,
+        gainValue,
+        netValue: totalValue - gainValue,
+        gains,
+        gainByReason: Object.values(gainByReason).sort((a, b) => b.value - a.value),
         eventsCount: list.length,
         byReason: Object.values(byReason).sort((a, b) => b.value - a.value),
         byStaff: Object.values(byStaff).sort((a, b) => b.value - a.value),
@@ -397,9 +547,9 @@ function auditTrail() {
     return out.filter(x => x.at).sort((a, b) => b.at.localeCompare(a.at));
 }
 
+/* ថ្លៃដើមមធ្យមបច្ចុប្បន្ន */
 function costOf(sku) {
-    const edits = posRead(COSTS_KEY, {});
-    return edits[sku] != null ? edits[sku] : (COST_SEED[sku] || 0);
+    return costAt(sku, '9999-12-31T23:59');
 }
 
 /* តម្លៃមិនរួមអាករ (តម្លៃលក់រួមអាករ 10%) */
@@ -423,7 +573,7 @@ function saleProfit(s) {
         const q = l.qty - returnedQty(s, l.sku);
         if (q <= 0) return;
         net += exVat(linePrice(l) * q * keep);
-        cost += costOf(l.sku) * q;
+        cost += costAt(l.sku, s.time) * q;   // ថ្លៃដើមនៅពេលលក់ មិនមែនថ្ងៃនេះ
         qty += q;
     });
     return { net, cost, profit: net - cost, qty };
@@ -553,10 +703,12 @@ function updateCatalog(sku, patch, note) {
     adminLog('catalog', note, { target: sku });
 }
 
+/* កែថ្លៃដើមដោយដៃ = ថ្លៃដើមមធ្យមថ្មីចាប់ពីពេលនេះ (ការលក់មុននេះរក្សាថ្លៃដើមចាស់) */
 function setCost(sku, cost, note) {
-    const edits = posRead(COSTS_KEY, {});
-    edits[sku] = cost;
-    posWrite(COSTS_KEY, edits);
+    const edits = costEdits();
+    (edits[sku] = edits[sku] || []).push({ at: isoLocal(new Date()), cost: Number(cost), by: typeof currentActorId === 'function' ? currentActorId() : '' });
+    posWrite(COST_EDITS_KEY, edits);
+    COST_TL_CACHE = null;
     adminLog('cost', note, { target: sku });
 }
 

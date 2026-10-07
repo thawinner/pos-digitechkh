@@ -111,7 +111,7 @@
         function renderKpis(stats) {
             const topReason = stats.byReason.length ? stats.byReason[0].label : '—';
             document.getElementById('kpiRow').innerHTML =
-                kpiCard('ទឹកប្រាក់ខាតបង់សរុប', fmtUSD(stats.totalValue), 'គិតតាមថ្លៃដើមទិញចូល', stats.totalValue > 0 ? 'text-rose-600' : 'text-slate-700') +
+                kpiCard('ខាតបង់សុទ្ធ', fmtUSD(stats.netValue), stats.gainValue > 0 ? `ខាត ${fmtUSD(stats.totalValue)} · រកឃើញវិញ ${fmtUSD(stats.gainValue)}` : 'គិតតាមថ្លៃដើមទិញចូល', stats.netValue > 0 ? 'text-rose-600' : 'text-slate-700') +
                 kpiCard('ចំនួនឯកតាខាតបង់', `${stats.totalQty}`, 'ឯកតាទំនិញដែលបានកាត់ចេញ') +
                 kpiCard('មូលហេតុចម្បង', topReason, stats.byReason.length ? `ខាតបង់ ${fmtUSD(stats.byReason[0].value)}` : 'គ្មានការខាតបង់') +
                 kpiCard('ចំនួនករណីខាតបង់', `${stats.eventsCount}`, 'លើកនៃការកែតម្រូវ ឬរាប់ខ្វះ');
@@ -161,8 +161,9 @@
             const tfoot = document.getElementById('tfoot');
             const emptyEl = document.getElementById('empty');
 
-            emptyEl.classList.toggle('hidden', !!stats.eventsCount);
-            emptyEl.innerHTML = stats.eventsCount ? '' : emptyState('fa-shield-heart', 'គ្មានការខាតបង់ស្តុកក្នុងចន្លោះកាលបរិច្ឆេទនេះ', 'ទិន្នន័យស្តុកមានតុល្យភាពល្អ');
+            const hasAny = stats.eventsCount || stats.gains.length;
+            emptyEl.classList.toggle('hidden', !!hasAny);
+            emptyEl.innerHTML = hasAny ? '' : emptyState('fa-shield-heart', 'គ្មានការខាតបង់ស្តុកក្នុងចន្លោះកាលបរិច្ឆេទនេះ', 'ទិន្នន័យស្តុកមានតុល្យភាពល្អ');
 
             if (currentView === 'reason') {
                 document.getElementById('viewTitle').textContent = 'ការខាតបង់តាមមូលហេតុ';
@@ -192,19 +193,23 @@
                             </div>
                         </td>
                     </tr>`;
-                }).join('');
-
+                }).join('') + stats.gainByReason.map(r => `<tr>
+                        <td class="py-2.5 px-5 sm-td font-medium text-slate-800">${escapeText(r.label)}<span class="sm-td-sub text-slate-400 block">កាត់បន្ថយការខាតបង់</span></td>
+                        <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-600">${r.count} ករណី</td>
+                        <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-700 font-medium">+${r.qty}</td>
+                        <td class="py-2.5 px-3 text-right sm-td-strong sm-figure text-slate-700">−${fmtUSD(r.value)}</td>
+                        <td class="py-2.5 px-5"></td>
+                    </tr>`).join('');
                 tfoot.innerHTML = `<tr>
-                    <td class="py-2.5 px-5 text-slate-800">សរុបទាំងអស់</td>
+                    <td class="py-2.5 px-5 text-slate-800">${stats.gainValue > 0 ? 'ខាតបង់សុទ្ធ' : 'សរុបទាំងអស់'}</td>
                     <td class="py-2.5 px-3 text-right text-slate-800">${stats.eventsCount} ករណី</td>
                     <td class="py-2.5 px-3 text-right text-slate-800">${stats.totalQty}</td>
-                    <td class="py-2.5 px-3 text-right text-rose-600 sm-figure">${fmtUSD(stats.totalValue)}</td>
-                    <td class="py-2.5 px-5 text-slate-600 sm-figure">100.0%</td>
+                    <td class="py-2.5 px-3 text-right text-rose-600 sm-figure">${fmtUSD(stats.netValue)}</td>
+                    <td class="py-2.5 px-5 text-slate-600 sm-figure">${stats.gainValue > 0 ? `ខាត ${fmtUSD(stats.totalValue)} − រកឃើញ ${fmtUSD(stats.gainValue)}` : '100.0%'}</td>
                 </tr>`;
-
             } else if (currentView === 'staff') {
                 document.getElementById('viewTitle').textContent = 'ការខាតបង់តាមបុគ្គលិក';
-                document.getElementById('viewSub').textContent = 'អ្នកគ្រប់គ្រង ឬអ្នកគិតលុយដែលបានកត់ត្រា ឬពាក់ព័ន្ធនឹងការខាតបង់';
+                document.getElementById('viewSub').textContent = 'អ្នកកត់ត្រាការខាតបង់ · ទំនិញប្រគល់វិញខូច គិតលើអ្នកគិតលុយដែលលក់';
 
                 thead.innerHTML = `<tr class="border-b border-slate-100 bg-slate-50/60">
                     <th class="sm-th py-2.5 px-5 text-left text-slate-500">បុគ្គលិក</th>
@@ -297,7 +302,7 @@
                     return `<tr>
                         <td class="py-2.5 px-5 sm-td text-slate-600 sm-figure">${fmtDate(x.at)} <span class="sm-td-sub text-slate-400 block">${fmtTime(x.at)}</span></td>
                         <td class="py-2.5 px-3 sm-td font-medium text-slate-800">${escapeText(x.name)}<span class="sm-td-sub text-slate-400 font-mono block">${x.sku}</span></td>
-                        <td class="py-2.5 px-3"><span class="sm-badge px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-medium">${escapeText(rLabel)}</span></td>
+                        <td class="py-2.5 px-3"><span class="sm-badge px-2.5 py-1 rounded-full bg-slate-50 text-slate-600 border border-slate-200 text-xs font-medium">${escapeText(rLabel)}</span></td>
                         <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-800 font-semibold">${x.qty} ${x.unit}</td>
                         <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-600">${fmtUSD(x.unitCost)}</td>
                         <td class="py-2.5 px-3 text-right sm-td-strong sm-figure text-rose-600">${fmtUSD(x.costValue)}</td>

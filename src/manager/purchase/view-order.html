@@ -67,6 +67,12 @@
         const ID = new URLSearchParams(location.search).get('id');
         let got = null;
 
+        // ទទួលលើសការបញ្ជាទិញ (អ្នកផ្គត់ផ្គង់ដឹកលើស) — អនុញ្ញាត តែប្រាប់ឱ្យច្បាស់
+        function overText(l) {
+            const extra = (Number(got[l.sku]) || 0) - (l.qty - l.received);
+            return extra > 0 ? `លើសការបញ្ជាទិញ ${extra} ${(getProduct(l.sku) || {}).unit || ''}` : '';
+        }
+
         function card(title, sub, body, side) {
             return `<section class="form-card rounded-2xl border border-slate-200/80 shadow-sm"><div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3"><div class="min-w-0"><h3 class="sm-card-title text-slate-800">${title}</h3>${sub ? `<p class="sm-card-sub text-slate-500">${sub}</p>` : ''}</div>${side || ''}</div>${body}</section>`;
         }
@@ -89,9 +95,10 @@
                         return `<div class="px-5 py-3 flex items-center gap-3">
                             <span class="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0">${productImgHtml(p)}</span>
                             <span class="flex-1 min-w-0"><span class="block sm-td font-medium text-slate-800 truncate">${escapeText(p.name)}</span>
-                                <span class="block sm-td-sub text-slate-500 sm-figure">បញ្ជា ${l.qty} · ទទួលរួច ${l.received} ${p.unit}</span></span>
-                            ${open && left > 0 ? `<input type="text" inputmode="numeric" value="${got[l.sku]}" oninput="got['${l.sku}'] = Math.max(0, Math.min(${left}, parseInt(this.value, 10) || 0))" aria-label="ចំនួនទទួល" class="f-input text-right sm-figure flex-shrink-0" style="height:44px;width:96px">`
-                                : `<span class="sm-td sm-figure ${l.received < l.qty ? 'text-slate-500' : 'text-slate-700'}">${l.received >= l.qty ? 'គ្រប់' : `ខ្វះ ${left}`}</span>`}
+                                <span class="block sm-td-sub text-slate-500 sm-figure">បញ្ជា ${l.qty} · ទទួលរួច ${l.received} ${p.unit}</span>
+                                ${open && left > 0 ? `<span id="over-${l.sku}" class="block sm-td-sub text-amber-700 font-semibold sm-figure">${overText(l)}</span>` : ''}</span>
+                            ${open && left > 0 ? `<input type="text" inputmode="numeric" value="${got[l.sku]}" oninput="got['${l.sku}'] = Math.max(0, parseInt(this.value, 10) || 0); document.getElementById('over-${l.sku}').textContent = overText(poById(ID).lines.find(x => x.sku === '${l.sku}'))" aria-label="ចំនួនទទួល" class="f-input text-right sm-figure flex-shrink-0" style="height:44px;width:96px">`
+                                : `<span class="sm-td sm-figure ${l.received < l.qty ? 'text-slate-500' : 'text-slate-700'}">${l.received > l.qty ? `លើស ${l.received - l.qty}` : l.received >= l.qty ? 'គ្រប់' : `ខ្វះ ${left}`}</span>`}
                         </div>`;
                     }).join('')}</div>${open ? `<div id="receive" class="px-5 py-4 border-t border-slate-100 grid gap-3 md:grid-cols-[1fr_auto] items-end">
                         <label class="block"><span class="sm-td font-semibold text-slate-700">លេខវិក្កយបត្រអ្នកផ្គត់ផ្គង់ <span class="font-normal text-slate-400">មិនចាំបាច់</span></span>
@@ -114,9 +121,18 @@
 
         async function doReceive() {
             const po = poById(ID);
-            const total = po.lines.reduce((n, l) => n + Math.min(l.qty - l.received, Number(got[l.sku]) || 0), 0);
+            const total = po.lines.reduce((n, l) => n + (Number(got[l.sku]) || 0), 0);
+            const extra = po.lines.reduce((n, l) => n + Math.max(0, (Number(got[l.sku]) || 0) - (l.qty - l.received)), 0);
             if (!total) { showToast('សូមវាយចំនួនទំនិញដែលមកដល់', 'warning'); return; }
-            const ok = await showPinConfirm({ title: 'បញ្ជាក់ការទទួលទំនិញ', message: `${escapeText((supplierById(po.supplierId) || {}).name || '')} · ${total} ឯកតា`, userId: ME_MANAGER, confirmText: 'ទទួល' });
+            // វិក្កយបត្រដដែលពីអ្នកផ្គត់ផ្គង់ដដែល បានទទួលរួច (ដោយដៃ ឬតាមការបញ្ជាទិញ) → មិនទទួលពីរដង
+            const inv = document.getElementById('invoice').value.trim().toLowerCase();
+            const supName = ((supplierById(po.supplierId) || {}).name || '').trim().toLowerCase();
+            if (inv && mgrStockMoves().some(m => m.type === 'stock_in' && String(m.supplier || '').trim().toLowerCase() === supName && String(m.invoice || '').trim().toLowerCase() === inv)) {
+                showToast('វិក្កយបត្រនេះបានទទួលរួចហើយ · ពិនិត្យលេខវិក្កយបត្រម្តងទៀត', 'error');
+                document.getElementById('invoice').focus();
+                return;
+            }
+            const ok =await showPinConfirm({ title: 'បញ្ជាក់ការទទួលទំនិញ', message: `${escapeText((supplierById(po.supplierId) || {}).name || '')} · ${total} ឯកតា${extra ? `<br>លើសការបញ្ជាទិញ ${extra} ឯកតា · ពិនិត្យថាវិក្កយបត្រគិតលុយចំនួននេះ` : ''}`, userId: ME_MANAGER, confirmText: 'ទទួល' });
             if (!ok) return;
             const r = receivePO(ID, got, document.getElementById('invoice').value.trim());
             got = null;

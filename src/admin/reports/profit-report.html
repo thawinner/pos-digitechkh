@@ -110,7 +110,7 @@
                 s.items.forEach(l => {
                     const q = l.qty - returnedQty(s, l.sku);
                     if (q <= 0) return;
-                    out.push({ sale: s, sku: l.sku, qty: q, net: exVat(linePrice(l) * q * keep), cost: costOf(l.sku) * q });
+                    out.push({ sale: s, sku: l.sku, qty: q, net: exVat(linePrice(l) * q * keep), cost: costAt(l.sku, s.time) * q });
                 });
             });
             return out;
@@ -157,7 +157,7 @@
             let rows;
             if (view === 'day') rows = group(all, x => saleBizDate(x.sale), 'sales').sort((a, b) => b.key.localeCompare(a.key)).map(r => Object.assign(r, { label: fmtDate(r.key + 'T12:00') }));
             else if (view === 'category') rows = group(all, x => getProduct(x.sku).category).map(r => Object.assign(r, { label: categoryLabel(r.key) })).sort((a, b) => b.profit - a.profit);
-            else if (view === 'product') rows = group(all, x => x.sku).map(r => Object.assign(r, { label: getProduct(r.key).name, sub: `${r.key} · ថ្លៃដើម ${fmtUSD(costOf(r.key))}` })).sort((a, b) => b.profit - a.profit);
+            else if (view === 'product') rows = group(all, x => x.sku).map(r => Object.assign(r, { label: getProduct(r.key).name, sub: `${r.key} · ថ្លៃដើមមធ្យម ${fmtUSD(costOf(r.key))}` })).sort((a, b) => b.profit - a.profit);
             else rows = group(all, x => x.sale.cashierId, 'sales').map(r => Object.assign(r, { label: personName(r.key), sub: ROLE_NAME[roleOf(r.key)] })).sort((a, b) => b.profit - a.profit);
 
             document.getElementById('printHead').textContent = `${MERCHANT.nameKh} · របាយការណ៍ប្រាក់ចំណេញ`;

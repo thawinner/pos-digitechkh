@@ -23,6 +23,13 @@
     </script>
     <link rel="stylesheet" href="../../shared/styles/custom.css">
     <link rel="stylesheet" href="../../shared/styles/portal.css">
+    <style>
+        /* ទូរស័ព្ទ៖ ឈ្មោះទំនិញចុះបន្ទាត់ ដូច្នេះប្រអប់វាយចំនួនរាប់នៅក្នុងអេក្រង់ជានិច្ច */
+        @media (max-width: 767px) {
+            #countTable td:first-child, #countTable td:first-child * { white-space: normal !important; }
+            #countTable th:not(:first-child) { width: auto !important; }
+        }
+    </style>
 </head>
 <body id="managerPortal" data-role-root="../.." data-active="stock-count" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
 
@@ -57,15 +64,15 @@
                     </div>
 
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left" id="countTable">
+                        <table class="w-full text-left no-min-width" id="countTable">
                             <thead class="bg-slate-50 text-slate-500 border-b border-slate-100">
                                 <tr>
                                     <th class="sm-th py-2.5 px-4">ទំនិញ</th>
-                                    <th class="sm-th py-2.5 px-4">ប្រភេទ</th>
-                                    <th class="sm-th py-2.5 px-4 text-center w-28">ឯកតា</th>
-                                    <th id="thSystem" class="sm-th py-2.5 px-4 text-right w-36 hidden">ស្តុកប្រព័ន្ធ</th>
-                                    <th class="sm-th py-2.5 px-4 text-right w-44">ចំនួនរាប់ជាក់ស្តែង <span class="text-rose-500">*</span></th>
-                                    <th id="thDiff" class="sm-th py-2.5 px-4 text-right w-36 hidden">ភាពខុសគ្នា</th>
+                                    <th class="sm-th py-2.5 px-4 max-md:hidden">ប្រភេទ</th>
+                                    <th class="sm-th py-2.5 px-4 text-center w-28 max-md:hidden">ឯកតា</th>
+                                    <th id="thSystem" class="sm-th py-2.5 px-4 text-right w-36 hidden max-md:!hidden">ស្តុកប្រព័ន្ធ</th>
+                                    <th class="sm-th py-2.5 px-4 text-right w-44"><span class="max-md:hidden">ចំនួនរាប់ជាក់ស្តែង</span><span class="md:hidden">រាប់បាន</span> <span class="text-rose-500">*</span></th>
+                                    <th id="thDiff" class="sm-th py-2.5 px-4 text-right w-36 hidden"><span class="max-md:hidden">ភាពខុសគ្នា</span><span class="md:hidden">ខុស</span></th>
                                 </tr>
                             </thead>
                             <tbody id="countRows" class="divide-y divide-slate-100 text-slate-700"></tbody>
@@ -103,16 +110,31 @@
 
         // ដំណាក់កាល៖ 1 = count (រាប់លើកទី 1), 2 = recount (រាប់ឡើងវិញមុខខុស), 3 = verified (ផ្ទៀងផ្ទាត់រួចរង់ចាំ save)
         let stage = 1;
+        // ?cat= = រាប់តែប្រភេទមួយ (រាប់ជាផ្នែក) · គ្មាន = រាប់ទំនិញទាំងអស់
+        const SCOPE_CAT = (() => { const c = new URLSearchParams(location.search).get('cat'); return c && c !== 'all' && CATEGORIES.some(x => x.id === c) ? c : ''; })();
+        function scopeProducts() {
+            return SCOPE_CAT ? sellableProducts().filter(p => p.category === SCOPE_CAT) : sellableProducts();
+        }
         let selectedCat = 'all';
         let searchTerm = '';
-        let counts = {}; // { [sku]: { first: number|null, recount: number|null, final: number|null } }
+        // ចំនួនរាប់ + នាទីដែលវាយ · ប្រព័ន្ធប្រៀបធៀបនឹងស្តុកនៅនាទីនោះ (អាចលក់បន្តពេលកំពុងរាប់)
+        let counts = {}; // { [sku]: { first, firstAt, recount, recountAt, final, finalAt } }
         let diffSkus = new Set();
-        let currentLevels = {};
+        const levelsAtCache = {};
+
+        function levelsAt(at) {
+            return levelsAtCache[at] || (levelsAtCache[at] = onHandLevelsAt(at));
+        }
+
+        // ស្តុកប្រព័ន្ធសម្រាប់មុខនេះ នៅពេលដែលចំនួនចុងក្រោយត្រូវបានវាយ
+        function systemOf(sku) {
+            const c = counts[sku];
+            return (levelsAt(c.finalAt || isoLocal(new Date()))[sku]) || 0;
+        }
 
         function initData() {
-            currentLevels = onHandLevels();
-            sellableProducts().forEach(p => {
-                counts[p.sku] = { first: null, recount: null, final: null };
+            scopeProducts().forEach(p => {
+                counts[p.sku] = { first: null, firstAt: null, recount: null, recountAt: null, final: null, finalAt: null };
             });
         }
 
@@ -120,10 +142,10 @@
             const host = document.getElementById('stageBanner');
             if (stage === 1) {
                 host.innerHTML = stageBanner('fa-eye-slash', 'text-slate-400', 'ដំណាក់កាលទី 1 · រាប់ដោយមិនឃើញចំនួនក្នុងប្រព័ន្ធ',
-                    'សូមបញ្ចូលចំនួនដែលរាប់ឃើញជាក់ស្តែងនៅលើធ្នើ', 'ជំហាន 1 នៃ 2');
+                    'វាយចំនួនភ្លាមៗក្រោយរាប់ធ្នើនីមួយៗ · អាចលក់បន្តបាន ប្រព័ន្ធគិតការលក់ពេលកំពុងរាប់ដោយស្វ័យប្រវត្តិ', 'ជំហាន 1 នៃ 2');
             } else if (stage === 2) {
                 host.innerHTML = stageBanner('fa-rotate-right', 'text-amber-500', 'ដំណាក់កាលទី 2 · រាប់ឡើងវិញតែមុខដែលខុស',
-                    `ខុសគ្នា <strong class="font-semibold text-slate-800">${diffSkus.size} មុខ</strong> · រាប់ឡើងវិញបានតែម្តងគត់`, 'ជំហាន 2 នៃ 2');
+                    `<strong class="font-semibold text-slate-800">${diffSkus.size} មុខ</strong> មិនត្រូវនឹងប្រព័ន្ធ · រាប់ធ្នើម្តងទៀត ហើយវាយចំនួនថ្មី · រាប់ឡើងវិញបានតែម្តងគត់`, 'ជំហាន 2 នៃ 2');
             } else {
                 host.innerHTML = stageBanner('fa-check-double', 'text-slate-400', 'រាប់រួចរាល់',
                     'ពិនិត្យភាពខុសគ្នា រួចចុច «បញ្ជាក់ និងរក្សាទុក» ដោយលេខសម្ងាត់អ្នកគ្រប់គ្រង', 'រួចរាល់');
@@ -132,6 +154,11 @@
 
         function renderCatChips() {
             const host = document.getElementById('catChips');
+            // រាប់មួយប្រភេទ៖ គ្មានតម្រងប្រភេទ បង្ហាញតែឈ្មោះប្រភេទ
+            if (SCOPE_CAT) {
+                host.innerHTML = `<span class="sm-badge px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 font-semibold">រាប់តែ ${escapeText(countScopeLabel(SCOPE_CAT))} · ${scopeProducts().length} មុខ</span>`;
+                return;
+            }
             host.innerHTML = CATEGORIES.map(c => `
                 <button type="button" onclick="selectedCat='${c.id}'; renderCatChips(); renderTable()" class="sm-badge px-3 py-1.5 rounded-xl transition ${selectedCat === c.id
                     ? 'bg-blue-600 text-white font-semibold shadow-sm'
@@ -142,19 +169,23 @@
         }
 
         function onCountInput(sku, val) {
-            const n = val === '' ? null : Math.max(0, parseInt(val, 10));
+            const parsed = parseInt(val, 10);
+            const n = val === '' || isNaN(parsed) ? null : Math.max(0, parsed);
+            const at = isoLocal(new Date());
+            const c = counts[sku];
             if (stage === 1) {
-                counts[sku].first = n;
-                counts[sku].final = n;
+                Object.assign(c, { first: n, firstAt: n === null ? null : at, final: n, finalAt: n === null ? null : at });
             } else if (stage === 2) {
-                counts[sku].recount = n;
-                counts[sku].final = n !== null ? n : counts[sku].first;
+                c.recount = n;
+                c.recountAt = n === null ? null : at;
+                c.final = n !== null ? n : c.first;
+                c.finalAt = n !== null ? at : c.firstAt;
             }
             updateProgress();
         }
 
         function updateProgress() {
-            const prods = sellableProducts();
+            const prods = scopeProducts();
             let counted = 0;
             prods.forEach(p => {
                 if (counts[p.sku] && counts[p.sku].final !== null) counted++;
@@ -163,7 +194,10 @@
         }
 
         function renderTable() {
-            let prods = sellableProducts();
+            let prods = scopeProducts();
+            // រាប់ឡើងវិញ៖ បង្ហាញតែមុខដែលត្រូវរាប់ម្តងទៀត · ពិនិត្យចុងក្រោយ៖ មុខខុសគ្នានៅខាងលើ
+            if (stage === 2) prods = prods.filter(p => diffSkus.has(p.sku));
+            if (stage === 3) prods = prods.filter(p => diffSkus.has(p.sku)).concat(prods.filter(p => !diffSkus.has(p.sku)));
             if (selectedCat !== 'all') {
                 prods = prods.filter(p => p.category === selectedCat);
             }
@@ -173,21 +207,18 @@
 
             const thSys = document.getElementById('thSystem');
             const thDiff = document.getElementById('thDiff');
-            if (stage === 1) {
-                thSys.classList.add('hidden');
-                thDiff.classList.add('hidden');
-            } else {
-                thSys.classList.remove('hidden');
-                thDiff.classList.remove('hidden');
-            }
+            // ចំនួនក្នុងប្រព័ន្ធបង្ហាញតែពេលពិនិត្យចុងក្រោយ · ការរាប់ឡើងវិញក៏មិនឃើញដែរ (រាប់ដោយមិនឃើញពិតប្រាកដ)
+            thSys.classList.toggle('hidden', stage !== 3);
+            thDiff.classList.toggle('hidden', stage !== 3);
 
             const catLabel = catId => (CATEGORIES.find(c => c.id === catId) || {}).label || catId;
 
             document.getElementById('countRows').innerHTML = prods.map(p => {
-                const sys = currentLevels[p.sku] || 0;
                 const c = counts[p.sku] || { first: null, recount: null, final: null };
+                const sys = stage === 3 ? systemOf(p.sku) : 0;
                 const isDiff = diffSkus.has(p.sku);
-                const finalVal = c.final !== null ? c.final : (c.first !== null ? c.first : '');
+                // រាប់ឡើងវិញ៖ ប្រអប់ទទេ (មិនបង្ហាញចំនួនលើកទី 1 ដើម្បីកុំឱ្យចម្លងតាម)
+                const finalVal = stage === 2 && isDiff ? (c.recount !== null ? c.recount : '') : (c.final !== null ? c.final : '');
                 const diff = (c.final !== null) ? (c.final - sys) : null;
 
                 // ក្នុងដំណាក់កាល recount បើមិនមែនជាមុខខុស មិនអនុញ្ញាតឱ្យកែទេ
@@ -195,30 +226,30 @@
 
                 return `
                 <tr class="hover:bg-slate-50 transition ${isDiff ? 'bg-amber-50/30' : ''}">
-                    <td class="py-2.5 px-4">
+                    <td class="py-2.5 px-4 max-md:px-3">
                         <div class="flex items-center gap-3">
                             <span class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 inline-flex items-center justify-center p-0.5 shadow-sm">
                                 ${productImgHtml(p)}
                             </span>
-                            <div>
+                            <div class="min-w-0">
                                 <p class="font-medium text-slate-800 leading-snug">${p.name}</p>
-                                <p class="text-xs text-slate-400 font-mono mt-0.5">បាកូដ: ${p.barcode || p.sku}</p>
+                                <p class="text-xs text-slate-400 font-mono mt-0.5">បាកូដ: ${p.barcode || p.sku}<span class="md:hidden font-sans"> · ${p.unit || 'ឯកតា'}</span></p>
                             </div>
                         </div>
                     </td>
-                    <td class="py-2.5 px-4 sm-td">
+                    <td class="py-2.5 px-4 sm-td max-md:hidden">
                         <span class="inline-flex items-center px-2 py-0.5 rounded-lg bg-slate-100 text-slate-600 text-xs">${catLabel(p.category)}</span>
                     </td>
-                    <td class="py-2.5 px-4 text-center sm-td text-slate-500">${p.unit || 'ឯកតា'}</td>
-                    ${stage > 1 ? `<td class="py-2.5 px-4 text-right sm-td sm-figure font-medium text-slate-600">${sys}</td>` : ''}
-                    <td class="py-2.5 px-4 text-right">
-                        <div class="flex items-center justify-end gap-1.5">
-                            <input type="number" min="0" step="1" value="${finalVal}" ${disabled ? 'disabled' : ''} oninput="onCountInput('${p.sku}', this.value)" placeholder="0" class="w-28 h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-right sm-value font-semibold text-slate-800 focus:outline-none focus:border-blue-500 sm-figure ${disabled ? 'opacity-60 bg-slate-100 cursor-not-allowed' : ''} ${isDiff ? 'border-amber-400 ring-2 ring-amber-100' : ''}">
-                        </div>
+                    <td class="py-2.5 px-4 text-center sm-td text-slate-500 max-md:hidden">${p.unit || 'ឯកតា'}</td>
+                    ${stage === 3 ? `<td class="py-2.5 px-4 text-right sm-td sm-figure font-medium text-slate-600 max-md:hidden">${sys}</td>` : ''}
+                    <td class="py-2.5 px-4 text-right max-md:px-3">
+                        ${stage === 3 ? `<span class="sm-figure font-semibold text-slate-800">${finalVal}</span>` : `<div class="flex items-center justify-end gap-1.5">
+                            <input type="number" min="0" step="1" value="${finalVal}" ${disabled ? 'disabled' : ''} oninput="onCountInput('${p.sku}', this.value)" placeholder="${stage === 2 && isDiff ? 'រាប់ម្តងទៀត' : '0'}" class="w-28 max-md:w-24 h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-right sm-value font-semibold text-slate-800 focus:outline-none focus:border-blue-500 sm-figure ${disabled ? 'opacity-60 bg-slate-100 cursor-not-allowed' : ''} ${isDiff ? 'border-amber-400 ring-2 ring-amber-100' : ''}">
+                        </div>`}
                     </td>
-                    ${stage > 1 ? `
-                    <td class="py-2.5 px-4 text-right sm-td sm-figure font-bold ${diff === 0 ? 'text-slate-400' : (diff < 0 ? 'text-rose-600' : 'text-emerald-600')}">
-                        ${diff !== null ? (diff > 0 ? '+' : '') + diff : '—'}
+                    ${stage === 3 ? `
+                    <td class="py-2.5 px-4 text-right sm-td sm-figure">
+                        <span class="font-semibold ${diff === 0 ? 'text-slate-400' : (diff < 0 ? 'text-rose-600' : 'text-slate-800')}">${diff === 0 ? '0' : (diff > 0 ? '+' : '−') + Math.abs(diff)}</span>
                     </td>` : ''}
                 </tr>`;
             }).join('');
@@ -247,10 +278,8 @@
                     </button>
                 `;
             } else {
+                // បន្ទាប់ពីឃើញចំនួនក្នុងប្រព័ន្ធ មិនអាចត្រឡប់ទៅកែការរាប់វិញទេ
                 host.innerHTML = `
-                    <button onclick="stage=2; renderBanner(); renderTable()" type="button" class="sm-badge h-12 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 font-semibold transition">
-                        កែប្រែការរាប់ឡើងវិញ
-                    </button>
                     <button onclick="saveCountSession()" type="button" class="sm-value h-12 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2 shadow-sm transition">
                         <i class="fas fa-lock text-xs"></i>
                         <span>បញ្ជាក់ និងរក្សាទុក</span>
@@ -259,18 +288,24 @@
             }
         }
 
-        function quickFillAllWithZero() {
-            sellableProducts().forEach(p => {
-                if (counts[p.sku].first === null) {
-                    counts[p.sku].first = 0;
-                    counts[p.sku].final = 0;
-                }
+        // មុខដែលមិនទាន់វាយ = 0 · សួរសិន ព្រោះ 0 មានន័យថាគ្មាននៅលើធ្នើ ហើយនឹងកត់ជាការខ្វះ
+        async function quickFillAllWithZero() {
+            const empty = scopeProducts().filter(p => counts[p.sku].first === null);
+            if (!empty.length) { showToast('គ្រប់មុខបានវាយចំនួនរួចហើយ', 'info'); return; }
+            const ok = await showCustomConfirm({
+                title: `ដាក់ 0 លើ ${empty.length} មុខ?`,
+                message: 'ធ្វើតែពេលអ្នកបានពិនិត្យហើយ ថាមុខទាំងនេះគ្មាននៅលើធ្នើ។ បើប្រព័ន្ធមានស្តុក វានឹងត្រូវកត់ជាការខ្វះ។',
+                confirmText: 'ដាក់ 0',
+                danger: true
             });
+            if (!ok) return;
+            const at = isoLocal(new Date());
+            empty.forEach(p => Object.assign(counts[p.sku], { first: 0, firstAt: at, final: 0, finalAt: at }));
             renderTable();
         }
 
         function verifyFirstCount() {
-            const prods = sellableProducts();
+            const prods = scopeProducts();
             const uncounted = prods.filter(p => counts[p.sku].first === null);
             if (uncounted.length > 0) {
                 showToast(`សូមបញ្ចូលចំនួនឱ្យបានគ្រប់មុខទំនិញ (${uncounted.length} មុខមិនទាន់បានបញ្ចូល)`, 'warning');
@@ -279,18 +314,19 @@
 
             diffSkus.clear();
             prods.forEach(p => {
-                const sys = currentLevels[p.sku] || 0;
-                const c = counts[p.sku].first || 0;
-                if (c !== sys) {
-                    diffSkus.add(p.sku);
-                }
+                const c = counts[p.sku];
+                if (c.first !== ((levelsAt(c.firstAt)[p.sku]) || 0)) diffSkus.add(p.sku);
             });
-
             if (diffSkus.size > 0) {
                 stage = 2;
+                // បង្ហាញគ្រប់មុខដែលត្រូវរាប់ម្តងទៀត (ជម្រះតម្រង)
+                selectedCat = 'all';
+                searchTerm = '';
+                document.getElementById('searchInput').value = '';
+                renderCatChips();
                 renderBanner();
                 renderTable();
-                showToast(`រកឃើញភាពខុសគ្នាលើ ${diffSkus.size} មុខទំនិញ · សូមរាប់ផ្ទៀងផ្ទាត់ឡើងវិញ`, 'warning');
+                showToast(`${diffSkus.size} មុខមិនត្រូវនឹងប្រព័ន្ធ · សូមរាប់ធ្នើម្តងទៀត`, 'warning');
             } else {
                 stage = 3;
                 renderBanner();
@@ -300,6 +336,11 @@
         }
 
         function finishRecount() {
+            const missing = [...diffSkus].filter(sku => counts[sku].recount === null);
+            if (missing.length) {
+                showToast(`សូមវាយចំនួនរាប់ឡើងវិញ ${missing.length} មុខដែលនៅសល់`, 'warning');
+                return;
+            }
             stage = 3;
             renderBanner();
             renderTable();
@@ -307,12 +348,12 @@
         }
 
         async function saveCountSession() {
-            const prods = sellableProducts();
+            const prods = scopeProducts();
             const diffItems = [];
             const sessionLines = [];
 
             prods.forEach(p => {
-                const sys = currentLevels[p.sku] || 0;
+                const sys = systemOf(p.sku);
                 const c = counts[p.sku];
                 const finalCount = c.final !== null ? c.final : (c.first !== null ? c.first : 0);
                 const diff = finalCount - sys;
@@ -323,6 +364,7 @@
                     first: c.first !== null ? c.first : 0,
                     recount: c.recount,
                     counted: finalCount,
+                    countedAt: c.finalAt,
                     diff
                 });
 
@@ -376,14 +418,14 @@
                 id: sessionId,
                 at: nowIso,
                 by: ME_MANAGER,
+                scope: SCOPE_CAT || 'all',
                 lines: sessionLines
             });
 
-            showToast(`បានកត់ត្រាវគ្គរាប់ស្តុក ${sessionId} ដោយជោគជ័យ`, 'success');
+            if (typeof markRecordViewed === 'function') markRecordViewed(sessionId);
+            flashToast(diffCount ? `បានរក្សាទុកការរាប់ស្តុក · ស្តុកបានកែតាមចំនួនរាប់ ${diffCount} មុខ` : 'បានរក្សាទុកការរាប់ស្តុក · ត្រូវគ្នាទាំងអស់');
 
-            setTimeout(() => {
-                location.href = 'stock-count.html';
-            }, 600);
+            location.href = 'stock-count.html';
         }
 
         document.addEventListener('DOMContentLoaded', () => {

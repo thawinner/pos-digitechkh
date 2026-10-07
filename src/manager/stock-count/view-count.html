@@ -68,7 +68,7 @@
             const lost = diffLines.reduce((n, l) => n + Math.abs(diffOf(l)) * ((getProduct(l.sku) || {}).price || 0), 0);
             page.innerHTML = `
                 <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 kpi-2up">
-                    ${kpiCard('មុខទំនិញរាប់', `${lines.length} មុខ`, '')}
+                    ${kpiCard('មុខទំនិញរាប់', `${lines.length} មុខ`, countScopeLabel(s.scope))}
                     ${kpiCard('មុខខុសគ្នា', `${diffLines.length} មុខ`, diffLines.length ? 'បានកែស្តុកតាមចំនួនរាប់' : 'ត្រូវគ្នាទាំងអស់', diffLines.length ? 'text-amber-600' : '')}
                     ${kpiCard('តម្លៃខុសគ្នាសរុប', fmtUSD(lost), 'តាមតម្លៃលក់')}
                 </div>

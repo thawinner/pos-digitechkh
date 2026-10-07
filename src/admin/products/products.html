@@ -51,7 +51,7 @@
                         <thead><tr class="border-b border-slate-100 bg-slate-50/60">
                             <th class="sm-th py-2.5 px-5 text-left text-slate-500">ទំនិញ</th>
                             <th class="sm-th py-2.5 px-3 text-right text-slate-500">តម្លៃលក់</th>
-                            <th class="sm-th py-2.5 px-3 text-right text-slate-500">ថ្លៃដើម</th>
+                            <th class="sm-th py-2.5 px-3 text-right text-slate-500">ថ្លៃដើមមធ្យម</th>
                             <th class="sm-th py-2.5 px-3 text-right text-slate-500">ចំណេញ/ឯកតា</th>
                             <th class="sm-th py-2.5 px-3 text-left text-slate-500 w-[14%]">អត្រាចំណេញ</th>
                             <th class="sm-th py-2.5 px-3 text-right text-slate-500">ក្នុងស្តុក</th>
@@ -91,9 +91,10 @@
             s.items.forEach(l => {
                 const q = l.qty - returnedQty(s, l.sku);
                 if (q <= 0) return;
-                const x = SOLD[l.sku] = SOLD[l.sku] || { qty: 0, net: 0 };
+                const x = SOLD[l.sku] = SOLD[l.sku] || { qty: 0, net: 0, cost: 0 };
                 x.qty += q;
                 x.net += exVat(linePrice(l) * q * keep);
+                x.cost += costAt(l.sku, s.time) * q;
             });
         });
 
@@ -144,7 +145,7 @@
 
         function renderKpis() {
             const live = sellableProducts();
-            const tot = Object.keys(SOLD).reduce((a, k) => ({ net: a.net + SOLD[k].net, cost: a.cost + costOf(k) * SOLD[k].qty }), { net: 0, cost: 0 });
+            const tot = Object.keys(SOLD).reduce((a, k) => ({ net: a.net + SOLD[k].net, cost: a.cost + SOLD[k].cost }), { net: 0, cost: 0 });
             const blended = tot.net ? (tot.net - tot.cost) / tot.net * 100 : 0;
             const low = live.filter(p => marginOf(p) < LOW);
             document.getElementById('kpiRow').innerHTML =
@@ -262,9 +263,9 @@
             const p = getProduct(sku);
             const cur = costOf(sku);
             const v = await showFormDialog({
-                title: 'កែថ្លៃដើម', icon: 'fa-truck-ramp-box',
-                message: `${p.name} · តម្លៃលក់ ${fmtUSD(p.price)} · តាមវិក្កយបត្រអ្នកផ្គត់ផ្គង់ចុងក្រោយ`,
-                fields: [{ key: 'cost', label: 'ថ្លៃដើមក្នុងមួយឯកតា (មិនរួមអាករ)', value: cur.toFixed(2), type: 'number', prefix: '$', suffix: `/${p.unit}` }],
+                title: 'កែថ្លៃដើមមធ្យម', icon: 'fa-truck-ramp-box',
+                message: `${p.name} · តម្លៃលក់ ${fmtUSD(p.price)}<br>ថ្លៃដើមគណនាស្វ័យប្រវត្តិពេលបញ្ជាក់ការទទួលស្តុក · កែនៅទីនេះតែពេលវាខុស។ ប្រើចាប់ពីការលក់បន្ទាប់ ការលក់មុននេះរក្សាថ្លៃដើមចាស់។`,
+                fields: [{ key: 'cost', label: 'ថ្លៃដើមមធ្យមក្នុងមួយឯកតា (មិនរួមអាករ)', value: cur.toFixed(2), type: 'number', prefix: '$', suffix: `/${p.unit}` }],
                 preview: x => marginPreview(p.price, money(x.cost)),
                 validate: x => {
                     const n = money(x.cost);
@@ -277,7 +278,7 @@
             const n = money(v.cost);
             setCost(sku, n, `កែថ្លៃដើម ${p.name}៖ ${fmtUSD(cur)} → ${fmtUSD(n)}`);
             renderAll();
-            showToast('បានរក្សាទុកថ្លៃដើម · របាយការណ៍ប្រាក់ចំណេញគណនាឡើងវិញ');
+            showToast('បានរក្សាទុកថ្លៃដើម · ប្រើចាប់ពីការលក់បន្ទាប់');
         }
 
         async function editStockLevels(sku) {

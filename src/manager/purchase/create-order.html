@@ -91,7 +91,8 @@
         function pickSup(id) {
             supId = id;
             const s = supplierById(id);
-            lines = lowStockForSupplier(s).map(p => ({ sku: p.sku, qty: p.reorderQty || 12 }));
+            const onOrder = onOrderBySku();
+            lines = lowStockForSupplier(s).map(p => ({ sku: p.sku, qty: suggestOrderQty(p, LV, onOrder).qty }));
             days = Number(s.leadDays) || 1;
             renderAll();
         }
@@ -122,7 +123,7 @@
 
         function addLine(sku) {
             const p = getProduct(sku);
-            lines.push({ sku, qty: p.reorderQty || 12 });
+            lines.push({ sku, qty: suggestOrderQty(p, LV, onOrderBySku()).qty });
             document.getElementById('search').value = '';
             renderResults(); renderAll();
         }
@@ -134,7 +135,7 @@
                 const p = getProduct(l.sku);
                 return `<div class="px-3 py-2.5 flex items-center gap-3">
                     <span class="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0">${productImgHtml(p)}</span>
-                    <span class="flex-1 min-w-0"><span class="block sm-td font-medium text-slate-800 truncate">${escapeText(p.name)}</span><span class="block sm-td-sub text-slate-500 sm-figure">មាន ${Math.max(0, LV[l.sku] || 0)} · អប្បបរមា ${p.minStock || 0} ${p.unit}</span></span>
+                    <span class="flex-1 min-w-0"><span class="block sm-td font-medium text-slate-800 truncate">${escapeText(p.name)}</span><span class="block sm-td-sub text-slate-500 sm-figure">មាន ${Math.max(0, LV[l.sku] || 0)} · អប្បបរមា ${p.minStock || 0} ${p.unit}</span><span class="block sm-td-sub text-slate-400">${suggestNote(suggestOrderQty(p, LV, onOrderBySku()), p.unit)}</span></span>
                     <input type="text" inputmode="numeric" value="${l.qty}" oninput="setQty(${i}, this.value)" aria-label="ចំនួនបញ្ជាទិញ" class="f-input text-right sm-figure flex-shrink-0" style="height:44px;width:96px">
                     <button type="button" onclick="removeLine(${i})" aria-label="ដកចេញ" class="w-10 h-10 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center flex-shrink-0"><i class="fas fa-xmark"></i></button></div>`;
             }).join('')}</div>` : emptyState('fa-boxes-stacked', 'គ្មានទំនិញជិតអស់ពីអ្នកផ្គត់ផ្គង់នេះ', 'ស្វែងរកខាងលើ ដើម្បីបន្ថែមទំនិញ');
@@ -171,7 +172,7 @@
                 pickSup(supId);
                 // មកពីជួរស្តុក: ត្រូវប្រាកដថាទំនិញនោះមានក្នុងបញ្ជី
                 if (preSku && getProduct(preSku) && !lines.some(l => l.sku === preSku)) addLine(preSku);
-            } else if (preSku && getProduct(preSku)) { lines = [{ sku: preSku, qty: getProduct(preSku).reorderQty || 12 }]; renderAll(); }
+            } else if (preSku && getProduct(preSku)) { lines = [{ sku: preSku, qty: suggestOrderQty(getProduct(preSku), LV, onOrderBySku()).qty }]; renderAll(); }
             else { const first = SUPS.find(s => lowStockForSupplier(s).length); if (first && !pre) pickSup(first.id); else renderAll(); }
             document.getElementById('search').addEventListener('input', renderResults);
         });

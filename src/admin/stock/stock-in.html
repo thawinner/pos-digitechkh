@@ -145,10 +145,10 @@
                     ? '<span class="sm-td text-slate-500">បានបញ្ជាក់</span>'
                     : '<span class="sm-badge px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-medium"><i class="fas fa-clock mr-1"></i>រង់ចាំបញ្ជាក់</span>';
 
-                const href = `view-stock-in.html?invoice=${encodeURIComponent(s.invoice)}`;
+                const href = `view-stock-in.html?id=${encodeURIComponent(s.id)}`;
                 const menuId = `siMenu-${s.lines[0] ? s.lines[0].id : s.invoice}`.replace(/[^\w-]/g, '_');
 
-                return `<tr data-row-id="${escapeText(s.invoice)}" onclick="location.href='${href}'" class="hover:bg-slate-50 cursor-pointer">
+                return `<tr data-row-id="${escapeText(s.id)}" onclick="location.href='${href}'" class="hover:bg-slate-50 cursor-pointer">
                     <td class="py-2.5 px-5 sm-td text-slate-600 sm-figure">${fmtDate(s.at)} <span class="sm-td-sub text-slate-400 block">${fmtTime(s.at)} · ${personName(s.by)}</span></td>
                     <td class="py-2.5 px-3 sm-td-strong text-slate-800">${escapeText(s.invoice)}</td>
                     <td class="py-2.5 px-3 sm-td text-slate-700 font-medium">${escapeText(s.supplier)}</td>
@@ -170,7 +170,7 @@
                     ? '<span class="sm-td-sub text-slate-500">បានបញ្ជាក់</span>'
                     : '<span class="sm-badge px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-medium">រង់ចាំបញ្ជាក់</span>';
 
-                return `<div data-row-id="${escapeText(s.invoice)}" onclick="location.href='view-stock-in.html?invoice=${encodeURIComponent(s.invoice)}'" class="p-4 space-y-2 cursor-pointer">
+                return `<div data-row-id="${escapeText(s.id)}" onclick="location.href='view-stock-in.html?id=${encodeURIComponent(s.id)}'" class="p-4 space-y-2 cursor-pointer">
                     <div class="flex items-start justify-between gap-2">
                         <div>
                             <p class="sm-value text-slate-800">${escapeText(s.invoice)}</p>

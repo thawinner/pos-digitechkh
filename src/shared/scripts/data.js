@@ -1997,14 +1997,28 @@ function sendTransfer(to, lines, note) {
     return t;
 }
 
+/* សរសេរចលនាស្តុកទៅសាខាផ្សេង (ឧ. សាខាផ្ញើ ពេលសាខាទទួលរាប់បានលើស) */
+function appendStockMovesAt(branchId, moves) {
+    if (!moves.length) return;
+    const key = storeKey(STOCK_KEYS.moves, branchId);
+    try {
+        const cur = JSON.parse(localStorage.getItem(key) || '[]');
+        localStorage.setItem(key, JSON.stringify(cur.concat(moves)));
+    } catch (e) { /* ការផ្ទុកត្រូវបានបិទ */ }
+}
+
 function receiveTransfer(id, received, note) {
     const list = posRead(TRANSFERS_KEY, []) || [];
     const t = list.find(x => x.id === id);
     if (!t || t.status !== 'sent' || t.to !== ACTIVE_BRANCH_ID) return null;
-    t.lines.forEach(l => { l.received = Math.max(0, Math.min(l.qty, Number(received[l.sku]) || 0)); });
+    // ទទួលអាចលើសចំនួនផ្ញើ (សាខាផ្ញើដាក់លើសពីការកត់ត្រា)
+    t.lines.forEach(l => { l.received = Math.max(0, Number(received[l.sku]) || 0); });
     Object.assign(t, { status: 'received', receivedBy: currentActorId(), receivedAt: isoLocal(new Date()), receiveNote: note || '' });
     posWrite(TRANSFERS_KEY, list);
     saveStockMoves(t.lines.filter(l => l.received > 0).map(l => stockMove({ type: 'transfer_in', sku: l.sku, qty: l.received, ref: t.id, reason: `ទទួលពី ${branchName(t.from)}`, note: t.receiveNote })));
+    // ចំនួនលើស បានចេញពីសាខាផ្ញើពិតប្រាកដ → កាត់ស្តុកសាខាផ្ញើបន្ថែម ដើម្បីឱ្យស្តុកទាំងពីរត្រឹមត្រូវ
+    appendStockMovesAt(t.from, t.lines.filter(l => l.received > l.qty).map(l => stockMove({ type: 'transfer_out', sku: l.sku, qty: -(l.received - l.qty), ref: t.id,
+        reason: `ផ្ញើលើសពីចំនួនកត់ត្រា · ${branchName(t.to)} រាប់បាន`, note: t.receiveNote })));
     return t;
 }
 
@@ -2038,7 +2052,11 @@ function ensureDemoTransfers() {
 }
 
 function transferShort(t) {
-    return t.status === 'received' ? t.lines.reduce((n, l) => n + (l.qty - (l.received || 0)), 0) : 0;
+    return t.status === 'received' ? t.lines.reduce((n, l) => n + Math.max(0, l.qty - (l.received || 0)), 0) : 0;
+}
+
+function transferOver(t) {
+    return t.status === 'received' ? t.lines.reduce((n, l) => n + Math.max(0, (l.received || 0) - l.qty), 0) : 0;
 }
 
 /* មូលហេតុកែតម្រូវ — sign = ទិសដៅនៃចលនា · shrink = រាប់ជាការបាត់បង់ */
@@ -2123,6 +2141,15 @@ function onHandLevels() {
 
 function onHand(sku) {
     return onHandLevels()[sku] || 0;
+}
+
+/* ចំនួនក្នុងស្តុកនៅនាទីមួយ (រួមចលនាត្រឹមនាទីនោះ) — ការរាប់ស្តុកប្រៀបធៀបមុខនីមួយៗនឹងពេលដែលវាត្រូវបានរាប់
+   ដូច្នេះការលក់ពេលកំពុងរាប់ មិនត្រូវកាត់ពីរដង (ម្តងដោយការលក់ ម្តងទៀតដោយភាពខុសគ្នានៃការរាប់) */
+function onHandLevelsAt(at) {
+    const lv = {};
+    PRODUCTS.forEach(p => { lv[p.sku] = openingQty(p); });
+    liveStockMoves().forEach(m => { if (m.at <= at) lv[m.sku] = (lv[m.sku] || 0) + m.qty; });
+    return lv;
 }
 
 /* out = គ្មានក្នុងប្រព័ន្ធ · low = ត្រឹម ឬក្រោមកម្រិតអប្បបរមា */

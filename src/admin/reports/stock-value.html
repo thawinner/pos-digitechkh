@@ -55,6 +55,8 @@
                     </div>
                 </div>
 
+                <div id="valueAlerts" class="space-y-3 empty:hidden"></div>
+
                 <!-- KPI សង្ខេប -->
                 <div id="kpiRow" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
 
@@ -111,13 +113,34 @@
             }).join('');
         }
 
+        /* ព្រមាន៖ ស្តុកក្រោម 0 (មិនរាប់ក្នុងតម្លៃ) · ទំនិញគ្មានថ្លៃដើម (តម្លៃ $0) — ប្រាប់ពីរបៀបកែ */
+        function renderAlerts(stats) {
+            const alert = (title, note, href, cta) => `<div class="bg-white border border-slate-200 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-start gap-3 min-w-0">
+                    <i class="fas fa-triangle-exclamation text-amber-500 mt-1"></i>
+                    <div class="min-w-0"><h4 class="sm-card-title text-slate-800">${title}</h4><p class="sm-td-sub text-slate-500 mt-0.5">${note}</p></div>
+                </div>
+                <a href="${href}" class="sm-badge h-10 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold inline-flex items-center">${cta}</a>
+            </div>`;
+            const names = list => list.slice(0, 3).map(p => escapeText(p.name)).join(' · ') + (list.length > 3 ? ` និង ${list.length - 3} មុខទៀត` : '');
+            const noCost = stats.products.filter(p => !p.confirmed && p.qty > 0);
+            document.getElementById('valueAlerts').innerHTML =
+                (stats.negative.length ? alert(`${stats.negative.length} មុខមានស្តុកក្រោម 0 ក្នុងប្រព័ន្ធ`,
+                    `${names(stats.negative)} · លក់លើសស្តុកដែលបានកត់ត្រា ដូច្នេះមិនរាប់ក្នុងតម្លៃស្តុកទេ។ ឱ្យអ្នកគ្រប់គ្រងរាប់ស្តុកមុខទាំងនេះ។`,
+                    '../../manager/stock-count/create-count.html', 'រាប់ស្តុក') : '') +
+                (noCost.length ? alert(`${noCost.length} មុខគ្មានថ្លៃដើម`,
+                    `${names(noCost)} · តម្លៃស្តុករាប់ជា $0 រហូតដល់មានថ្លៃដើម។ បញ្ចូលថ្លៃដើម ឬបញ្ជាក់ការទទួលស្តុក។`,
+                    '../../admin/products/products.html', 'បញ្ចូលថ្លៃដើម') : '');
+        }
+
         function renderKpis(stats) {
+            renderAlerts(stats);
             const pendingIns = unconfirmedStockInCount();
             document.getElementById('kpiRow').innerHTML =
                 kpiCard('តម្លៃស្តុកសរុប (ថ្លៃដើម)', fmtUSD(stats.totalValue), 'គិតតាមថ្លៃដើមទិញចូល', 'text-emerald-700') +
                 kpiCard('ចំនួនឯកតាក្នុងស្តុក', `${stats.totalUnits}`, 'ឯកតាទំនិញជាក់ស្តែងទាំងអស់') +
                 kpiCard('មុខទំនិញសរុប', `${stats.productCount}`, `${stats.byCategory.length} ប្រភេទទំនិញ`) +
-                kpiCard('ស្តុកចូលរង់ចាំបញ្ជាក់ថ្លៃដើម', `${pendingIns} វិក្កយបត្រ`, pendingIns ? 'តម្លៃនេះប្រើថ្លៃដើមចុងក្រោយ' : 'បានបញ្ជាក់រួចរាល់', pendingIns ? 'text-amber-600' : '', '../stock/stock-in.html');
+                kpiCard('ស្តុកចូលរង់ចាំបញ្ជាក់ថ្លៃដើម', `${pendingIns} វិក្កយបត្រ`, pendingIns ? 'ប្រើថ្លៃដើមមធ្យមបណ្តោះអាសន្ន' : 'បានបញ្ជាក់រួចរាល់', pendingIns ? 'text-amber-600' : '', '../stock/stock-in.html');
         }
 
         function renderChart(stats) {
@@ -216,7 +239,7 @@
                     const pct = stats.totalValue > 0 ? (p.value / stats.totalValue * 100) : 0;
                     const st = STOCK_STATUS[p.status] || STOCK_STATUS.ok;
                     const unconfBadge = !p.confirmed
-                        ? '<span class="sm-badge ml-1.5 px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 text-[10px]">មិនទាន់បញ្ជាក់</span>'
+                        ? '<span class="sm-badge ml-1.5 px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 text-[10px]">គ្មានថ្លៃដើម</span>'
                         : '';
 
                     return `<tr>
@@ -230,8 +253,8 @@
                             </div>
                         </td>
                         <td class="py-2.5 px-3 text-right">
-                            <span class="sm-td-strong sm-figure text-slate-800">${p.qty}</span> <span class="text-slate-400 text-xs">${p.unit}</span>
-                            <span class="block sm-td-sub text-[11px] font-medium ${p.status === 'out' ? 'text-rose-600' : p.status === 'low' ? 'text-amber-600' : 'text-emerald-700'}">${st.label}</span>
+                            <span class="sm-td-strong sm-figure ${p.qty < 0 ? 'text-rose-600' : 'text-slate-800'}">${p.qty}</span> <span class="text-slate-400 text-xs">${p.unit}</span>
+                            <span class="block sm-td-sub text-[11px] font-medium ${p.qty < 0 || p.status === 'out' ? 'text-rose-600' : p.status === 'low' ? 'text-amber-600' : 'text-slate-400'}">${p.qty < 0 ? 'ក្រោម 0 · ត្រូវរាប់' : st.label}</span>
                         </td>
                         <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-600">
                             ${fmtUSD(p.cost)}${unconfBadge}
@@ -250,7 +273,7 @@
                     </tr>`;
                 }).join('');
 
-                const sumFilteredUnits = filtered.reduce((s, p) => s + p.qty, 0);
+                const sumFilteredUnits = filtered.reduce((s, p) => s + Math.max(0, p.qty), 0);
                 const sumFilteredVal = filtered.reduce((s, p) => s + p.value, 0);
 
                 tfoot.innerHTML = `<tr>

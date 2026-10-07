@@ -649,7 +649,11 @@ function receivePO(id, qtys, invoice) {
     const po = list.find(x => x.id === id);
     if (!po || !poOpen(po)) return null;
     const sup = supplierById(po.supplierId) || { name: '' };
-    const got = po.lines.map(l => ({ sku: l.sku, qty: Math.max(0, Math.min(l.qty - l.received, Number(qtys[l.sku]) || 0)) })).filter(l => l.qty > 0);
+    // អ្នកផ្គត់ផ្គង់អាចដឹកលើសការបញ្ជាទិញ · extra = ចំនួនលើសនៅសល់ (កត់លើការទទួល)
+    const got = po.lines.map(l => {
+        const qty = Math.max(0, Number(qtys[l.sku]) || 0);
+        return { sku: l.sku, qty, extra: Math.max(0, qty - Math.max(0, l.qty - l.received)) };
+    }).filter(l => l.qty > 0);
     if (!got.length) return null;
     got.forEach(g => { po.lines.find(l => l.sku === g.sku).received += g.qty; });
     const at = isoLocal(new Date());
@@ -691,6 +695,49 @@ function onOrderBySku() {
     return out;
 }
 
+/* ===== ចំនួនណែនាំឱ្យបញ្ជាទិញ តាមល្បឿនលក់ =====
+   លក់ជាមធ្យមក្នុងមួយថ្ងៃ (14 ថ្ងៃចុងក្រោយ) × (ថ្ងៃដឹកជញ្ជូនរបស់អ្នកផ្គត់ផ្គង់ + 7 ថ្ងៃរហូតដល់ការបញ្ជាទិញបន្ទាប់)
+   + ស្តុកអប្បបរមា − ស្តុកមាន − កំពុងបញ្ជាទិញ · ទំនិញមិនទាន់មានការលក់ = ចំនួនបញ្ជាទិញលំនាំដើម (reorderQty) */
+const REORDER_CYCLE_DAYS = 7;
+const VELOCITY_DAYS = 14;
+let VELOCITY_CACHE = null;
+
+function salesVelocity() {
+    const now = Date.now();
+    if (VELOCITY_CACHE && now - VELOCITY_CACHE.at < 2000) return VELOCITY_CACHE.map;
+    const from = isoLocal(new Date(now - VELOCITY_DAYS * 86400000));
+    const units = {};
+    mgrAllSales().forEach(sale => {
+        if (sale.time < from || isVoided(sale)) return;
+        sale.items.forEach(l => { units[l.sku] = (units[l.sku] || 0) + Math.max(0, l.qty - returnedQty(sale, l.sku)); });
+    });
+    const map = {};
+    Object.keys(units).forEach(sku => { map[sku] = units[sku] / VELOCITY_DAYS; });
+    VELOCITY_CACHE = { at: now, map };
+    return map;
+}
+
+function supplierOfSku(sku) {
+    return shopSuppliers().find(s => s.active !== false && (s.skus || []).includes(sku)) || null;
+}
+
+/* → { qty, daily, coverDays } */
+function suggestOrderQty(p, levels, onOrder) {
+    const daily = salesVelocity()[p.sku] || 0;
+    const sup = supplierOfSku(p.sku);
+    const coverDays = (Number(sup && sup.leadDays) || 1) + REORDER_CYCLE_DAYS;
+    const have = Math.max(0, ((levels || onHandLevels())[p.sku]) || 0) + (((onOrder || {})[p.sku] || {}).qty || 0);
+    const qty = daily > 0 ? Math.max(0, Math.ceil(daily * coverDays + (p.minStock || 0) - have)) : (p.reorderQty || 12);
+    return { qty: daily > 0 ? Math.max(1, qty) : qty, daily, coverDays };
+}
+
+/* "លក់ ~3.5/ថ្ងៃ · គ្រប់ 9 ថ្ងៃ" — ពន្យល់ពីមូលហេតុនៃចំនួនណែនាំ */
+function suggestNote(sg, unit) {
+    if (!sg.daily) return 'មិនទាន់មានការលក់ · ចំនួនលំនាំដើម';
+    const d = sg.daily >= 10 ? Math.round(sg.daily) : Math.round(sg.daily * 10) / 10;
+    return `លក់ ~${d} ${unit || ''}/ថ្ងៃ · គ្រប់ ${sg.coverDays} ថ្ងៃ`;
+}
+
 function lowStockForSupplier(sup) {
     const levels = onHandLevels();
     const onOrder = new Set(Object.keys(onOrderBySku()));
@@ -701,6 +748,8 @@ let MGR_STOCK_CACHE = null;
 
 function generateStockHistory() {
     if (MGR_STOCK_CACHE) return MGR_STOCK_CACHE;
+    // ហាង ឬសាខាថ្មីគ្មានប្រវត្តិស្តុកគំរូ (ការទទួល ការកែតម្រូវ ការរាប់) · មានតែអ្វីដែលបុគ្គលិកពិតជាធ្វើ
+    if (!IS_DEMO_DATA) return (MGR_STOCK_CACHE = { historicMoves: [], stockCounts: [] });
     const history = generateHistory();
     const openingAt = stockOpeningAt();
     const pastSales = history.sales.filter(s => s.time < openingAt);
@@ -915,7 +964,7 @@ function mgrStockMoves(range) {
     const historic = generateStockHistory().historicMoves;
     const live = liveStockMoves();
 
-    // គណនា balanceAfter សម្រាប់ live moves ទៅមុខពី p.opening
+    // គណនា balanceAfter សម្រាប់ live moves ទៅមុខពីស្តុកបើករបស់សាខានេះ
     const liveBySku = {};
     PRODUCTS.forEach(p => { liveBySku[p.sku] = []; });
     live.forEach(m => {
@@ -926,7 +975,7 @@ function mgrStockMoves(range) {
     PRODUCTS.forEach(p => {
         const moves = liveBySku[p.sku] || [];
         moves.sort((a, b) => a.at.localeCompare(b.at));
-        let running = p.opening || 0;
+        let running = openingQty(p);
         moves.forEach(m => {
             running += m.qty;
             m.balanceAfter = running;
@@ -938,11 +987,18 @@ function mgrStockMoves(range) {
     return range ? all.filter(m => inRange(m.at, range)) : all;
 }
 
+/* ការរាប់មួយប្រភេទ (រាប់ជាផ្នែក) · scope = 'all' ឬ id ប្រភេទ */
+function countScopeLabel(scope) {
+    if (!scope || scope === 'all') return 'ទំនិញទាំងអស់';
+    return (CATEGORIES.find(c => c.id === scope) || {}).label || scope;
+}
+
+/* កាលវិភាគរាប់ស្តុកគិតតែការរាប់ពេញ (ទំនិញទាំងអស់) · ការរាប់មួយប្រភេទមិនកំណត់ថ្ងៃរាប់ឡើងវិញទេ */
 function stockCountScheduleStatus() {
     const st = posSettings();
     const sched = st.countSchedule || 'weekly';
     const intervalDays = sched === 'monthly' ? 30 : 7;
-    const allCounts = mgrAllStockCounts();
+    const allCounts = mgrAllStockCounts().filter(c => !c.scope || c.scope === 'all');
     const lastAt = allCounts.length > 0 ? allCounts[0].at : stockOpeningAt();
     const lastDate = new Date(lastAt);
     const nextDueDate = addDays(lastDate, intervalDays);
@@ -1080,9 +1136,126 @@ function mgrPendingDropCount() {
     return mgrAllMovements().filter(m => m.type === 'drop' && m.status === 'pending').length;
 }
 
-function mgrLowStockCount() {
+/* ទំនិញដែលត្រូវបញ្ជាទិញ៖ ជិតអស់ ឬអស់ ហើយមិនទាន់មានក្នុងការបញ្ជាទិញដែលកំពុងរង់ចាំ
+   សាខាដែលមិនទាន់កត់ត្រាស្តុកសោះ = គ្មាន (ដូច stockStatus) · ផ្លាកលេខ ផ្ទាំងគ្រប់គ្រង និងផ្ទាំង «ត្រូវបញ្ជាទិញ» ប្រើរួមគ្នា */
+function mgrReorderProducts(levels) {
+    if (!stockTracked()) return [];
+    const lv = levels || onHandLevels();
+    const onOrder = onOrderBySku();
+    return sellableProducts().filter(p => !onOrder[p.sku] && stockStatusOf(p, lv[p.sku] || 0) !== 'ok');
+}
+
+/* ===== ទំនិញជិតផុតកំណត់ =====
+   ការទទួលស្តុកអាចមានកាលបរិច្ឆេទផុតកំណត់ (expiry)។ ស្តុកដែលនៅមានសន្មតថាមកពីការទទួលចុងក្រោយ
+   (លក់ចាស់មុន) ដូច្នេះការទទួលចាស់ដែលស្តុកលក់អស់ហើយ មិនរំខានទៀតទេ។
+   → [{ sku, qty, expiry, daysLeft, moveId }] ផុតកំណត់ក្នុង EXPIRY_WARN_DAYS ថ្ងៃ ឬហួសរួច */
+const EXPIRY_WARN_DAYS = 7;
+
+function expiringLots(days) {
+    const within = days == null ? EXPIRY_WARN_DAYS : days;
+    const today = isoDate(new Date());
+    const limit = isoDate(new Date(Date.now() + within * 86400000));
+    const ins = mgrStockMoves().filter(m => m.type === 'stock_in');
+    if (!ins.some(m => m.expiry)) return [];
     const levels = onHandLevels();
-    return sellableProducts().filter(p => stockStatusOf(p, levels[p.sku] || 0) !== 'ok').length;
+    const bySku = {};
+    ins.forEach(m => (bySku[m.sku] = bySku[m.sku] || []).push(m));
+    const out = [];
+    Object.keys(bySku).forEach(sku => {
+        let left = Math.max(0, levels[sku] || 0);
+        bySku[sku].sort((a, b) => b.at.localeCompare(a.at)).forEach(m => {
+            const take = Math.min(left, Number(m.qty) || 0);
+            left -= take;
+            if (take > 0 && m.expiry && m.expiry <= limit) {
+                out.push({ sku, qty: take, expiry: m.expiry, moveId: m.id,
+                    daysLeft: Math.round((new Date(m.expiry) - new Date(today)) / 86400000) });
+            }
+        });
+    });
+    return out.sort((a, b) => a.expiry.localeCompare(b.expiry));
+}
+
+/* ===== ស្តុក៖ ការងារត្រូវធ្វើ (ទំព័រស្តុក) =====
+   ការងារដែលរង់ចាំអ្នកគ្រប់គ្រង មួយបន្ទាត់ក្នុងមួយការងារ ជាមួយប៊ូតុងតែមួយ (root = ផ្លូវទៅ src/)
+   → [{ key, icon, tone: 'rose'|'amber'|'slate', title, note, cta, href | action }] */
+function stockTodo(root) {
+    const out = [];
+    const r = root || '../..';
+    if (!stockTracked()) return out;
+    const today = isoDate(new Date());
+    const n = (x, unit) => `${x} ${unit}`;
+
+    const incoming = incomingTransfers();
+    if (incoming.length) {
+        const t = incoming[0];
+        out.push({ key: 'transfer', icon: 'fa-right-to-bracket', tone: 'amber',
+            title: incoming.length > 1 ? `ទំនិញផ្ទេរ ${incoming.length} លើកកំពុងមកដល់` : `ទំនិញផ្ទេរពី ${branchName(t.from)} កំពុងមកដល់`,
+            note: 'រាប់ទំនិញដែលមកដល់ ហើយបញ្ជាក់ការទទួល', cta: 'ទទួល',
+            href: incoming.length > 1 ? `${r}/manager/stock-transfer/transfers.html?tab=in` : `${r}/manager/stock-transfer/view-transfer.html?id=${t.id}` });
+    }
+
+    const open = purchaseOrders().filter(poOpen);
+    if (open.length) {
+        const late = open.filter(poLate).length;
+        const dueToday = open.filter(po => po.expectedOn === today).length;
+        out.push({ key: 'receive', icon: 'fa-truck-ramp-box', tone: late ? 'rose' : 'slate',
+            title: `ការបញ្ជាទិញ ${open.length} កំពុងរង់ចាំដឹក`,
+            note: [late ? `យឺត ${late}` : '', dueToday ? `មកដល់ថ្ងៃនេះ ${dueToday}` : '', !late && !dueToday ? 'ពេលទំនិញមកដល់ ចុចទទួល' : ''].filter(Boolean).join(' · '),
+            cta: 'ទទួលទំនិញ', action: `openReceiveChooser('${r}')` });
+    }
+
+    const reorder = mgrReorderProducts();
+    if (reorder.length) {
+        const out0 = reorder.filter(p => stockStatus(p.sku) === 'out').length;
+        const sups = new Set(reorder.map(p => (supplierOfSku(p.sku) || {}).id || '-')).size;
+        out.push({ key: 'order', icon: 'fa-cart-arrow-down', tone: out0 ? 'rose' : 'amber',
+            title: `${n(reorder.length, 'មុខ')}ត្រូវបញ្ជាទិញ`,
+            note: [out0 ? `អស់ ${out0}` : '', reorder.slice(0, 3).map(p => p.name).join(' · ') + (reorder.length > 3 ? ' …' : ''), sups > 1 ? `${sups} អ្នកផ្គត់ផ្គង់` : ''].filter(Boolean).join(' · '),
+            cta: 'បញ្ជាទិញ', href: `${r}/manager/purchase/create-order.html` });
+    }
+
+    const exp = expiringLots();
+    if (exp.length) {
+        const gone = exp.filter(x => x.daysLeft < 0).length;
+        out.push({ key: 'expiry', icon: 'fa-calendar-xmark', tone: gone ? 'rose' : 'amber',
+            title: gone ? `${n(gone, 'មុខ')}ផុតកំណត់ហើយ` : `${n(exp.length, 'មុខ')}ជិតផុតកំណត់`,
+            note: gone ? 'ដកចេញពីធ្នើ ហើយកាត់ចេញពីស្តុក' : 'ដាក់លក់មុនគេ', cta: 'មើល', href: `${r}/manager/stock/stock.html#expiry` });
+    }
+
+    const sched = stockCountScheduleStatus();
+    if (sched.isDue) {
+        out.push({ key: 'count', icon: 'fa-clipboard-check', tone: sched.isOverdue ? 'rose' : 'slate',
+            title: sched.isOverdue ? `រាប់ស្តុកហួសកំណត់ ${sched.overdueDays} ថ្ងៃ` : 'ដល់ថ្ងៃរាប់ស្តុក',
+            note: `រាប់${sched.schedule === 'monthly' ? 'ប្រចាំខែ' : 'ប្រចាំសប្តាហ៍'} · ទំនិញទាំងអស់`, cta: 'រាប់ស្តុក', href: `${r}/manager/stock-count/create-count.html` });
+    }
+    // បន្ទាន់មុន (ក្រហម → លឿង → ធម្មតា)
+    const rank = { rose: 0, amber: 1, slate: 2 };
+    return out.sort((a, b) => rank[a.tone] - rank[b.tone]);
+}
+
+/* ទំនិញមកដល់៖ សួរថាមកពីការបញ្ជាទិញណា (ឬគ្មានការបញ្ជាទិញ) → ទៅទំព័រទទួលត្រឹមត្រូវ
+   ប៊ូតុង «ទទួលទំនិញ» តែមួយ ជំនួសការជ្រើសរវាង «បញ្ជាទិញ» និង «ទទួលស្តុកថ្មី» */
+async function openReceiveChooser(root) {
+    const r = root || '../..';
+    const manual = `${r}/manager/stock/create-stock-in.html`;
+    const today = isoDate(new Date());
+    const open = purchaseOrders().filter(poOpen).sort((a, b) => a.expectedOn.localeCompare(b.expectedOn));
+    if (!open.length) { location.href = manual; return; }
+    const when = po => po.expectedOn < today ? `យឺត · ត្រូវមកដល់ ${fmtDate(po.expectedOn)}` : po.expectedOn === today ? 'ត្រូវមកដល់ថ្ងៃនេះ' : `ត្រូវមកដល់ ${fmtDate(po.expectedOn)}`;
+    const v = await showOptionDialog({
+        title: 'ទំនិញមកពីណា?',
+        message: 'ជ្រើសការបញ្ជាទិញ ដើម្បីទទួល និងបិទវា · ដឹកមកដោយមិនបានបញ្ជាទិញ ជ្រើសខាងក្រោមគេ',
+        options: open.slice(0, 6).map(po => ({ value: po.id, icon: 'fa-truck-ramp-box',
+            label: (supplierById(po.supplierId) || {}).name || 'អ្នកផ្គត់ផ្គង់',
+            desc: `${po.lines.length} មុខ · ${when(po)}${po.status === 'partial' ? ' · ទទួលខ្លះហើយ' : ''}` }))
+            .concat([{ value: 'manual', icon: 'fa-box-open', label: 'គ្មានការបញ្ជាទិញ', desc: 'ទំនិញមកដល់ដោយមិនបានបញ្ជាទិញក្នុងប្រព័ន្ធ' }])
+    });
+    if (!v) return;
+    location.href = v === 'manual' ? manual : `${r}/manager/purchase/view-order.html?id=${encodeURIComponent(v)}#receive`;
+}
+
+function mgrLowStockCount() {
+    return mgrReorderProducts().length;
 }
 
 /* ផ្លាកលេខរបស់អ្នកគិតលុយមិនប្រើនៅទីនេះ */
@@ -1149,14 +1322,26 @@ function portalNotifications() {
         href: `${root}/manager/shifts/view-shift.html?id=${s.id}`
     }));
 
+    const expiring = expiringLots();
+    if (expiring.length) {
+        const gone = expiring.filter(x => x.daysLeft < 0).length;
+        list.push({
+            icon: 'mdi:calendar-alert',
+            tone: gone ? 'danger' : 'warning',
+            title: gone ? `ទំនិញ ${gone} មុខផុតកំណត់ហើយ` : `ទំនិញ ${expiring.length} មុខជិតផុតកំណត់`,
+            note: 'ដកចេញពីធ្នើ ឬលក់មុនគេ',
+            href: `${root}/manager/stock/stock.html#expiry`
+        });
+    }
+
     const lowCount = mgrLowStockCount();
     if (lowCount > 0) {
         list.push({
             icon: 'mdi:package-variant-remove',
             tone: 'warning',
-            title: `ទំនិញ ${lowCount} មុខជិតអស់ ឬអស់ស្តុក`,
-            note: 'ពិនិត្យបញ្ជីត្រូវបញ្ជាទិញឡើងវិញ',
-            href: `${root}/manager/stock/stock.html`
+            title: `ទំនិញ ${lowCount} មុខជិតអស់ មិនទាន់បញ្ជាទិញ`,
+            note: 'បើកបញ្ជីត្រូវបញ្ជាទិញ',
+            href: `${root}/manager/stock/stock.html?tab=reorder`
         });
     }
 
