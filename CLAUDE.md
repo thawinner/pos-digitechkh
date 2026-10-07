@@ -78,12 +78,15 @@ Till devices: the owner registers a computer as a register in settings → «ឧ
 `pos_devices` + `pos_device`); only a registered device offers PIN login (`verifyPinLogin()`). On a till the login page
 always opens on the PIN pad (also with `?next=`, which still applies after login); it signs in automatically at the
 6th digit (no submit button), shakes and clears on a wrong PIN, and offers email/phone as a secondary link below.
+A registered till is one register (`deviceRegister()`): `MY_REGISTER` and `suggestRegister` use it, open-shift shows only
+that register (no picker), and a cashier whose shift is open on another till is told to close it there first.
+The demo panel lists every register of both demo shops, by branch («ឧបករណ៍នេះ = ទំព័រចូលរបស់», `demoTills()`).
 Strict login (decided 2026-10-07), one rule for password and PIN, `loginBlockReason(person, device)` in `data.js`:
 a registered till is that shop's login page, so only its shop's people log in there, and staff only at their own
 branch's till (owners at any branch) → `shop` / `branch`; off a till, owners and managers may log in but cashiers may
 not (`till`). The message appears only after a correct password. `posSession()` re-applies the rule on every page, so
 removing or changing the till logs its cashier out. The demo seeds this browser as POS-01; the demo panel on the login
-page switches it between tills of both shops or «កុំព្យូទ័រផ្ទាល់ខ្លួន» and greys out accounts that cannot log in there.
+page switches it between every till of both shops or «កុំព្យូទ័រផ្ទាល់ខ្លួន» and greys out accounts that cannot log in there.
 
 Super Admin (DIGITECHKH's own console, `control/*`, body `controlPortal`): demo login admin@digitechkh.com · control2026
 (`CONTROL_ACCOUNTS` in `data.js`, no shop membership, can open only `control/*`). It has its own login page

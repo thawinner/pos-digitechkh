@@ -160,6 +160,11 @@
             return regOwner(r) || reservedFor(r);
         }
 
+        /* វេនរបស់ខ្ញុំដែលកំពុងបើកនៅបញ្ជរផ្សេង (មួយអ្នក មួយថតប្រាក់) */
+        function myShiftElsewhere() {
+            return liveShifts().find(x => x.status === 'open' && x.cashierId === ME_CASHIER && x.register !== reg()) || null;
+        }
+
         function regBusy() {
             return !!blockedBy(reg());
         }
@@ -178,6 +183,7 @@
         }
 
         function switchRegister(newReg) {
+            if (deviceRegister() && newReg !== deviceRegister()) return;
             const b = blockedBy(newReg);
             if (b) return showToast(`${newReg} ជារបស់ ${personName(b.cashierId)}`, 'warning');
             customRegister = newReg;
@@ -187,6 +193,18 @@
         /* ជ្រើសបញ្ជរ៖ ទំនេរ = ជ្រើសបាន · កំពុងប្រើ = បិទ · បម្រុងសម្រាប់អ្នកផ្សេង = ជ្រើសបាន ប៉ុន្តែព្រមាន */
         function registerPicker() {
             const cur = reg();
+            // កុំព្យូទ័របញ្ជរ៖ បើកវេនបានតែលើបញ្ជរនេះ · មិនបង្ហាញបញ្ជរផ្សេងសម្រាប់ជ្រើស
+            if (deviceRegister()) {
+                const owner = regOwner(cur);
+                return `<div class="px-5 pt-4 pb-4 border-t border-white/[0.06]">
+                    <p class="sm-eyebrow text-slate-400 mb-2">បញ្ជរ</p>
+                    <div class="rounded-lg border ${owner ? 'border-amber-500/40' : 'border-white/10'} px-3.5 py-3 flex items-center gap-3">
+                        <i class="fas fa-cash-register text-slate-400"></i>
+                        <span class="min-w-0"><span class="sm-value text-white block">${cur}</span>
+                            <span class="sm-td-sub ${owner ? 'text-amber-300' : 'text-slate-400'} block">${owner ? `កំពុងប្រើ · ${personName(owner.cashierId)}` : 'កុំព្យូទ័រនេះ · វេនបើកលើបញ្ជរនេះប៉ុណ្ណោះ'}</span></span>
+                    </div>
+                </div>`;
+            }
             return `<div class="px-5 pt-4 pb-4 border-t border-white/[0.06]">
                 <p class="sm-eyebrow text-slate-400 mb-2">ជ្រើសរើសបញ្ជរ</p>
                 <div role="radiogroup" class="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -339,6 +357,7 @@
             const over = t && (workedToday() + templateHours(t) > 12);
             const cap = over ? capFor(ME_CASHIER, templateDateFor(t, new Date()), t.start) : null;
             const busy = regBusy();
+            const elsewhere = myShiftElsewhere();
 
             return `<div class="os-panel rounded-xl overflow-hidden">
                 <div class="px-5 py-4 flex items-center gap-3 border-b border-white/[0.08]">
@@ -349,8 +368,12 @@
                     </div>
                 </div>
                 ${status ? `<div class="px-5 py-4 border-b border-white/[0.08]">${status}</div>` : ''}
-                ${busy ? `<div class="px-5 py-3.5 bg-amber-500/10 border-b border-amber-500/20 flex flex-wrap items-center justify-between gap-2">
-                    <p class="sm-td text-amber-200"><i class="fas fa-triangle-exclamation text-amber-400 mr-1.5"></i>គ្មានបញ្ជរទំនេរ · សូមរង់ចាំអ្នកណាម្នាក់បិទវេន ឬសួរអ្នកគ្រប់គ្រង</p>
+                ${elsewhere ? `<div class="px-5 py-3.5 bg-amber-500/10 border-b border-amber-500/20">
+                    <p class="sm-value text-amber-200"><i class="fas fa-cash-register text-amber-400 mr-1.5"></i>អ្នកមានវេនបើកនៅ ${elsewhere.register} រួចហើយ</p>
+                    <p class="sm-td-sub text-amber-300/80 mt-0.5">${elsewhere.templateName} · បើកម៉ោង ${fmtTime(elsewhere.openedAt)} · សូមទៅបិទវេននៅបញ្ជរនោះជាមុន ទើបបើកវេននៅ ${reg()} បាន</p>
+                </div>` : ''}
+                ${busy && !elsewhere ? `<div class="px-5 py-3.5 bg-amber-500/10 border-b border-amber-500/20 flex flex-wrap items-center justify-between gap-2">
+                    <p class="sm-td text-amber-200"><i class="fas fa-triangle-exclamation text-amber-400 mr-1.5"></i>${deviceRegister() ? `${reg()} កំពុងប្រើដោយ ${personName(blockedBy(reg()).cashierId)} · សូមរង់ចាំគេបិទវេន ឬប្រើបញ្ជរផ្សេង` : 'គ្មានបញ្ជរទំនេរ · សូមរង់ចាំអ្នកណាម្នាក់បិទវេន ឬសួរអ្នកគ្រប់គ្រង'}</p>
                     <button type="button" onclick="render()" class="h-8 px-2.5 rounded-lg bg-white/10 hover:bg-white/15 text-slate-200 sm-td-sub font-medium transition">
                         <i class="fas fa-rotate mr-1"></i> ពិនិត្យឡើងវិញ
                     </button>                </div>` : ''}
@@ -391,7 +414,7 @@
                     <div class="flex flex-wrap items-center gap-2">
                         ${mine.length ? '' : `<button onclick="handleLogout()" type="button" class="sm-td h-12 px-4 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 font-medium inline-flex items-center gap-2 transition-colors">
                             មិនមែនទេ · ចាកចេញ</button>`}
-                        <button onclick="goCount(false)" type="button" ${t && !over && !busy ? '' : 'disabled'}
+                        <button onclick="goCount(false)" type="button" ${t && !over && !busy && !elsewhere ? '' : 'disabled'}
                             class="sm-value h-12 px-6 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold inline-flex items-center gap-2 transition-colors disabled:opacity-40">
                             រាប់ប្រាក់បាតថត <i class="fas fa-arrow-right text-[13px]"></i>
                         </button>
@@ -463,6 +486,7 @@
                 isShortShift = false;
                 shortShiftCap = '';
             }
+            if (myShiftElsewhere()) return showToast(`អ្នកមានវេនបើកនៅ ${myShiftElsewhere().register} · សូមបិទនៅទីនោះជាមុន`, 'error');
             if (regBusy()) return showToast(`បញ្ជរ ${reg()} កំពុងបើកវេនដោយអ្នកផ្សេង`, 'error');
             customRegister = reg();
             stage = 'count';
@@ -497,7 +521,12 @@
         function blocker() {
             if (!chosenTemplate()) return 'សូមជ្រើសរើសវេន';
             if (!isShortShift && workedToday() + templateHours(chosenTemplate()) > 12) return 'លើស 12 ម៉ោងក្នុងមួយថ្ងៃ ដែលជាកំណត់ច្បាប់';
-            if (regBusy()) return `${reg()} ជារបស់ ${personName(blockedBy(reg()).cashierId)} · សូមត្រឡប់ទៅជ្រើសបញ្ជរផ្សេង`;
+            // មួយអ្នក មួយថតប្រាក់៖ វេនដែលបើកនៅបញ្ជរផ្សេង ត្រូវបិទនៅបញ្ជរនោះជាមុន
+            const elsewhere = myShiftElsewhere();
+            if (elsewhere) return `អ្នកមានវេនបើកនៅ ${elsewhere.register} · សូមទៅបិទវេននៅបញ្ជរនោះជាមុន`;
+            if (regBusy()) return deviceRegister()
+                ? `${reg()} កំពុងប្រើដោយ ${personName(blockedBy(reg()).cashierId)} · សូមរង់ចាំគេបិទវេន ឬប្រើបញ្ជរផ្សេង`
+                : `${reg()} ជារបស់ ${personName(blockedBy(reg()).cashierId)} · សូមត្រឡប់ទៅជ្រើសបញ្ជរផ្សេង`;
             if (!(totalUSD() + totalKHR())) return 'រាប់ក្រដាសប្រាក់ខាងឆ្វេងជាមុនសិន';
             const m = mismatch();
             const off = Math.abs(m.dUSD) >= 0.005 || Math.abs(m.dKHR) >= 0.5;

@@ -3201,7 +3201,17 @@ function assignmentFor(personId) {
 }
 
 /* បញ្ជររបស់អ្នកចូលប្រើ៖ ថតប្រាក់ដែលកំពុងបើកផ្ទាល់ខ្លួន → បញ្ជរដែលស្នើ (អ្នកគិតលុយអាចប្តូរនៅទំព័របើកវេន) */
+/* កុំព្យូទ័របញ្ជរដែលបានចុះឈ្មោះក្នុងហាង និងសាខានេះ = បញ្ជរមួយថេរ (មួយកុំព្យូទ័រ មួយថតប្រាក់)
+   '' = មិនមែនបញ្ជរ (ឧ. អ្នកគ្រប់គ្រងលើកុំព្យូទ័រផ្ទាល់ខ្លួន) → ជ្រើសបញ្ជរបាន */
+function deviceRegister() {
+    const d = thisDevice();
+    return d && d.shopId === ACTIVE_SHOP_ID && (d.branchId || 'BR-01') === ACTIVE_BRANCH_ID && REGISTERS.includes(d.register) ? d.register : '';
+}
+
 function resolveRegister(personId) {
+    // នៅលើបញ្ជរ៖ ទំព័រអ្នកគិតលុយធ្វើការតែលើថតប្រាក់នៃបញ្ជរនេះ មិនមែនវេនដែលបើកនៅបញ្ជរផ្សេង
+    const devReg = deviceRegister();
+    if (devReg) return devReg;
     const open = posRead(POS_KEYS.shifts, []).find(s => s.status === 'open' && s.cashierId === personId);
     if (open) return open.register;
     return suggestRegister(personId);
@@ -3218,10 +3228,10 @@ function suggestRegister(personId, dateStr, code) {
     const list = slot ? rosterFor(slot.date, slot.template.code) : [];
     const busy = busyRegisters().map(s => s.register);
     const free = r => r && !busy.includes(r);
-    // ឧបករណ៍ដែលបានចុះឈ្មោះ = បញ្ជរពិតដែលអ្នកចូលប្រើកំពុងឈរ (សម្រាប់តែខ្លួនឯង ពេលបើកវេនឥឡូវ)
+    // ឧបករណ៍ដែលបានចុះឈ្មោះ = បញ្ជរពិតដែលអ្នកចូលប្រើកំពុងឈរ · បើកវេនបានតែលើបញ្ជរនេះ (ទោះកំពុងប្រើក៏ដោយ → បង្ហាញថាជាប់)
     const me = posRead(SESSION_KEY, null) || {};
-    const dev = thisDevice();
-    if (!dateStr && dev && me.userId === personId && dev.shopId === (me.shopId || 'SHOP-01') && free(dev.register)) return dev.register;
+    const devReg = deviceRegister();
+    if (devReg && me.userId === personId) return devReg;
     const mine = list.find(a => a.cashierId === personId);
     if (mine && mine.pin && free(mine.register)) return mine.register;
     const pinnedByOthers = list.filter(a => a.pin && a.cashierId !== personId).map(a => a.register);

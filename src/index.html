@@ -601,35 +601,43 @@
 
         /* គំរូ៖ ប្តូររវាង «កុំព្យូទ័របញ្ជរដែលបានចុះឈ្មោះ» និង «ឧបករណ៍ផ្ទាល់ខ្លួន» ដើម្បីសាកការចូលទាំងពីរ
            (ក្នុងផលិតផល ម្ចាស់ហាងធ្វើនៅ ការកំណត់ → ឧបករណ៍បញ្ជរ) */
-        /* ឧបករណ៍នេះជាបញ្ជររបស់ហាង និងសាខាណា = ទំព័រចូលរបស់ហាងណា · គ្មាន = កុំព្យូទ័រផ្ទាល់ខ្លួន (អ្នកគិតលុយចូលមិនបាន) */
-        const DEMO_TILLS = [
-            { shopId: 'SHOP-01', branchId: 'BR-01', register: 'POS-01', by: 'ADM-01' },
-            { shopId: 'SHOP-01', branchId: 'BR-02', register: 'POS-04', by: 'ADM-01' },
-            { shopId: 'SHOP-01', branchId: 'BR-03', register: 'POS-06', by: 'ADM-01' },
-            { shopId: 'SHOP-02', branchId: 'BR-01', register: 'POS-01', by: 'ADM-02' },
-            null
-        ];
-        function demoTillLabel(t) {
-            if (!t) return 'កុំព្យូទ័រផ្ទាល់ខ្លួន (មិនមែនបញ្ជរ)';
-            const brs = shopBranches(t.shopId);
-            return `${escapeText(shopById(t.shopId).nameKh)}${brs.length > 1 ? ` · ${escapeText((brs.find(b => b.id === t.branchId) || {}).name || '')}` : ''} · ${t.register}`;
+        /* ឧបករណ៍នេះជាបញ្ជររបស់ហាង សាខា និងបញ្ជរណា = ទំព័រចូលរបស់ហាងណា · គ្មាន = កុំព្យូទ័រផ្ទាល់ខ្លួន (អ្នកគិតលុយចូលមិនបាន)
+           បញ្ជីបញ្ជរទាំងអស់នៃហាងគំរូ តាមសាខា (លេខបញ្ជររត់បន្តគ្នាទូទាំងហាង ដូច branchRegisters) */
+        function demoTills() {
+            const out = [];
+            ['SHOP-01', 'SHOP-02'].forEach(shopId => {
+                const owner = ALL_STAFF.find(p => p.role === 'admin' && (p.shopId || 'SHOP-01') === shopId) || { id: 'ADM-01' };
+                let n = 0;
+                shopBranches(shopId).forEach(b => {
+                    const regs = Array.from({ length: Math.max(1, Number(b.registers) || 1) }, () => `POS-${String(++n).padStart(2, '0')}`);
+                    out.push({ shopId, branch: b, by: owner.id, regs });
+                });
+            });
+            return out;
         }
         function renderDemoDevice() {
             const d = thisDevice();
-            const same = t => d && t && d.shopId === t.shopId && (d.branchId || 'BR-01') === t.branchId && d.register === t.register;
             const box = document.getElementById('demoDevice');
-            box.className = 'mt-3 rounded-lg border border-slate-200 p-1.5';
-            box.innerHTML = `<p class="px-2 pt-1 pb-1.5 sm-td-sub font-semibold text-slate-500">ឧបករណ៍នេះ = ទំព័រចូលរបស់</p>` + DEMO_TILLS.map((t, i) => {
-                const on = t ? same(t) : !d;
-                return `<button type="button" onclick="demoSetDevice(${i})" class="w-full text-left px-2 py-2 rounded-md flex items-center gap-2.5 sm-td-sub ${on ? 'bg-slate-100 text-slate-900 font-semibold' : 'text-slate-600 hover:bg-slate-50'}">
-                    <i class="fas ${t ? 'fa-cash-register' : 'fa-laptop'} w-4 text-center text-slate-400"></i><span class="flex-1 min-w-0 truncate">${demoTillLabel(t)}</span>${on ? '<i class="fas fa-check text-slate-500"></i>' : ''}</button>`;
-            }).join('');
+            box.className = 'mt-3 rounded-lg border border-slate-200 p-3 space-y-3';
+            const groups = demoTills();
+            box.innerHTML = `<p class="sm-td-sub font-semibold text-slate-500">ឧបករណ៍នេះ = ទំព័រចូលរបស់</p>` + groups.map((g, gi) => {
+                const multi = groups.filter(x => x.shopId === g.shopId).length > 1;
+                return `<div>
+                    <p class="sm-td-sub text-slate-600 mb-1.5 truncate">${escapeText(shopById(g.shopId).nameKh)}${multi ? ` · ${escapeText(g.branch.name)}` : ''}</p>
+                    <div class="flex flex-wrap gap-1.5">${g.regs.map(r => {
+                        const on = d && d.shopId === g.shopId && (d.branchId || 'BR-01') === g.branch.id && d.register === r;
+                        return `<button type="button" onclick="demoSetDevice(${gi}, '${r}')" class="h-8 px-2.5 rounded-md border sm-td-sub sm-figure inline-flex items-center gap-1.5 ${on ? 'border-blue-600 bg-blue-50 text-blue-700 font-semibold' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}">
+                            <i class="fas ${on ? 'fa-check' : 'fa-cash-register'} text-[11px] ${on ? '' : 'text-slate-400'}"></i>${r}</button>`;
+                    }).join('')}</div>
+                </div>`;
+            }).join('') + `<button type="button" onclick="demoSetDevice(-1)" class="w-full h-9 px-2.5 rounded-md border sm-td-sub inline-flex items-center gap-2 ${d ? 'border-slate-200 text-slate-600 hover:bg-slate-50' : 'border-blue-600 bg-blue-50 text-blue-700 font-semibold'}">
+                    <i class="fas ${d ? 'fa-laptop text-slate-400' : 'fa-check'} text-[12px]"></i>កុំព្យូទ័រផ្ទាល់ខ្លួន (មិនមែនបញ្ជរ)</button>`;
         }
-        function demoSetDevice(i) {
-            const t = DEMO_TILLS[i];
+        function demoSetDevice(gi, register) {
+            const g = demoTills()[gi];
             const d = thisDevice();
             if (d) removeDevice(d.id);
-            if (t) registerThisDevice(t.shopId, t.register, t.by, t.branchId);
+            if (g) registerThisDevice(g.shopId, register, g.by, g.branch.id);
             else posWrite('pos_device', null);
             posLogout();
             location.href = 'index.html';

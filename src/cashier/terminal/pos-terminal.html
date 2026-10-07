@@ -2155,8 +2155,10 @@
         /* គ្មានវេនបើក = នាំទៅទំព័របើកវេន ជំនួសផ្ទាំងជាប់សោរ (C3) */
         function showForeign() {
             const f = foreignShift();
+            // វេនរបស់ខ្ញុំនៅបញ្ជរផ្សេង៖ ប្រាប់ទៅកន្លែងត្រឹមត្រូវ
+            const mine = liveShifts().find(x => x.status === 'open' && x.cashierId === ME_CASHIER && x.register !== f.register);
             document.getElementById('foreignDetail').textContent =
-                `${f.register} · ${f.templateName} · បើកដោយ ${personName(f.cashierId)} ម៉ោង ${fmtTime(f.openedAt)}`;
+                `${f.register} · ${f.templateName} · បើកដោយ ${personName(f.cashierId)} ម៉ោង ${fmtTime(f.openedAt)}${mine ? ` · វេនរបស់អ្នកនៅ ${mine.register}` : ''}`;
             document.getElementById('foreignManagerLink').style.display = isManagerId(ME_CASHIER) ? '' : 'none';
             document.getElementById('foreignOverlay').classList.remove('hidden');
         }
