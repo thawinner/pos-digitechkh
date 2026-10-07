@@ -101,10 +101,11 @@
                     </a>
                     <span class="text-right">
                         <span class="block sm-td-sub font-semibold ${c.status === 'overdue' || c.status === 'expiring' ? 'text-amber-700' : 'text-slate-600'}">${attentionText(c)}</span>
-                        <span class="block sm-td-sub text-slate-400 sm-figure">${fmtDate(c.endsOn)}</span>
+                        <span class="block sm-td-sub text-slate-400 sm-figure">${fmtDate(c.endsOn)}${reminderText(c) ? ` · ${reminderText(c)}` : ''}</span>
                     </span>
                     <span class="w-24 text-right sm-td sm-figure font-semibold text-slate-800">${fmtUSD(amount)}<span class="block sm-td-sub font-normal text-slate-400">${c.cycle === 'year' ? '12 ខែ' : '1 ខែ'}</span></span>
-                    <button type="button" onclick="ctlPaymentDialog('${c.id}').then(ok => ok && renderAll())" class="sm-badge h-9 px-3.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold whitespace-nowrap"><i class="fas fa-receipt mr-1.5 text-slate-400"></i>កត់ត្រាការបង់</button>
+                    <button type="button" onclick="ctlRemindDialog('${c.id}').then(ok => ok && renderAll())" aria-label="រំលឹក" class="sm-badge h-9 w-9 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-500 inline-flex items-center justify-center"><i class="fas fa-bell"></i></button>
+                    <button type="button" onclick="ctlOpenPayment('${c.id}')" class="sm-badge h-9 px-3.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold whitespace-nowrap"><i class="fas fa-receipt mr-1.5 text-slate-400"></i>កត់ត្រាការបង់</button>
                 </div>`;
             }).join('')}</div>`;
         }

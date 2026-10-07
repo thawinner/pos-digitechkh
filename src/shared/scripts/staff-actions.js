@@ -54,6 +54,7 @@ function staffMenu(p, mid, opts) {
         .concat(p.active ? [
             opts.noProfile ? '' : staffMenuItem('fa-pen', 'កែព័ត៌មាន', 'editProfile', p.id),
             staffMenuItem('fa-user-shield', 'ប្តូរតួនាទី', 'changeRole', p.id),
+            p.role !== 'admin' && shopBranches().length > 1 ? staffMenuItem('fa-code-branch', 'ប្តូរសាខា', 'changeBranch', p.id) : '',
             staffMenuItem('fa-key', 'ពាក្យសម្ងាត់ និងលេខសម្ងាត់', 'resetAccess', p.id)
         ].concat(staffOnPayroll(p) ? [staffMenuItem('fa-money-bill-wave', 'ប្រាក់ខែ និងធនាគារ', 'editCompensation', p.id)] : [])
          .concat([sep, staffMenuItem('fa-user-slash', 'ផ្អាកគណនី', 'deactivate', p.id, true)])
@@ -332,10 +333,9 @@ async function deactivate(id) {
 }
 
 /* ដែនកំណត់កញ្ចប់ (shopLimits)៖ បុគ្គលិកសកម្មរបស់ហាងមិនអាចលើសចំនួនដែលកញ្ចប់អនុញ្ញាត
-   សមាជិកភាព៖ បុគ្គលិកទាំងអស់ជាសមាជិក SHOP-01 · ហាងផ្សេងរាប់តែសមាជិកបន្ថែម (membershipsOf ក្នុង data.js) */
+   loadStaff() = សមាជិកនៃហាងដែលកំពុងប្រើ (data.js) */
 function shopStaffCount() {
-    return loadStaff().filter(p => p.active && (CURRENT_SHOP_ID === 'SHOP-01'
-        || EXTRA_MEMBERSHIPS.some(m => m.personId === p.id && m.shopId === CURRENT_SHOP_ID))).length;
+    return loadStaff().filter(p => p.active).length;
 }
 
 async function staffLimitReached() {
@@ -348,6 +348,30 @@ async function staffLimitReached() {
         message: `កញ្ចប់${sub.planName || ''} អនុញ្ញាតបុគ្គលិក ${limit} នាក់ ហើយហាងមាន ${n} នាក់សកម្មរួចហើយ។ ផ្អាកគណនីដែលលែងប្រើ ឬទាក់ទង DIGITECHKH ដើម្បីប្តូរកញ្ចប់។`
     });
     return true;
+}
+
+/* សាខារបស់បុគ្គលិក (ម្ចាស់ហាងជាកម្មសិទ្ធិគ្រប់សាខា) */
+function staffBranchText(p) {
+    if (p.role === 'admin') return 'គ្រប់សាខា';
+    return branchName(p.branchId || 'BR-01');
+}
+
+async function pickBranch(title, current) {
+    return showOptionDialog({
+        title, message: 'បុគ្គលិកចូលប្រើ និងធ្វើវេនបានតែនៅសាខានេះ',
+        options: shopBranches().map(b => ({ value: b.id, icon: 'fa-code-branch', label: b.name + (b.id === current ? ' · បច្ចុប្បន្ន' : ''), desc: b.address || '' }))
+    });
+}
+
+async function changeBranch(id) {
+    const p = findStaff(id);
+    const b = await pickBranch(`ប្តូរសាខារបស់ ${p.name}`, p.branchId || 'BR-01');
+    if (!b || b === (p.branchId || 'BR-01')) return;
+    const open = posReadAt('pos_shifts', [], p.branchId || 'BR-01').some(s => s.status === 'open' && s.cashierId === id);
+    if (open) return showToast(`${p.name} កំពុងបើកវេន · សូមបិទវេនជាមុនសិន`, 'error');
+    updateStaff(id, { branchId: b }, `ប្តូរសាខា ${p.name} → ${branchName(b)}`);
+    staffRefresh();
+    showToast(`${p.name} ធ្វើការនៅ ${branchName(b)}`, 'success');
 }
 
 async function reactivate(id) {

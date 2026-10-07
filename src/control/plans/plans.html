@@ -61,7 +61,7 @@
                 return `<section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm flex flex-col">
                     <div class="px-5 py-4 border-b border-slate-100 flex items-start justify-between gap-3">
                         <div class="min-w-0"><h3 class="sm-card-title text-slate-800">${p.name}</h3><p class="sm-card-sub text-slate-500">${escapeText(p.note)}</p></div>
-                        <button type="button" onclick="editPlan('${p.id}')" class="sm-badge h-9 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold whitespace-nowrap"><i class="fas fa-pen mr-1.5 text-slate-400"></i>កែ</button>
+                        <button type="button" onclick="location.href='edit-plan.html?id=${p.id}'" class="sm-badge h-9 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold whitespace-nowrap"><i class="fas fa-pen mr-1.5 text-slate-400"></i>កែ</button>
                     </div>
                     <div class="px-5 py-4">
                         <p class="sm-figure"><span class="text-[30px] font-bold text-slate-900">${fmtUSD(p.price)}</span><span class="sm-td text-slate-500"> / ខែ</span></p>
@@ -77,43 +77,6 @@
                     </div>
                 </section>`;
             }).join('');
-        }
-
-        async function editPlan(id) {
-            const p = planById(id);
-            const users = ctlCompanies().filter(c => c.plan === id);
-            const maxUse = k => Math.max(0, ...users.map(c => c.usage[k]));
-            const v = await showFormDialog({
-                title: `កែកញ្ចប់${p.name}`, icon: 'fa-box',
-                message: `${users.length} ហាងប្រើកញ្ចប់នេះ · តម្លៃថ្មីគិតពីការបង់លើកក្រោយ`,
-                fields: [
-                    { key: 'price', label: 'តម្លៃប្រចាំខែ', value: p.price, type: 'number', prefix: '$' },
-                    { key: 'registers', label: 'បញ្ជរ', value: p.registers, type: 'number', hint: `ហាងប្រើច្រើនបំផុត ${maxUse('registers')}` },
-                    { key: 'staff', label: 'បុគ្គលិក', value: p.staff, type: 'number', hint: `ហាងប្រើច្រើនបំផុត ${maxUse('staff')}` },
-                    { key: 'branches', label: 'សាខា', value: p.branches, type: 'number', hint: `ហាងប្រើច្រើនបំផុត ${maxUse('branches')}` }
-                ],
-                validate: x => {
-                    if (!(Number(x.price) > 0)) return 'តម្លៃត្រូវធំជាង 0';
-                    for (const [k, l] of [['registers', 'បញ្ជរ'], ['staff', 'បុគ្គលិក'], ['branches', 'សាខា']]) {
-                        const n = Number(x[k]);
-                        if (!(Number.isInteger(n) && n >= 1)) return `${l}ត្រូវជាលេខគត់ យ៉ាងតិច 1`;
-                        if (n < maxUse(k)) return `${l}មិនអាចតិចជាង ${maxUse(k)} ទេ ព្រោះមានហាងកំពុងប្រើចំនួននោះ`;
-                    }
-                    return '';
-                },
-                preview: x => Number(x.price) > 0 ? `<div class="p-3 rounded-lg border border-slate-200 flex justify-between text-slate-600"><span>ប្រចាំឆ្នាំ</span><span class="font-semibold text-slate-800 sm-figure">${fmtUSD(Number(x.price) * YEAR_PAID_MONTHS)}</span></div>` : '',
-                confirmText: 'រក្សាទុក'
-            });
-            if (!v) return;
-            const next = { price: Number(v.price), registers: Number(v.registers), staff: Number(v.staff), branches: Number(v.branches) };
-            const changes = [['price', 'តម្លៃ', fmtUSD], ['registers', 'បញ្ជរ', String], ['staff', 'បុគ្គលិក', String], ['branches', 'សាខា', String]]
-                .filter(([k]) => next[k] !== p[k]).map(([k, l, f]) => `${l} ${f(p[k])} → ${f(next[k])}`);
-            if (!changes.length) return showToast('មិនមានការកែប្រែ', 'info');
-            posWrite('pos_ctl_plans', ctlPlans().map(x => x.id === id ? Object.assign({}, x, next) : x));
-            ctlSyncStatus(posRead('pos_ctl_companies', []));
-            ctlAddLog('', 'plan', `កែកញ្ចប់${p.name} · ${changes.join(' · ')}`);
-            renderAll();
-            showToast(`បានរក្សាទុកកញ្ចប់${p.name}`, 'success');
         }
 
         window.onStoreChanged = renderAll;

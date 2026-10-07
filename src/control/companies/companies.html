@@ -57,7 +57,7 @@
                             <th class="sm-th py-2.5 px-5 text-left text-slate-500">ហាង</th>
                             <th class="sm-th py-2.5 px-3 text-left text-slate-500">ម្ចាស់ហាង</th>
                             <th class="sm-th py-2.5 px-3 text-left text-slate-500">កញ្ចប់</th>
-                            <th class="sm-th py-2.5 px-3 text-left text-slate-500">បញ្ជរ · បុគ្គលិក</th>
+                            <th class="sm-th py-2.5 px-3 text-left text-slate-500">ការប្រើប្រាស់</th>
                             <th class="sm-th py-2.5 px-3 text-left text-slate-500">ប្រើបានដល់</th>
                             <th class="sm-th py-2.5 px-3 text-left text-slate-500">ស្ថានភាព</th>
                             <th class="sm-th py-2.5 px-5 w-16"></th>
@@ -83,6 +83,8 @@
             { id: 'active', label: 'កំពុងប្រើ', test: c => !c.trial && ['active', 'expiring', 'overdue'].includes(c.status) },
             { id: 'trial', label: 'សាកល្បង', test: c => c.status === 'trial' },
             { id: 'attention', label: 'ត្រូវតាមដាន', test: needsAttention },
+            { id: 'setup', label: 'ត្រូវជួយរៀបចំ', test: needsSetupHelp },
+            { id: 'upgrade', label: 'គួរប្តូរកញ្ចប់', test: c => !!upgradeHint(c) },
             { id: 'blocked', label: 'ផ្អាក ឬផុតកំណត់', test: c => c.status === 'expired' || c.status === 'suspended' }
         ];
         let tab = 'all';
@@ -98,7 +100,7 @@
         }
 
         function usageCell(c) {
-            return usageLines(c).filter(l => l.key !== 'branches').map(l => `<span class="block sm-td sm-figure ${l.used > l.limit ? 'text-amber-700 font-semibold' : 'text-slate-700'}">${l.used}/${l.limit} <span class="sm-td-sub font-normal text-slate-400">${l.label}</span></span>`).join('');
+            return usageLines(c).map(l => `<span class="block sm-td sm-figure ${l.used > l.limit ? 'text-amber-700 font-semibold' : 'text-slate-700'}">${l.used}/${l.limit} <span class="sm-td-sub font-normal text-slate-400">${l.label}</span></span>`).join('');
         }
 
         function visible() {
@@ -124,7 +126,7 @@
                     <td class="py-2.5 px-3 sm-td"><p class="text-slate-700">${escapeText(c.ownerName)}</p><p class="sm-td-sub text-slate-400 sm-figure">${escapeText(c.ownerPhone)}</p></td>
                     <td class="py-2.5 px-3 sm-td"><p class="text-slate-700">${planById(c.plan).name}</p><p class="sm-td-sub text-slate-400 sm-figure">${fmtUSD(monthlyValue(c))}/ខែ${c.cycle === 'year' ? ' · ឆ្នាំ' : ''}</p></td>
                     <td class="py-2.5 px-3">${usageCell(c)}</td>
-                    <td class="py-2.5 px-3 sm-td"><p class="text-slate-700 sm-figure">${fmtDate(c.endsOn)}</p><p class="sm-td-sub ${c.status === 'overdue' || c.status === 'expiring' ? 'text-amber-700' : 'text-slate-400'}">${attentionText(c)}</p></td>
+                    <td class="py-2.5 px-3 sm-td"><p class="text-slate-700 sm-figure">${fmtDate(c.endsOn)}</p><p class="sm-td-sub ${c.status === 'overdue' || c.status === 'expiring' ? 'text-amber-700' : 'text-slate-400'}">${attentionText(c)}</p>${reminderText(c) ? `<p class="sm-td-sub text-slate-400">${reminderText(c)}</p>` : ''}${needsSetupHelp(c) ? '<p class="sm-td-sub text-slate-500">មិនទាន់រៀបចំហាង</p>' : ''}${upgradeHint(c) ? `<p class="sm-td-sub text-slate-500">${upgradeHint(c)}</p>` : ''}</td>
                     <td class="py-2.5 px-3">${subChip(c)}</td>
                     <td class="py-2.5 px-5 text-right">${dotsBtn('m-' + c.id)}${companyMenu(c, 'm-' + c.id, 'renderAll')}</td>
                 </tr>`).join('');

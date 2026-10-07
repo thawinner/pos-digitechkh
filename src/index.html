@@ -253,6 +253,8 @@
 
         const GUARD_KEY = 'pos_login_guard';
         const DEVICE = thisDevice();   // កុំព្យូទ័របញ្ជរដែលម្ចាស់ហាងបានចុះឈ្មោះ ឬ null
+        // រូបសម្គាល់អព្យាក្រឹត (ម៉ាស៊ីនគិតលុយ) ពេលមិនទាន់ដឹងហាង
+        const GENERIC_LOGO = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#171717"/><rect x="17" y="14" width="30" height="16" rx="3" fill="none" stroke="#fff" stroke-width="3.5"/><path d="M14 36h36l3 14H11z" fill="none" stroke="#fff" stroke-width="3.5" stroke-linejoin="round"/><path d="M22 42h4M30 42h4M38 42h4" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg>');
         const MAX_TRIES = 5;
         let lockTick = null;
 
@@ -451,7 +453,7 @@
             if (pin.length !== POS_PIN_LEN || lockedFor() || !DEVICE) return;
             if (shopBlocked(DEVICE.shopId)) { pin = ''; renderPinPad(`${escapeText(shopById(DEVICE.shopId).nameKh)} មិនអាចប្រើបានបណ្តោះអាសន្ន · សូមទាក់ទងម្ចាស់ហាង`); return; }
             // ឧបករណ៍ស្គាល់ហាងរបស់ខ្លួន ដូច្នេះ PIN រកតែក្នុងចំណោមសមាជិកហាងនោះ
-            const who = verifyPinLogin(pin, DEVICE.shopId);
+            const who = verifyPinLogin(pin, DEVICE.shopId, DEVICE.branchId);
             if (who) { posWrite(GUARD_KEY, { fails: 0, lockedUntil: 0 }); return finishLogin(who, DEVICE.shopId, 'pin'); }
             const g = guard();
             g.fails += 1;
@@ -490,7 +492,7 @@
                 const st = subscriptionStatus(shopSubscription(m.shopId));
                 return `<button type="button" onclick="pickShop('${m.shopId}')" data-shop="${m.shopId}" ${blocked ? 'disabled' : ''}
                     class="w-full text-left px-4 py-3 rounded-lg border border-slate-200 bg-white transition-colors flex items-center gap-3 ${blocked ? 'opacity-60 cursor-not-allowed' : 'hover:border-slate-400'}">
-                    <img src="${sh.logo}" alt="" class="w-10 h-10 object-contain flex-shrink-0">
+                    <img src="${shopLogoSrc(sh, '.')}" alt="" class="w-10 h-10 object-contain flex-shrink-0 rounded-lg">
                     <span class="flex-1 min-w-0">
                         <span class="block sm-td font-semibold text-slate-900 truncate">${escapeText(sh.nameKh)}</span>
                         <span class="block sm-td-sub text-slate-500 truncate">${escapeText(sh.branch)} · ${ROLE_NAME[m.role]}</span>
@@ -505,6 +507,38 @@
             sm.classList.remove('invisible', 'fade-up'); sm.inert = false; void sm.offsetWidth; sm.classList.add('fade-up');
             setTimeout(() => { const b = sm.querySelector('[data-shop]:not([disabled])'); if (b) b.focus(); }, 50);
         }
+        /* ម្ចាស់ហាងប្តូរសាខា (index.html?branch=1)៖ សាខានៃហាងក្នុងវគ្គចូលប្រើ · ការលក់ថ្ងៃនេះតាមសាខា */
+        function showBranchPicker() {
+            const p = personById(SESSION.userId);
+            const today = isoDate(new Date());
+            const list = shopBranches();
+            document.getElementById('shopHello').textContent = `${shopById(SESSION.shopId).nameKh} · ${list.length} សាខា`;
+            document.querySelector('#shopMode h2').textContent = 'ជ្រើសសាខា';
+            document.getElementById('shopBackText').textContent = 'បោះបង់';
+            document.getElementById('shopList').innerHTML = list.map((b, i) => {
+                const sales = (posReadAt('pos_shift_sales', [], b.id) || []).filter(s => s.time && s.time.startsWith(today) && !isVoided(s));
+                const total = sales.reduce((n, s) => n + saleTotals(s.items, s.discountPercent).gross, 0);
+                return `<button type="button" onclick="pickBranch('${b.id}')" data-shop="${b.id}"
+                    class="w-full text-left px-4 py-3 rounded-lg border border-slate-200 bg-white hover:border-slate-400 transition-colors flex items-center gap-3">
+                    <span class="w-10 h-10 rounded-lg border border-slate-200 text-slate-500 flex items-center justify-center flex-shrink-0"><i class="fas fa-code-branch"></i></span>
+                    <span class="flex-1 min-w-0">
+                        <span class="block sm-td font-semibold text-slate-900 truncate">${escapeText(b.name)}</span>
+                        <span class="block sm-td-sub text-slate-500 truncate">ថ្ងៃនេះ <span class="sm-figure">${fmtUSD(total)}</span> · ${sales.length} វិក្កយបត្រ</span>
+                    </span>
+                    ${b.id === SESSION.branchId ? '<span class="sm-td-sub text-slate-500 flex-shrink-0">កំពុងមើល</span>' : ''}
+                    <span class="kbd flex-shrink-0">${i + 1}</span>
+                </button>`;
+            }).join('');
+            pickFor = p; pickIsSwitch = true;
+            ['emailMode', 'pinMode'].forEach(id => { const el = document.getElementById(id); el.classList.add('invisible'); el.inert = true; });
+            const sm = document.getElementById('shopMode');
+            sm.classList.remove('invisible'); sm.inert = false;
+        }
+        function pickBranch(branchId) {
+            posSwitchBranch(branchId);
+            location.href = ROLE_HOME[roleOf(SESSION.userId)];
+        }
+
         function pickShop(shopId) {
             if (!pickFor) return;
             if (pickIsSwitch && SESSION) {
@@ -638,22 +672,37 @@
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof initDarkMode === 'function') initDarkMode();
             document.getElementById('branchLabel').textContent = MERCHANT.branch + (DEVICE ? ` · ${DEVICE.register}` : '');
+            // ឧបករណ៍មិនមែនបញ្ជររបស់ហាងណាមួយ៖ មិនទាន់ដឹងថាជាហាងណា ដូច្នេះមិនបង្ហាញឈ្មោះ ឬឡូហ្គោហាងណាទេ
+            if (!DEVICE) {
+                document.querySelectorAll('.shop-name').forEach(el => { el.textContent = 'ប្រព័ន្ធគិតលុយ'; });
+                document.querySelectorAll('img.shop-logo').forEach(el => { el.src = GENERIC_LOGO; });
+                document.getElementById('branchLabel').parentElement.textContent = 'ចូលប្រើ ដើម្បីបើកហាងរបស់អ្នក';
+            }
             document.getElementById('pinAlt').classList.toggle('hidden', !DEVICE);
             document.getElementById('noDeviceNote').classList.toggle('hidden', !!DEVICE);
-            if (DEVICE) document.getElementById('deviceChip').innerHTML = `<i class="fas fa-cash-register text-slate-400"></i>${escapeText(shopById(DEVICE.shopId).nameKh)} · បញ្ជរ ${DEVICE.register}`;
+            if (DEVICE) document.getElementById('deviceChip').innerHTML = `<i class="fas fa-cash-register text-slate-400"></i>${escapeText(shopById(DEVICE.shopId).nameKh)}${shopBranches().length > 1 ? ` · ${escapeText(branchName(DEVICE.branchId || 'BR-01'))}` : ''} · បញ្ជរ ${DEVICE.register}`;
             renderDemoDevice();
             tick();
             setInterval(tick, 10000);
-            document.getElementById('demoAccounts').innerHTML = CASHIERS.concat(MANAGERS, ADMINS, CONTROL_ACCOUNTS).map(p =>
-                `<button type="button" onclick="fillDemo('${p.id}')" class="w-full text-left py-2 px-1 flex items-center gap-2.5 hover:bg-slate-50 rounded transition-colors">
+            // គណនីគំរូទាំងអស់ តាមហាង (រួមទាំងម្ចាស់ហាងដែលបង្កើតនៅច្រកអ្នកគ្រប់គ្រងប្រព័ន្ធ) · អ្នកគ្រប់គ្រងប្រព័ន្ធនៅចុងក្រោយ
+            const ROLE_ORDER = { admin: 0, manager: 1, cashier: 2 };
+            const people = ALL_STAFF.filter(p => p.active)
+                .sort((a, b) => SHOPS.findIndex(s => s.id === (a.shopId || 'SHOP-01')) - SHOPS.findIndex(s => s.id === (b.shopId || 'SHOP-01')) || ROLE_ORDER[a.role] - ROLE_ORDER[b.role] || a.id.localeCompare(b.id));
+            let lastShop = null;
+            document.getElementById('demoAccounts').innerHTML = people.concat(CONTROL_ACCOUNTS).map(p => {
+                const shopId = isControlId(p.id) ? 'CONTROL' : (p.shopId || 'SHOP-01');
+                const head = shopId !== lastShop ? `<p class="pt-3 pb-1 px-1 sm-td-sub font-semibold text-slate-500">${shopId === 'CONTROL' ? 'អ្នកគ្រប់គ្រងប្រព័ន្ធ (DIGITECHKH)' : escapeText((shopById(shopId) || {}).nameKh || shopId) + (shopId === 'SHOP-01' ? ' · ហាងគំរូ' : '')}</p>` : '';
+                lastShop = shopId;
+                return head + `<button type="button" onclick="fillDemo('${p.id}')" class="w-full text-left py-2 px-1 flex items-center gap-2.5 hover:bg-slate-50 rounded transition-colors">
                     ${avatarHtml(p.id, 'w-7 h-7')}
                     <span class="flex-1 min-w-0"><span class="block sm-td-sub font-semibold text-slate-800 truncate">${p.name}</span>
-                    <span class="block sm-td-sub text-slate-500 truncate">${p.phone} · ${p.email}${membershipsOf(p.id).length > 1 ? ` · ${membershipsOf(p.id).length} ហាង` : ''}</span></span>
+                    <span class="block sm-td-sub text-slate-500 truncate">${p.phone}${p.email ? ` · ${p.email}` : ''}${membershipsOf(p.id).length > 1 ? ` · ${membershipsOf(p.id).length} ហាង` : ''}</span></span>
                     <span class="text-right flex-shrink-0">
                         <span class="block sm-figure sm-td-sub text-slate-900 font-semibold">${effectivePassword(p.id)}</span>
                         <span class="block sm-figure sm-td-sub text-slate-500">${isControlId(p.id) ? 'DIGITECHKH' : `PIN ${effectivePin(p.id)}`}</span>
                     </span>
-                </button>`).join('');
+                </button>`;
+            }).join('');
             const last = (() => { try { return localStorage.getItem('pos_last_login') || ''; } catch (err) { return ''; } })();
             document.getElementById('ident').value = last;
             syncClear();
@@ -662,7 +711,8 @@
             renderLock();
             // ប្តូរហាងពីរបារចំហៀង (index.html?pick=1) · បញ្ជរដែលបានចុះឈ្មោះបើកផ្ទាំង PIN មុន · ឧបករណ៍ផ្សេងបើកទម្រង់ពាក្យសម្ងាត់
             const params = new URLSearchParams(location.search);
-            if (params.get('pick') && SESSION && membershipsOf(SESSION.userId).length > 1) showShopPicker(personById(SESSION.userId), true);
+            if (params.get('branch') && SESSION && !SESSION.control && shopBranches().length > 1) showBranchPicker();
+            else if (params.get('pick') && SESSION && membershipsOf(SESSION.userId).length > 1) showShopPicker(personById(SESSION.userId), true);
             else if (DEVICE && !params.get('next')) showPinMode(true);
             else setTimeout(() => document.getElementById(last ? 'pass' : 'ident').focus({ preventScroll: true }), 1300);
         });

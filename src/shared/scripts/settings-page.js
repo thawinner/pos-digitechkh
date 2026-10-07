@@ -12,6 +12,7 @@ const DOW_KH = ['អាទិត្យ', 'ច័ន្ទ', 'អង្គារ'
 const REASON_GROUPS = [['void', 'លុបចោលវិក្កយបត្រ', 'fa-ban'], ['return', 'ប្រគល់ទំនិញវិញ', 'fa-rotate-left'], ['discount', 'បញ្ចុះតម្លៃ', 'fa-tag'], ['payout', 'ដកប្រាក់ចំណាយ', 'fa-money-bill-transfer'], ['holdDiscard', 'បោះបង់ការលក់ព្យួរ', 'fa-pause']];
 
 const ALL_SECTIONS = [
+    { id: 'shop', icon: 'fa-store', label: 'ព័ត៌មានហាង', keys: [], admin: true },
     { id: 'money', icon: 'fa-money-bill-transfer', label: 'អត្រាប្ដូរប្រាក់', keys: ['fxRate', 'nbcRate'] },
     { id: 'cash', icon: 'fa-vault', label: 'សាច់ប្រាក់ក្នុងថត', keys: ['varianceTolerance', 'drawerLimitUSD', 'drawerLimitKHR', 'defaultFloatUSD', 'defaultFloatKHR'], admin: true },
     { id: 'shifts', icon: 'fa-clock', label: 'គំរូវេន', keys: ['shiftTemplates'], admin: true },
@@ -517,7 +518,7 @@ function renderDisplay(s) {
         <div class="min-w-0">
             <p class="sm-value text-slate-800 mb-3">ការមើលជាមុន</p>
             <div class="rounded-2xl border border-slate-200 bg-slate-100 p-6 text-center">
-                <span class="w-16 h-16 rounded-2xl bg-white border border-slate-200 inline-flex items-center justify-center"><img src="../../${MERCHANT.logo}" alt="" class="w-10 h-10 object-contain"></span>
+                <span class="w-16 h-16 rounded-2xl bg-white border border-slate-200 inline-flex items-center justify-center"><img src="${shopLogoSrc(MERCHANT, '../..')}" alt="" class="w-10 h-10 object-contain"></span>
                 <p class="sm-value text-slate-800 mt-3">សូមស្វាគមន៍មកកាន់ ${escapeText(MERCHANT.nameKh)}</p>
                 ${(list.find(m => m.on && m.text.trim()) || null) ? (m => `<div class="mt-4 max-w-full inline-flex items-center gap-2.5 px-4 py-3 rounded-xl bg-white border border-slate-200 sm-td text-slate-700 text-left"><i class="fas ${m.icon} text-blue-600"></i><span>${escapeText(m.text)}</span></div>`)(list.find(m => m.on && m.text.trim())) : ''}
             </div>
@@ -685,17 +686,77 @@ function renderHistory(s) {
         </div>`).join('') : emptyState('fa-clock-rotate-left', 'មិនទាន់មានការកែប្រែ', 'ការកំណត់ទាំងអស់នៅតម្លៃលំនាំដើម')}</div>`;
 }
 
+/* ព័ត៌មានហាង (ម្ចាស់ហាង)៖ ឈ្មោះ ឈ្មោះ KHQR សាខា ទូរស័ព្ទ លេខអាករ ឡូហ្គោ → saveShopProfile (data.js)
+   បង្ហាញលើគ្រប់ទំព័រ វិក្កយបត្រ អេក្រង់អតិថិជន និងកូដ KHQR · មានប្រសិទ្ធភាពភ្លាម មិនឆ្លងកាត់របាររក្សាទុក */
+let shopDraft = null;
+function shopField(id, label, ph, hint) {
+    return row('', label, hint || '', `<input id="sh_${id}" type="text" value="${escapeText(shopDraft[id] || '')}" placeholder="${ph}"
+        oninput="shopDraft.${id} = this.value" class="sm-value w-full h-11 px-3 rounded-xl bg-white border border-slate-200 focus:outline-none focus:border-blue-500">`);
+}
+
+function renderShopInfo(s) {
+    const sh = shopById(CURRENT_SHOP_ID) || MERCHANT;
+    if (!shopDraft) shopDraft = { nameKh: sh.nameKh, name: sh.name, branch: sh.branch, phone: sh.phone || '', tin: sh.tin || '', logo: sh.logo || '' };
+    return sectionHead(s, 'បង្ហាញលើគ្រប់ទំព័រ វិក្កយបត្រ អេក្រង់អតិថិជន និងកូដ KHQR') + `<div class="px-5 sm:px-6">
+        ${row('', 'ឡូហ្គោ', 'រូបភាពការ៉េ មិនលើស 3 មេកាបៃ · បើគ្មាន ប្រើអក្សរកាត់ឈ្មោះហាង', `<div class="flex items-center gap-3">
+            <span class="w-16 h-16 rounded-2xl bg-white border border-slate-200 inline-flex items-center justify-center flex-shrink-0"><img src="${shopLogoSrc(Object.assign({}, sh, shopDraft), '../..')}" alt="" class="w-12 h-12 object-contain rounded-lg"></span>
+            <label class="h-11 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 sm-td font-semibold text-slate-700 inline-flex items-center gap-2 cursor-pointer"><i class="fas fa-image text-slate-400"></i>${shopDraft.logo ? 'ប្តូរ' : 'ដាក់ឡូហ្គោ'}
+                <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" class="sr-only" onchange="pickShopLogo(this)"></label>
+            ${shopDraft.logo ? '<button type="button" onclick="shopDraft.logo=\'\'; render()" class="h-11 px-3 rounded-xl sm-td-sub font-semibold text-slate-600 hover:bg-slate-50">ដកចេញ</button>' : ''}
+        </div>`)}
+        ${shopField('nameKh', 'ឈ្មោះហាង', 'ឧ. កាហ្វេ ចាន់ថា')}
+        ${shopField('name', 'ឈ្មោះសម្រាប់ KHQR', 'ឧ. CHANTHA COFFEE', 'អក្សរឡាតាំងធំ · ធនាគារបង្ហាញឈ្មោះនេះពេលអតិថិជនស្កេន')}
+        ${shopField('branch', 'សាខា ឬទីតាំង', 'ឧ. សាខាទួលគោក')}
+        ${shopField('phone', 'ទូរស័ព្ទហាង', 'ឧ. 023 777 666')}
+        ${shopField('tin', 'លេខអត្តសញ្ញាណកម្មអាករ', 'ឧ. K001-907654321', 'មិនចាំបាច់ · ត្រូវការពេលចេញវិក្កយបត្រអាករ')}
+        <div class="py-4 flex justify-end"><button type="button" onclick="saveShopInfo()" class="sm-value h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2"><i class="fas fa-check"></i> រក្សាទុកព័ត៌មានហាង</button></div>
+    </div>`;
+}
+
+async function pickShopLogo(input) {
+    try { shopDraft.logo = await readLogoFile(input.files[0]); render(); }
+    catch (msg) { showToast(String(msg), 'error'); }
+}
+
+async function saveShopInfo() {
+    const d = shopDraft;
+    d.name = String(d.name || '').trim().toUpperCase();
+    d.tin = String(d.tin || '').trim().toUpperCase();
+    const err = String(d.nameKh || '').trim().length < 2 ? 'សូមវាយឈ្មោះហាង'
+        : !/^[A-Z0-9 &'.-]{3,25}$/.test(d.name) ? 'ឈ្មោះ KHQR៖ អក្សរឡាតាំងធំ ឬលេខ 3 ដល់ 25 តួ'
+        : String(d.branch || '').trim().length < 2 ? 'សូមវាយសាខា ឬទីតាំង'
+        : normPhone(d.phone).length < 9 ? 'លេខទូរស័ព្ទមិនគ្រប់ខ្ទង់'
+        : d.tin && !/^[A-Z]\d{3}-\d{9}$/.test(d.tin) ? 'លេខអាករ៖ ទម្រង់ K001-123456789' : '';
+    if (err) return showToast(err, 'error');
+    const ok = await showPinConfirm({ title: 'រក្សាទុកព័ត៌មានហាង', message: d.nameKh, userId: ME_MANAGER, confirmText: 'រក្សាទុក' });
+    if (!ok) return;
+    const patch = { nameKh: d.nameKh.trim(), name: d.name, branch: d.branch.trim(), phone: d.phone.trim(), tin: d.tin, logo: d.logo || '' };
+    saveShopProfile(CURRENT_SHOP_ID, patch);
+    Object.assign(MERCHANT, patch);
+    Object.assign(shopById(CURRENT_SHOP_ID) || {}, patch);
+    adminLog('settings', `កែព័ត៌មានហាង · ${patch.nameKh}`);
+    document.querySelectorAll('.shop-name').forEach(el => { el.textContent = patch.nameKh; });
+    document.querySelectorAll('img.shop-logo').forEach(el => { el.src = shopLogoSrc(MERCHANT, '../..'); });
+    render();
+    showToast('បានរក្សាទុកព័ត៌មានហាង · បង្ហាញលើវិក្កយបត្របន្ទាប់', 'success');
+}
+
 /* ឧបករណ៍បញ្ជរ៖ កុំព្យូទ័រដែលអ្នកគិតលុយចូលបានដោយលេខកូដ PIN (data.js registerThisDevice)
    មានប្រសិទ្ធភាពភ្លាម មិនឆ្លងកាត់របាររក្សាទុក · រាល់ការចុះឈ្មោះ និងការដកចេញ កត់ក្នុងកំណត់ហេតុសវនកម្ម */
+/* ឧបករណ៍នៃសាខាដែលកំពុងប្រើ · ដែនកំណត់បញ្ជររបស់កញ្ចប់រាប់ទូទាំងហាង (គ្រប់សាខា) */
 function shopDevices() {
-    return deviceList().filter(d => d.shopId === CURRENT_SHOP_ID)
+    return deviceList().filter(d => d.shopId === CURRENT_SHOP_ID && (d.branchId || 'BR-01') === ACTIVE_BRANCH_ID)
         .sort((a, b) => REGISTERS.indexOf(a.register) - REGISTERS.indexOf(b.register));
+}
+
+function allShopDevices() {
+    return deviceList().filter(d => d.shopId === CURRENT_SHOP_ID);
 }
 
 function renderDevices(s) {
     const here = thisDevice();
     const list = shopDevices();
-    const hereIsOurs = here && here.shopId === CURRENT_SHOP_ID;
+    const hereIsOurs = here && here.shopId === CURRENT_SHOP_ID && (here.branchId || 'BR-01') === ACTIVE_BRANCH_ID;
     return sectionHead(s, 'កុំព្យូទ័របញ្ជរដែលអ្នកគិតលុយចូលបានដោយលេខកូដ PIN · ទូរស័ព្ទ និងកុំព្យូទ័រផ្សេងទៀតចូលបានតែដោយអ៊ីមែល ឬលេខទូរស័ព្ទ') + `
         <div class="divide-y divide-slate-100">${list.length ? list.map(d => `
             <div class="px-5 sm:px-6 py-4 flex items-center gap-4">
@@ -727,7 +788,7 @@ async function registerDeviceUi() {
     });
     if (!reg) return;
     // ដែនកំណត់កញ្ចប់៖ បញ្ជរថ្មី (មិនមែនជំនួសឧបករណ៍លើបញ្ជរដដែល) មិនអាចលើសចំនួនដែលកញ្ចប់អនុញ្ញាត
-    if (!taken.some(d => d.register === reg) && taken.length >= limit) {
+    if (!taken.some(d => d.register === reg) && allShopDevices().length >= limit) {
         const sub = shopSubscription(CURRENT_SHOP_ID) || {};
         await showCustomConfirm({ title: 'លើសដែនកំណត់កញ្ចប់', confirmText: 'យល់ព្រម', hideCancel: true,
             message: `កញ្ចប់${sub.planName || ''} អនុញ្ញាត ${limit} បញ្ជរ ហើយហាងប្រើគ្រប់ហើយ។ ដកបញ្ជរមួយចេញ ឬទាក់ទង DIGITECHKH ដើម្បីប្តូរកញ្ចប់។` });
@@ -735,7 +796,7 @@ async function registerDeviceUi() {
     }
     const ok = await showPinConfirm({ title: 'ចុះឈ្មោះបញ្ជរ', message: `ឧបករណ៍នេះ → បញ្ជរ ${reg}`, userId: ME_MANAGER, confirmText: 'ចុះឈ្មោះ' });
     if (!ok) return;
-    registerThisDevice(CURRENT_SHOP_ID, reg, ME_MANAGER);
+    registerThisDevice(CURRENT_SHOP_ID, reg, ME_MANAGER, ACTIVE_BRANCH_ID);
     adminLog('device', `ចុះឈ្មោះឧបករណ៍នេះជាបញ្ជរ ${reg}`, { target: reg });
     render();
     showToast(`ឧបករណ៍នេះជាបញ្ជរ ${reg} · អ្នកគិតលុយចូលបានដោយលេខកូដ PIN`, 'success');
@@ -774,6 +835,7 @@ function navSummary(id) {
         case 'quick': return `${d.quickKeys.length} មុខ`;
         case 'rules': return 'មើលតែប៉ុណ្ណោះ';
         case 'reasons': return `${Object.values(d.reasons).reduce((n, l) => n + l.length, 0)} មូលហេតុ`;
+        case 'shop': return MERCHANT.nameKh;
         case 'devices': return `${shopDevices().length} បញ្ជរបានចុះឈ្មោះ`;
         case 'history': return `${settingsHistory().length} ដង`;
         default: return '';
@@ -796,7 +858,7 @@ function renderNav() {
 
 function render() {
     const s = SECTIONS.find(x => x.id === section) || SECTIONS[0];
-    const fn = { money: renderMoney, cash: renderCash, shifts: renderShifts, till: renderTill, banks: renderBanks, display: renderDisplay, stock: renderStock, quick: renderQuick, reasons: renderReasons, rules: renderRules, devices: renderDevices, history: renderHistory }[s.id];
+    const fn = { money: renderMoney, cash: renderCash, shifts: renderShifts, till: renderTill, banks: renderBanks, display: renderDisplay, stock: renderStock, quick: renderQuick, reasons: renderReasons, rules: renderRules, devices: renderDevices, shop: renderShopInfo, history: renderHistory }[s.id];
     document.getElementById('sectionBody').innerHTML = fn(s);
     renderNav();
     renderSaveBar();

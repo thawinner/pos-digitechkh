@@ -1274,8 +1274,9 @@ function showManagerOverride(opts = {}) {
     return new Promise(resolve => {
         const th = getPosDialogTheme(opts);
         const host = posDialogHost('posOverrideModal');
-        const managers = (typeof MANAGERS !== 'undefined' ? MANAGERS : [])
-            .filter(m => !(opts.excludeIds || []).includes(m.id));
+        // ហាងតូចដែលគ្មានអ្នកគ្រប់គ្រង៖ ម្ចាស់ហាងជាអ្នកអនុម័ត
+        const approvers = typeof MANAGERS !== 'undefined' && MANAGERS.length ? MANAGERS : (typeof ADMINS !== 'undefined' ? ADMINS : []);
+        const managers = approvers.filter(m => !(opts.excludeIds || []).includes(m.id));
         const reasons = opts.reason ? [] : (opts.reasons || []);
         const state = { approverId: managers.length === 1 ? managers[0].id : '', reason: opts.reason || '', other: '', pin: '', msg: '', tick: null };
 

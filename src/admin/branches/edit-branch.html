@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគិតលុយ - កែសាខា</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { blue: { 50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 400: '#34d399', 500: '#059669', 600: '#047857', 700: '#065f46', 800: '#064e3b', 900: '#053d30', 950: '#022c22' }, slate: { 50: '#fafafa', 100: '#f4f4f4', 200: '#e7e7e7', 300: '#d4d4d4', 400: '#a2a2a2', 500: '#737373', 600: '#545454', 700: '#404040', 800: '#292929', 900: '#171717', 950: '#070707' }, primary: "#047857", 'primary-dark': "#065f46", accent: "#34d399" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+    <style>
+        /* បណ្ណទម្រង់៖ មិនប្រើ .bg-white ព្រោះ custom.css §17 ពង្រីកប៊ូតុងទាំងអស់ក្នុង «.bg-white មាន submit» ពេញទទឹងលើទូរស័ព្ទ */
+        .form-card { background: #ffffff; }
+        html.dark .form-card { background: #171717; border-color: #292929 !important; }
+        .f-input { width: 100%; height: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid #d4d4d4; background: #fff; color: #171717; }
+        .f-input:focus { outline: none; border-color: #047857; box-shadow: 0 0 0 3px rgba(4, 120, 87, .15); }
+        .f-input.is-error { border-color: #fb7185; }
+        html.dark .f-input { background: #111111; border-color: #404040; color: #e7e7e7; }
+        .f-err { display: block; min-height: 20px; margin-top: 4px; font-size: 13.5px; color: #e11d48; }
+        .ctl-kpis { display: grid; gap: 1rem; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        @media (max-width: 1023px) { .ctl-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    </style>
+</head>
+<body id="adminPortal" data-role-root="../.." data-active="branches" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="កែសាខា"
+             data-subtitle="ឈ្មោះ អាសយដ្ឋាន និងចំនួនបញ្ជរ" data-back="branches.html"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <form id="form" onsubmit="return submitForm(event)" novalidate class="w-full grid gap-5 xl:grid-cols-3">
+                <div class="xl:col-span-2">
+                    <section class="form-card rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="px-5 py-4 border-b border-slate-100"><h3 class="sm-card-title text-slate-800">សាខា</h3><p class="sm-card-sub text-slate-500">ឈ្មោះបង្ហាញលើវិក្កយបត្រ អេក្រង់អតិថិជន និងរបាយការណ៍</p></div>
+                        <div class="px-5 py-5 grid gap-x-4 md:grid-cols-2">
+                            <label class="block md:col-span-2"><span class="sm-td font-semibold text-slate-700">ឈ្មោះសាខា</span>
+                                <input id="name" type="text"  placeholder="ឧ. សាខាទួលគោក" class="f-input mt-1.5"><span id="nameErr" class="f-err"></span></label>
+                            <label class="block md:col-span-2"><span class="sm-td font-semibold text-slate-700">អាសយដ្ឋាន <span class="font-normal text-slate-400">មិនចាំបាច់</span></span>
+                                <input id="address" type="text"  placeholder="ឧ. ផ្លូវ 289 ទួលគោក" class="f-input mt-1.5"><span id="addressErr" class="f-err"></span></label>
+                            <label class="block "><span class="sm-td font-semibold text-slate-700">ទូរស័ព្ទសាខា <span class="font-normal text-slate-400">មិនចាំបាច់</span></span>
+                                <input id="phone" type="text" inputmode="tel" placeholder="ឧ. 023 888 222" class="f-input mt-1.5"><span id="phoneErr" class="f-err"></span></label>
+                            <div><span class="sm-td font-semibold text-slate-700">ចំនួនបញ្ជរ</span>
+                                <div class="mt-1.5 inline-flex items-center rounded-xl border border-slate-200 overflow-hidden">
+                                    <button type="button" onclick="bump(-1)" id="minus" aria-label="បន្ថយ" class="w-12 h-12 text-slate-600 hover:bg-slate-50 disabled:opacity-30"><i class="fas fa-minus"></i></button>
+                                    <span id="regs" class="w-14 text-center text-[20px] font-semibold text-slate-900 sm-figure"></span>
+                                    <button type="button" onclick="bump(1)" id="plus" aria-label="បន្ថែម" class="w-12 h-12 text-slate-600 hover:bg-slate-50 disabled:opacity-30"><i class="fas fa-plus"></i></button>
+                                </div>
+                                <p id="regsNote" class="sm-td-sub text-slate-500 mt-1.5"></p></div>
+                        </div>
+                    </section>
+                </div>
+                <div class="space-y-5">
+                    <section class="form-card rounded-2xl border border-slate-200/80 shadow-sm px-5 py-4 space-y-3">
+                        <p id="summary" class="sm-td-sub text-slate-600 leading-relaxed"></p>
+                        <button type="submit" id="submitBtn" class="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white sm-td font-semibold inline-flex items-center justify-center gap-2"></button>
+                    </section>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/admin-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        /* បន្ថែម ឬកែសាខា (ម្ចាស់ហាង) — ទំព័រពេញ (.ai/ui-rules §2) · ក្នុងដែនកំណត់កញ្ចប់ (សាខា និងបញ្ជរសរុប) */
+        function setErr(id, msg) {
+            document.getElementById(id).classList.toggle('is-error', !!msg);
+            document.getElementById(id + 'Err').textContent = msg || '';
+            return msg ? 1 : 0;
+        }
+        function val(id) { return document.getElementById(id).value.trim(); }
+        function wireInputs(onChange) {
+            document.querySelectorAll('.f-input').forEach(i => i.addEventListener('input', () => { setErr(i.id, ''); if (onChange) onChange(); }));
+        }
+        const EDIT_ID = new URLSearchParams(location.search).get('id');
+        const list = shopBranches();
+        const editing = EDIT_ID ? list.find(b => b.id === EDIT_ID) : null;
+        const lim = shopLimits(CURRENT_SHOP_ID);
+        const usedElsewhere = list.filter(b => !editing || b.id !== editing.id).reduce((n, b) => n + (Number(b.registers) || 1), 0);
+        const maxRegs = Math.max(1, lim.registers - usedElsewhere);
+        // បញ្ជរដែលមានឧបករណ៍ចុះឈ្មោះ មិនអាចដកចេញបាន
+        const minRegs = editing ? Math.max(1, ...deviceList().filter(d => d.shopId === CURRENT_SHOP_ID && (d.branchId || 'BR-01') === editing.id)
+            .map(d => branchRegisters(editing.id).indexOf(d.register) + 1)) : 1;
+        let regs = editing ? Number(editing.registers) || 1 : 1;
+
+        function bump(d) { regs = Math.min(maxRegs, Math.max(minRegs, regs + d)); renderRegs(); }
+
+        function renderRegs() {
+            document.getElementById('regs').textContent = regs;
+            document.getElementById('minus').disabled = regs <= minRegs;
+            document.getElementById('plus').disabled = regs >= maxRegs;
+            document.getElementById('regsNote').textContent = regs >= maxRegs
+                ? `កញ្ចប់អនុញ្ញាត ${lim.registers} បញ្ជរសរុប · ត្រូវការច្រើនជាងនេះ ទាក់ទង DIGITECHKH`
+                : regs <= minRegs && editing && minRegs > 1 ? 'បញ្ជរខាងក្រោយមានឧបករណ៍ចុះឈ្មោះ · ដកឧបករណ៍ចេញជាមុន' : `អាចមានរហូតដល់ ${maxRegs} បញ្ជរ`;
+        }
+
+        function submitForm(e) {
+            e.preventDefault();
+            const name = val('name'), address = val('address'), phone = val('phone');
+            let bad = 0;
+            bad += setErr('name', name.length < 2 ? 'សូមវាយឈ្មោះសាខា' : list.some(b => b.name === name && (!editing || b.id !== editing.id)) ? 'មានសាខាឈ្មោះនេះរួចហើយ' : '');
+            bad += setErr('phone', phone && normPhone(phone).length < 9 ? 'លេខទូរស័ព្ទមិនគ្រប់ខ្ទង់ · ឧ. 023 888 222' : '');
+            if (bad) { document.querySelector('.f-input.is-error').focus(); return false; }
+            if (editing) {
+                Object.assign(editing, { name, address, phone, registers: regs });
+                saveBranches(list);
+                adminLog('settings', `កែសាខា ${name}`);
+                markRecordViewed(editing.id);
+                flashToast(`បានរក្សាទុក ${name}`);
+            } else {
+                if (list.length >= lim.branches) { showToast('ដល់ដែនកំណត់កញ្ចប់', 'error'); return false; }
+                const id = `BR-${String(Math.max(0, ...list.map(b => Number(b.id.split('-')[1]) || 0)) + 1).padStart(2, '0')}`;
+                saveBranches(list.concat([{ id, name, address, phone, registers: regs, createdAt: isoLocal(new Date()) }]));
+                adminLog('settings', `បន្ថែមសាខា ${name} · ${regs} បញ្ជរ`);
+                markRecordViewed(id);
+                flashToast(`បានបន្ថែម ${name} · ប្តូរទៅសាខានេះ ដើម្បីរៀបចំបញ្ជរ និងស្តុក`);
+            }
+            location.href = 'branches.html';
+            return false;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (EDIT_ID && !editing) { location.replace('branches.html'); return; }
+            if (!editing && list.length >= lim.branches) { flashToast('ដល់ដែនកំណត់សាខារបស់កញ្ចប់'); location.replace('branches.html'); return; }
+            if (editing) {
+                setPortalTitle(`កែ ${editing.name}`);
+                ['name', 'address', 'phone'].forEach(k => { document.getElementById(k).value = editing[k] || ''; });
+            }
+            document.getElementById('submitBtn').innerHTML = editing ? '<i class="fas fa-check"></i> រក្សាទុក' : '<i class="fas fa-plus"></i> បន្ថែមសាខា';
+            document.getElementById('summary').innerHTML = editing
+                ? `<i class="fas fa-circle-info text-slate-400 mr-1.5"></i>ឈ្មោះថ្មីបង្ហាញលើវិក្កយបត្របន្ទាប់ · វិក្កយបត្រចាស់មិនប្តូរ`
+                : `<i class="fas fa-circle-info text-slate-400 mr-1.5"></i>សាខាថ្មីចាប់ផ្តើមទទេ៖ គ្មានវេន ការលក់ ឬស្តុក។ ទំនិញ តម្លៃ និងការកំណត់ប្រើរួមជាមួយសាខាផ្សេង។`;
+            renderRegs();
+            wireInputs();
+            document.getElementById('name').focus();
+        });
+    </script>
+</body>
+</html>

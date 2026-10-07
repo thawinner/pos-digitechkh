@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគិតលុយ - កត់ត្រាការបង់ប្រាក់</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { blue: { 50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 400: '#34d399', 500: '#059669', 600: '#047857', 700: '#065f46', 800: '#064e3b', 900: '#053d30', 950: '#022c22' }, slate: { 50: '#fafafa', 100: '#f4f4f4', 200: '#e7e7e7', 300: '#d4d4d4', 400: '#a2a2a2', 500: '#737373', 600: '#545454', 700: '#404040', 800: '#292929', 900: '#171717', 950: '#070707' }, primary: "#047857", 'primary-dark': "#065f46", accent: "#34d399" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+    <style>
+        /* បណ្ណទម្រង់៖ មិនប្រើ .bg-white ព្រោះ custom.css §17 ពង្រីកប៊ូតុងទាំងអស់ក្នុង «.bg-white មាន submit» ពេញទទឹងលើទូរស័ព្ទ */
+        .form-card { background: #ffffff; }
+        html.dark .form-card { background: #171717; border-color: #292929 !important; }
+        .f-input { width: 100%; height: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid #d4d4d4; background: #fff; color: #171717; }
+        .f-input:focus { outline: none; border-color: #047857; box-shadow: 0 0 0 3px rgba(4, 120, 87, .15); }
+        .f-input.is-error { border-color: #fb7185; }
+        html.dark .f-input { background: #111111; border-color: #404040; color: #e7e7e7; }
+        .f-err { display: block; min-height: 20px; margin-top: 4px; font-size: 13.5px; color: #e11d48; }
+        .ctl-kpis { display: grid; gap: 1rem; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        @media (max-width: 1023px) { .ctl-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    </style>
+</head>
+<body id="controlPortal" data-role-root="../.." data-active="billing" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="កត់ត្រាការបង់ប្រាក់"
+             data-subtitle="ប្រាក់ដែលទទួលពីហាង · បន្តថ្ងៃប្រើបានដោយស្វ័យប្រវត្តិ" data-back="billing.html"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <form id="form" onsubmit="return submitForm(event)" novalidate class="w-full grid gap-5 xl:grid-cols-3">
+                <div class="xl:col-span-2 space-y-5">
+                    <section class="form-card rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div id="shopHead" class="px-5 py-4 border-b border-slate-100"></div>
+                        <div class="px-5 py-5 space-y-5">
+                            <div><span class="sm-td font-semibold text-slate-700">វិធីបង់</span>
+                                <div id="methodPick" class="mt-1.5 grid gap-2.5 md:grid-cols-3"></div></div>
+                            <div><span class="sm-td font-semibold text-slate-700">រយៈពេល</span>
+                                <div id="monthPick" class="mt-1.5 flex flex-wrap gap-1.5"></div></div>
+                            <div class="grid gap-x-4 md:grid-cols-2">
+                                <label class="block "><span class="sm-td font-semibold text-slate-700">លេខយោងប្រតិបត្តិការ</span>
+                                <input id="ref" type="text"  placeholder="ឧ. ABA-123456" class="f-input mt-1.5"><span id="refErr" class="f-err"></span><span class="block sm-td-sub text-slate-500 -mt-1 mb-2">ពីសារធនាគារ · ប្រើពេលផ្ទៀងផ្ទាត់</span></label>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class="space-y-5">
+                    <section class="form-card rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="px-5 py-4 border-b border-slate-100"><h3 class="sm-card-title text-slate-800">សង្ខេប</h3><p class="sm-card-sub text-slate-500">ពិនិត្យមុនកត់ត្រា</p></div>
+                        <div id="summary" class="px-5 py-4 space-y-2"></div>
+                        <div class="px-5 pb-4"><button type="submit" class="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white sm-td font-semibold inline-flex items-center justify-center gap-2"><i class="fas fa-receipt"></i> កត់ត្រាការបង់ប្រាក់</button></div>
+                    </section>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/control-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        /* កត់ត្រាការបង់ប្រាក់ (P8-07) — ទំព័រពេញ (.ai/ui-rules §2) · ?id=ហាង &back=ទំព័រដែលបើកវា */
+        function setErr(id, msg) {
+            document.getElementById(id).classList.toggle('is-error', !!msg);
+            document.getElementById(id + 'Err').textContent = msg || '';
+            return msg ? 1 : 0;
+        }
+        function val(id) { return document.getElementById(id).value.trim(); }
+        function wireInputs(onChange) {
+            document.querySelectorAll('.f-input').forEach(i => i.addEventListener('input', () => { setErr(i.id, ''); if (onChange) onChange(); }));
+        }
+        const ID = new URLSearchParams(location.search).get('id');
+        const BACK = new URLSearchParams(location.search).get('back') || 'billing.html';
+        const c = ctlCompany(ID);
+        let method = 'khqr';
+        let months = c && c.cycle === 'year' ? 12 : 1;
+        const today = isoDate(new Date());
+        const from = c && !c.trial && c.endsOn >= today ? c.endsOn : today;
+
+        function render() {
+            document.getElementById('methodPick').innerHTML = Object.keys(PAY_METHODS).map(k => `<button type="button" onclick="method='${k}'; render()"
+                class="text-left px-4 py-3 rounded-xl border transition flex items-start gap-3 ${method === k ? 'border-blue-600 ring-1 ring-blue-600' : 'border-slate-200 hover:border-slate-300'}">
+                <i class="fas ${PAY_METHODS[k].icon} mt-1 ${method === k ? 'text-blue-600' : 'text-slate-400'}"></i>
+                <span class="min-w-0"><span class="block sm-td font-semibold text-slate-800">${PAY_METHODS[k].label}</span><span class="block sm-td-sub text-slate-500">${PAY_METHODS[k].desc}</span></span></button>`).join('');
+            document.getElementById('monthPick').innerHTML = [1, 3, 6, 12].map(m => `<button type="button" onclick="months=${m}; render()"
+                class="sm-badge h-10 px-4 rounded-xl border transition ${months === m ? 'bg-blue-600 border-blue-600 text-white font-semibold' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}">${m} ខែ${m === 12 ? ' · តម្លៃ 10 ខែ' : ''}</button>`).join('');
+            const row = (l, v) => `<div class="flex justify-between gap-3"><span class="sm-td-sub text-slate-500">${l}</span><span class="sm-td font-semibold text-slate-800 sm-figure text-right">${v}</span></div>`;
+            document.getElementById('summary').innerHTML = row('ចំនួនទឹកប្រាក់', fmtUSD(priceFor(c.plan, months)))
+                + row('រយៈពេល', `${fmtDate(from)} – ${fmtDate(addMonthsIso(from, months))}`)
+                + row('ប្រើបានដល់', fmtDate(addMonthsIso(from, months)))
+                + (c.suspended ? `<p class="sm-td-sub text-slate-500 pt-1">ហាងនេះបានផ្អាក · កត់ត្រាការបង់ប្រាក់នឹងបើកហាងវិញ</p>` : '');
+            const ref = document.getElementById('ref');
+            ref.placeholder = method === 'cash' ? 'ឧ. លេខបង្កាន់ដៃ' : 'ឧ. ABA-123456';
+            ref.closest('label').querySelector('.font-semibold').firstChild.textContent = method === 'cash' ? 'លេខបង្កាន់ដៃ' : 'លេខយោងប្រតិបត្តិការ';
+        }
+
+        function submitForm(e) {
+            e.preventDefault();
+            const ref = val('ref');
+            if (setErr('ref', method !== 'cash' && ref.length < 4 ? 'សូមបញ្ចូលលេខយោងពីធនាគារ' : '')) { document.getElementById('ref').focus(); return false; }
+            const pay = ctlRecordPayment(ID, { months, method, ref, amount: priceFor(c.plan, months) });
+            markRecordViewed(ID);
+            flashToast(`បានទទួល ${fmtUSD(pay.amount)} ពី ${c.nameKh} · ប្រើបានដល់ ${fmtDate(pay.periodTo)}`);
+            location.href = BACK;
+            return false;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!c) { location.replace('billing.html'); return; }
+            document.getElementById('shopHead').innerHTML = `<div class="flex flex-wrap items-center gap-2"><h3 class="sm-card-title text-slate-800">${escapeText(c.nameKh)}</h3>${subChip(c)}</div>
+                <p class="sm-card-sub text-slate-500">${planLabel(c)} · ${attentionText(c)}</p>`;
+            render();
+            wireInputs();
+        });
+    </script>
+</body>
+</html>

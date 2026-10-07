@@ -211,6 +211,8 @@ let MGR_CACHE = null;
 function generateHistory() {
     if (MGR_CACHE) return MGR_CACHE;
     const out = { shifts: [], sales: [], events: [], approvals: [], movements: [] };
+    // ហាងថ្មីគ្មានប្រវត្តិគំរូ · មានតែអ្វីដែលបុគ្គលិកពិតជាធ្វើ
+    if (!IS_DEMO_DATA) return (MGR_CACHE = out);
     const live = liveShifts();
     const liveKeys = new Set();
     live.forEach(s => { liveKeys.add(`${s.date}|${s.templateCode}|${s.cashierId}`); liveKeys.add(`${s.date}|${s.templateCode}|${s.register}`); });
@@ -394,7 +396,7 @@ function pendingApprovals() {
 /* ===== គំរូសំណើរង់ចាំ (បង្កើតម្តងពេលបើកទំព័រអ្នកគ្រប់គ្រងលើកដំបូង) ===== */
 
 function ensureManagerSeed() {
-    if (posRead(MGR_SEED_KEY, null)) return;
+    if (!IS_DEMO_DATA || posRead(MGR_SEED_KEY, null)) return;
     const shifts = withOverlay(generateHistory().shifts, 'shifts').filter(s => s.register === 'POS-02');
     const target = shifts.sort((a, b) => b.openedAt.localeCompare(a.openedAt))[0];
     if (target) {

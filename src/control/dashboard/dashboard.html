@@ -27,6 +27,7 @@
         /* ផ្ទាំងតួលេខ៖ 4 ជួរលើកុំព្យូទ័រ 2 ជួរលើទូរស័ព្ទ (custom.css បង្ខំ .grid-cols-2 ទៅ 1 ជួរ ដូច្នេះប្រើថ្នាក់ផ្ទាល់) */
         .ctl-kpis { display: grid; gap: 1rem; grid-template-columns: repeat(4, minmax(0, 1fr)); }
         @media (max-width: 1023px) { .ctl-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media (min-width: 1280px) { .ctl-kpis-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
         .ctl-meter { height: 6px; border-radius: 9999px; background: #f4f4f4; overflow: hidden; }
         html.dark .ctl-meter { background: #292929; }
     </style>
@@ -40,7 +41,7 @@
              data-subtitle="ហាងដែលជាវ ចំណូលប្រចាំខែ និងអ្វីដែលត្រូវតាមដានថ្ងៃនេះ"></div>
         <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
             <div class="w-full space-y-5">
-                <div id="kpis" class="ctl-kpis"></div>
+                <div id="kpis" class="ctl-kpis ctl-kpis-5"></div>
                 <div class="grid gap-5 xl:grid-cols-3">
                     <section class="xl:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm">
                         <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
@@ -52,6 +53,10 @@
                     <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm">
                         <div class="px-5 py-4 border-b border-slate-100"><h3 class="sm-card-title text-slate-800">តាមកញ្ចប់</h3><p class="sm-card-sub text-slate-500">ហាងបង់ប្រាក់ និងចំណូលប្រចាំខែ</p></div>
                         <div id="byPlan" class="divide-y divide-slate-100"></div>
+                    </section>
+                    <section class="xl:col-span-3 bg-white rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="px-5 py-4 border-b border-slate-100"><h3 class="sm-card-title text-slate-800">ត្រូវជួយ និងឱកាស</h3><p class="sm-card-sub text-slate-500">ហាងសាកល្បងដែលមិនទាន់រៀបចំ · ហាងដែលប្រើពេញកញ្ចប់</p></div>
+                        <div id="help" class="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-100"></div>
                     </section>
                 </div>
                 <div class="grid gap-5 xl:grid-cols-3">
@@ -92,6 +97,7 @@
                 kpiCard('ហាងកំពុងប្រើ', live.length, `សាកល្បង ${trials.length} · សរុប ${all.length} ហាង`, '', '../companies/companies.html'),
                 kpiCard('ចំណូលប្រចាំខែ', fmtUSD(ctlMrr(all)), `ប្រចាំឆ្នាំប្រហែល ${fmtUSD(ctlMrr(all) * 12)}`, '', '../plans/plans.html'),
                 kpiCard('ត្រូវប្រមូលក្នុង 7 ថ្ងៃ', fmtUSD(dueAmt), `${due.length} ហាង${due.some(c => c.status === 'overdue') ? ` · ហួសកំណត់ ${due.filter(c => c.status === 'overdue').length}` : ''}`, due.length ? 'text-amber-700' : '', '../billing/billing.html'),
+                kpiCard('សាកល្បង → ជាវ', `${trialConversion().rate}%`, `ជាវ ${trialConversion().converted} · បាត់ ${trialConversion().lost}`, '', '../companies/companies.html?tab=trial'),
                 kpiCard('ផ្អាក ឬផុតកំណត់', blocked.length, blocked.length ? 'ចូលប្រើមិនបាន' : 'គ្មាន', blocked.length ? 'text-rose-600' : '', '../companies/companies.html?tab=blocked')
             ].join('');
         }
@@ -110,7 +116,7 @@
                     </div>
                     ${c.status === 'trial'
                         ? `<button type="button" onclick="openCompany('${c.id}')" class="sm-badge h-9 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold whitespace-nowrap">មើល</button>`
-                        : `<button type="button" onclick="ctlPaymentDialog('${c.id}').then(ok => ok && renderAll())" class="sm-badge h-9 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold whitespace-nowrap"><i class="fas fa-receipt mr-1.5 text-slate-400"></i>កត់ត្រាការបង់</button>`}
+                        : `<button type="button" onclick="ctlOpenPayment('${c.id}')" class="sm-badge h-9 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold whitespace-nowrap"><i class="fas fa-receipt mr-1.5 text-slate-400"></i>កត់ត្រាការបង់</button>`}
                 </div>`).join('') : emptyState('fa-circle-check', 'គ្មានអ្វីត្រូវតាមដានទេ', 'គ្មានហាងជិតផុតកំណត់ ឬហួសកំណត់បង់');
         }
 
@@ -156,8 +162,19 @@
                 </a>`).join('') : emptyState('fa-store', 'គ្មានហាងថ្មី', '60 ថ្ងៃចុងក្រោយ');
         }
 
+        function renderHelp() {
+            const all = ctlCompanies();
+            const col = (title, list, sub, tab) => `<div class="min-w-0"><div class="px-5 pt-3 pb-1 flex items-center justify-between"><p class="sm-td-sub font-semibold text-slate-500">${title} · <span class="sm-figure">${list.length}</span></p>${list.length ? `<a href="../companies/companies.html?tab=${tab}" class="sm-td-sub font-semibold text-blue-700 hover:underline">មើលទាំងអស់</a>` : ''}</div>
+                ${list.length ? list.slice(0, 4).map(c => `<a href="../companies/view-company.html?id=${c.id}" class="px-5 py-2.5 flex items-center gap-3 hover:bg-slate-50">
+                    <span class="min-w-0 flex-1"><span class="block sm-td font-medium text-slate-800 truncate">${escapeText(c.nameKh)}</span><span class="block sm-td-sub text-slate-500 truncate">${sub(c)}</span></span>
+                    <i class="fas fa-arrow-right text-[11px] text-slate-300"></i></a>`).join('') : '<p class="px-5 pb-4 sm-td-sub text-slate-400">គ្មាន</p>'}</div>`;
+            document.getElementById('help').innerHTML =
+                col('ត្រូវជួយរៀបចំហាង', all.filter(needsSetupHelp), c => `${escapeText(c.ownerName)} <span class="sm-figure">${escapeText(c.ownerPhone)}</span> · ${attentionText(c)}`, 'setup')
+                + col('គួរប្តូរកញ្ចប់', all.filter(c => upgradeHint(c)), c => upgradeHint(c), 'upgrade');
+        }
+
         function renderAll() {
-            renderKpis(); renderAttention(); renderByPlan(); renderRevenue(); renderRecent();
+            renderKpis(); renderAttention(); renderHelp(); renderByPlan(); renderRevenue(); renderRecent();
             if (typeof updatePortalBadges === 'function') updatePortalBadges();
         }
 

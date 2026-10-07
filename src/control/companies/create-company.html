@@ -130,9 +130,19 @@
             bad += setErr('ownerPhone', normPhone(v.ownerPhone).length < 9 ? 'លេខទូរស័ព្ទមិនគ្រប់ខ្ទង់ · ឧ. 012 345 678' : taken.startsWith('លេខ') ? taken : '');
             bad += setErr('ownerEmail', v.ownerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.ownerEmail) ? 'ទម្រង់អ៊ីមែលមិនត្រឹមត្រូវ' : taken.startsWith('អ៊ីមែល') ? taken : '');
             if (bad) { document.querySelector('.ctl-input.is-error').focus(); return false; }
-            const c = ctlCreateCompany(v);
-            showToast(`បានបង្កើត ${c.nameKh} · សាកល្បងដល់ ${fmtDate(c.endsOn)}`, 'success');
-            setTimeout(() => { location.href = `view-company.html?id=${c.id}`; }, 500);
+            const res = ctlCreateCompany(v);
+            const c = res.company, o = res.owner;
+            // ព័ត៌មានចូលប្រើបង្ហាញតែម្តង · អ្នកគ្រប់គ្រងប្រព័ន្ធផ្ញើទៅម្ចាស់ហាង
+            showCustomConfirm({
+                title: `បានបង្កើត ${c.nameKh}`,
+                message: `ផ្ញើព័ត៌មានចូលប្រើនេះទៅម្ចាស់ហាង · ពាក្យសម្ងាត់បង្ហាញតែម្តងនេះ ហើយម្ចាស់ហាងគួរប្តូរពេលចូលលើកដំបូង<br><br>
+                    <span class="block">ឈ្មោះ៖ <b>${escapeText(o.name)}</b></span>
+                    <span class="block">ទូរស័ព្ទ៖ <b class="sm-figure">${escapeText(o.phone)}</b></span>
+                    <span class="block">ពាក្យសម្ងាត់៖ <b class="sm-figure">${escapeText(o.password)}</b></span>
+                    <span class="block">លេខកូដ PIN៖ <b class="sm-figure">${o.pin}</b></span>
+                    <span class="block mt-2">សាកល្បងដល់ <span class="sm-figure">${fmtDate(c.endsOn)}</span> · ចូលលើកដំបូង ប្រព័ន្ធនាំម្ចាស់ហាងទៅរៀបចំហាង</span>`,
+                confirmText: 'ទៅទំព័រហាង', hideCancel: true
+            }).then(() => { location.href = `view-company.html?id=${c.id}`; });
             return false;
         }
 

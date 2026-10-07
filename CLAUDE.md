@@ -26,8 +26,27 @@ Verification is visual: open the page in a browser, or drive headless Chrome ove
 HTTP; `file://` storage is unreliable.
 
 Many shops (SaaS, decided 2026-10-07): one account per person, linked to shops by membership (`SHOPS`,
-`membershipsOf()`, `EXTRA_MEMBERSHIPS` in `data.js`; the owner also owns a second demo shop «កាហ្វេ ចាន់ថា», which
-reuses the same demo data). A password login with more than one membership shows «ជ្រើសហាង»; the account menu offers
+`membershipsOf()`, `personShopIds()`, `EXTRA_MEMBERSHIPS` in `data.js`; the owner also owns a second shop «កាហ្វេ ចាន់ថា»).
+DIGITECHKH (SHOP-01) is the only demo shop with generated data. Every other shop has its own storage: `posRead`/`posWrite`
+add `@SHOP-NN` to shop keys (`storeKey`, `ACTIVE_SHOP_ID`, `IS_DEMO_SHOP`); `GLOBAL_KEYS` (session, devices, people,
+PINs, passwords, shop profiles/setup, `pos_shops`) and `pos_ctl_*` stay shared. A new shop starts empty: no products
+(owner adds them on the products page, `pos_products`), no staff but its owner (`loadStaff()` = this shop's members,
+`loadAllPeople()` = everyone, for login and unique phone/email), no generated history. Creating a shop in the Super Admin
+console also creates the owner account (password shown once); the login demo panel lists every shop's accounts.
+Each shop has its own name, KHQR name, branch, phone, TIN and logo (setup wizard or owner settings → «ព័ត៌មានហាង»,
+`saveShopProfile`); draw logos only with `shopLogoSrc(shop, root)` (uploaded data URL, asset path, or a letter mark).
+On a device that is not a registered till the login page shows neutral branding, never a shop.
+Branches (Option B, 2026-10-07): a shop has branches (`pos_branches`: id, name, address, phone, registers; owner pages
+`admin/branches/{branches,create-branch,edit-branch}`, capped by the plan's branches and total registers). Products, prices, settings, staff accounts and the
+owner log are shop-wide; shifts, sales, roster, stock, cash, approvals and events are per branch (`BRANCH_KEYS`, key
+suffix `#BR-NN`; the first branch has none). `ACTIVE_BRANCH_ID` comes from the session → till device → BR-01. Staff
+carry `branchId` (owners work in every branch); `CASHIERS`/`MANAGERS` are the active branch's, `ADMINS` the shop's.
+Register numbers run across the shop (`branchRegisters`: branch 1 POS-01..03, branch 2 POS-04..). Devices store
+`branchId`; PIN login on a till accepts that branch's staff or an owner. The owner switches branch from the account
+menu (`index.html?branch=1`, `posSwitchBranch`) or the dashboard's «សាខាទាំងអស់» card; `posReadAt(key, fb, branchId,
+shopId)` reads another branch or shop. Demo history (`IS_DEMO_DATA`) exists only in the demo shop's first branch; new
+branches start empty with zero stock. A shop without a
+manager lets its owner approve at the till (`showManagerOverride`). A password login with more than one membership shows «ជ្រើសហាង»; the account menu offers
 «ប្តូរហាង» (`index.html?pick=1`). The session carries `shopId`; `CURRENT_SHOP_ID` copies that shop into `MERCHANT`.
 Till devices: the owner registers a computer as a register in settings → «ឧបករណ៍បញ្ជរ» (`registerThisDevice()`,
 `pos_devices` + `pos_device`); only a registered device offers PIN login (opens on the PIN pad, PIN searched within its
@@ -42,6 +61,15 @@ support sessions, its own log. It never shows a shop's sales, costs or staff, on
 `pos_ctl_status`; a suspended or expired shop cannot log in (password, PIN, shop picker), and the owner gets a
 notification 7 days before the end. Support access needs a reason, lasts 30 minutes and appears in the owner's audit log.
 The console brands itself DIGITECHKH (the vendor), the one place where that name is not «អភិវឌ្ឍដោយ».
+It also lists each shop's branches (usage only), trial shops that have not finished setup (`needsSetupHelp`), shops
+at their plan limit (`upgradeHint`), payment reminders (`ctlRemindDialog`, shown as «រំលឹក N ថ្ងៃមុន»), internal notes,
+and the trial-to-paid rate (`trialConversion`).
+Forms that create or edit a record are full pages (create-product, create/edit-branch, create-payment, edit-plan,
+create-company), never pop-ups (`.ai/ui-rules.md` §2); after saving they return to the list with `flashToast(msg)`
+(shown once on the next page) and `markRecordViewed(id)`. Pop-ups are only for short choices (pick a plan, branch,
+channel, reason). The owner dashboard shows «ចាប់ផ្តើមប្រើ» (`startChecklist()`: shop, products, stock, cashier, till,
+first sale; auto-detected, hideable once done). A branch with no stock records shows no «អស់» badges (`stockTracked`).
+The account menu has «ជំនួយ និងទំនាក់ទំនង» (`showSupportInfo`).
 First-login setup (`admin/setup/setup.html`): until `shopSetup(shopId).done`, `guardPage` sends the owner's admin pages
 there (unless «ធ្វើពេលក្រោយ» in this tab; the dashboard then shows a reminder). Steps: shop (name, KHQR name, branch,
 phone, VAT TIN → `saveShopProfile`, which overrides `SHOPS`/`MERCHANT`) · payments (rate, bank, Bakong ID) · registers
@@ -67,8 +95,8 @@ src/
 ├── cashier/receipts/receipts       shift receipts, void / return requests (manager PIN on the spot or queued), return from an earlier shift by exact receipt number
 ├── cashier/shift/{open,close}-shift  float count + manager PIN · blind close with one recount + Z-report
 ├── manager/{dashboard,approvals,shifts,roster,cash,stock,stock-count,stock-history,exceptions,reports,settings}/…  (view-request, view-shift, create-movement, create-stock-in, create-adjustment, create-count)
-├── admin/{setup,dashboard,reports,staff,products,settings,audit,stock}/…   owner: first-login setup wizard, profit, stock value, shrinkage, stock-in cost, staff, prices, rules, audit log (view-stock-in, view-staff)
-├── control/{dashboard,companies,billing,plans,audit}/…   Super Admin (DIGITECHKH): subscribing shops, payments, plans (view-company, create-company)
+├── admin/{setup,dashboard,reports,branches,staff,products,settings,audit,stock}/…   owner: first-login setup wizard, getting-started checklist, branches, profit, stock value, shrinkage, stock-in cost, staff, prices, rules, audit log (view-stock-in, view-staff, create-product, create/edit-branch)
+├── control/{dashboard,companies,billing,plans,audit}/…   Super Admin (DIGITECHKH): subscribing shops, payments, plans (view-company, create-company, create-payment, edit-plan)
 └── shared/{scripts,styles,assets}  assets/avatars/<personId>.svg = profile images
 ```
 

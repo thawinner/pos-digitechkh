@@ -142,7 +142,7 @@
             const open = id => `onclick="if (!event.target.closest('button, a')) openStaff('${id}')"`;
             document.getElementById('rows').innerHTML = list.map(p => `<tr data-row-id="${p.id}" ${open(p.id)} class="cursor-pointer hover:bg-slate-50 transition ${p.active ? '' : 'bg-slate-50/50'}">
                     <td class="py-2.5 px-5"><div class="flex items-center gap-3 min-w-0">${staffAvatar(p)}<div class="min-w-0"><p class="sm-td-strong text-slate-800 truncate">${p.name}${me(p.id)}</p><p class="sm-td-sub text-slate-400 sm-figure">${p.id}</p></div></div></td>
-                    <td class="py-2.5 px-3"><span class="sm-badge inline-flex px-2.5 py-0.5 rounded-full border bg-slate-50 text-slate-700 border-slate-200">${ROLE_NAME[p.role]}</span></td>
+                    <td class="py-2.5 px-3"><span class="sm-badge inline-flex px-2.5 py-0.5 rounded-full border bg-slate-50 text-slate-700 border-slate-200">${ROLE_NAME[p.role]}</span>${shopBranches().length > 1 ? `<span class="block sm-td-sub text-slate-500 mt-1">${escapeText(staffBranchText(p))}</span>` : ''}</td>
                     <td class="py-2.5 px-3 sm-td text-right">${salaryCell(p)}</td>
                     <td class="py-2.5 px-3 sm-td">${staffShiftText(p)}</td>
                     <td class="py-2.5 px-3 sm-td text-right">${limitText(p)}</td>
@@ -154,7 +154,7 @@
                     ${staffAvatar(p, 'w-10 h-10')}
                     <div class="min-w-0 flex-1">
                         <p class="sm-value text-slate-800 truncate">${p.name}${me(p.id)}</p>
-                        <p class="sm-td-sub text-slate-500">${ROLE_NAME[p.role]} · ${p.id}${staffOnPayroll(p) ? ` · <span class="sm-figure">${fmtUSD(Number(getStaffCompensation(p.id).baseSalaryUSD) || 0)} / ខែ</span>` : ''}${p.role === 'cashier' ? ` · បញ្ចុះបាន ${discountLimitFor(p.id)}%` : ''}</p>
+                        <p class="sm-td-sub text-slate-500">${ROLE_NAME[p.role]}${shopBranches().length > 1 ? ` · ${escapeText(staffBranchText(p))}` : ''} · ${p.id}${staffOnPayroll(p) ? ` · <span class="sm-figure">${fmtUSD(Number(getStaffCompensation(p.id).baseSalaryUSD) || 0)} / ខែ</span>` : ''}${p.role === 'cashier' ? ` · បញ្ចុះបាន ${discountLimitFor(p.id)}%` : ''}</p>
                         <div class="mt-1.5">${staffStatusChip(p)}</div>
                     </div>
                     ${dotsBtn('c-' + p.id)}${staffMenu(p, 'c-' + p.id, true)}
@@ -176,6 +176,9 @@
                 options: ['cashier', 'manager', 'admin'].map(r => ({ value: r, label: ROLE_NAME[r], desc: ROLE_DESC[r], icon: ROLE_ICON[r] }))
             });
             if (!role) return;
+            // ហាងមានសាខាច្រើន៖ ជ្រើសសាខាដែលបុគ្គលិកធ្វើការ (ម្ចាស់ហាងគ្រប់សាខា)
+            const branchId = role !== 'admin' && shopBranches().length > 1 ? await pickBranch(`${ROLE_NAME[role]}ថ្មី · ធ្វើការនៅសាខាណា`, ACTIVE_BRANCH_ID) : ACTIVE_BRANCH_ID;
+            if (!branchId) return;
             const v = await showFormDialog({
                 title: `${ROLE_NAME[role]}ថ្មី`,
                 icon: 'fa-user-plus',
@@ -192,7 +195,7 @@
             });
             if (!v) return;
             const person = { id: nextStaffId(role), name: v.name, initials: initialsOf(v.name), pin: v.pin, role,
-                phone: v.phone.trim(), email: v.email.trim().toLowerCase(), password: v.password };
+                phone: v.phone.trim(), email: v.email.trim().toLowerCase(), password: v.password, branchId: role === 'admin' ? undefined : branchId };
             addStaff(person);
             if (role === 'cashier') {
                 const limits = clone(posSettings().discountLimits || {});

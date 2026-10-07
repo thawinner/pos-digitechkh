@@ -58,7 +58,7 @@
     </header>
 
     <main class="w-full flex-1 flex flex-col items-center px-4 pb-10 pt-2">
-        <div class="w-full max-w-[880px] space-y-5">
+        <div class="w-full space-y-5">
             <div id="steps"></div>
             <section class="setup-card rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(23,23,23,.04),0_8px_24px_-12px_rgba(23,23,23,.12)]">
                 <div id="stepBody" class="px-5 py-6 sm:px-8 sm:py-8"></div>
@@ -75,12 +75,18 @@
            ជំហាន 1 ហាង (ឈ្មោះ ឈ្មោះ KHQR សាខា ទូរស័ព្ទ លេខអាករ) → MERCHANT តាមរយៈ saveShopProfile
            ជំហាន 2 ទទួលប្រាក់ (អត្រាប្តូរប្រាក់ ធនាគារ និងគណនីបាគង) · ជំហាន 3 បញ្ជរ (≤ ដែនកំណត់កញ្ចប់) និងម៉ោងបើក
            ជំហាន 4 រួចរាល់ + ជំហានបន្ទាប់ (ចុះឈ្មោះបញ្ជរ ទំនិញ បុគ្គលិក)
-           ហាងគំរូប្រើទិន្នន័យរួម ដូច្នេះអត្រា បញ្ជរ និងវេនរក្សាទុកក្នុងកំណត់ត្រារៀបចំ (pos_shop_setup) មិនសរសេរជាន់ការកំណត់របស់ហាងទីមួយទេ */
+           ហាងនីមួយៗមានការកំណត់ផ្ទាល់ខ្លួន (data.js storeKey) ដូច្នេះអត្រា ធនាគារ និងវេនរក្សាទុកក្នុងការកំណត់របស់ហាងនេះ */
 
         const SHOP_ID = CURRENT_SHOP_ID;
         const shop = shopById(SHOP_ID);
         const sub = shopSubscription(SHOP_ID) || {};
         const LIMITS = shopLimits(SHOP_ID);
+        const HOUR_TEMPLATES = {
+            day: [{ code: 'A', name: 'វេនព្រឹក', start: '07:00', end: '14:00' }, { code: 'B', name: 'វេនរសៀល', start: '14:00', end: '21:00' }],
+            long: [{ code: 'A', name: 'វេនព្រឹក', start: '06:00', end: '14:00' }, { code: 'B', name: 'វេនរសៀល', start: '14:00', end: '22:00' }],
+            '24h': [{ code: 'A', name: 'វេនព្រឹក', start: '06:00', end: '14:00' }, { code: 'B', name: 'វេនរសៀល', start: '14:00', end: '22:00' }, { code: 'C', name: 'វេនយប់', start: '22:00', end: '06:00' }],
+            one: [{ code: 'A', name: 'វេនថ្ងៃ', start: '08:00', end: '17:00' }]
+        };
         const HOURS = [
             { id: 'day', label: 'ពេលថ្ងៃ 07:00–21:00', note: '2 វេន · ព្រឹក 07:00–14:00 · រសៀល 14:00–21:00' },
             { id: 'long', label: 'ពេលថ្ងៃ 06:00–22:00', note: '2 វេន · ព្រឹក 06:00–14:00 · រសៀល 14:00–22:00' },
@@ -90,7 +96,7 @@
 
         const saved = shopSetup(SHOP_ID).draft || {};
         const v = Object.assign({
-            nameKh: shop.nameKh, nameLatin: shop.name, branch: shop.branch, phone: shop.phone || '', tin: shop.tin || '',
+            nameKh: shop.nameKh, nameLatin: shop.name, branch: shop.branch, phone: shop.phone || '', tin: shop.tin || '', logo: shop.logo || '',
             fxRate: String(posSettings().fxRate || 4100), bank: 'aba', account: '', cashOnly: false,
             registers: 1, hours: 'day'
         }, saved);
@@ -145,6 +151,11 @@
                     <div>
                         <p class="sm-td-sub font-semibold text-slate-500 mb-2">មើលជាមុន · ក្បាលវិក្កយបត្រ</p>
                         <div id="preview" class="preview rounded-xl border border-slate-200 px-4 py-5 text-center"></div>
+                        <label class="mt-3 w-full h-11 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 sm-td font-semibold inline-flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fas fa-image text-slate-400"></i> ${v.logo ? 'ប្តូរឡូហ្គោ' : 'ដាក់ឡូហ្គោហាង'}
+                            <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" class="sr-only" onchange="pickLogo(this)">
+                        </label>
+                        <p class="sm-td-sub text-slate-500 mt-1.5 text-center">${v.logo ? '<button type="button" onclick="v.logo=\'\'; render()" class="font-semibold text-slate-600 hover:underline">ដកឡូហ្គោចេញ</button>' : 'មិនចាំបាច់ · បើគ្មាន ប្រើអក្សរកាត់ឈ្មោះហាង'}</p>
                     </div>
                 </div>`;
         }
@@ -153,13 +164,19 @@
             const el = document.getElementById('preview');
             if (!el) return;
             const g = id => (document.getElementById(id) || {}).value || '';
-            el.innerHTML = `<img src="../../${shop.logo}" alt="" class="w-12 h-12 object-contain mx-auto">
+            el.innerHTML = `<img src="${shopLogoSrc({ logo: v.logo, name: g('nameLatin'), nameKh: g('nameKh') }, '../..')}" alt="" class="w-12 h-12 object-contain mx-auto rounded-lg">
                 <p class="sm-value text-slate-900 mt-2">${escapeText(g('nameKh')) || '—'}</p>
                 <p class="sm-td-sub text-slate-500">${escapeText(g('branch'))}</p>
                 ${g('tin') ? `<p class="sm-td-sub text-slate-500 sm-figure">លេខអាករ ${escapeText(g('tin'))}</p>` : ''}
                 ${g('phone') ? `<p class="sm-td-sub text-slate-500 sm-figure">ទូរស័ព្ទ ${escapeText(g('phone'))}</p>` : ''}
                 <div class="border-t border-dashed border-slate-300 my-3"></div>
                 <p class="sm-td-sub text-slate-400">KHQR · <span class="sm-figure">${escapeText(g('nameLatin').toUpperCase()) || '—'}</span></p>`;
+        }
+
+        async function pickLogo(input) {
+            collect();
+            try { v.logo = await readLogoFile(input.files[0]); persist(); render(); }
+            catch (msg) { showToast(String(msg), 'error'); }
         }
 
         function checkShop() {
@@ -237,7 +254,7 @@
                 { icon: 'fa-user-plus', title: 'បន្ថែមបុគ្គលិក', note: 'អ្នកគិតលុយ និងអ្នកគ្រប់គ្រង · ម្នាក់មានលេខកូដ PIN ផ្ទាល់ខ្លួន', href: '../staff/staff.html' }
             ];
             return `<div class="text-center fade-up">
-                    <span class="done-icon w-16 h-16 rounded-full bg-blue-600 text-white inline-flex items-center justify-center"><i class="fas fa-check"></i></span>
+                    <span class="done-icon w-16 h-16 rounded-full border-2 border-slate-200 text-slate-600 inline-flex items-center justify-center"><i class="fas fa-check"></i></span>
                     <h1 class="mt-4 text-[24px] leading-tight font-semibold text-slate-900">${escapeText(shop.nameKh)} រៀបចំរួចរាល់</h1>
                     <p class="sm-td text-slate-500 mt-2">${v.cashOnly ? 'ទទួលសាច់ប្រាក់' : `ទទួល KHQR តាម ${PAY_BANKS[v.bank].name} និងសាច់ប្រាក់`} · ${Math.min(v.registers, LIMITS.registers)} បញ្ជរ · ${h.label}</p>
                 </div>
@@ -290,8 +307,15 @@
         }
 
         function finish() {
-            saveShopProfile(SHOP_ID, { nameKh: v.nameKh, name: v.nameLatin, branch: v.branch, phone: v.phone, tin: v.tin, account: v.cashOnly ? '' : v.account });
-            Object.assign(shop, { nameKh: v.nameKh, name: v.nameLatin, branch: v.branch });
+            saveShopProfile(SHOP_ID, { nameKh: v.nameKh, name: v.nameLatin, branch: v.branch, phone: v.phone, tin: v.tin, logo: v.logo, account: v.cashOnly ? '' : v.account });
+            Object.assign(shop, { nameKh: v.nameKh, name: v.nameLatin, branch: v.branch, logo: v.logo });
+            document.querySelectorAll('img.shop-logo').forEach(el => { el.src = shopLogoSrc(shop, '../..'); });
+            // ការកំណត់របស់ហាងនេះ៖ អត្រា ធនាគារដែលជ្រើសនៅមុនគេ និងវេនតាមម៉ោងបើក (ហាងគំរូរក្សាការកំណត់ដែលមានស្រាប់)
+            if (!IS_DEMO_SHOP) {
+                const banks = posSettings().payBanks.map(b => Object.assign({}, b, b.id === v.bank && !v.cashOnly ? { account: v.account, on: true } : { on: false }))
+                    .sort((a, b) => (b.id === v.bank) - (a.id === v.bank));
+                savePosSettings({ fxRate: Number(v.fxRate), payBanks: banks, shiftTemplates: HOUR_TEMPLATES[v.hours] }, ME_MANAGER);
+            }
             saveShopSetup(SHOP_ID, { done: true, at: isoLocal(new Date()), by: ME_MANAGER, fxRate: Number(v.fxRate), bank: v.cashOnly ? '' : v.bank,
                 cashOnly: v.cashOnly, registers: Math.min(v.registers, LIMITS.registers), hours: v.hours, draft: null });
             try { sessionStorage.removeItem('pos_setup_later'); } catch (e) { /* មិនអាចសម្អាត */ }

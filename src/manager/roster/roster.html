@@ -261,6 +261,9 @@
             return '';
         }
 
+        /* ហាងមានអ្នកគិតលុយ ឬអ្នកគ្រប់គ្រងសម្រាប់ចាត់វេនឬទេ (ហាងថ្មីមានតែម្ចាស់) */
+        function hasStaff() { return CASHIERS.length + MANAGERS.length > 0; }
+
         /* ការរៀបចំប្លង់កោសិកាក្នុងតារាង (Desktop Grid) */
         function cell(d, t) {
             const date = isoDate(d);
@@ -307,7 +310,13 @@
                                 <p class="text-[11px] text-slate-500 mt-1 sm-figure truncate">${cand.hoursBefore} → ${cand.hoursAfter} ម៉ោង · ${cand.chip}</p>
                                 <button onclick="addTo('${date}', '${t.code}')" type="button" class="mt-0.5 text-[11px] font-semibold text-slate-500 hover:text-slate-800">ជ្រើសអ្នកផ្សេង</button>
                             </div>
-                        ` : `<p class="text-[12px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-2 py-2"><i class="fas fa-triangle-exclamation mr-1"></i>គ្មានអ្នកគិតលុយ · ត្រូវរកអ្នកជំនួស</p>`))}
+                        ` : !hasStaff() ? '<p class="text-[12px] text-slate-400 px-1 py-2">គ្មានអ្នកគិតលុយ</p>' : `
+                            <div class="rounded-xl border border-amber-200 bg-amber-50/60 p-2">
+                                <p class="flex items-start gap-1.5 text-[12px] font-semibold text-amber-800"><i class="fas fa-triangle-exclamation mt-[3px] flex-shrink-0"></i><span class="min-w-0">គ្មានអ្នកគិតលុយ</span></p>
+                                <p class="text-[11px] text-amber-700/80 mt-0.5">គ្មានអ្នកទំនេរ</p>
+                                <button onclick="addTo('${date}', '${t.code}')" type="button" class="mt-1.5 w-full flex items-center justify-center gap-1 text-[12px] font-semibold text-blue-700 bg-white hover:bg-blue-50 border border-blue-200 rounded-lg px-1.5 py-1"><i class="fas fa-plus text-[10px]"></i>ចាត់</button>
+                            </div>
+                        `))}
 
                     ${past || !list.length || list.length >= REGISTERS.length ? '' : `<button onclick="addTo('${date}', '${t.code}')" type="button" class="w-full rounded-xl border border-dashed border-slate-300 hover:border-blue-400 hover:bg-blue-50 text-[12px] text-slate-500 hover:text-blue-700 py-1 transition-opacity [@media(hover:hover)]:opacity-0 group-hover/cell:opacity-100 focus:opacity-100"><i class="fas fa-plus mr-1"></i>បន្ថែម</button>`}
 
@@ -406,7 +415,17 @@
             // របារបំពេញចន្លោះស្វ័យប្រវត្តិ (S11)
             const gaps = weekGaps(weekStart);
             const bar = document.getElementById('autoFillBar');
-            if (gaps.length > 0) {
+            if (!hasStaff()) {
+                const isOwner = SESSION && (personById(SESSION.userId) || {}).role === 'admin';
+                bar.innerHTML = `
+                    <div class="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-3 min-h-[40px] py-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+                        <span class="text-xs font-semibold"><i class="fas fa-triangle-exclamation mr-1.5"></i>ហាងនេះមិនទាន់មានអ្នកគិតលុយ</span>
+                        ${isOwner
+                            ? `<button onclick="location.href='../../admin/staff/staff.html'" type="button" class="sm-badge h-7 px-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-sm"><i class="fas fa-user-plus text-[10px] mr-1"></i>បន្ថែមបុគ្គលិក</button>`
+                            : '<span class="text-xs">សូមម្ចាស់ហាងបន្ថែមបុគ្គលិក</span>'}
+                    </div>
+                `;
+            } else if (gaps.length > 0) {
                 bar.innerHTML = `
                     <div class="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-3 h-10 flex items-center gap-3">
                         <span class="text-xs font-semibold"><i class="fas fa-triangle-exclamation mr-1.5"></i>សប្តាហ៍នេះខ្វះ ${gaps.length} វេន</span>

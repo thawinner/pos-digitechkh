@@ -478,13 +478,16 @@ function updateStaff(id, patch, note) {
 
 function nextStaffId(role) {
     const prefix = { cashier: 'CAS', manager: 'MGR', admin: 'ADM' }[role];
-    const used = loadStaff().filter(p => p.id.startsWith(prefix)).map(p => Number(p.id.split('-')[1]) || 0);
+    // លេខសម្គាល់មិនជាន់គ្នាទូទាំងប្រព័ន្ធ (គ្រប់ហាង)
+    const used = loadAllPeople().filter(p => p.id.startsWith(prefix)).map(p => Number(p.id.split('-')[1]) || 0);
     return `${prefix}-${String(Math.max(0, ...used) + 1).padStart(2, '0')}`;
 }
 
 function addStaff(person) {
     const st = staffStore();
-    st.added = (st.added || []).concat([person]);
+    // បុគ្គលិកថ្មីជាសមាជិកនៃហាងដែលម្ចាស់ហាងកំពុងប្រើ
+    // បុគ្គលិក (មិនមែនម្ចាស់ហាង) ធ្វើការនៅសាខាដែលកំពុងប្រើ លុះត្រាជ្រើសសាខាផ្សេង
+    st.added = (st.added || []).concat([Object.assign({ shopId: ACTIVE_SHOP_ID }, person.role === 'admin' ? {} : { branchId: ACTIVE_BRANCH_ID }, person)]);
     posWrite(STAFF_KEY, st);
     adminLog('staff', `បន្ថែម${ROLE_NAME[person.role]} ${person.name}`, { target: person.id });
 }
@@ -510,7 +513,8 @@ function setStaffPassword(id, password) {
 function accountTaken(field, value, exceptId) {
     if (!value) return false;
     const norm = field === 'phone' ? normPhone : v => String(v).trim().toLowerCase();
-    return loadStaff().some(p => p.id !== exceptId && p.active && p[field] && norm(p[field]) === norm(value));
+    // មនុស្សម្នាក់ គណនីមួយ៖ ពិនិត្យទូទាំងប្រព័ន្ធ មិនមែនតែហាងនេះ (P0-09)
+    return loadAllPeople().concat(CONTROL_ACCOUNTS).some(p => p.id !== exceptId && p.active !== false && p[field] && norm(p[field]) === norm(value));
 }
 
 function pinTaken(pin, exceptId) {

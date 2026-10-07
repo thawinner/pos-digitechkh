@@ -37,11 +37,14 @@
                 <div id="kpiRow" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 kpi-2up"></div>
                 <div class="bg-white rounded-2xl p-2 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-2">
                     <div id="catTabs" class="flex flex-wrap gap-1"></div>
-                    <label class="relative w-full sm:w-[240px]">
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <label class="relative flex-1 sm:w-[240px]">
                         <i class="fas fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                         <input id="search" oninput="renderList()" type="text" placeholder="ស្វែងរកឈ្មោះ ឬលេខកូដ"
                             class="sm-td w-full h-9 pl-8 pr-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500 focus:outline-none">
                     </label>
+                    <button onclick="location.href='create-product.html'" type="button" class="sm-badge h-9 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2 whitespace-nowrap"><i class="fas fa-plus"></i> បន្ថែមទំនិញ</button>
+                    </div>
                 </div>
                 <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm">
                     <div class="max-md:hidden overflow-x-auto"><table class="w-full">
@@ -165,7 +168,9 @@
             const list = pg.rows;
             const empty = document.getElementById('empty');
             empty.classList.toggle('hidden', !!all.length);
-            empty.innerHTML = all.length ? '' : emptyState('fa-box-open', 'គ្មានទំនិញក្នុងបញ្ជីនេះ', cat === 'low' ? 'ទំនិញទាំងអស់មានអត្រាចំណេញល្អ' : 'សូមសាកល្បងពាក្យស្វែងរកផ្សេង');
+            empty.innerHTML = all.length ? '' : !PRODUCTS.length
+                ? emptyState('fa-box-open', 'មិនទាន់មានទំនិញ', 'បន្ថែមទំនិញដំបូង ដើម្បីឱ្យអ្នកគិតលុយចាប់ផ្តើមលក់', '<button type="button" onclick="location.href=\'create-product.html\'" class="mt-4 sm-badge h-10 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2"><i class="fas fa-plus"></i> បន្ថែមទំនិញដំបូង</button>')
+                : emptyState('fa-box-open', 'គ្មានទំនិញក្នុងបញ្ជីនេះ', cat === 'low' ? 'ទំនិញទាំងអស់មានអត្រាចំណេញល្អ' : 'សូមសាកល្បងពាក្យស្វែងរកផ្សេង');
             const paused = p => p.active === false ? '<span class="sm-badge ml-1.5 px-1.5 rounded bg-slate-100 text-slate-500">ផ្អាក</span>' : '';
             const thumb = (p, c) => `<span class="${c} rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 ${p.active === false ? 'grayscale opacity-60' : ''}">${productImgHtml(p)}</span>`;
             document.getElementById('rows').innerHTML = list.map(p => {
@@ -173,7 +178,7 @@
                 const oh = typeof onHand === 'function' ? onHand(p.sku) : (p.opening || 0);
                 const st = typeof stockStatus === 'function' ? stockStatus(p.sku) : 'ok';
                 const stInfo = STOCK_STATUS[st] || STOCK_STATUS.ok;
-                return `<tr class="${p.active === false ? 'bg-slate-50/50' : ''}">
+                return `<tr data-row-id="${p.sku}" class="${p.active === false ? 'bg-slate-50/50' : ''}">
                     <td class="py-2.5 px-5"><div class="flex items-center gap-3 min-w-0">${thumb(p, 'w-11 h-11')}<div class="min-w-0"><p class="sm-td-strong text-slate-800 truncate">${p.name}${paused(p)}</p><p class="sm-td-sub text-slate-400"><span class="sm-figure">${p.sku}</span> · ${categoryLabel(p.category)}</p></div></div></td>
                     <td class="py-2.5 px-3 text-right">${priceCell(p)}</td>
                     <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-600">${fmtUSD(costOf(p.sku))}</td>
@@ -190,7 +195,7 @@
                 const oh = typeof onHand === 'function' ? onHand(p.sku) : (p.opening || 0);
                 const st = typeof stockStatus === 'function' ? stockStatus(p.sku) : 'ok';
                 const stInfo = STOCK_STATUS[st] || STOCK_STATUS.ok;
-                return `<div class="p-4 flex items-start gap-3">
+                return `<div data-row-id="${p.sku}" class="p-4 flex items-start gap-3">
                     ${thumb(p, 'w-12 h-12')}
                     <div class="min-w-0 flex-1">
                         <p class="sm-value text-slate-800 truncate">${p.name}${paused(p)}</p>
@@ -329,7 +334,7 @@
         }
 
         window.onStoreChanged = () => location.reload();
-        document.addEventListener('DOMContentLoaded', renderAll);
+        document.addEventListener('DOMContentLoaded', () => { renderAll(); flashViewedRow(); });
     </script>
 </body>
 </html>

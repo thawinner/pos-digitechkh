@@ -35,6 +35,7 @@
 
             <div class="w-full space-y-5">
                 <div id="setupBanner" class="hidden"></div>
+                <section id="branchCompare" class="hidden bg-white rounded-2xl border border-slate-200/80 shadow-sm"></section>
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div id="periodTabs" class="inline-flex bg-white border border-slate-200/80 rounded-xl p-1 shadow-sm"></div>
                     <p id="periodNote" class="sm-td-sub text-slate-500"></p>
@@ -382,22 +383,71 @@
 
         window.onStoreChanged = () => location.reload();
         window.onThemeChanged = renderAll;
-        /* ហាងថ្មីដែលម្ចាស់ជ្រើស «ធ្វើពេលក្រោយ» នៅការរៀបចំហាង៖ រំលឹកនៅទីនេះរហូតដល់រួចរាល់ */
+        /* ចាប់ផ្តើមប្រើ៖ ជំហានដែលហាង ឬសាខាថ្មីត្រូវធ្វើមុនលក់បាន (startChecklist ក្នុង data.js)
+           ជំហានបន្ទាប់មានប៊ូតុងចម្បងតែមួយ · ជំហានរួចមានសញ្ញាធីក · លាក់បានពេលរួចរាល់ទាំងអស់ */
         function renderSetupBanner() {
             const box = document.getElementById('setupBanner');
-            const st = shopSetup(CURRENT_SHOP_ID);
-            box.classList.toggle('hidden', !!st.done);
-            if (st.done) return;
-            const stepNo = (st.draft && st.draft.step) || 1;
-            box.innerHTML = `<div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm px-5 py-4 flex flex-wrap items-center gap-4">
-                <span class="w-10 h-10 rounded-xl border border-slate-200 text-slate-500 flex items-center justify-center flex-shrink-0"><i class="fas fa-store"></i></span>
-                <div class="min-w-0 flex-1"><p class="sm-card-title text-slate-800">ការរៀបចំហាងមិនទាន់រួច</p>
-                    <p class="sm-card-sub text-slate-500">នៅសល់ ${4 - stepNo} ជំហាន · ឈ្មោះលើវិក្កយបត្រ គណនី KHQR និងបញ្ជរ</p></div>
-                <a href="../setup/setup.html" class="sm-badge h-10 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2 whitespace-nowrap">បន្តរៀបចំ <i class="fas fa-arrow-right text-[12px]"></i></a>
-            </div>`;
+            const items = startChecklist();
+            const done = items.filter(x => x.done).length;
+            const all = done === items.length;
+            if (all && (IS_DEMO_DATA || checklistHidden())) { box.classList.add('hidden'); return; }
+            box.classList.remove('hidden');
+            const next = items.find(x => !x.done);
+            box.innerHTML = `<section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm">
+                <div class="px-5 py-4 border-b border-slate-100 flex flex-wrap items-center gap-4">
+                    <div class="min-w-0 flex-1"><p class="sm-card-title text-slate-800">${all ? 'ហាងរួចរាល់សម្រាប់លក់' : 'ចាប់ផ្តើមប្រើ'}</p>
+                        <p class="sm-card-sub text-slate-500">${all ? 'គ្រប់ជំហានរួចរាល់ · អាចលាក់ផ្ទាំងនេះបាន' : `រួច ${done} ក្នុង ${items.length} ជំហាន${shopBranches().length > 1 ? ` · ${escapeText(MERCHANT.branch)}` : ''}`}</p></div>
+                    <div class="w-40 h-1.5 rounded-full bg-slate-100 overflow-hidden"><div class="h-full bg-blue-600" style="width:${done / items.length * 100}%"></div></div>
+                    ${all ? '<button type="button" onclick="hideChecklist(); renderSetupBanner()" class="sm-badge h-9 px-3.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold">លាក់</button>' : ''}
+                </div>
+                <div class="divide-y divide-slate-100">${items.map((x, i) => {
+                    const isNext = x === next;
+                    return `<div class="px-5 py-3 flex items-center gap-4">
+                        <span class="w-8 h-8 rounded-full border flex items-center justify-center flex-shrink-0 sm-figure font-semibold ${x.done ? 'border-slate-300 text-slate-500' : isNext ? 'border-blue-600 text-blue-700' : 'border-slate-200 text-slate-400'}">${x.done ? '<i class="fas fa-check text-[12px]"></i>' : i + 1}</span>
+                        <div class="min-w-0 flex-1"><p class="sm-td ${x.done ? 'text-slate-500 line-through decoration-slate-300' : 'font-semibold text-slate-800'}">${x.title}</p>
+                            ${x.done ? '' : `<p class="sm-td-sub text-slate-500">${x.note}</p>`}</div>
+                        ${x.done || !x.href ? '' : isNext
+                            ? `<a href="${x.href}" class="sm-badge h-9 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2 whitespace-nowrap">${x.action} <i class="fas fa-arrow-right text-[11px]"></i></a>`
+                            : `<a href="${x.href}" class="sm-td-sub font-semibold text-blue-700 hover:underline whitespace-nowrap">${x.action}</a>`}
+                    </div>`;
+                }).join('')}</div>
+            </section>`;
         }
 
-        document.addEventListener('DOMContentLoaded', () => { renderSetupBanner(); renderAll(); });
+        /* ប្រៀបធៀបសាខា (ហាងមានសាខាច្រើន)៖ ការលក់ថ្ងៃនេះ វេនកំពុងបើក បញ្ជរ និងបុគ្គលិក តាមសាខា
+           សាខាដែលកំពុងមើលប្រើទិន្នន័យពេញ (mgrAllSales) · សាខាផ្សេងអានពីការកត់ត្រារបស់សាខានោះ */
+        function renderBranchCompare() {
+            const box = document.getElementById('branchCompare');
+            const list = shopBranches();
+            box.classList.toggle('hidden', list.length < 2);
+            if (list.length < 2) return;
+            const today = businessDate();
+            const rows = list.map(b => {
+                const sales = (b.id === ACTIVE_BRANCH_ID ? mgrAllSales() : posReadAt('pos_shift_sales', [], b.id) || [])
+                    .filter(s => s.time && s.time.startsWith(today) && !isVoided(s));
+                const shifts = b.id === ACTIVE_BRANCH_ID ? liveShifts() : posReadAt('pos_shifts', [], b.id) || [];
+                return {
+                    b, total: sales.reduce((n, s) => n + saleTotals(s.items, s.discountPercent).gross, 0), count: sales.length,
+                    open: shifts.filter(s => s.status === 'open').length, regs: branchRegisters(b.id).length,
+                    devices: deviceList().filter(d => d.shopId === CURRENT_SHOP_ID && (d.branchId || 'BR-01') === b.id).length,
+                    staff: SHOP_STAFF.filter(p => p.active && p.role !== 'admin' && (p.branchId || 'BR-01') === b.id).length
+                };
+            });
+            const sum = rows.reduce((n, r) => n + r.total, 0);
+            box.innerHTML = `<div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
+                    <div class="min-w-0"><p class="sm-card-title text-slate-800">សាខាទាំងអស់ · ថ្ងៃនេះ</p><p class="sm-card-sub text-slate-500">សរុប <span class="sm-figure">${fmtUSD(sum)}</span> · ${rows.length} សាខា · កំពុងមើល ${escapeText(MERCHANT.branch)}</p></div>
+                    <a href="../branches/branches.html" class="sm-td-sub font-semibold text-blue-700 hover:underline whitespace-nowrap">គ្រប់គ្រងសាខា</a>
+                </div>
+                <div class="divide-y divide-slate-100">${rows.map(r => `<div class="px-5 py-3 flex flex-wrap items-center gap-x-4 gap-y-1">
+                    <div class="min-w-0 flex-1 basis-[200px]"><p class="sm-td font-semibold text-slate-800 truncate">${escapeText(r.b.name)}${r.b.id === ACTIVE_BRANCH_ID ? '<span class="ml-2 sm-td-sub font-semibold text-slate-500 border border-slate-200 rounded-full px-2 py-0.5">កំពុងមើល</span>' : ''}</p>
+                        <p class="sm-td-sub text-slate-500">${r.open ? `<span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1"></span>${r.open} វេនកំពុងបើក` : 'គ្មានវេនបើក'} · ${r.devices}/${r.regs} បញ្ជរ · ${r.staff} បុគ្គលិក</p></div>
+                    <div class="text-right"><p class="sm-value sm-figure text-slate-800">${fmtUSD(r.total)}</p><p class="sm-td-sub text-slate-500">${r.count} វិក្កយបត្រ</p></div>
+                    <div class="w-28 hidden sm:!block"><div class="h-1.5 rounded-full bg-slate-100 overflow-hidden"><div class="h-full bg-blue-600" style="width:${sum ? (r.total / sum * 100).toFixed(1) : 0}%"></div></div></div>
+                    ${r.b.id === ACTIVE_BRANCH_ID ? '<span class="w-[72px]"></span>' : `<button type="button" onclick="posSwitchBranch('${r.b.id}'); location.reload()" class="sm-badge h-9 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold whitespace-nowrap">បើកមើល</button>`}
+                </div>`).join('')}</div>`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => { renderSetupBanner(); renderBranchCompare(); renderAll(); });
     </script>
 </body>
 </html>

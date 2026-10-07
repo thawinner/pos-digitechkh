@@ -1009,6 +1009,15 @@
 
             if (!rows.length) {
                 grid.innerHTML = '';
+                // ហាងថ្មីគ្មានទំនិញសោះ ≠ ស្វែងរកមិនឃើញ៖ ប្រាប់អ្នកគិតលុយថាអ្នកណាជាអ្នកដោះស្រាយ
+                const none = !sellableProducts().length;
+                empty.innerHTML = none
+                    ? `<i class="fas fa-box-open text-[32px] text-slate-500 mb-3"></i>
+                       <h3 class="sm-card-title text-slate-200">ហាងមិនទាន់មានទំនិញសម្រាប់លក់</h3>
+                       <p class="sm-card-sub text-slate-400 mt-1">សូមឱ្យម្ចាស់ហាងបន្ថែមទំនិញនៅទំព័រ «ទំនិញ និងតម្លៃ» · ទំនិញថ្មីលេចនៅទីនេះភ្លាម</p>`
+                    : `<i class="fas fa-magnifying-glass text-[32px] text-slate-500 mb-3"></i>
+                       <h3 class="sm-card-title text-slate-200">រកមិនឃើញទំនិញទេ</h3>
+                       <p class="sm-card-sub text-slate-400 mt-1">សូមពិនិត្យបាកូដ ឬជ្រើសរើសប្រភេទផ្សេង។</p>`;
                 empty.classList.remove('hidden');
                 return;
             }

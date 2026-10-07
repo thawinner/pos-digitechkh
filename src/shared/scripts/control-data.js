@@ -45,7 +45,15 @@ const CTL_LOG_TYPES = {
     plan: { label: 'កញ្ចប់', icon: 'fa-box' },
     status: { label: 'ផ្អាក និងបើកវិញ', icon: 'fa-store-slash' },
     support: { label: 'ចូលមើលដើម្បីជួយ', icon: 'fa-life-ring' },
-    company: { label: 'ហាង', icon: 'fa-store' }
+    company: { label: 'ហាង', icon: 'fa-store' },
+    reminder: { label: 'ការរំលឹក', icon: 'fa-bell' },
+    note: { label: 'កំណត់ចំណាំ', icon: 'fa-note-sticky' }
+};
+
+const REMIND_CHANNELS = {
+    call: { label: 'ទូរស័ព្ទ', icon: 'fa-phone' },
+    telegram: { label: 'តេឡេក្រាម', icon: 'fa-paper-plane' },
+    sms: { label: 'សារ SMS', icon: 'fa-comment-sms' }
 };
 
 const CITIES = ['ភ្នំពេញ', 'សៀមរាប', 'បាត់ដំបង', 'កំពត', 'តាខ្មៅ', 'ព្រះសីហនុ', 'កំពង់ចាម'];
@@ -147,8 +155,11 @@ function planById(id) {
 
 /* ការប្រើប្រាស់៖ ហាងគំរូរាប់ពីទិន្នន័យពិត (បុគ្គលិកសកម្ម ឧបករណ៍បញ្ជរ) · ហាងផ្សេងពីគំរូ */
 function ctlUsage(c) {
-    if (c.id === 'SHOP-01') return { branches: 1, registers: REGISTERS.length, staff: ALL_STAFF.filter(p => p.active).length };
-    if (c.id === 'SHOP-02') return { branches: 1, registers: Math.max(1, deviceList().filter(d => d.shopId === 'SHOP-02').length), staff: 1 };
+    const staff = () => loadAllPeople().filter(p => p.active && personShopIds(p).includes(c.id)).length;
+    // បញ្ជរ = ចំនួនបញ្ជរដែលបានកំណត់គ្រប់សាខា · សាខា = pos_branches របស់ហាង
+    const branches = shopBranches(c.id);
+    const regs = branches.reduce((n, b) => n + (Number(b.registers) || 1), 0);
+    if (c.demo || c.live) return { branches: branches.length, registers: regs, staff: staff() };
     return c.usage || { branches: 1, registers: 1, staff: 1 };
 }
 
@@ -172,7 +183,7 @@ function ctlLog(companyId) {
 
 /* ម្ចាស់ហាងបានបញ្ចប់ការរៀបចំហាងលើកដំបូងឬនៅ (ហាងគំរូអានពី data.js · ហាងផ្សេងពីគំរូ) */
 function ctlSetupState(c) {
-    if (c.demo) { const st = shopSetup(c.id); return { done: !!st.done, at: st.at || '' }; }
+    if (c.demo || c.live) { const st = shopSetup(c.id); return { done: !!st.done, at: st.at || '' }; }
     return { done: c.setupDone !== false, at: '' };
 }
 
@@ -236,6 +247,67 @@ function usageLines(c) {
         { key: 'staff', label: 'បុគ្គលិក', used: u.staff, limit: p.staff },
         { key: 'branches', label: 'សាខា', used: u.branches, limit: p.branches }
     ];
+}
+
+/* ត្រូវជួយរៀបចំ៖ ហាងសាកល្បងដែលមិនទាន់បញ្ចប់ការរៀបចំហាង (ទូរស័ព្ទជួយមុនសាកល្បងចប់) */
+function needsSetupHelp(c) {
+    return (c.status === 'trial' || c.status === 'expiring') && c.trial && !ctlSetupState(c).done;
+}
+
+/* គួរប្តូរកញ្ចប់៖ ហាងបង់ប្រាក់ដែលប្រើពេញដែនកំណត់ (បញ្ជរ បុគ្គលិក ឬសាខា) */
+function upgradeHint(c) {
+    if (c.trial || !['active', 'expiring', 'overdue'].includes(c.status)) return '';
+    // សាខាតែមួយក្នុងកញ្ចប់សាខាតែមួយ គឺធម្មតា មិនមែនសញ្ញាត្រូវប្តូរកញ្ចប់ទេ
+    const full = usageLines(c).filter(l => l.used >= l.limit && !(l.key === 'branches' && l.limit === 1)).map(l => l.label);
+    const bigger = ctlPlans().find(p => p.price > planById(c.plan).price);
+    return full.length && bigger ? `ប្រើពេញ ${full.join(' ')} · ស្នើកញ្ចប់${bigger.name}` : '';
+}
+
+/* អត្រាប្តូរពីសាកល្បងទៅជាវ៖ ហាងដែលធ្លាប់សាកល្បង ហើយឥឡូវបង់ប្រាក់ ធៀបនឹងសាកល្បងដែលចប់រួច */
+function trialConversion() {
+    const all = ctlCompanies();
+    const converted = all.filter(c => !c.trial && ctlPayments(c.id).length && c.createdAt >= addDaysIso(-120)).length;
+    const lost = all.filter(c => c.trial && c.status === 'expired').length;
+    return { converted, lost, rate: converted + lost ? Math.round(converted / (converted + lost) * 100) : 0 };
+}
+
+/* ការរំលឹកចុងក្រោយ (ការបង់ប្រាក់) · កំណត់ចំណាំខាងក្នុង */
+function lastReminder(c) {
+    return ctlLog(c.id).find(x => x.type === 'reminder') || null;
+}
+
+function reminderText(c) {
+    const r = lastReminder(c);
+    if (!r) return '';
+    const d = Math.max(0, Math.round((new Date() - new Date(r.at)) / 86400000));
+    return `រំលឹក${d === 0 ? 'ថ្ងៃនេះ' : ` ${d} ថ្ងៃមុន`}`;
+}
+
+async function ctlRemindDialog(id) {
+    const c = ctlCompany(id);
+    const ch = await showOptionDialog({
+        title: `រំលឹក ${c.nameKh}`,
+        message: `${attentionText(c)} · ${escapeText(c.ownerName)} <span class="sm-figure">${escapeText(c.ownerPhone)}</span>${lastReminder(c) ? ` · ${reminderText(c)}` : ''}`,
+        options: Object.keys(REMIND_CHANNELS).map(k => ({ value: k, icon: REMIND_CHANNELS[k].icon, label: REMIND_CHANNELS[k].label, desc: k === 'call' ? 'កត់ត្រាបន្ទាប់ពីនិយាយរួច' : 'កត់ត្រាបន្ទាប់ពីផ្ញើសាររួច' }))
+    });
+    if (!ch) return false;
+    ctlAddLog(id, 'reminder', `រំលឹកតាម${REMIND_CHANNELS[ch].label} · ${attentionText(c)}`);
+    showToast(`បានកត់ត្រាការរំលឹក ${c.nameKh}`, 'success');
+    return true;
+}
+
+function ctlAddNote(id, text) {
+    ctlAddLog(id, 'note', text);
+}
+
+/* សាខារបស់ហាងមួយ (ចំនួនប្រើប្រាស់តែប៉ុណ្ណោះ · គ្មានការលក់) · ហាងគំរូផ្សេងទៀតគ្មានសាខាដែលបានកត់ត្រា */
+function ctlBranches(c) {
+    if (!(c.demo || c.live)) return [{ id: 'BR-01', name: c.branch, address: c.city, registers: c.usage.registers, devices: null, staff: c.usage.staff }];
+    return shopBranches(c.id).map(b => ({
+        id: b.id, name: b.name, address: b.address || '', phone: b.phone || '', registers: Number(b.registers) || 1,
+        devices: deviceList().filter(d => d.shopId === c.id && (d.branchId || 'BR-01') === b.id).length,
+        staff: loadAllPeople().filter(p => p.active && p.role !== 'admin' && personShopIds(p).includes(c.id) && (p.branchId || 'BR-01') === b.id).length
+    }));
 }
 
 /* ===== សរសេរ ===== */
@@ -333,12 +405,32 @@ function ctlCreateCompany(v) {
         id: ctlNextCompanyId(), nameKh: v.nameKh, nameLatin: v.nameLatin, city: v.city, branch: v.branch,
         ownerName: v.ownerName, ownerPhone: v.ownerPhone, ownerEmail: v.ownerEmail,
         plan: v.plan, cycle: 'month', trial: true, suspended: false, suspendReason: '',
-        endsOn: addDaysIso(TRIAL_DAYS), createdAt: isoDate(new Date()), usage: { branches: 1, registers: 0, staff: 1 }, setupDone: false
+        endsOn: addDaysIso(TRIAL_DAYS), createdAt: isoDate(new Date()), usage: null, live: true
     };
     list.push(c);
     ctlSaveCompanies(list);
+    // ហាងថ្មីលេចក្នុងបញ្ជីហាងរបស់ data.js (ឈ្មោះ សាខា) · ទិន្នន័យហាងចាប់ផ្តើមទទេ
+    const shops = posRead('pos_shops', []);
+    shops.push({ id: c.id, nameKh: c.nameKh, name: c.nameLatin, branch: c.branch, city: c.city, phone: c.ownerPhone, tin: '', account: '' });
+    posWrite('pos_shops', shops);
+    // គណនីម្ចាស់ហាង៖ ពាក្យសម្ងាត់បណ្តោះអាសន្ន (បង្ហាញម្តង) · ប្រព័ន្ធពិតផ្ញើតំណកំណត់ពាក្យសម្ងាត់តាមសារ
+    const owner = ctlCreateOwner(c, v);
     ctlAddLog(c.id, 'company', `បង្កើតហាង · សាកល្បង ${TRIAL_DAYS} ថ្ងៃ · កញ្ចប់${planById(c.plan).name} · ម្ចាស់ ${c.ownerName}`);
-    return c;
+    return { company: c, owner };
+}
+
+function ctlCreateOwner(c, v) {
+    const people = loadAllPeople();
+    const n = Math.max(0, ...people.filter(p => p.id.startsWith('ADM-')).map(p => Number(p.id.split('-')[1]) || 0)) + 1;
+    const pin = String(100000 + Math.floor(Math.random() * 900000));
+    const password = `${['shop', 'pos', 'start'][n % 3]}${1000 + Math.floor(Math.random() * 9000)}`;
+    const words = v.ownerName.trim().split(/\s+/);
+    const person = { id: `ADM-${pad2(n)}`, name: v.ownerName.trim(), initials: words.map(w => w[0]).join('').slice(0, 2),
+        pin, phone: v.ownerPhone.trim(), email: (v.ownerEmail || '').trim().toLowerCase(), password, role: 'admin', shopId: c.id };
+    const st = staffStore();
+    st.added = (st.added || []).concat([person]);
+    posWrite(STAFF_KEY, st);
+    return { id: person.id, name: person.name, phone: person.phone, password, pin };
 }
 
 /* លេខទូរស័ព្ទ និងអ៊ីមែលមិនជាន់គ្នាទូទាំងប្រព័ន្ធ (មនុស្សម្នាក់ គណនីមួយ · P0-09) */
@@ -429,7 +521,8 @@ function companyMenu(c, mid, onDone) {
     const items = [
         menuItem('fa-store', 'មើលព័ត៌មាន', `openCompany('${c.id}')`),
         sep,
-        c.status !== 'suspended' ? menuItem('fa-receipt', 'កត់ត្រាការបង់ប្រាក់', `ctlPaymentDialog('${c.id}').then(ok => ok && ${onDone}())`) : '',
+        c.status !== 'suspended' ? menuItem('fa-receipt', 'កត់ត្រាការបង់ប្រាក់', `ctlOpenPayment('${c.id}')`) : '',
+        needsAttention(c) || c.status === 'expired' ? menuItem('fa-bell', 'រំលឹក', `ctlRemindDialog('${c.id}').then(ok => ok && ${onDone}())`) : '',
         menuItem('fa-box', 'ប្តូរកញ្ចប់', `ctlPlanDialog('${c.id}').then(ok => ok && ${onDone}())`),
         c.trial && c.status !== 'suspended' ? menuItem('fa-hourglass-half', 'បន្ថែមថ្ងៃសាកល្បង', `ctlTrialDialog('${c.id}').then(ok => ok && ${onDone}())`) : '',
         sep,
@@ -451,45 +544,10 @@ function planLabel(c) {
 
 /* ===== ប្រអប់សកម្មភាព (ប្រើរួមគ្រប់ទំព័រ) — ត្រឡប់ true ពេលបានធ្វើ ===== */
 
-async function ctlPaymentDialog(id) {
-    const c = ctlCompany(id);
-    if (!c) return false;
-    const method = await showOptionDialog({
-        title: `កត់ត្រាការបង់ប្រាក់ · ${c.nameKh}`,
-        message: `${planLabel(c)} · ${attentionText(c)}`,
-        options: Object.keys(PAY_METHODS).map(k => ({ value: k, label: PAY_METHODS[k].label, desc: PAY_METHODS[k].desc, icon: PAY_METHODS[k].icon }))
-    });
-    if (!method) return false;
-    const today = isoDate(new Date());
-    const from = !c.trial && c.endsOn >= today ? c.endsOn : today;
-    const v = await showFormDialog({
-        title: `${PAY_METHODS[method].label} · ${c.nameKh}`,
-        icon: PAY_METHODS[method].icon,
-        fields: [
-            { key: 'months', label: 'ចំនួនខែ', value: c.cycle === 'year' ? '12' : '1', type: 'number', suffix: 'ខែ', hint: `12 ខែ = តម្លៃ ${YEAR_PAID_MONTHS} ខែ` },
-            { key: 'ref', label: method === 'cash' ? 'លេខបង្កាន់ដៃ' : 'លេខយោងប្រតិបត្តិការ', value: '', hint: method === 'cash' ? 'មិនចាំបាច់' : 'ពីសារធនាគារ · ប្រើពេលផ្ទៀងផ្ទាត់' }
-        ],
-        validate: x => {
-            const m = Number(x.months);
-            if (!(Number.isInteger(m) && m >= 1 && m <= 24)) return 'ចំនួនខែត្រូវនៅចន្លោះ 1 ដល់ 24';
-            if (method !== 'cash' && x.ref.trim().length < 4) return 'សូមបញ្ចូលលេខយោងពីធនាគារ';
-            return '';
-        },
-        preview: x => {
-            const m = Number(x.months);
-            if (!(m >= 1 && m <= 24)) return '';
-            return `<div class="p-3 rounded-lg border border-slate-200 space-y-1">
-                <div class="flex justify-between text-slate-600"><span>ចំនួនទឹកប្រាក់</span><span class="font-semibold text-slate-800 sm-figure">${fmtUSD(priceFor(c.plan, m))}</span></div>
-                <div class="flex justify-between text-slate-600"><span>ប្រើបានដល់</span><span class="font-semibold text-slate-800 sm-figure">${fmtDate(addMonthsIso(from, m))}</span></div>
-            </div>`;
-        },
-        confirmText: 'កត់ត្រា'
-    });
-    if (!v) return false;
-    const months = Number(v.months);
-    const pay = ctlRecordPayment(id, { months, method, ref: v.ref.trim(), amount: priceFor(c.plan, months) });
-    showToast(`បានទទួល ${fmtUSD(pay.amount)} ពី ${c.nameKh} · ប្រើបានដល់ ${fmtDate(pay.periodTo)}`, 'success');
-    return true;
+/* កត់ត្រាការបង់ប្រាក់ជាទំព័រពេញ · ត្រឡប់មកទំព័រដែលបើកវា */
+function ctlOpenPayment(id) {
+    const here = location.pathname.split('/').slice(-2).join('/') + location.search;
+    location.href = `${document.body.dataset.roleRoot || '../..'}/control/billing/create-payment.html?id=${encodeURIComponent(id)}&back=${encodeURIComponent('../' + here)}`;
 }
 
 async function ctlPlanDialog(id) {

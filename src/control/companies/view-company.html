@@ -65,7 +65,7 @@
         function primaryAction(c) {
             const btn = (label, icon, act) => `<button type="button" onclick="${act}" class="sm-badge h-10 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2 whitespace-nowrap"><i class="fas ${icon}"></i> ${label}</button>`;
             if (c.status === 'suspended') return btn('បើកហាងវិញ', 'fa-store', `ctlResumeDialog('${c.id}').then(ok => ok && render())`);
-            return btn(c.trial ? 'កត់ត្រាការបង់ប្រាក់ (ជាវ)' : 'កត់ត្រាការបង់ប្រាក់', 'fa-receipt', `ctlPaymentDialog('${c.id}').then(ok => ok && render())`);
+            return btn(c.trial ? 'កត់ត្រាការបង់ប្រាក់ (ជាវ)' : 'កត់ត្រាការបង់ប្រាក់', 'fa-receipt', `ctlOpenPayment('${c.id}')`);
         }
 
         function secondaryActions(c) {
@@ -74,6 +74,7 @@
                 b('ប្តូរកញ្ចប់', 'fa-box', `ctlPlanDialog('${c.id}').then(ok => ok && render())`),
                 c.trial && c.status !== 'suspended' ? b('បន្ថែមថ្ងៃសាកល្បង', 'fa-hourglass-half', `ctlTrialDialog('${c.id}').then(ok => ok && render())`) : '',
                 ctlActiveSupport(c.id) ? '' : b('ចូលមើលដើម្បីជួយ', 'fa-life-ring', `startSupport('${c.id}')`),
+                needsAttention(c) || c.status === 'expired' ? b('រំលឹក', 'fa-bell', `ctlRemindDialog('${c.id}').then(ok => ok && render())`) : '',
                 c.suspended ? '' : b('ផ្អាកហាង', 'fa-store-slash', `ctlSuspendDialog('${c.id}').then(ok => ok && render())`, true)
             ].join('');
         }
@@ -101,6 +102,42 @@
                     ${over ? `<p class="sm-td-sub text-amber-700 mt-1">លើសកញ្ចប់ · សូមប្តូរទៅកញ្ចប់ធំជាងនេះ</p>`
                         : full ? `<p class="sm-td-sub text-slate-500 mt-1">ប្រើពេញ · បន្ថែម${l.label}ទៀតត្រូវប្តូរកញ្ចប់</p>` : ''}</div>`;
             }).join('')}</div>`);
+        }
+
+        /* សាខារបស់ហាង៖ ឈ្មោះ អាសយដ្ឋាន បញ្ជរ ឧបករណ៍ បុគ្គលិក (ការប្រើប្រាស់តែប៉ុណ្ណោះ · មិនបង្ហាញការលក់) */
+        function branchesCard(c) {
+            const list = ctlBranches(c);
+            const lim = planById(c.plan).branches;
+            return card('សាខា', `${list.length} / ${lim} សាខាតាមកញ្ចប់`, `<div class="divide-y divide-slate-100">${list.map((b, i) => `
+                <div class="px-5 py-3 flex items-start gap-3">
+                    <span class="w-8 h-8 rounded-lg border border-slate-200 text-slate-500 flex items-center justify-center flex-shrink-0 sm-figure font-semibold">${i + 1}</span>
+                    <div class="min-w-0 flex-1"><p class="sm-td font-semibold text-slate-800 truncate">${escapeText(b.name)}</p>
+                        <p class="sm-td-sub text-slate-500 truncate">${escapeText(b.address || '—')}</p>
+                        <p class="sm-td-sub text-slate-500 sm-figure">${b.registers} បញ្ជរ${b.devices != null ? ` · ${b.devices} ឧបករណ៍` : ''} · ${b.staff} បុគ្គលិក</p></div>
+                </div>`).join('')}</div>`);
+        }
+
+        /* កំណត់ចំណាំខាងក្នុង (ក្រុម DIGITECHKH តែប៉ុណ្ណោះ)៖ ការនិយាយជាមួយម្ចាស់ហាង ការសន្យា សំណើ */
+        function notesCard(c) {
+            const notes = ctlLog(c.id).filter(x => x.type === 'note' || x.type === 'reminder').slice(0, 6);
+            const hint = needsSetupHelp(c) ? 'ហាងសាកល្បងមិនទាន់រៀបចំ · ទូរស័ព្ទជួយម្ចាស់ហាង' : upgradeHint(c);
+            return card('កំណត់ចំណាំ', 'មើលឃើញតែក្រុម DIGITECHKH · ម្ចាស់ហាងមិនឃើញ', `<div class="px-5 py-4 space-y-3">
+                ${hint ? `<p class="sm-td text-slate-700"><i class="fas fa-lightbulb text-slate-400 mr-1.5"></i>${hint}</p>` : ''}
+                <div class="flex gap-2"><input id="noteInput" type="text" placeholder="ឧ. ម្ចាស់ហាងសន្យាបង់ថ្ងៃសុក្រ" onkeydown="if (event.key === 'Enter') addNote('${c.id}')"
+                    class="sm-td flex-1 min-w-0 h-11 px-3 rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-blue-500">
+                    <button type="button" onclick="addNote('${c.id}')" class="sm-badge h-11 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold whitespace-nowrap">កត់ត្រា</button></div>
+                ${notes.length ? `<div class="divide-y divide-slate-100">${notes.map(n => `<div class="py-2"><p class="sm-td text-slate-700">${escapeText(n.note)}</p>
+                    <p class="sm-td-sub text-slate-400"><span class="sm-figure">${fmtDate(n.at)} ${fmtTime(n.at)}</span> · ${personName(n.by)}</p></div>`).join('')}</div>` : '<p class="sm-td-sub text-slate-400">មិនទាន់មានកំណត់ចំណាំ</p>'}
+            </div>`);
+        }
+
+        function addNote(id) {
+            const el = document.getElementById('noteInput');
+            const t = el.value.trim();
+            if (t.length < 3) { el.focus(); return showToast('សូមវាយកំណត់ចំណាំ', 'warning'); }
+            ctlAddNote(id, t);
+            render();
+            showToast('បានកត់ត្រា', 'success');
         }
 
         function paymentsCard(c) {
@@ -154,7 +191,7 @@
                     <div class="flex flex-wrap items-center gap-2">${secondaryActions(c)}${primaryAction(c)}</div>
                 </section>
                 <div class="grid gap-5 xl:grid-cols-3">
-                    <div class="xl:col-span-2 space-y-5">${paymentsCard(c)}${logCard(c)}</div>
+                    <div class="xl:col-span-2 space-y-5">${notesCard(c)}${paymentsCard(c)}${logCard(c)}</div>
                     <div class="space-y-5">
                         ${card('ការជាវ', '', `<div class="px-5 py-2 divide-y divide-slate-100">
                             ${kv('កញ្ចប់', planById(c.plan).name)}
@@ -165,6 +202,7 @@
                             ${c.suspended ? kv('មូលហេតុផ្អាក', escapeText(c.suspendReason)) : ''}
                         </div>`)}
                         ${usageCard(c)}
+                        ${branchesCard(c)}
                         ${card('ម្ចាស់ហាង', 'គណនីតែមួយ ប្រើបានគ្រប់ហាងរបស់គាត់', `<div class="px-5 py-2 divide-y divide-slate-100">
                             ${kv('ឈ្មោះ', escapeText(c.ownerName))}
                             ${kv('ទូរស័ព្ទ', `<span class="sm-figure">${escapeText(c.ownerPhone)}</span>`)}

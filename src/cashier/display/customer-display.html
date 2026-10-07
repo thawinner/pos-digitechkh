@@ -99,7 +99,7 @@
         function shopHead(size) {
             return `<div class="flex items-center gap-4">
                 <span class="w-[72px] h-[72px] rounded-2xl bg-white border border-slate-200 flex items-center justify-center flex-shrink-0">
-                    <img src="../../${MERCHANT.logo}" alt="" class="w-12 h-12 object-contain"></span>
+                    <img src="${shopLogoSrc(MERCHANT, '../..')}" alt="" class="w-12 h-12 object-contain"></span>
                 <div class="min-w-0"><p class="${size} font-semibold leading-tight truncate">${e(MERCHANT.nameKh)}</p>
                 <p class="cfd-sub text-slate-500 dark:text-slate-400 truncate">${e(MERCHANT.branch)}</p></div></div>`;
         }
@@ -132,7 +132,7 @@
             const s = slides.length ? slides[slideIdx % slides.length] : null;
             return `<div class="h-full flex flex-col items-center justify-center text-center px-10 cfd-fade">
                 <span class="w-36 h-36 rounded-3xl bg-white border border-slate-200 flex items-center justify-center mb-8">
-                    <img src="../../${MERCHANT.logo}" alt="" class="w-24 h-24 object-contain"></span>
+                    <img src="${shopLogoSrc(MERCHANT, '../..')}" alt="" class="w-24 h-24 object-contain"></span>
                 <p class="cfd-title font-semibold">សូមស្វាគមន៍មកកាន់ ${e(MERCHANT.nameKh)}</p>
                 <p class="cfd-mid text-slate-500 dark:text-slate-400 mt-2">${e(MERCHANT.branch)}</p>
                 ${s ? `<div id="slide" class="mt-14 inline-flex items-center gap-4 px-8 py-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cfd-mid text-slate-700 dark:text-slate-200">

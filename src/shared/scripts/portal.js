@@ -89,7 +89,8 @@ const PORTAL_CONFIGS = {
             { group: 'ស្តុក', id: 'stock-in', label: 'បញ្ជាក់ថ្លៃដើមស្តុកចូល', icon: 'mdi:truck-delivery-outline', href: 'admin/stock/stock-in.html', badgeFn: 'unconfirmedStockInCount', badgeTone: 'amber' },
             { id: 'stock-value', label: 'តម្លៃស្តុកសរុប', icon: 'mdi:chart-pie', href: 'admin/reports/stock-value.html' },
             { id: 'shrinkage', label: 'ការខាតបង់ស្តុក', icon: 'mdi:package-variant-closed-remove', href: 'admin/reports/shrinkage.html' },
-            { group: 'គ្រប់គ្រង', id: 'staff', label: 'បុគ្គលិក និងតួនាទី', icon: 'mdi:account-group-outline', href: 'admin/staff/staff.html' },
+            { group: 'គ្រប់គ្រង', id: 'branches', label: 'សាខា', icon: 'mdi:source-branch', href: 'admin/branches/branches.html' },
+            { id: 'staff', label: 'បុគ្គលិក និងតួនាទី', icon: 'mdi:account-group-outline', href: 'admin/staff/staff.html' },
             { id: 'payroll', label: 'ម៉ោងការងារ និងប្រាក់បៀវត្សរ៍', icon: 'mdi:cash-multiple', href: 'admin/reports/payroll.html' },
             { id: 'products', label: 'ទំនិញ និងតម្លៃ', icon: 'mdi:tag-outline', href: 'admin/products/products.html' },
             { id: 'settings', label: 'ច្បាប់ និងការកំណត់', icon: 'mdi:tune-variant', href: 'admin/settings/settings.html' },
@@ -280,11 +281,11 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
                 <button type="button" data-sb-menu onclick="if(${canSwitch}){openSidebarMenu(this, 'sbRoleMenu', 'down');}" aria-haspopup="${canSwitch ? 'menu' : 'false'}" aria-expanded="false"
                     class="sb-switcher relative -mx-2 px-2 py-1.5 flex-1 min-w-0 flex items-center gap-3 rounded-lg text-left transition-colors cursor-pointer" aria-label="${canSwitch ? `ប្តូរទិដ្ឋភាព · ឥឡូវ ${roleLabel}` : roleLabel}">
                     <span class="sb-logo w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <img src="${sharedRoot}/assets/logo-mark-transparent.png" alt="" class="w-5 h-5 object-contain">
+                        <img src="${portalId === 'controlPortal' || typeof shopLogoSrc !== 'function' ? `${sharedRoot}/assets/logo-mark-transparent.png` : shopLogoSrc(MERCHANT, roleRoot)}" alt="" class="w-5 h-5 object-contain rounded">
                     </span>
                     <span class="min-w-0 flex-1 sb-brand-text">
                         <span class="block text-[15px] font-semibold sb-strong leading-tight truncate">${portalId === 'controlPortal' ? 'DIGITECHKH' : typeof MERCHANT !== 'undefined' ? MERCHANT.nameKh : ''}</span>
-                        <span class="flex items-center gap-1.5 sb-sub sb-view truncate">${dot(viewOf[portalId] || 'cashier')}${roleLabel}</span>
+                        <span class="flex items-center gap-1.5 sb-sub sb-view truncate">${dot(viewOf[portalId] || 'cashier')}${roleLabel}${portalId !== 'controlPortal' && typeof shopBranches === 'function' && shopBranches().length > 1 ? ` · ${escapeText(MERCHANT.branch)}` : ''}</span>
                     </span>
                     ${canSwitch ? '<iconify-icon icon="mdi:unfold-more-horizontal" class="text-lg sb-muted flex-shrink-0"></iconify-icon>' : ''}
                 </button>
@@ -326,8 +327,11 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
                 </div>
                 <div class="sb-divider h-px my-1"></div>
                 ${(cfg.views || []).filter(v => !v.current).map(v => menuItem(v.icon, `ប្តូរទៅ${v.label}`, `onclick="location.href='${roleRoot}/${v.href}'"`)).join('')}
+                ${typeof SESSION !== 'undefined' && SESSION && !SESSION.control && typeof shopBranches === 'function' && shopBranches().length > 1 && roleOf(SESSION.userId) === 'admin'
+                    ? menuItem('mdi:source-branch', `ប្តូរសាខា · ${escapeText(MERCHANT.branch)}`, `onclick="location.href='${roleRoot}/index.html?branch=1'"`) : ''}
                 ${typeof SESSION !== 'undefined' && SESSION && typeof membershipsOf === 'function' && membershipsOf(SESSION.userId).length > 1
                     ? menuItem('mdi:store-cog-outline', 'ប្តូរហាង', `onclick="location.href='${roleRoot}/index.html?pick=1'"`) : ''}
+                ${portalId !== 'controlPortal' ? menuItem('mdi:lifebuoy', 'ជំនួយ និងទំនាក់ទំនង', 'onclick="closeSidebarMenus(); showSupportInfo()"') : ''}
                 ${menuItem('mdi:theme-light-dark', 'ទម្រង់ភ្លឺ ឬងងឹត', 'onclick="toggleDarkMode(); closeSidebarMenus()"')}
                 ${menuItem('mdi:shield-check-outline', 'គោលការណ៍សិទ្ធិ', "onclick=\"document.getElementById('sbPolicyBody').classList.toggle('hidden')\"")}
                 <p id="sbPolicyBody" class="hidden mx-3 mb-1.5 mt-0.5 sb-sub leading-relaxed">${cfg.policyNote}</p>
@@ -647,6 +651,20 @@ function renderPortalSidebar() {
                 </button>
             </div>
         </aside>`;
+}
+
+/* ជំនួយសម្រាប់ហាងដែលជាវ៖ របៀបទាក់ទងក្រុម DIGITECHKH (មិនមែនព័ត៌មានបច្ចេកទេស) */
+function showSupportInfo() {
+    showCustomConfirm({
+        title: 'ជំនួយ និងទំនាក់ទំនង',
+        message: `ក្រុម DIGITECHKH ជួយអ្នកដំឡើង រៀនប្រើ និងដោះស្រាយបញ្ហា<br><br>
+            <span class="block">ទូរស័ព្ទ៖ <b class="sm-figure">010 888 777</b></span>
+            <span class="block">តេឡេក្រាម៖ <b>@digitechkh_pos</b></span>
+            <span class="block">ម៉ោង៖ ថ្ងៃច័ន្ទ ដល់ថ្ងៃសៅរ៍ <span class="sm-figure">08:00–20:00</span></span>
+            <span class="block mt-2">ពេលទាក់ទង សូមប្រាប់ឈ្មោះហាង និងរៀបរាប់បញ្ហា។ ក្រុមការងារអាចចូលមើលដើម្បីជួយ បន្ទាប់ពីអ្នកយល់ព្រម ហើយការចូលមើលនីមួយៗលេចក្នុងកំណត់ហេតុសវនកម្មរបស់អ្នក។</span>`,
+        confirmText: 'យល់ព្រម',
+        hideCancel: true
+    });
 }
 
 function handleLogout() {
@@ -1566,5 +1584,5 @@ document.addEventListener('DOMContentLoaded', () => {
     const root = (document.body && document.body.dataset.roleRoot) || '.';
     document.querySelectorAll('.shop-name').forEach(el => { el.textContent = MERCHANT.nameKh; });
     document.querySelectorAll('.shop-branch').forEach(el => { el.textContent = MERCHANT.branch; });
-    document.querySelectorAll('img.shop-logo').forEach(el => { el.src = `${root}/${MERCHANT.logo}`; });
+    document.querySelectorAll('img.shop-logo').forEach(el => { el.src = shopLogoSrc(MERCHANT, root); });
 });

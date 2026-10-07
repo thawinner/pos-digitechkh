@@ -123,9 +123,69 @@ const POS_KEYS = {
     pending: 'pos_pending_khqr'
 };
 
+/* ===== ទិន្នន័យដាច់ដោយឡែកតាមហាង =====
+   ហាងនីមួយៗមានការលក់ វេន ទំនិញ ស្តុក ការកំណត់ និងកំណត់ហេតុរបស់ខ្លួន (គ្រាប់ចុច pos_xxx@SHOP-NN)។
+   ហាងគំរូ SHOP-01 ប្រើគ្រាប់ចុចដើម (pos_xxx) ដូច្នេះទិន្នន័យគំរូនៅដដែល · ហាងផ្សេងចាប់ផ្តើមទទេ (គ្មានទិន្នន័យគំរូ)។
+   ទិន្នន័យរួមទូទាំងប្រព័ន្ធ (មិនបែងចែក)៖ គណនីមនុស្ស ពាក្យសម្ងាត់ លេខកូដ PIN វគ្គចូលប្រើ ឧបករណ៍ ហាង និងច្រកអ្នកគ្រប់គ្រងប្រព័ន្ធ។
+   ហាងដែលកំពុងប្រើ = វគ្គចូលប្រើ → ឧបករណ៍បញ្ជរ → SHOP-01 (អានផ្ទាល់ ព្រោះ posRead ខ្លួនឯងត្រូវការវា)
+   ប្រព័ន្ធពិត៖ ជួរ tenant_id លើគ្រប់តារាង */
+const ACTIVE_SHOP_ID = (() => {
+    try {
+        const s = JSON.parse(localStorage.getItem('pos_session') || 'null');
+        if (s && s.control) return 'SHOP-01';
+        if (s && s.shopId) return s.shopId;
+        const id = JSON.parse(localStorage.getItem('pos_device') || 'null');
+        const dev = (JSON.parse(localStorage.getItem('pos_devices') || '[]') || []).find(d => d.id === id);
+        return dev ? dev.shopId : 'SHOP-01';
+    } catch (e) {
+        return 'SHOP-01';
+    }
+})();
+const IS_DEMO_SHOP = ACTIVE_SHOP_ID === 'SHOP-01';
+
+/* សាខា៖ ហាងមួយមានសាខាច្រើន (BR-01 = សាខាដំបូង)។ ទំនិញ តម្លៃ ការកំណត់ បុគ្គលិក និងកំណត់ហេតុម្ចាស់ហាងរួមគ្នាទូទាំងហាង
+   វេន ការលក់ បញ្ជរ ស្តុក ចលនាសាច់ប្រាក់ និងសំណើ ដាច់តាមសាខា (គ្រាប់ចុច pos_xxx@SHOP-NN#BR-NN · សាខាដំបូងគ្មាន #)
+   សាខាដែលកំពុងប្រើ = វគ្គចូលប្រើ → ឧបករណ៍បញ្ជរ → BR-01 */
+const ACTIVE_BRANCH_ID = (() => {
+    try {
+        const s = JSON.parse(localStorage.getItem('pos_session') || 'null');
+        if (s && s.control) return 'BR-01';
+        if (s && s.branchId) return s.branchId;
+        const id = JSON.parse(localStorage.getItem('pos_device') || 'null');
+        const dev = (JSON.parse(localStorage.getItem('pos_devices') || '[]') || []).find(d => d.id === id);
+        return dev && dev.shopId === ACTIVE_SHOP_ID && dev.branchId ? dev.branchId : 'BR-01';
+    } catch (e) {
+        return 'BR-01';
+    }
+})();
+/* ទិន្នន័យគំរូ (ប្រវត្តិ 14 ថ្ងៃ វេនបើក ការលក់) មានតែនៅសាខាដំបូងនៃហាងគំរូ */
+const IS_DEMO_DATA = IS_DEMO_SHOP && ACTIVE_BRANCH_ID === 'BR-01';
+const BRANCH_KEYS = ['pos_shifts', 'pos_shift_sales', 'pos_held_sales', 'pos_approvals', 'pos_cash_movements', 'pos_events',
+    'pos_terminal_lock', 'pos_roster', 'pos_stock_opening', 'pos_stock_moves', 'pos_stock_counts', 'pos_stock_costs',
+    'pos_overlay', 'pos_seed_v3', 'pos_mgr_seed_v2', 'pos_cfd', 'pos_new_shift_notice'];
+const GLOBAL_KEYS = ['pos_session', 'pos_devices', 'pos_device', 'pos_login_guard', 'pos_last_login', 'pos_last_shop', 'pos_last_branch',
+    'pos_staff', 'pos_pins', 'pos_passwords', 'pos_shop_profile', 'pos_shop_setup', 'pos_shops'];
+
+function storeKey(key, branchId, shopId) {
+    if (!key.startsWith('pos_') || key.startsWith('pos_ctl_') || GLOBAL_KEYS.includes(key)) return key;
+    const shop = shopId || ACTIVE_SHOP_ID;
+    const b = branchId || ACTIVE_BRANCH_ID;
+    return key + (shop === 'SHOP-01' ? '' : `@${shop}`) + (BRANCH_KEYS.includes(key) && b !== 'BR-01' ? `#${b}` : '');
+}
+
+/* អានទិន្នន័យសាខាផ្សេង (ផ្ទាំងម្ចាស់ហាងប្រៀបធៀបសាខា) ឬហាងផ្សេង (ច្រកអ្នកគ្រប់គ្រងប្រព័ន្ធ រាប់ការប្រើប្រាស់) */
+function posReadAt(key, fallback, branchId, shopId) {
+    try {
+        const raw = localStorage.getItem(storeKey(key, branchId, shopId));
+        return raw ? JSON.parse(raw) : fallback;
+    } catch (e) {
+        return fallback;
+    }
+}
+
 function posRead(key, fallback) {
     try {
-        const raw = localStorage.getItem(key);
+        const raw = localStorage.getItem(storeKey(key));
         return raw ? JSON.parse(raw) : fallback;
     } catch (e) {
         return fallback;
@@ -134,7 +194,7 @@ function posRead(key, fallback) {
 
 function posWrite(key, value) {
     try {
-        localStorage.setItem(key, JSON.stringify(value));
+        localStorage.setItem(storeKey(key), JSON.stringify(value));
     } catch (e) {
         // ការផ្ទុកត្រូវបានបិទ — ទិន្នន័យនៅរស់ត្រឹមទំព័របច្ចុប្បន្ន
     }
@@ -216,11 +276,54 @@ const MERCHANT = {
    MERCHANT ប្តូរទៅជាហាងដែលកំពុងប្រើ (មើល CURRENT_SHOP_ID ខាងក្រោម) */
 const SHOPS = [
     Object.assign({ id: 'SHOP-01' }, MERCHANT),
-    { id: 'SHOP-02', nameKh: 'កាហ្វេ ចាន់ថា', name: 'CHANTHA COFFEE', logo: MERCHANT.logo, branch: 'សាខាទួលគោក ភ្នំពេញ', tin: 'K001-907654321', phone: '023 777 666', account: 'chanthacoffee@aclb', city: 'PHNOM PENH' }
+    { id: 'SHOP-02', nameKh: 'កាហ្វេ ចាន់ថា', name: 'CHANTHA COFFEE', branch: 'សាខាទួលគោក ភ្នំពេញ', tin: 'K001-907654321', phone: '023 777 666', account: 'chanthacoffee@aclb', city: 'PHNOM PENH' }
 ];
+
+/* ហាងដែលអ្នកគ្រប់គ្រងប្រព័ន្ធបង្កើត (control-data.js ctlCreateCompany → pos_shops) */
+(function addCreatedShops() {
+    (posRead('pos_shops', []) || []).forEach(sh => { if (!SHOPS.some(x => x.id === sh.id)) SHOPS.push(Object.assign({}, sh)); });
+})();
 
 function shopById(id) {
     return SHOPS.find(s => s.id === id) || null;
+}
+
+/* ឡូហ្គោហាង៖ រូបដែលម្ចាស់ហាងផ្ទុកឡើង (data:… ក្នុង pos_shop_profile) · ឯកសារក្នុង shared/assets (ហាងគំរូ)
+   · បើគ្មាន → អក្សរកាត់ពីឈ្មោះ KHQR លើផ្ទៃបៃតង ដូច្នេះហាងនីមួយៗមានរូបសម្គាល់ខ្លួនឯងជានិច្ច
+   root = ផ្លូវទៅ src/ (data-role-root) */
+function shopLogoSrc(shop, root) {
+    shop = shop || {};
+    if (shop.logo && shop.logo.startsWith('data:')) return shop.logo;
+    if (shop.logo) return `${root || (document.body && document.body.dataset.roleRoot) || '.'}/${shop.logo}`;
+    const words = String(shop.name || shop.nameKh || '?').trim().split(/\s+/);
+    const letters = (words.length > 1 ? words[0][0] + words[1][0] : words[0].slice(0, 2)).toUpperCase();
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#047857"/><text x="32" y="41" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="24" font-weight="700" fill="#fff">${letters.replace(/[<&>]/g, '')}</text></svg>`;
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+
+/* អានឡូហ្គោដែលម្ចាស់ហាងជ្រើស → រូបការ៉េ 160px (រក្សាសមាមាត្រ ផ្ទៃថ្លា) ជា data URL តូច
+   ប្រព័ន្ធពិត៖ ផ្ញើទៅសេវាឯកសារ (file service) ហើយរក្សាតែតំណ */
+function readLogoFile(file) {
+    return new Promise((resolve, reject) => {
+        if (!file || !/^image\/(png|jpe?g|webp|svg\+xml)$/.test(file.type)) return reject('សូមជ្រើសឯកសាររូបភាព');
+        if (file.size > 3 * 1024 * 1024) return reject('រូបភាពធំពេក · សូមជ្រើសរូបតូចជាង 3 មេកាបៃ');
+        const reader = new FileReader();
+        reader.onerror = () => reject('អានរូបភាពមិនបាន');
+        reader.onload = () => {
+            const img = new Image();
+            img.onerror = () => reject('អានរូបភាពមិនបាន');
+            img.onload = () => {
+                const S = 160, c = document.createElement('canvas');
+                c.width = S; c.height = S;
+                const k = Math.min(S / img.width, S / img.height);
+                const w = img.width * k, h = img.height * k;
+                c.getContext('2d').drawImage(img, (S - w) / 2, (S - h) / 2, w, h);
+                resolve(c.toDataURL('image/png'));
+            };
+            img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+    });
 }
 
 /* ព័ត៌មានហាងដែលម្ចាស់ហាងបញ្ចូលនៅការរៀបចំហាង (pos_shop_profile) ឈ្នះលើតម្លៃគំរូ */
@@ -251,6 +354,31 @@ function saveShopSetup(shopId, patch) {
     posWrite('pos_shop_setup', all);
 }
 
+/* ===== ចាប់ផ្តើមប្រើ (ម្ចាស់ហាង) =====
+   ជំហានដែលហាងថ្មី ឬសាខាថ្មីត្រូវធ្វើមុនលក់បាន · ពិនិត្យដោយស្វ័យប្រវត្តិ (មិនមែនធីកដោយដៃ)
+   href ទាក់ទងពីទំព័រក្នុង admin/* · លាក់បានក្រោយរួចរាល់ទាំងអស់ */
+function startChecklist() {
+    const dev = deviceList().some(d => d.shopId === ACTIVE_SHOP_ID && (d.branchId || 'BR-01') === ACTIVE_BRANCH_ID);
+    return [
+        { done: shopSetup(ACTIVE_SHOP_ID).done, icon: 'fa-store', title: 'ព័ត៌មានហាង', note: 'ឈ្មោះ ឡូហ្គោ គណនី KHQR និងម៉ោងបើក', href: '../setup/setup.html', action: 'រៀបចំហាង' },
+        { done: PRODUCTS.length > 0, icon: 'fa-tags', title: 'បន្ថែមទំនិញ', note: 'ទំនិញ តម្លៃ និងលេខកូដ · ប្រើរួមគ្រប់សាខា', href: '../products/create-product.html', action: 'បន្ថែមទំនិញ' },
+        { done: stockTracked(), icon: 'fa-boxes-stacked', title: 'ទទួលស្តុក', note: `ចំនួនទំនិញក្នុង${shopBranches().length > 1 ? ` ${branchName(ACTIVE_BRANCH_ID)}` : 'ហាង'}`, href: '../../manager/stock/create-stock-in.html', action: 'ទទួលស្តុក' },
+        { done: CASHIERS.length > 0, icon: 'fa-user-plus', title: 'បន្ថែមអ្នកគិតលុយ', note: 'ម្នាក់មានលេខកូដ PIN ផ្ទាល់ខ្លួន', href: '../staff/staff.html', action: 'បន្ថែមបុគ្គលិក' },
+        { done: dev, icon: 'fa-cash-register', title: 'ចុះឈ្មោះកុំព្យូទ័របញ្ជរ', note: 'ធ្វើលើកុំព្យូទ័រនៅបញ្ជរ · អ្នកគិតលុយចូលដោយ PIN', href: '../settings/settings.html?s=devices', action: 'ចុះឈ្មោះបញ្ជរ' },
+        { done: liveSales().length > 0, icon: 'fa-receipt', title: 'លក់លើកដំបូង', note: 'អ្នកគិតលុយចូលដោយ PIN លើបញ្ជរ បើកវេន ហើយលក់', href: '', action: '' }
+    ];
+}
+
+function checklistHidden() {
+    return !!(posRead('pos_checklist_hidden', {}) || {})[ACTIVE_BRANCH_ID];
+}
+
+function hideChecklist() {
+    const m = posRead('pos_checklist_hidden', {}) || {};
+    m[ACTIVE_BRANCH_ID] = true;
+    posWrite('pos_checklist_hidden', m);
+}
+
 function setupLater() {
     try { return sessionStorage.getItem('pos_setup_later') === '1'; } catch (e) { return false; }
 }
@@ -274,13 +402,13 @@ function daysUntil(dateStr) {
 
 /* limits = ដែនកំណត់កញ្ចប់ដែលហាងត្រូវដឹង (ច្រកអ្នកគ្រប់គ្រងប្រព័ន្ធសរសេរជាមួយស្ថានភាព) */
 const DEFAULT_SHOP_SUBS = {
-    'SHOP-01': { plan: 'standard', planName: 'ស្តង់ដារ', cycle: 'month', trial: false, endsOn: addDaysIso(23), suspended: false, limits: { registers: 3, staff: 15, branches: 1 } },
+    'SHOP-01': { plan: 'multi', planName: 'ច្រើនសាខា', cycle: 'month', trial: false, endsOn: addDaysIso(23), suspended: false, limits: { registers: 10, staff: 50, branches: 3 } },
     'SHOP-02': { plan: 'basic', planName: 'ចាប់ផ្តើម', cycle: 'month', trial: true, endsOn: addDaysIso(5), suspended: false, limits: { registers: 1, staff: 5, branches: 1 } }
 };
 
 function shopLimits(shopId) {
     const sub = shopSubscription(shopId);
-    return (sub && sub.limits) || { registers: REGISTERS.length, staff: 99, branches: 1 };
+    return (sub && sub.limits) || { registers: 3, staff: 99, branches: 1 };
 }
 
 function shopSubscription(shopId) {
@@ -336,7 +464,16 @@ function staffStore() {
     return posRead(STAFF_KEY, { added: [], changes: {} });
 }
 
-function loadStaff() {
+/* សមាជិកភាពបន្ថែម៖ ម្ចាស់ហាងគំរូក៏ជាម្ចាស់ SHOP-02 ដែរ (ម្ចាស់អាជីវកម្មពីរ = គណនីតែមួយ) */
+const EXTRA_MEMBERSHIPS = [{ personId: 'ADM-01', shopId: 'SHOP-02', role: 'admin' }];
+
+/* ហាងរបស់មនុស្សម្នាក់៖ p.shopId (បុគ្គលិកដែលបន្ថែមក្នុងហាងណា · គំរូ = SHOP-01) + សមាជិកភាពបន្ថែម */
+function personShopIds(p) {
+    return [p.shopId || 'SHOP-01'].concat(EXTRA_MEMBERSHIPS.filter(m => m.personId === p.id).map(m => m.shopId));
+}
+
+/* បញ្ជីមនុស្សទាំងអស់ក្នុងប្រព័ន្ធ (ចូលប្រើ · លេខទូរស័ព្ទ និងអ៊ីមែលមិនជាន់គ្នា) */
+function loadAllPeople() {
     const st = staffStore();
     return STAFF_SEED.concat(st.added || []).map(p => {
         const x = Object.assign({ active: true }, p, (st.changes || {})[p.id] || {});
@@ -346,12 +483,64 @@ function loadStaff() {
     });
 }
 
-const ALL_STAFF = loadStaff();
-const CASHIERS = ALL_STAFF.filter(p => p.active && p.role === 'cashier');
-const MANAGERS = ALL_STAFF.filter(p => p.active && p.role === 'manager');
-const ADMINS = ALL_STAFF.filter(p => p.active && p.role === 'admin');
+/* បុគ្គលិករបស់ហាងដែលកំពុងប្រើ (ទំព័របុគ្គលិក ប្រាក់បៀវត្សរ៍ កាលវិភាគ) */
+function loadStaff() {
+    return loadAllPeople().filter(p => personShopIds(p).includes(ACTIVE_SHOP_ID));
+}
 
-const REGISTERS = ['POS-01', 'POS-02', 'POS-03'];
+/* ===== សាខា (pos_branches ក្នុងហាង) =====
+   { id, name, address, phone, registers } · registers = ចំនួនបញ្ជរនៃសាខា
+   លេខបញ្ជររត់ជាប់គ្នាទូទាំងហាង (សាខាទី 1 POS-01..03 · សាខាទី 2 POS-04..) ដូច្នេះលេខវិក្កយបត្រមិនជាន់គ្នារវាងសាខា
+   មុនពេលម្ចាស់ហាងបន្ថែមសាខា មានតែសាខាដំបូងដែលយកពីព័ត៌មានហាង */
+const BRANCHES_KEY = 'pos_branches';
+
+function shopBranches(shopId) {
+    const shop = shopId || ACTIVE_SHOP_ID;
+    const list = shop === ACTIVE_SHOP_ID ? posRead(BRANCHES_KEY, null) : posReadAt(BRANCHES_KEY, null, 'BR-01', shop);
+    if (list && list.length) return list;
+    const sh = shopById(shop) || {};
+    return [{ id: 'BR-01', name: sh.branch || 'សាខាទី 1', address: '', phone: sh.phone || '',
+        registers: shop === 'SHOP-01' ? 3 : Math.max(1, Math.min(shopLimits(shop).registers, shopSetup(shop).registers || 1)) }];
+}
+
+function saveBranches(list) {
+    posWrite(BRANCHES_KEY, list);
+}
+
+function branchById(id) {
+    return shopBranches().find(b => b.id === id) || null;
+}
+
+function branchName(id) {
+    return (branchById(id || 'BR-01') || {}).name || '—';
+}
+
+function currentBranch() {
+    return branchById(ACTIVE_BRANCH_ID) || shopBranches()[0];
+}
+
+/* បញ្ជរដែលធ្លាប់ប្រើក្នុងហាង (ដើម្បីកុំឱ្យលេខបញ្ជរសាខាថ្មីជាន់លេខចាស់) */
+function branchRegisters(branchId) {
+    const list = shopBranches();
+    let offset = 0;
+    for (const b of list) {
+        const n = Math.max(1, Number(b.registers) || 1);
+        if (b.id === branchId) return Array.from({ length: n }, (_, i) => `POS-${String(offset + i + 1).padStart(2, '0')}`);
+        offset += n;
+    }
+    return ['POS-01'];
+}
+
+const ALL_STAFF = loadAllPeople();
+const SHOP_STAFF = loadStaff();
+/* បុគ្គលិកនៃសាខាដែលកំពុងប្រើ (p.branchId · គំរូ BR-01) · ម្ចាស់ហាងជាកម្មសិទ្ធិគ្រប់សាខា */
+const BRANCH_STAFF = SHOP_STAFF.filter(p => p.role === 'admin' || (p.branchId || 'BR-01') === ACTIVE_BRANCH_ID);
+const CASHIERS = BRANCH_STAFF.filter(p => p.active && p.role === 'cashier');
+const MANAGERS = BRANCH_STAFF.filter(p => p.active && p.role === 'manager');
+const ADMINS = SHOP_STAFF.filter(p => p.active && p.role === 'admin');
+
+const REGISTERS = branchRegisters(ACTIVE_BRANCH_ID);
+const ALL_REGISTERS = REGISTERS;
 
 
 const ROLE_NAME = {
@@ -369,14 +558,11 @@ function personName(id) {
     return p ? p.name : '—';
 }
 
-/* សមាជិកភាព៖ បុគ្គលិកទាំងអស់ជាសមាជិក SHOP-01 តាមតួនាទីរបស់ខ្លួន · ម្ចាស់ហាងក៏ជាម្ចាស់ SHOP-02 ដែរ
-   (ម្ចាស់អាជីវកម្មពីរ = គណនីតែមួយ ជ្រើសហាងក្រោយចូល ឬប្តូរហាងពីរបារចំហៀង) */
-const EXTRA_MEMBERSHIPS = [{ personId: 'ADM-01', shopId: 'SHOP-02', role: 'admin' }];
-
+/* សមាជិកភាព៖ ហាងដែលបុគ្គលិកត្រូវបានបន្ថែម + សមាជិកភាពបន្ថែម (ម្នាក់ធ្វើការច្រើនហាង = គណនីតែមួយ) */
 function membershipsOf(personId) {
     const p = personById(personId);
     if (!p || !p.active || isControlId(personId)) return [];
-    return [{ personId, shopId: 'SHOP-01', role: p.role }].concat(EXTRA_MEMBERSHIPS.filter(m => m.personId === personId));
+    return [{ personId, shopId: p.shopId || 'SHOP-01', role: p.role }].concat(EXTRA_MEMBERSHIPS.filter(m => m.personId === personId));
 }
 
 function isMemberOf(personId, shopId) {
@@ -570,13 +756,20 @@ function clone(v) {
 
 function posSettings() {
     const stored = posRead(POS_KEYS.settings, null);
-    const s = Object.assign(clone(POS_SETTINGS_DEFAULTS), (stored && stored.values) || {});
+    const defaults = clone(POS_SETTINGS_DEFAULTS);
+    // ហាងថ្មី៖ គ្មានគណនីធនាគាររបស់ហាងគំរូ · គ្មានវេនប្រចាំរបស់បុគ្គលិកគំរូ (បំពេញនៅការរៀបចំហាង)
+    if (!IS_DEMO_SHOP) {
+        defaults.payBanks = defaults.payBanks.map(b => Object.assign(b, { account: '', on: false }));
+        defaults.staffDefaults = {};
+        defaults.discountLimits = {};
+    }
+    const s = Object.assign(defaults, (stored && stored.values) || {});
     if (!s.reasons) s.reasons = clone(POS_SETTINGS_DEFAULTS.reasons);
     if (!s.reasons.cover) s.reasons.cover = clone(POS_SETTINGS_DEFAULTS.reasons.cover);
     if (!s.shiftCodeSeq) s.shiftCodeSeq = 4;
     // ការកំណត់ដែលរក្សាទុកមុនពេលបន្ថែមបុគ្គលិកថ្មី៖ បុគ្គលិកដែលមិនទាន់មានក្នុងនោះប្រើតម្លៃលំនាំដើម
-    s.staffDefaults = Object.assign(clone(POS_SETTINGS_DEFAULTS.staffDefaults), s.staffDefaults || {});
-    s.discountLimits = Object.assign(clone(POS_SETTINGS_DEFAULTS.discountLimits), s.discountLimits || {});
+    s.staffDefaults = Object.assign(IS_DEMO_SHOP ? clone(POS_SETTINGS_DEFAULTS.staffDefaults) : {}, s.staffDefaults || {});
+    s.discountLimits = Object.assign(IS_DEMO_SHOP ? clone(POS_SETTINGS_DEFAULTS.discountLimits) : {}, s.discountLimits || {});
     // ធនាគារដែលបន្ថែមក្នុងបញ្ជីក្រោយពេលរក្សាទុក → បិទជាលំនាំដើម
     const banks = (s.payBanks || []).filter(b => PAY_BANKS[b.id]);
     Object.keys(PAY_BANKS).forEach(id => { if (!banks.some(b => b.id === id)) banks.push({ id, account: '', on: false }); });
@@ -816,6 +1009,11 @@ const PRODUCT_WEIGHT = {
    opening = ស្តុកបើកពេលចាប់ផ្តើមកត់ត្រាស្តុក (មិនមែនស្តុកបច្ចុប្បន្នទេ — មើល onHandLevels)។
    លំនាំដើម៖ អប្បបរមា ≈ ការលក់ពាក់កណ្តាលថ្ងៃ · បញ្ជាទិញ ≈ ការលក់ 3 ទៅ 4 ថ្ងៃ (តាមទម្ងន់លក់ដាច់) */
 const CATALOG_KEY = 'pos_catalog';
+const PRODUCTS_KEY = 'pos_products';
+(function loadShopProducts() {
+    if (!IS_DEMO_SHOP) PRODUCTS.length = 0;
+    (posRead(PRODUCTS_KEY, []) || []).forEach(p => PRODUCTS.push(Object.assign({}, p)));
+})();
 (function applyCatalogEdits() {
     const edits = posRead(CATALOG_KEY, {});
     PRODUCTS.forEach(p => {
@@ -1168,6 +1366,16 @@ function updateLiveSale(id, patch) {
     return patchById(POS_KEYS.sales, id, patch);
 }
 
+/* សារលទ្ធផលបន្ទាប់ពីទំព័រទម្រង់រក្សាទុក ហើយត្រឡប់ទៅបញ្ជី (បង្ហាញម្តងនៅទំព័របន្ទាប់) */
+function flashToast(msg) {
+    try { sessionStorage.setItem('pos_flash', msg); } catch (e) { /* មិនអាចរក្សាទុក */ }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    let msg = '';
+    try { msg = sessionStorage.getItem('pos_flash') || ''; sessionStorage.removeItem('pos_flash'); } catch (e) { return; }
+    if (msg && typeof showToast === 'function') setTimeout(() => showToast(msg, 'success'), 300);
+});
+
 function findLiveSale(id) {
     return liveSales().find(s => s.id === id) || null;
 }
@@ -1390,7 +1598,7 @@ function setTerminalLock(on) {
     const sh = currentShift();
     if (on && sh) posWrite(POS_KEYS.lock, { shiftId: sh.id, at: isoLocal(new Date()) });
     else {
-        try { localStorage.removeItem(POS_KEYS.lock); } catch (e) { /* មិនអាចសម្អាត */ }
+        try { localStorage.removeItem(storeKey(POS_KEYS.lock)); } catch (e) { /* មិនអាចសម្អាត */ }
     }
 }
 
@@ -1648,7 +1856,8 @@ function liveStockMoves() {
 /* ចំនួននៅក្នុងហាងបច្ចុប្បន្ន { sku: qty } — អាចអវិជ្ជមាន ពេលលក់លើសស្តុកក្នុងប្រព័ន្ធ */
 function onHandLevels() {
     const lv = {};
-    PRODUCTS.forEach(p => { lv[p.sku] = p.opening || 0; });
+    // ស្តុកបើកមានតែសាខាដំបូង · សាខាថ្មីទទួលស្តុកតាមការនាំចូល ឬការរាប់ស្តុក
+    PRODUCTS.forEach(p => { lv[p.sku] = ACTIVE_BRANCH_ID === 'BR-01' ? p.opening || 0 : 0; });
     liveStockMoves().forEach(m => { lv[m.sku] = (lv[m.sku] || 0) + m.qty; });
     return lv;
 }
@@ -1663,9 +1872,15 @@ function stockStatusOf(p, qty) {
     return qty <= (p.minStock || 0) ? 'low' : 'ok';
 }
 
+/* សាខាដែលមិនទាន់កត់ត្រាស្តុកសោះ (សាខាថ្មី)៖ មិនបង្ហាញ «អស់» លើគ្រប់ទំនិញទេ ព្រោះជាការរំខាន មិនមែនការពិត
+   នៅពេលទទួលស្តុក ឬរាប់ស្តុកលើកដំបូង ស្ថានភាពស្តុកដំណើរការធម្មតា */
+function stockTracked() {
+    return ACTIVE_BRANCH_ID === 'BR-01' && PRODUCTS.some(p => p.opening > 0) || liveStockMoves().some(m => m.type !== 'sale');
+}
+
 function stockStatus(sku, levels) {
     const p = getProduct(sku);
-    if (!p) return 'ok';
+    if (!p || !stockTracked()) return 'ok';
     return stockStatusOf(p, (levels || onHandLevels())[sku] || 0);
 }
 
@@ -2311,7 +2526,7 @@ function genPay(rng, due, rate) {
    គ្មានវេនបើកទេ ហើយផ្ទាំងគិតលុយនាំទៅទំព័របើកវេន។ */
 
 function ensurePosSeed() {
-    if (posRead(POS_KEYS.seed, null)) return;
+    if (!IS_DEMO_DATA || posRead(POS_KEYS.seed, null)) return;
     const now = new Date();
     const tpl = templateAt(now) || lastStartedTemplate(now);
     const crew = tpl ? rosterFor(templateDateFor(tpl, now), tpl.code) : [];
@@ -2406,12 +2621,29 @@ function posLoginControl(userId) {
     posWrite(SESSION_KEY, { userId, control: true, via: 'password', at: isoLocal(new Date()) });
 }
 
-function posLogin(userId, shopId, via) {
+/* សាខានៃវគ្គចូលប្រើ៖ បញ្ជរដែលបានចុះឈ្មោះ → សាខារបស់បុគ្គលិក → សាខាចុងក្រោយដែលម្ចាស់ហាងប្រើ → BR-01 */
+function posLogin(userId, shopId, via, branchId) {
     const dev = thisDevice();
-    posWrite(SESSION_KEY, { userId, shopId: shopId || 'SHOP-01', via: via || 'password', deviceId: dev ? dev.id : null, at: isoLocal(new Date()) });
+    const shop = shopId || 'SHOP-01';
+    const p = personById(userId) || {};
+    const lastBranch = (posRead('pos_last_branch', {}) || {})[`${userId}|${shop}`];
+    const branch = branchId || (dev && dev.shopId === shop && via === 'pin' ? dev.branchId || 'BR-01' : '')
+        || (p.role !== 'admin' && p.shopId === shop ? p.branchId : '') || (p.role !== 'admin' && !p.shopId && shop === 'SHOP-01' ? p.branchId : '')
+        || lastBranch || 'BR-01';
+    posWrite(SESSION_KEY, { userId, shopId: shop, branchId: branch, via: via || 'password', deviceId: dev ? dev.id : null, at: isoLocal(new Date()) });
     const last = posRead('pos_last_shop', {});
-    last[userId] = shopId || 'SHOP-01';
+    last[userId] = shop;
     posWrite('pos_last_shop', last);
+    const lb = posRead('pos_last_branch', {}) || {};
+    lb[`${userId}|${shop}`] = branch;
+    posWrite('pos_last_branch', lb);
+}
+
+/* ម្ចាស់ហាងប្តូរសាខា (របារចំហៀង → ប្តូរសាខា · ផ្ទាំងម្ចាស់ហាង → ប្រៀបធៀបសាខា) */
+function posSwitchBranch(branchId) {
+    const s = posRead(SESSION_KEY, null);
+    if (!s) return;
+    posLogin(s.userId, s.shopId, s.via, branchId);
 }
 
 /* ===== ឧបករណ៍បញ្ជរដែលបានចុះឈ្មោះ =====
@@ -2433,10 +2665,10 @@ function thisDevice() {
 }
 
 /* បញ្ជរមួយ = ឧបករណ៍មួយ · ចុះឈ្មោះថ្មីលើបញ្ជរដដែល ជំនួសឧបករណ៍ចាស់ */
-function registerThisDevice(shopId, register, byId) {
+function registerThisDevice(shopId, register, byId, branchId) {
     const old = thisDevice();
     const list = deviceList().filter(d => !(old && d.id === old.id) && !(d.shopId === shopId && d.register === register));
-    const dev = { id: newId('DEV'), shopId, register, at: isoLocal(new Date()), by: byId };
+    const dev = { id: newId('DEV'), shopId, branchId: branchId || (shopId === ACTIVE_SHOP_ID ? ACTIVE_BRANCH_ID : 'BR-01'), register, at: isoLocal(new Date()), by: byId };
     list.push(dev);
     posWrite(DEVICES_KEY, list);
     posWrite(THIS_DEVICE_KEY, dev.id);
@@ -2448,14 +2680,16 @@ function removeDevice(id) {
 }
 
 /* ចូលដោយ PIN លើឧបករណ៍ដែលបានចុះឈ្មោះ៖ រកតែក្នុងចំណោមសមាជិកហាងរបស់ឧបករណ៍ */
-function verifyPinLogin(pin, shopId) {
-    return ALL_STAFF.find(p => p.active && isMemberOf(p.id, shopId) && verifyPin(p.id, pin)) || null;
+/* បញ្ជរនៃសាខាមួយ៖ បុគ្គលិកនៃសាខានោះ ឬម្ចាស់ហាង */
+function verifyPinLogin(pin, shopId, branchId) {
+    const b = branchId || 'BR-01';
+    return ALL_STAFF.find(p => p.active && isMemberOf(p.id, shopId) && (p.role === 'admin' || (p.branchId || 'BR-01') === b) && verifyPin(p.id, pin)) || null;
 }
 
 /* ឧបករណ៍គំរូ៖ កម្មវិធីរុករកនេះជាបញ្ជរ POS-01 នៃហាងទីមួយ (ម្ចាស់ហាងដកចេញបាននៅការកំណត់) */
 (function seedDevice() {
     if (posRead(DEVICES_KEY, null) !== null) return;
-    posWrite(DEVICES_KEY, [{ id: 'DEV-01', shopId: 'SHOP-01', register: 'POS-01', at: isoLocal(new Date()), by: 'ADM-01' }]);
+    posWrite(DEVICES_KEY, [{ id: 'DEV-01', shopId: 'SHOP-01', branchId: 'BR-01', register: 'POS-01', at: isoLocal(new Date()), by: 'ADM-01' }]);
     posWrite(THIS_DEVICE_KEY, 'DEV-01');
 })();
 
@@ -2730,6 +2964,14 @@ const SESSION = posSession();
 /* ហាងដែលកំពុងប្រើ៖ វគ្គចូលប្រើ → ឧបករណ៍បញ្ជរ → ហាងទីមួយ · ឈ្មោះ សាខា ឡូហ្គោលើគ្រប់ទំព័រមកពី MERCHANT */
 const CURRENT_SHOP_ID = (SESSION && SESSION.shopId) || (thisDevice() || {}).shopId || 'SHOP-01';
 Object.assign(MERCHANT, shopById(CURRENT_SHOP_ID) || {});
+MERCHANT.logo = (shopById(CURRENT_SHOP_ID) || {}).logo || '';
+// សាខាដែលកំពុងប្រើ៖ ឈ្មោះលើវិក្កយបត្រ អេក្រង់អតិថិជន និងរបារចំហៀង
+if (CURRENT_SHOP_ID === ACTIVE_SHOP_ID) {
+    const br = currentBranch();
+    MERCHANT.branchId = br.id;
+    MERCHANT.branch = br.name;
+    if (br.phone) MERCHANT.phone = br.phone;
+}
 const ME_CASHIER = SESSION ? SESSION.userId : 'CAS-01';
 // ម្ចាស់ហាងអាចមើលទំព័រអ្នកគ្រប់គ្រង ហើយសម្រេចក្នុងនាមខ្លួនឯង
 const ME_MANAGER = SESSION && (isManagerId(SESSION.userId) || isAdminId(SESSION.userId)) ? SESSION.userId : 'MGR-01';
