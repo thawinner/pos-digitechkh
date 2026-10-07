@@ -29,6 +29,16 @@ Many shops (SaaS, decided 2026-10-07): one account per person, and **one shop pe
 owner with several locations uses branches, not a second shop). `SHOPS`, `membershipsOf()` and `personShopIds()` in
 `data.js` return the person's single shop (`p.shopId`, default SHOP-01). The second demo shop «កាហ្វេ សុគន្ធា»
 (SHOP-02) has its own owner ADM-02 (012 888 111 · sokunthea@gmail.com · sokunthea2026 · PIN 777777).
+Demo data (`DEMO_SCOPES` in `data.js`, value = sales and stock scale) covers DIGITECHKH's three branches (BR-01 central
+POS-01..03, BR-02 Toul Kork POS-04..05, BR-03 Sen Sok POS-06; BR-02/03 use only shifts A and B via `branch.shiftCodes`,
+which `shiftTemplates()` applies) and the coffee shop (`SHOP_CATALOG_SEED`, `SHOP_SETTINGS_SEED`, `SHOP_SUPPLIER_SEED`:
+coffee categories and 19 products, shifts 06:00–14:00 / 14:00–21:00, 4 suppliers, standard plan, set up). Branch staff:
+MGR-04 + CAS-07..10 (BR-02), MGR-05 + CAS-11..12 (BR-03); coffee: MGR-06 + CAS-13..15. Generated history is salted per
+branch (`DEMO_SALT` in `rngFor`; BR-01 unchanged), uses the branch's manager (`demoManagerId()`), and opening stock
+scales with `openingQty(p)`. `ensureDemoTransfers()` seeds one received transfer (central → Toul Kork, 2 short) and one
+in transit (central → Sen Sok). The owner dashboard's «សាខាទាំងអស់» card gets other branches' figures from hidden
+iframes of `admin/branches/branch-summary.html?summaryBranch=…` (not a visible page; the only URL that overrides
+`ACTIVE_BRANCH_ID`).
 DIGITECHKH (SHOP-01) is the only demo shop with generated data. Every other shop has its own storage: `posRead`/`posWrite`
 add `@SHOP-NN` to shop keys (`storeKey`, `ACTIVE_SHOP_ID`, `IS_DEMO_SHOP`); `GLOBAL_KEYS` (session, devices, people,
 PINs, passwords, shop profiles/setup, `pos_shops`) and `pos_ctl_*` stay shared. A new shop starts empty: no products

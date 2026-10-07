@@ -416,6 +416,25 @@
 
         /* ប្រៀបធៀបសាខា (ហាងមានសាខាច្រើន)៖ ការលក់ថ្ងៃនេះ វេនកំពុងបើក បញ្ជរ និងបុគ្គលិក តាមសាខា
            សាខាដែលកំពុងមើលប្រើទិន្នន័យពេញ (mgrAllSales) · សាខាផ្សេងអានពីការកត់ត្រារបស់សាខានោះ */
+        // សាខាផ្សេង៖ សង្ខេបពី iframe លាក់ (admin/branches/branch-summary.html) · មុនវាមកដល់ អានពីការកត់ត្រារបស់សាខា
+        const branchSummaries = {};
+        window.addEventListener('message', e => {
+            if (e.origin !== location.origin || !e.data || e.data.type !== 'branchSummary') return;
+            branchSummaries[e.data.branchId] = e.data;
+            renderBranchCompare();
+        });
+        function loadBranchSummaries() {
+            shopBranches().filter(b => b.id !== ACTIVE_BRANCH_ID).forEach(b => {
+                const f = document.createElement('iframe');
+                f.src = `../branches/branch-summary.html?summaryBranch=${encodeURIComponent(b.id)}`;
+                f.setAttribute('aria-hidden', 'true');
+                f.tabIndex = -1;
+                f.style.cssText = 'position:absolute;width:0;height:0;border:0;visibility:hidden';
+                f.onload = () => setTimeout(() => f.remove(), 0);
+                document.body.appendChild(f);
+            });
+        }
+
         function renderBranchCompare() {
             const box = document.getElementById('branchCompare');
             const list = shopBranches();
@@ -423,12 +442,13 @@
             if (list.length < 2) return;
             const today = businessDate();
             const rows = list.map(b => {
-                const sales = (b.id === ACTIVE_BRANCH_ID ? mgrAllSales() : posReadAt('pos_shift_sales', [], b.id) || [])
+                const sum = branchSummaries[b.id];
+                const sales = sum ? [] : (b.id === ACTIVE_BRANCH_ID ? mgrAllSales() : posReadAt('pos_shift_sales', [], b.id) || [])
                     .filter(s => s.time && s.time.startsWith(today) && !isVoided(s));
-                const shifts = b.id === ACTIVE_BRANCH_ID ? liveShifts() : posReadAt('pos_shifts', [], b.id) || [];
+                const shifts = sum ? [] : b.id === ACTIVE_BRANCH_ID ? mgrAllShifts() : posReadAt('pos_shifts', [], b.id) || [];
                 return {
-                    b, total: sales.reduce((n, s) => n + saleTotals(s.items, s.discountPercent).gross, 0), count: sales.length,
-                    open: shifts.filter(s => s.status === 'open').length, regs: branchRegisters(b.id).length,
+                    b, total: sum ? sum.total : sales.reduce((n, s) => n + saleTotals(s.items, s.discountPercent).gross, 0), count: sum ? sum.count : sales.length,
+                    open: sum ? sum.open : shifts.filter(s => s.status === 'open').length, regs: branchRegisters(b.id).length,
                     devices: deviceList().filter(d => d.shopId === CURRENT_SHOP_ID && (d.branchId || 'BR-01') === b.id).length,
                     staff: SHOP_STAFF.filter(p => p.active && p.role !== 'admin' && (p.branchId || 'BR-01') === b.id).length
                 };
@@ -447,7 +467,7 @@
                 </div>`).join('')}</div>`;
         }
 
-        document.addEventListener('DOMContentLoaded', () => { renderSetupBanner(); renderBranchCompare(); renderAll(); });
+        document.addEventListener('DOMContentLoaded', () => { renderSetupBanner(); renderBranchCompare(); renderAll(); if (shopBranches().length > 1) loadBranchSummaries(); });
     </script>
 </body>
 </html>

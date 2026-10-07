@@ -640,13 +640,19 @@
             setInterval(tick, 10000);
             // គណនីគំរូទាំងអស់ តាមហាង (រួមទាំងម្ចាស់ហាងដែលបង្កើតនៅច្រកអ្នកគ្រប់គ្រងប្រព័ន្ធ) · អ្នកគ្រប់គ្រងប្រព័ន្ធនៅចុងក្រោយ
             const ROLE_ORDER = { admin: 0, manager: 1, cashier: 2 };
+            // ក្រុមតាមហាង ហើយតាមសាខា (ម្ចាស់ហាងនៅសាខាដំបូង ព្រោះធ្វើការគ្រប់សាខា)
+            const branchOf = p => p.role === 'admin' ? 'BR-01' : (p.branchId || 'BR-01');
             const people = ALL_STAFF.filter(p => p.active)
-                .sort((a, b) => SHOPS.findIndex(s => s.id === (a.shopId || 'SHOP-01')) - SHOPS.findIndex(s => s.id === (b.shopId || 'SHOP-01')) || ROLE_ORDER[a.role] - ROLE_ORDER[b.role] || a.id.localeCompare(b.id));
-            let lastShop = null;
+                .sort((a, b) => SHOPS.findIndex(s => s.id === (a.shopId || 'SHOP-01')) - SHOPS.findIndex(s => s.id === (b.shopId || 'SHOP-01'))
+                    || branchOf(a).localeCompare(branchOf(b)) || ROLE_ORDER[a.role] - ROLE_ORDER[b.role] || a.id.localeCompare(b.id));
+            let lastGroup = null;
             document.getElementById('demoAccounts').innerHTML = people.concat(CONTROL_ACCOUNTS).map(p => {
                 const shopId = isControlId(p.id) ? 'CONTROL' : (p.shopId || 'SHOP-01');
-                const head = shopId !== lastShop ? `<p class="pt-3 pb-1 px-1 sm-td-sub font-semibold text-slate-500">${shopId === 'CONTROL' ? 'អ្នកគ្រប់គ្រងប្រព័ន្ធ (DIGITECHKH)' : escapeText((shopById(shopId) || {}).nameKh || shopId) + (shopId === 'SHOP-01' ? ' · ហាងគំរូ' : '')}</p>` : '';
-                lastShop = shopId;
+                const group = shopId === 'CONTROL' ? shopId : `${shopId}|${branchOf(p)}`;
+                const branches = shopId === 'CONTROL' ? [] : shopBranches(shopId);
+                const br = branches.length > 1 ? ` · ${escapeText((branches.find(b => b.id === branchOf(p)) || {}).name || '')}` : '';
+                const head = group !== lastGroup ? `<p class="pt-3 pb-1 px-1 sm-td-sub font-semibold text-slate-500">${shopId === 'CONTROL' ? 'អ្នកគ្រប់គ្រងប្រព័ន្ធ (DIGITECHKH)' : escapeText((shopById(shopId) || {}).nameKh || shopId) + br}</p>` : '';
+                lastGroup = group;
                 return head + `<button type="button" onclick="fillDemo('${p.id}')" class="w-full text-left py-2 px-1 flex items-center gap-2.5 hover:bg-slate-50 rounded transition-colors">
                     ${avatarHtml(p.id, 'w-7 h-7')}
                     <span class="flex-1 min-w-0"><span class="block sm-td-sub font-semibold text-slate-800 truncate">${p.name}</span>

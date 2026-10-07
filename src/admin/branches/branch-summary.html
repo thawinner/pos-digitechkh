@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <title>ប្រព័ន្ធគិតលុយ - សង្ខេបសាខា</title>
+</head>
+<body data-role-root="../..">
+    <!-- មិនមែនទំព័រសម្រាប់មើល៖ ផ្ទាំងម្ចាស់ហាងបើកវាក្នុង iframe លាក់ ដើម្បីគណនាការលក់ថ្ងៃនេះនៃសាខាផ្សេង
+         (ប្រព័ន្ធពិត៖ ម៉ាស៊ីនមេគណនាតាមសាខា) -->
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script>
+        (function () {
+            const today = businessDate();
+            const sales = mgrAllSales().filter(s => s.time && s.time.startsWith(today) && !isVoided(s));
+            parent.postMessage({
+                type: 'branchSummary', branchId: ACTIVE_BRANCH_ID, count: sales.length,
+                total: sales.reduce((n, s) => n + saleTotals(s.items, s.discountPercent).gross, 0),
+                open: mgrAllShifts().filter(s => s.status === 'open').length
+            }, location.origin);
+        })();
+    </script>
+</body>
+</html>

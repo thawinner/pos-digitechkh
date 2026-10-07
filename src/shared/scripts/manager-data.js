@@ -46,7 +46,8 @@ function genShift(dateStr, register, tpl, cashierId, ctx) {
     const start = dateAt(dateStr, tpl.start);
     let end = dateAt(dateStr, tpl.end);
     if (end <= start) end = addDays(end, 1);
-    const risky = cashierId === 'CAS-03';
+    // អ្នកដែលមានករណីមិនប្រក្រតីញឹកជាងគេ (ម្នាក់ក្នុងមួយសាខា ឬហាង)
+    const risky = ['CAS-03', 'CAS-09', 'CAS-12', 'CAS-15'].includes(cashierId);
     const managers = MANAGERS.map(m => m.id);
     const st = posSettings();
     const reasons = st.reasons;
@@ -397,7 +398,7 @@ function pendingApprovals() {
 
 function ensureManagerSeed() {
     if (!IS_DEMO_DATA || posRead(MGR_SEED_KEY, null)) return;
-    const shifts = withOverlay(generateHistory().shifts, 'shifts').filter(s => s.register === 'POS-02');
+    const shifts = withOverlay(generateHistory().shifts, 'shifts').filter(s => s.register === (REGISTERS[1] || REGISTERS[0]));
     const target = shifts.sort((a, b) => b.openedAt.localeCompare(a.openedAt))[0];
     if (target) {
         const sales = withOverlay(generateHistory().sales, 'sales')
@@ -568,12 +569,19 @@ const SUPPLIER_SEED = (() => {
         { id: 'SUP-06', name: 'ក្រុមហ៊ុន អេឡិចត្រូនិក រស្មី', phone: '010 770 606', telegram: '@rasmey_elec', leadDays: 5, skus: by('electronic'), active: true }
     ];
 })();
-/* ឈ្មោះអ្នកផ្គត់ផ្គង់សម្រាប់ប្រវត្តិស្តុកគំរូ (ខ្មែរសុទ្ធ) */
-const FMCG_SUPPLIERS = SUPPLIER_SEED.map(s => s.name);
+/* អ្នកផ្គត់ផ្គង់គំរូរបស់ហាងកាហ្វេ */
+const SHOP_SUPPLIER_SEED = {
+    'SHOP-02': [
+        { id: 'SUP-01', name: 'រោងកិនកាហ្វេ មណ្ឌលគិរី', phone: '012 735 410', telegram: '@mondulkiri_beans', leadDays: 3, skus: ['1001', '1002', '1003', '1004', '1005', '1006', '1007'], active: true },
+        { id: 'SUP-02', name: 'ហាងលក់ដុំ តែ និងទឹកដោះគោ សុខា', phone: '096 520 337', telegram: '', leadDays: 2, skus: ['1101', '1102', '1103', '1104', '1105'], active: true },
+        { id: 'SUP-03', name: 'ហាងនំ ប៉ាន់ឌីស', phone: '017 448 902', telegram: '@pandis_bakery', leadDays: 1, skus: ['1201', '1202', '1203', '1204', '1205'], active: true },
+        { id: 'SUP-04', name: 'ក្រុមហ៊ុន ទឹកសុទ្ធ វីតាល់', phone: '023 880 202', telegram: '@vitalwater', leadDays: 1, skus: ['1301', '1302'], active: true }
+    ]
+};
 
 function shopSuppliers() {
     const list = posRead(SUPPLIERS_KEY, null);
-    return list || (IS_DEMO_SHOP ? SUPPLIER_SEED : []);
+    return list || (IS_DEMO_SHOP ? SUPPLIER_SEED : SHOP_SUPPLIER_SEED[ACTIVE_SHOP_ID] || []);
 }
 
 function saveSuppliers(list) {
@@ -773,7 +781,7 @@ function generateStockHistory() {
         // តម្រៀបពីថ្មីទៅចាស់ (ថយក្រោយពី opening)
         pMoves.sort((a, b) => b.at.localeCompare(a.at));
 
-        let runningBackward = p.opening || 20;
+        let runningBackward = openingQty(p) || 20;
         const reorderQty = p.reorderQty || 24;
         const minStock = p.minStock || 5;
         const safeFloor = Math.max(2, Math.floor(minStock / 2));
@@ -800,7 +808,7 @@ function generateStockHistory() {
                     sku: p.sku,
                     qty: diff,
                     at: countSessionTime,
-                    by: 'MGR-01',
+                    by: demoManagerId(),
                     ref: 'SC-SEED-01',
                     reason: 'រាប់ស្តុកជាក់ស្តែង',
                     note: 'រកឃើញខ្វះ 1 ឯកតា'
@@ -818,7 +826,7 @@ function generateStockHistory() {
                     sku: p.sku,
                     qty: -1,
                     at: adjAt,
-                    by: 'MGR-01',
+                    by: demoManagerId(),
                     ref: '',
                     reason: adjReason,
                     note: adjReason === 'damaged' ? 'ទំនិញខូចខាតពេលដឹក' : 'ទំនិញជិតផុតកំណត់'
@@ -827,12 +835,13 @@ function generateStockHistory() {
             }
 
             // បើ runningBackward ឡើងខ្ពស់ ឬរៀងរាល់ 4-5 ថ្ងៃ -> ដាក់ការទទួលស្តុក (stock_in)
-            if (d % 5 === 0 || runningBackward > (p.opening + reorderQty * 0.8)) {
+            if (d % 5 === 0 || runningBackward > (openingQty(p) + reorderQty * 0.8)) {
                 let delivQty = reorderQty;
                 if (runningBackward - delivQty < safeFloor) {
                     delivQty = Math.max(6, runningBackward - safeFloor);
                 }
-                const sup = pick(rng, FMCG_SUPPLIERS);
+                const carriers = shopSuppliers().filter(x => (x.skus || []).includes(p.sku));
+                const sup = (carriers[0] || pick(rng, shopSuppliers()) || { name: 'អ្នកផ្គត់ផ្គង់' }).name;
                 const invNum = `INV-${dayStr.replace(/-/g, '')}-${Math.floor(rng() * 800 + 100)}`;
                 const delivAt = isoLocal(new Date(dayDate.setHours(8, 30, 0, 0)));
                 injectedMoves.push({
@@ -841,7 +850,7 @@ function generateStockHistory() {
                     sku: p.sku,
                     qty: delivQty,
                     at: delivAt,
-                    by: 'MGR-01',
+                    by: demoManagerId(),
                     supplier: sup,
                     invoice: invNum,
                     date: dayStr,
@@ -883,7 +892,7 @@ function generateStockHistory() {
     generatedCounts.push({
         id: 'SC-SEED-01',
         at: countSessionTime,
-        by: 'MGR-01',
+        by: demoManagerId(),
         status: 'completed',
         lines: countSessionLines,
         generated: true

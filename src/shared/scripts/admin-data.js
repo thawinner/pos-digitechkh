@@ -17,6 +17,7 @@ const COST_SEED = {
     '8860011': 1.45, '8860012': 0.75, '8870008': 2.20, '8870009': 3.40, '8870010': 0.90, '8880007': 0.50,
     '8880008': 0.33, '8880009': 1.60, '8890007': 8.40, '8890008': 4.30, '8890009': 3.90
 };
+if (typeof SHOP_COST_SEED !== 'undefined') Object.assign(COST_SEED, SHOP_COST_SEED);
 const COSTS_KEY = 'pos_costs';
 const STOCK_COSTS_KEY = 'pos_stock_costs';
 const ADMIN_LOG_KEY = 'pos_admin_log';

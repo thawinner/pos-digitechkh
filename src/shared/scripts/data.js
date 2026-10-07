@@ -148,6 +148,9 @@ const IS_DEMO_SHOP = ACTIVE_SHOP_ID === 'SHOP-01';
    សាខាដែលកំពុងប្រើ = វគ្គចូលប្រើ → ឧបករណ៍បញ្ជរ → BR-01 */
 const ACTIVE_BRANCH_ID = (() => {
     try {
+        // សង្ខេបសាខា (iframe លាក់នៅផ្ទាំងម្ចាស់ហាង)៖ អានសាខាផ្សេងដោយមិនប្តូរវគ្គចូលប្រើ
+        const q = new URLSearchParams(location.search).get('summaryBranch');
+        if (q && /\/admin\/branches\/branch-summary\.html$/.test(location.pathname)) return q;
         const s = JSON.parse(localStorage.getItem('pos_session') || 'null');
         if (s && s.control) return 'BR-01';
         if (s && s.branchId) return s.branchId;
@@ -158,8 +161,13 @@ const ACTIVE_BRANCH_ID = (() => {
         return 'BR-01';
     }
 })();
-/* ទិន្នន័យគំរូ (ប្រវត្តិ 14 ថ្ងៃ វេនបើក ការលក់) មានតែនៅសាខាដំបូងនៃហាងគំរូ */
-const IS_DEMO_DATA = IS_DEMO_SHOP && ACTIVE_BRANCH_ID === 'BR-01';
+/* ទិន្នន័យគំរូ (ប្រវត្តិ 14 ថ្ងៃ វេនបើក ការលក់)៖ សាខាទាំងបីនៃ DIGITECHKH និងហាងកាហ្វេ
+   តម្លៃ = ទំហំការលក់ និងស្តុកធៀបនឹងសាខាកណ្តាល · ហាង ឬសាខាផ្សេងទៀតចាប់ផ្តើមទទេ */
+const DEMO_SCOPES = { 'SHOP-01|BR-01': 1, 'SHOP-01|BR-02': 0.6, 'SHOP-01|BR-03': 0.4, 'SHOP-02|BR-01': 0.8 };
+const DEMO_SCALE = DEMO_SCOPES[`${ACTIVE_SHOP_ID}|${ACTIVE_BRANCH_ID}`] || 0;
+const IS_DEMO_DATA = DEMO_SCALE > 0;
+// គ្រាប់ពូជចៃដន្យដាច់តាមសាខា (សាខាកណ្តាលរក្សាប្រវត្តិដដែល)
+const DEMO_SALT = ACTIVE_SHOP_ID === 'SHOP-01' && ACTIVE_BRANCH_ID === 'BR-01' ? '' : `|${ACTIVE_SHOP_ID}|${ACTIVE_BRANCH_ID}`;
 const BRANCH_KEYS = ['pos_shifts', 'pos_shift_sales', 'pos_held_sales', 'pos_approvals', 'pos_cash_movements', 'pos_events',
     'pos_terminal_lock', 'pos_roster', 'pos_stock_opening', 'pos_stock_moves', 'pos_stock_counts', 'pos_stock_costs',
     'pos_overlay', 'pos_seed_v3', 'pos_mgr_seed_v2', 'pos_cfd', 'pos_new_shift_notice', 'pos_purchase_orders'];
@@ -276,7 +284,7 @@ const MERCHANT = {
    MERCHANT ប្តូរទៅជាហាងដែលកំពុងប្រើ (មើល CURRENT_SHOP_ID ខាងក្រោម) */
 const SHOPS = [
     Object.assign({ id: 'SHOP-01' }, MERCHANT),
-    { id: 'SHOP-02', nameKh: 'កាហ្វេ សុគន្ធា', name: 'SOKUNTHEA COFFEE', branch: 'សាខាទួលគោក ភ្នំពេញ', tin: 'K001-907654321', phone: '023 777 666', account: 'sokuntheacoffee@aclb', city: 'PHNOM PENH' }
+    { id: 'SHOP-02', nameKh: 'កាហ្វេ សុគន្ធា', name: 'SOKUNTHEA COFFEE', branch: 'សាខាបឹងកេងកង ភ្នំពេញ', tin: 'K001-907654321', phone: '023 777 666', account: 'sokuntheacoffee@aclb', city: 'PHNOM PENH' }
 ];
 
 /* ហាងដែលអ្នកគ្រប់គ្រងប្រព័ន្ធបង្កើត (control-data.js ctlCreateCompany → pos_shops) */
@@ -342,7 +350,7 @@ function saveShopProfile(shopId, patch) {
    ម្ចាស់ហាងនៃហាងថ្មីចូលលើកដំបូង → ជំនួយការរៀបចំ 3 ជំហាន (ហាង · ទទួលប្រាក់ · បញ្ជរ និងវេន)
    ទំព័រម្ចាស់ហាងផ្សេងទៀតបញ្ជូនមកទីនេះ រហូតដល់រួចរាល់ ឬជ្រើស «ធ្វើពេលក្រោយ» (ចងចាំក្នុងផ្ទាំងកម្មវិធីរុករកនេះ)
    ហាងចាស់ SHOP-01 រៀបចំរួចហើយ · SHOP-02 ជាហាងសាកល្បងថ្មី */
-const SETUP_SEED = { 'SHOP-01': { done: true } };
+const SETUP_SEED = { 'SHOP-01': { done: true }, 'SHOP-02': { done: true, registers: 2, hours: 'day' } };
 
 function shopSetup(shopId) {
     return (posRead('pos_shop_setup', {}) || {})[shopId] || SETUP_SEED[shopId] || { done: false };
@@ -403,7 +411,7 @@ function daysUntil(dateStr) {
 /* limits = ដែនកំណត់កញ្ចប់ដែលហាងត្រូវដឹង (ច្រកអ្នកគ្រប់គ្រងប្រព័ន្ធសរសេរជាមួយស្ថានភាព) */
 const DEFAULT_SHOP_SUBS = {
     'SHOP-01': { plan: 'multi', planName: 'ច្រើនសាខា', cycle: 'month', trial: false, endsOn: addDaysIso(23), suspended: false, limits: { registers: 10, staff: 50, branches: 3 } },
-    'SHOP-02': { plan: 'basic', planName: 'ចាប់ផ្តើម', cycle: 'month', trial: true, endsOn: addDaysIso(5), suspended: false, limits: { registers: 1, staff: 5, branches: 1 } }
+    'SHOP-02': { plan: 'standard', planName: 'ស្តង់ដារ', cycle: 'month', trial: false, endsOn: addDaysIso(12), suspended: false, limits: { registers: 3, staff: 15, branches: 1 } }
 };
 
 function shopLimits(shopId) {
@@ -491,7 +499,21 @@ const STAFF_SEED = [
     { id: 'MGR-03', name: 'នួន សុខលី', initials: 'នស', pin: '864201', phone: '011 606 275', email: 'sokly@digitechkh.com', password: 'sokly2026', role: 'manager' },
     { id: 'ADM-01', name: 'ហេង ចាន់ថា', initials: 'ហច', pin: '999999', phone: '012 999 000', email: 'chantha@digitechkh.com', password: 'chantha2026', role: 'admin' },
     // ម្ចាស់ហាងទីពីរ (ហាងថ្មីសាកល្បង) · ម្ចាស់ម្នាក់ = ហាងមួយ · ទីតាំងច្រើន = សាខា
-    { id: 'ADM-02', name: 'លឹម សុគន្ធា', initials: 'លស', pin: '777777', phone: '012 888 111', email: 'sokunthea@gmail.com', password: 'sokunthea2026', role: 'admin', shopId: 'SHOP-02' }
+    // DIGITECHKH សាខាទួលគោក (BR-02) និងសាខាសែនសុខ (BR-03)
+    { id: 'MGR-04', name: 'ហ៊ុន សុផល', initials: 'ហស', pin: '242424', phone: '012 470 118', email: 'sophal@digitechkh.com', password: 'sophal2026', role: 'manager', branchId: 'BR-02' },
+    { id: 'CAS-07', name: 'ស៊ាង ស្រីល័ក្ខ', initials: 'សស', pin: '121212', phone: '093 210 447', email: 'sreyleak@digitechkh.com', password: 'sreyleak2026', role: 'cashier', branchId: 'BR-02' },
+    { id: 'CAS-08', name: 'ម៉ី ច័ន្ទរ៉ា', initials: 'មច', pin: '131313', phone: '097 556 120', email: 'chanra@digitechkh.com', password: 'chanra2026', role: 'cashier', branchId: 'BR-02' },
+    { id: 'CAS-09', name: 'ឡុង សុខា', initials: 'ឡស', pin: '141414', phone: '010 338 905', email: 'sokha@digitechkh.com', password: 'sokha2026', role: 'cashier', branchId: 'BR-02' },
+    { id: 'CAS-10', name: 'ទូច បញ្ញា', initials: 'ទប', pin: '151515', phone: '086 702 331', email: 'panha@digitechkh.com', password: 'panha2026', role: 'cashier', branchId: 'BR-02' },
+    { id: 'MGR-05', name: 'កែវ ចិន្តា', initials: 'កច', pin: '252525', phone: '017 845 209', email: 'chenda@digitechkh.com', password: 'chenda2026', role: 'manager', branchId: 'BR-03' },
+    { id: 'CAS-11', name: 'ផល ស្រីនិច', initials: 'ផស', pin: '161616', phone: '088 913 274', email: 'sreynich@digitechkh.com', password: 'sreynich2026', role: 'cashier', branchId: 'BR-03' },
+    { id: 'CAS-12', name: 'រស់ វិចិត្រ', initials: 'រវ', pin: '171717', phone: '069 420 583', email: 'vichet@digitechkh.com', password: 'vichet2026', role: 'cashier', branchId: 'BR-03' },
+    // ហាងទីពីរ «កាហ្វេ សុគន្ធា» · ម្ចាស់ម្នាក់ = ហាងមួយ · ទីតាំងច្រើន = សាខា
+    { id: 'ADM-02', name: 'លឹម សុគន្ធា', initials: 'លស', pin: '777777', phone: '012 888 111', email: 'sokunthea@gmail.com', password: 'sokunthea2026', role: 'admin', shopId: 'SHOP-02' },
+    { id: 'MGR-06', name: 'ចាន់ សុភ័ក្ត្រ', initials: 'ចស', pin: '262626', phone: '092 635 018', email: 'sopheak.coffee@gmail.com', password: 'sopheak2026', role: 'manager', shopId: 'SHOP-02' },
+    { id: 'CAS-13', name: 'អ៊ុំ ស្រីពេជ្រ', initials: 'អស', pin: '181818', phone: '096 184 552', email: 'sreypich.coffee@gmail.com', password: 'sreypich2026', role: 'cashier', shopId: 'SHOP-02' },
+    { id: 'CAS-14', name: 'សេង ពិសិដ្ឋ', initials: 'សព', pin: '191919', phone: '070 291 846', email: 'piseth.coffee@gmail.com', password: 'piseth2026', role: 'cashier', shopId: 'SHOP-02' },
+    { id: 'CAS-15', name: 'ណុប ម៉ានិត', initials: 'ណម', pin: '202020', phone: '081 557 903', email: 'manith.coffee@gmail.com', password: 'manith2026', role: 'cashier', shopId: 'SHOP-02' }
 ];
 const STAFF_KEY = 'pos_staff';
 
@@ -541,6 +563,12 @@ function shopBranches(shopId) {
     const list = shop === ACTIVE_SHOP_ID ? posRead(BRANCHES_KEY, null) : posReadAt(BRANCHES_KEY, null, 'BR-01', shop);
     if (list && list.length) return list;
     const sh = shopById(shop) || {};
+    // ហាងគំរូ DIGITECHKH មានបីសាខា (កញ្ចប់ច្រើនសាខា · 6/10 បញ្ជរ)
+    if (shop === 'SHOP-01') return [
+        { id: 'BR-01', name: sh.branch || 'សាខាកណ្តាល ភ្នំពេញ', address: 'ផ្លូវ 271 សង្កាត់ទឹកថ្លា ខណ្ឌសែនសុខ', phone: sh.phone || '023 999 888', registers: 3 },
+        { id: 'BR-02', name: 'សាខាទួលគោក', address: 'ផ្លូវ 516 សង្កាត់បឹងកក់ 1 ខណ្ឌទួលគោក', phone: '023 999 777', registers: 2, shiftCodes: ['A', 'B'] },
+        { id: 'BR-03', name: 'សាខាសែនសុខ', address: 'ផ្លូវ 1986 សង្កាត់ភ្នំពេញថ្មី ខណ្ឌសែនសុខ', phone: '023 999 666', registers: 1, shiftCodes: ['A', 'B'] }
+    ];
     return [{ id: 'BR-01', name: sh.branch || 'សាខាទី 1', address: '', phone: sh.phone || '',
         registers: shop === 'SHOP-01' ? 3 : Math.max(1, Math.min(shopLimits(shop).registers, shopSetup(shop).registers || 1)) }];
 }
@@ -729,7 +757,7 @@ const POS_SETTINGS_DEFAULTS = {
         { icon: 'fa-qrcode', text: 'ទូទាត់ងាយស្រួលដោយស្កេនបាគង', on: true },
         { icon: 'fa-receipt', text: 'សូមទទួលវិក្កយបត្រគ្រប់ពេលទិញទំនិញ', on: true }
     ],
-    discountLimits: { 'CAS-01': 5, 'CAS-02': 5, 'CAS-03': 3, 'CAS-04': 5, 'CAS-05': 3, 'CAS-06': 3 },
+    discountLimits: { 'CAS-01': 5, 'CAS-02': 5, 'CAS-03': 3, 'CAS-04': 5, 'CAS-05': 3, 'CAS-06': 3, 'CAS-07': 5, 'CAS-08': 3, 'CAS-09': 3, 'CAS-10': 3, 'CAS-11': 5, 'CAS-12': 3 },
     /* វេនព្រឹក រសៀល យប់ — ហាងបើក 24 ម៉ោង · ចំនួនវេន = ម៉ោងបើកហាង ÷ ប្រមាណ 8 ម៉ោង (ស្រាវជ្រាវ §11) */
     shiftTemplates: [
         { code: 'A', name: 'វេនព្រឹក', start: '06:00', end: '14:00' },
@@ -765,7 +793,41 @@ const POS_SETTINGS_DEFAULTS = {
         'CAS-06': { template: 'C', dayOff: 2 },
         'MGR-01': { template: '', dayOff: 6 },
         'MGR-02': { template: '', dayOff: 0 },
-        'MGR-03': { template: '', dayOff: 3 }
+        'MGR-03': { template: '', dayOff: 3 },
+        // សាខាទួលគោក និងសែនសុខ បើក 06:00–22:00 (គ្មានវេនយប់)
+        'CAS-07': { template: 'A', dayOff: 1 },
+        'CAS-08': { template: 'A', dayOff: 4 },
+        'CAS-09': { template: 'B', dayOff: 2 },
+        'CAS-10': { template: 'B', dayOff: 5 },
+        'MGR-04': { template: '', dayOff: 0 },
+        'CAS-11': { template: 'A', dayOff: 0 },
+        'CAS-12': { template: 'B', dayOff: 3 },
+        'MGR-05': { template: '', dayOff: 6 }
+    }
+};
+
+/* ការកំណត់គំរូរបស់ហាងផ្សេង (ជំនួសតម្លៃលំនាំដើមខាងលើ) · ហាងកាហ្វេបើក 06:00–21:00 ពីរវេន */
+const SHOP_SETTINGS_SEED = {
+    'SHOP-02': {
+        fxRate: 4100,
+        payBanks: [{ id: 'aba', account: 'sokuntheacoffee@aba', on: true }, { id: 'acleda', account: 'sokuntheacoffee@aclb', on: true }],
+        shiftTemplates: [
+            { code: 'A', name: 'វេនព្រឹក', start: '06:00', end: '14:00' },
+            { code: 'B', name: 'វេនល្ងាច', start: '14:00', end: '21:00' }
+        ],
+        staffDefaults: {
+            'CAS-13': { template: 'A', dayOff: 1 },
+            'CAS-14': { template: 'A', dayOff: 4 },
+            'CAS-15': { template: 'B', dayOff: 2 },
+            'MGR-06': { template: '', dayOff: 0 }
+        },
+        discountLimits: { 'CAS-13': 5, 'CAS-14': 3, 'CAS-15': 3 },
+        quickKeys: ['1001', '1004', '1002', '1101', '1201', '1301'],
+        cfdMessages: [
+            { icon: 'fa-mug-hot', text: 'សូមស្វាគមន៍មកកាន់ កាហ្វេ សុគន្ធា', on: true },
+            { icon: 'fa-qrcode', text: 'ទូទាត់ងាយស្រួលដោយស្កេនបាគង', on: true },
+            { icon: 'fa-tag', text: 'ទិញ 10 កែវ ថែម 1 កែវ', on: true }
+        ]
     }
 };
 
@@ -804,14 +866,16 @@ function posSettings() {
         defaults.payBanks = defaults.payBanks.map(b => Object.assign(b, { account: '', on: false }));
         defaults.staffDefaults = {};
         defaults.discountLimits = {};
+        Object.assign(defaults, clone(SHOP_SETTINGS_SEED[ACTIVE_SHOP_ID] || {}));
     }
+    const base = IS_DEMO_SHOP ? POS_SETTINGS_DEFAULTS : (SHOP_SETTINGS_SEED[ACTIVE_SHOP_ID] || {});
     const s = Object.assign(defaults, (stored && stored.values) || {});
     if (!s.reasons) s.reasons = clone(POS_SETTINGS_DEFAULTS.reasons);
     if (!s.reasons.cover) s.reasons.cover = clone(POS_SETTINGS_DEFAULTS.reasons.cover);
     if (!s.shiftCodeSeq) s.shiftCodeSeq = 4;
     // ការកំណត់ដែលរក្សាទុកមុនពេលបន្ថែមបុគ្គលិកថ្មី៖ បុគ្គលិកដែលមិនទាន់មានក្នុងនោះប្រើតម្លៃលំនាំដើម
-    s.staffDefaults = Object.assign(IS_DEMO_SHOP ? clone(POS_SETTINGS_DEFAULTS.staffDefaults) : {}, s.staffDefaults || {});
-    s.discountLimits = Object.assign(IS_DEMO_SHOP ? clone(POS_SETTINGS_DEFAULTS.discountLimits) : {}, s.discountLimits || {});
+    s.staffDefaults = Object.assign(clone(base.staffDefaults || {}), s.staffDefaults || {});
+    s.discountLimits = Object.assign(clone(base.discountLimits || {}), s.discountLimits || {});
     // ធនាគារដែលបន្ថែមក្នុងបញ្ជីក្រោយពេលរក្សាទុក → បិទជាលំនាំដើម
     const banks = (s.payBanks || []).filter(b => PAY_BANKS[b.id]);
     Object.keys(PAY_BANKS).forEach(id => { if (!banks.some(b => b.id === id)) banks.push({ id, account: '', on: false }); });
@@ -861,8 +925,12 @@ function minutesOf(hhmm) {
     return (h || 0) * 60 + (m || 0);
 }
 
+/* វេនដែលសាខានេះប្រើ៖ វេនទូទាំងហាង ឬតែវេនក្នុង branch.shiftCodes (ឧ. សាខាបិទពេលយប់) */
 function shiftTemplates() {
-    return posSettings().shiftTemplates || [];
+    const all = posSettings().shiftTemplates || [];
+    const b = currentBranch();
+    const codes = b && b.shiftCodes;
+    return codes && codes.length ? all.filter(t => codes.includes(t.code)) : all;
 }
 
 /* គំរូវេនដែលគ្របដណ្តប់ពេលនេះ — គាំទ្រវេនយប់ដែលឆ្លងពាក់កណ្តាលអធ្រាត្រ */
@@ -1054,8 +1122,54 @@ const PRODUCT_WEIGHT = {
 const PRODUCTS_SEED_SKUS = PRODUCTS.map(p => ({ sku: p.sku, cat: p.category }));
 const CATALOG_KEY = 'pos_catalog';
 const PRODUCTS_KEY = 'pos_products';
+
+/* ហាងគំរូទីពីរ «កាហ្វេ សុគន្ធា»៖ ប្រភេទ និងមុខទំនិញផ្ទាល់ខ្លួន (ភេសជ្ជៈឆុង រាប់ជាកែវ) */
+const SHOP_CATALOG_SEED = {
+    'SHOP-02': {
+        categories: [
+            { id: 'coffee', label: 'កាហ្វេ', icon: 'fa-mug-hot' },
+            { id: 'tea', label: 'តែ និងភេសជ្ជៈ', icon: 'fa-leaf' },
+            { id: 'bakery', label: 'នំ', icon: 'fa-bread-slice' },
+            { id: 'bottle', label: 'ភេសជ្ជៈដប', icon: 'fa-bottle-water' }
+        ],
+        products: [
+            ['1001', 'កាហ្វេទឹកដោះគោទឹកកក', 'coffee', 1.75, 'កែវ', 300, 10, 'កាហ្វេដោះគោ', 0.55],
+            ['1002', 'កាហ្វេខ្មៅទឹកកក', 'coffee', 1.25, 'កែវ', 200, 6, 'កាហ្វេខ្មៅ', 0.35],
+            ['1003', 'អាមេរិកាណូ', 'coffee', 1.75, 'កែវ', 150, 4, 'អាមេរិកាណូ', 0.45],
+            ['1004', 'ឡាតេទឹកកក', 'coffee', 2.25, 'កែវ', 220, 7, 'ឡាតេ', 0.75],
+            ['1005', 'កាពូឈីណូក្តៅ', 'coffee', 2.25, 'កែវ', 100, 3, 'កាពូឈីណូ', 0.70],
+            ['1006', 'ម៉ូកាទឹកកក', 'coffee', 2.50, 'កែវ', 100, 3, 'ម៉ូកា', 0.85],
+            ['1007', 'ការ៉ាមែលម៉ាគីយ៉ាតូ', 'coffee', 2.75, 'កែវ', 80, 2, 'ការ៉ាមែល', 0.95],
+            ['1101', 'តែបៃតងទឹកដោះគោទឹកកក', 'tea', 2.00, 'កែវ', 160, 5, 'តែបៃតង', 0.65],
+            ['1102', 'តែក្រូចឆ្មាទឹកកក', 'tea', 1.50, 'កែវ', 100, 3, 'តែក្រូចឆ្មា', 0.40],
+            ['1103', 'សូកូឡាទឹកកក', 'tea', 2.25, 'កែវ', 100, 3, 'សូកូឡា', 0.75],
+            ['1104', 'តែទឹកដោះគោគុជ', 'tea', 2.25, 'កែវ', 130, 4, 'តែគុជ', 0.70],
+            ['1105', 'ទឹកក្រូចច្របាច់', 'tea', 2.00, 'កែវ', 60, 2, 'ទឹកក្រូច', 0.80],
+            ['1201', 'នំក្រូសង់', 'bakery', 1.50, 'ដុំ', 30, 4, 'ក្រូសង់', 0.70],
+            ['1202', 'នំបុ័ងសាច់ក្រក', 'bakery', 1.75, 'ដុំ', 20, 2.5, 'នំបុ័ង', 0.85],
+            ['1203', 'នំខេកសូកូឡា', 'bakery', 2.50, 'ចំណិត', 16, 1.5, 'នំខេក', 1.10],
+            ['1204', 'នំម៉ាហ្វីនប្លូបឺរី', 'bakery', 1.25, 'ដុំ', 18, 2, 'ម៉ាហ្វីន', 0.55],
+            ['1205', 'នំខូឃីសូកូឡា', 'bakery', 0.75, 'ដុំ', 40, 2, 'ខូឃី', 0.30],
+            ['1301', 'ទឹកសុទ្ធ 500 មីលីលីត្រ', 'bottle', 0.50, 'ដប', 96, 3, 'ទឹកសុទ្ធ', 0.25],
+            ['1302', 'ទឹកដូងស្រស់', 'bottle', 1.25, 'ផ្លែ', 24, 1, 'ទឹកដូង', 0.70]
+        ]
+    }
+};
+const SHOP_CATALOG = SHOP_CATALOG_SEED[ACTIVE_SHOP_ID] || null;
+// ថ្លៃដើមគំរូរបស់ហាងនេះ (admin-data.js បញ្ចូលទៅក្នុង COST_SEED)
+const SHOP_COST_SEED = {};
+if (SHOP_CATALOG) {
+    CATEGORIES.splice(1, CATEGORIES.length - 1, ...SHOP_CATALOG.categories);
+    SHOP_CATALOG.products.forEach(([sku, name, category, price, unit, opening, weight, short, cost]) => {
+        PRODUCT_WEIGHT[sku] = weight;
+        SHOP_COST_SEED[sku] = cost;
+    });
+}
+
 (function loadShopProducts() {
     if (!IS_DEMO_SHOP) PRODUCTS.length = 0;
+    if (SHOP_CATALOG) SHOP_CATALOG.products.forEach(([sku, name, category, price, unit, opening]) =>
+        PRODUCTS.push({ sku, barcode: sku, name, category, price, unit, opening }));
     (posRead(PRODUCTS_KEY, []) || []).forEach(p => PRODUCTS.push(Object.assign({}, p)));
 })();
 (function applyCatalogEdits() {
@@ -1113,7 +1227,9 @@ const PRODUCT_SHORT = {
     '8860011': 'ឆូកូប៉ៃ', '8860012': 'ហារីបូ', '8870008': 'សាប៊ូកក់', '8870009': 'ទឹកបោកខោអាវ', '8870010': 'ថង់សំរាម', '8880007': 'កន្ត្រៃ',
     '8880008': 'ហ្វឺត', '8880009': 'ម៉ាស៊ីនកិប', '8890007': 'ថ្មបម្រុង', '8890008': 'ព្រីភ្លើង', '8890009': 'ផ្ទុកទិន្នន័យ'
 };
-const CATEGORY_TILE = { drink: '#3f6f8f', snack: '#9a6a3a', household: '#4f7a68', stationery: '#5a6690', electronic: '#7a5f80' };
+const CATEGORY_TILE = { drink: '#3f6f8f', snack: '#9a6a3a', household: '#4f7a68', stationery: '#5a6690', electronic: '#7a5f80',
+    coffee: '#6b4f3a', tea: '#4f7a68', bakery: '#9a6a3a', bottle: '#3f6f8f' };
+if (SHOP_CATALOG) SHOP_CATALOG.products.forEach(x => { PRODUCT_SHORT[x[0]] = x[7]; });
 
 function productImageSrc(p) {
     const root = (document.body && document.body.dataset.roleRoot) || '.';
@@ -1875,6 +1991,35 @@ function receiveTransfer(id, received, note) {
     return t;
 }
 
+/* ការផ្ទេរគំរូរបស់ DIGITECHKH៖ សាខាកណ្តាល → ទួលគោក (ទទួលរួច ខ្វះ 2) · សាខាកណ្តាល → សែនសុខ (កំពុងដឹក)
+   ចលនាស្តុកសរសេរទៅសាខានីមួយៗផ្ទាល់ (ដូចការផ្ញើ និងការទទួលពិត) */
+function ensureDemoTransfers() {
+    if (!IS_DEMO_SHOP || posRead(TRANSFERS_KEY, null)) return;
+    const at = (days, h) => { const d = new Date(); d.setDate(d.getDate() - days); d.setHours(h, 15, 0, 0); return isoLocal(d); };
+    const list = [
+        { id: 'TR-SEED-01', from: 'BR-01', to: 'BR-02', status: 'received', note: 'ទំនិញលក់ដាច់សម្រាប់ចុងសប្តាហ៍',
+            lines: [{ sku: '8850001', qty: 48, received: 48 }, { sku: '8850005', qty: 24, received: 24 }, { sku: '8860005', qty: 30, received: 28 }],
+            sentBy: 'MGR-01', sentAt: at(2, 9), receivedBy: 'MGR-04', receivedAt: at(2, 14), receiveNote: 'កញ្ចប់មីបែក 2' },
+        { id: 'TR-SEED-02', from: 'BR-01', to: 'BR-03', status: 'sent', note: '',
+            lines: [{ sku: '8860002', qty: 12 }, { sku: '8860003', qty: 12 }, { sku: '8850002', qty: 12 }],
+            sentBy: 'MGR-02', sentAt: at(0, 8) }
+    ];
+    const write = (branchId, moves) => {
+        const key = storeKey(STOCK_KEYS.moves, branchId);
+        try {
+            const cur = JSON.parse(localStorage.getItem(key) || '[]');
+            localStorage.setItem(key, JSON.stringify(cur.concat(moves)));
+        } catch (e) { /* ការផ្ទុកត្រូវបានបិទ */ }
+    };
+    list.forEach(t => {
+        write(t.from, t.lines.map((l, i) => ({ id: `SM-${t.id}-O${i}`, type: 'transfer_out', sku: l.sku, qty: -l.qty, at: t.sentAt, by: t.sentBy,
+            ref: t.id, reason: `ផ្ទេរទៅ ${branchName(t.to)}`, note: t.note })));
+        if (t.status === 'received') write(t.to, t.lines.filter(l => l.received > 0).map((l, i) => ({ id: `SM-${t.id}-I${i}`, type: 'transfer_in', sku: l.sku,
+            qty: l.received, at: t.receivedAt, by: t.receivedBy, ref: t.id, reason: `ទទួលពី ${branchName(t.from)}`, note: t.receiveNote })));
+    });
+    posWrite(TRANSFERS_KEY, list);
+}
+
 function transferShort(t) {
     return t.status === 'received' ? t.lines.reduce((n, l) => n + (l.qty - (l.received || 0)), 0) : 0;
 }
@@ -1944,11 +2089,17 @@ function liveStockMoves() {
         .sort((a, b) => b.at.localeCompare(a.at));
 }
 
+/* ស្តុកបើក៖ សាខាដំបូង = p.opening · សាខាគំរូផ្សេងតាមទំហំ · សាខាថ្មីគ្មាន */
+function openingQty(p) {
+    if (ACTIVE_BRANCH_ID === 'BR-01') return p.opening || 0;
+    return IS_DEMO_DATA ? Math.round((p.opening || 0) * DEMO_SCALE) : 0;
+}
+
 /* ចំនួននៅក្នុងហាងបច្ចុប្បន្ន { sku: qty } — អាចអវិជ្ជមាន ពេលលក់លើសស្តុកក្នុងប្រព័ន្ធ */
 function onHandLevels() {
     const lv = {};
     // ស្តុកបើកមានតែសាខាដំបូង · សាខាថ្មីទទួលស្តុកតាមការនាំចូល ឬការរាប់ស្តុក
-    PRODUCTS.forEach(p => { lv[p.sku] = ACTIVE_BRANCH_ID === 'BR-01' ? p.opening || 0 : 0; });
+    PRODUCTS.forEach(p => { lv[p.sku] = openingQty(p); });
     liveStockMoves().forEach(m => { lv[m.sku] = (lv[m.sku] || 0) + m.qty; });
     return lv;
 }
@@ -1966,7 +2117,7 @@ function stockStatusOf(p, qty) {
 /* សាខាដែលមិនទាន់កត់ត្រាស្តុកសោះ (សាខាថ្មី)៖ មិនបង្ហាញ «អស់» លើគ្រប់ទំនិញទេ ព្រោះជាការរំខាន មិនមែនការពិត
    នៅពេលទទួលស្តុក ឬរាប់ស្តុកលើកដំបូង ស្ថានភាពស្តុកដំណើរការធម្មតា */
 function stockTracked() {
-    return ACTIVE_BRANCH_ID === 'BR-01' && PRODUCTS.some(p => p.opening > 0) || liveStockMoves().some(m => m.type !== 'sale');
+    return PRODUCTS.some(p => openingQty(p) > 0) || liveStockMoves().some(m => m.type !== 'sale');
 }
 
 function stockStatus(sku, levels) {
@@ -2533,7 +2684,7 @@ function hashStr(s) {
 }
 
 function rngFor(key) {
-    let a = hashStr(key);
+    let a = hashStr(key.startsWith('fx|') ? key : key + DEMO_SALT);
     return () => {
         a |= 0; a = a + 0x6D2B79F5 | 0;
         let t = Math.imul(a ^ a >>> 15, 1 | a);
@@ -2565,7 +2716,7 @@ function genSaleTimes(rng, fromMs, toMs, dayFactor) {
     const first = new Date(fromMs);
     first.setMinutes(0, 0, 0);
     for (let h = first.getTime(); h < toMs; h += 3600000) {
-        const n = Math.round(HOUR_WEIGHT[new Date(h).getHours()] * SALES_PER_HOUR * (dayFactor || 1) * (0.7 + rng() * 0.6));
+        const n = Math.round(HOUR_WEIGHT[new Date(h).getHours()] * SALES_PER_HOUR * (DEMO_SCALE || 1) * (dayFactor || 1) * (0.7 + rng() * 0.6));
         for (let k = 0; k < n; k++) {
             const t = h + rng() * 3600000;
             if (t > fromMs && t < toMs) times.push(t);
@@ -2616,7 +2767,13 @@ function genPay(rng, due, rate) {
    រួមទាំងការលក់តាមម៉ោងមមាញឹកចាប់ពីបើកវេនដល់ឥឡូវ។ បើមុនម៉ោងវេនដំបូង ឬគ្មាននរណាក្នុងវេន
    គ្មានវេនបើកទេ ហើយផ្ទាំងគិតលុយនាំទៅទំព័របើកវេន។ */
 
+/* អ្នកគ្រប់គ្រងសាខាសម្រាប់ទិន្នន័យគំរូ (អ្នកបើកប្រាក់បាតថត ទទួលស្តុក រាប់ស្តុក) */
+function demoManagerId() {
+    return (MANAGERS[0] || ADMINS[0] || { id: 'MGR-01' }).id;
+}
+
 function ensurePosSeed() {
+    ensureDemoTransfers();
     if (!IS_DEMO_DATA || posRead(POS_KEYS.seed, null)) return;
     const now = new Date();
     const tpl = templateAt(now) || lastStartedTemplate(now);
@@ -2627,7 +2784,7 @@ function ensurePosSeed() {
         const dateStr = templateDateFor(tpl, now);
         const rng = rngFor(`live|${dateStr}|${tpl.code}`);
         const openedAt = new Date(dateAt(dateStr, tpl.start).getTime() - (2 + Math.floor(rng() * 8)) * 60000);
-        const rate = POS_SETTINGS_DEFAULTS.fxRate;
+        const rate = Number(posSettings().fxRate) || POS_SETTINGS_DEFAULTS.fxRate;
         const shift = {
             id: `SHIFT-${dateStr.replace(/-/g, '')}-${lead.register.replace('-', '')}-${tpl.code}`,
             date: dateStr,
@@ -2643,7 +2800,7 @@ function ensurePosSeed() {
             floatKHR: 400000,
             floatIssuedUSD: 200,
             floatIssuedKHR: 400000,
-            floatApprovedBy: 'MGR-01',
+            floatApprovedBy: demoManagerId(),
             status: 'open'
         };
         // ការលក់ឈប់ត្រឹមម៉ោងបិទវេន ទោះហួសម៉ោងក៏ដោយ
@@ -2675,7 +2832,7 @@ function ensurePosSeed() {
         posWrite(POS_KEYS.sales, sales);
         posWrite(POS_KEYS.movements, [{
             id: 'MV-SEED-FLOAT', type: 'float', register: lead.register, shiftId: shift.id,
-            usd: 200, khr: 400000, reason: '', ref: '', createdBy: 'MGR-01', createdAt: shift.openedAt,
+            usd: 200, khr: 400000, reason: '', ref: '', createdBy: demoManagerId(), createdAt: shift.openedAt,
             status: 'confirmed', confirmedBy: lead.cashierId, confirmedAt: shift.openedAt
         }]);
     }

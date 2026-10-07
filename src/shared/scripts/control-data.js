@@ -68,7 +68,7 @@ function ctlSeedCompanies() {
         return {
             id, nameKh: sh.nameKh, city: 'ភ្នំពេញ', branch: sh.branch, ownerName: owner.name, ownerPhone: owner.phone, ownerEmail: owner.email,
             plan: sub.plan, cycle: sub.cycle, trial: sub.trial, suspended: !!sub.suspended, suspendReason: sub.suspendReason || '',
-            endsOn: sub.endsOn, createdAt: addDaysIso(id === 'SHOP-01' ? -210 : -9), usage: null, demo: true
+            endsOn: sub.endsOn, createdAt: addDaysIso(id === 'SHOP-01' ? -210 : -150), usage: null, demo: true
         };
     };
     return [
