@@ -271,12 +271,12 @@ const MERCHANT = {
 
 /* ===== ហាងច្រើនក្នុងប្រព័ន្ធតែមួយ (លក់ឱ្យហាងច្រើន) =====
    ប្រព័ន្ធពិត៖ pos_control រក្សាមនុស្ស (គណនីមួយក្នុងម្នាក់ · អ៊ីមែល និងលេខទូរស័ព្ទមិនជាន់គ្នាទូទាំងប្រព័ន្ធ)
-   និងសមាជិកភាព (មនុស្ស → ហាង → តួនាទី)។ ម្នាក់ធ្វើការច្រើនហាង = គណនីតែមួយ ហើយជ្រើសហាងក្រោយចូល។
+   ដែលនីមួយៗជារបស់ហាងតែមួយ។ ម្ចាស់មានទីតាំងច្រើន = សាខាក្នុងហាងតែមួយ មិនមែនហាងទីពីរ។
    គំរូនេះមានទិន្នន័យតែមួយឈុត៖ ហាងទីពីរប្រើវេន ការលក់ និងស្តុកដូចហាងទីមួយ (ខុសតែឈ្មោះ និងសាខា)
    MERCHANT ប្តូរទៅជាហាងដែលកំពុងប្រើ (មើល CURRENT_SHOP_ID ខាងក្រោម) */
 const SHOPS = [
     Object.assign({ id: 'SHOP-01' }, MERCHANT),
-    { id: 'SHOP-02', nameKh: 'កាហ្វេ ចាន់ថា', name: 'CHANTHA COFFEE', branch: 'សាខាទួលគោក ភ្នំពេញ', tin: 'K001-907654321', phone: '023 777 666', account: 'chanthacoffee@aclb', city: 'PHNOM PENH' }
+    { id: 'SHOP-02', nameKh: 'កាហ្វេ សុគន្ធា', name: 'SOKUNTHEA COFFEE', branch: 'សាខាទួលគោក ភ្នំពេញ', tin: 'K001-907654321', phone: '023 777 666', account: 'sokuntheacoffee@aclb', city: 'PHNOM PENH' }
 ];
 
 /* ហាងដែលអ្នកគ្រប់គ្រងប្រព័ន្ធបង្កើត (control-data.js ctlCreateCompany → pos_shops) */
@@ -489,7 +489,9 @@ const STAFF_SEED = [
     { id: 'MGR-01', name: 'សុខ វណ្ណា', initials: 'សវ', pin: '246810', phone: '077 222 333', email: 'vanna@digitechkh.com', password: 'vanna2026', role: 'manager' },
     { id: 'MGR-02', name: 'ម៉ៅ ស្រីនាង', initials: 'មស', pin: '135791', phone: '089 444 555', email: 'sreynang@digitechkh.com', password: 'sreynang2026', role: 'manager' },
     { id: 'MGR-03', name: 'នួន សុខលី', initials: 'នស', pin: '864201', phone: '011 606 275', email: 'sokly@digitechkh.com', password: 'sokly2026', role: 'manager' },
-    { id: 'ADM-01', name: 'ហេង ចាន់ថា', initials: 'ហច', pin: '999999', phone: '012 999 000', email: 'chantha@digitechkh.com', password: 'chantha2026', role: 'admin' }
+    { id: 'ADM-01', name: 'ហេង ចាន់ថា', initials: 'ហច', pin: '999999', phone: '012 999 000', email: 'chantha@digitechkh.com', password: 'chantha2026', role: 'admin' },
+    // ម្ចាស់ហាងទីពីរ (ហាងថ្មីសាកល្បង) · ម្ចាស់ម្នាក់ = ហាងមួយ · ទីតាំងច្រើន = សាខា
+    { id: 'ADM-02', name: 'លឹម សុគន្ធា', initials: 'លស', pin: '777777', phone: '012 888 111', email: 'sokunthea@gmail.com', password: 'sokunthea2026', role: 'admin', shopId: 'SHOP-02' }
 ];
 const STAFF_KEY = 'pos_staff';
 
@@ -507,12 +509,9 @@ function staffStore() {
     return posRead(STAFF_KEY, { added: [], changes: {} });
 }
 
-/* សមាជិកភាពបន្ថែម៖ ម្ចាស់ហាងគំរូក៏ជាម្ចាស់ SHOP-02 ដែរ (ម្ចាស់អាជីវកម្មពីរ = គណនីតែមួយ) */
-const EXTRA_MEMBERSHIPS = [{ personId: 'ADM-01', shopId: 'SHOP-02', role: 'admin' }];
-
-/* ហាងរបស់មនុស្សម្នាក់៖ p.shopId (បុគ្គលិកដែលបន្ថែមក្នុងហាងណា · គំរូ = SHOP-01) + សមាជិកភាពបន្ថែម */
+/* ហាងរបស់មនុស្សម្នាក់៖ គណនីមួយ = ហាងមួយ (p.shopId · គំរូ = SHOP-01) · ហាងមានទីតាំងច្រើន = សាខា មិនមែនហាងទីពីរ */
 function personShopIds(p) {
-    return [p.shopId || 'SHOP-01'].concat(EXTRA_MEMBERSHIPS.filter(m => m.personId === p.id).map(m => m.shopId));
+    return [p.shopId || 'SHOP-01'];
 }
 
 /* បញ្ជីមនុស្សទាំងអស់ក្នុងប្រព័ន្ធ (ចូលប្រើ · លេខទូរស័ព្ទ និងអ៊ីមែលមិនជាន់គ្នា) */
@@ -601,11 +600,11 @@ function personName(id) {
     return p ? p.name : '—';
 }
 
-/* សមាជិកភាព៖ ហាងដែលបុគ្គលិកត្រូវបានបន្ថែម + សមាជិកភាពបន្ថែម (ម្នាក់ធ្វើការច្រើនហាង = គណនីតែមួយ) */
+/* សមាជិកភាព៖ ហាងតែមួយដែលគណនីនេះជាកម្មសិទ្ធិ ឬធ្វើការ */
 function membershipsOf(personId) {
     const p = personById(personId);
     if (!p || !p.active || isControlId(personId)) return [];
-    return [{ personId, shopId: p.shopId || 'SHOP-01', role: p.role }].concat(EXTRA_MEMBERSHIPS.filter(m => m.personId === personId));
+    return [{ personId, shopId: p.shopId || 'SHOP-01', role: p.role }];
 }
 
 function isMemberOf(personId, shopId) {

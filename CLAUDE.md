@@ -25,8 +25,10 @@ Deploy: Vercel only; `vercel.json` publishes `src/` as the site root. Never move
 Verification is visual: open the page in a browser, or drive headless Chrome over the DevTools protocol. Serve over
 HTTP; `file://` storage is unreliable.
 
-Many shops (SaaS, decided 2026-10-07): one account per person, linked to shops by membership (`SHOPS`,
-`membershipsOf()`, `personShopIds()`, `EXTRA_MEMBERSHIPS` in `data.js`; the owner also owns a second shop «កាហ្វេ ចាន់ថា»).
+Many shops (SaaS, decided 2026-10-07): one account per person, and **one shop per account** (decided 2026-10-07: an
+owner with several locations uses branches, not a second shop). `SHOPS`, `membershipsOf()` and `personShopIds()` in
+`data.js` return the person's single shop (`p.shopId`, default SHOP-01). The second demo shop «កាហ្វេ សុគន្ធា»
+(SHOP-02) has its own owner ADM-02 (012 888 111 · sokunthea@gmail.com · sokunthea2026 · PIN 777777).
 DIGITECHKH (SHOP-01) is the only demo shop with generated data. Every other shop has its own storage: `posRead`/`posWrite`
 add `@SHOP-NN` to shop keys (`storeKey`, `ACTIVE_SHOP_ID`, `IS_DEMO_SHOP`); `GLOBAL_KEYS` (session, devices, people,
 PINs, passwords, shop profiles/setup, `pos_shops`) and `pos_ctl_*` stay shared. A new shop starts empty: no products
@@ -60,8 +62,8 @@ applies; closing an open order needs a reason. `onOrderBySku()` (still to arrive
 reorder column («បានបញ្ជាទិញ N · មកដល់» instead of a new suggestion; otherwise «ទិញ N» links to
 `create-order.html?sku=…&supplier=…`), and stock-in shows a banner to receive against the supplier's open order. Late orders: badge `lateOrderCount` and a manager notification. Demo history (`IS_DEMO_DATA`) exists only in the demo shop's first branch; new
 branches start empty with zero stock. A shop without a
-manager lets its owner approve at the till (`showManagerOverride`). A password login with more than one membership shows «ជ្រើសហាង»; the account menu offers
-«ប្តូរហាង» (`index.html?pick=1`). The session carries `shopId`; `CURRENT_SHOP_ID` copies that shop into `MERCHANT`.
+manager lets its owner approve at the till (`showManagerOverride`). There is no shop picker or «ប្តូរហាង»: a login opens the
+person's only shop. The session carries `shopId`; `CURRENT_SHOP_ID` copies that shop into `MERCHANT`.
 Till devices: the owner registers a computer as a register in settings → «ឧបករណ៍បញ្ជរ» (`registerThisDevice()`,
 `pos_devices` + `pos_device`); only a registered device offers PIN login (opens on the PIN pad, PIN searched within its
 shop via `verifyPinLogin()`); other devices use email/phone + password. The demo seeds this browser as POS-01; the demo

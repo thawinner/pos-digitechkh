@@ -64,7 +64,7 @@ function ctlSeedCompanies() {
     const demo = id => {
         const sub = shopSubscription(id);
         const sh = shopById(id);
-        const owner = ADMINS[0] || {};
+        const owner = loadAllPeople().find(p => p.role === 'admin' && (p.shopId || 'SHOP-01') === id) || {};
         return {
             id, nameKh: sh.nameKh, city: 'ភ្នំពេញ', branch: sh.branch, ownerName: owner.name, ownerPhone: owner.phone, ownerEmail: owner.email,
             plan: sub.plan, cycle: sub.cycle, trial: sub.trial, suspended: !!sub.suspended, suspendReason: sub.suspendReason || '',

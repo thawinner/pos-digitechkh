@@ -335,8 +335,6 @@ function renderPortalSidebarV2(host, cfg, roleRoot, activeId, sharedRoot) {
                 ${(cfg.views || []).filter(v => !v.current).map(v => menuItem(v.icon, `ប្តូរទៅ${v.label}`, `onclick="location.href='${roleRoot}/${v.href}'"`)).join('')}
                 ${typeof SESSION !== 'undefined' && SESSION && !SESSION.control && typeof shopBranches === 'function' && shopBranches().length > 1 && roleOf(SESSION.userId) === 'admin'
                     ? menuItem('mdi:source-branch', `ប្តូរសាខា · ${escapeText(MERCHANT.branch)}`, `onclick="location.href='${roleRoot}/index.html?branch=1'"`) : ''}
-                ${typeof SESSION !== 'undefined' && SESSION && typeof membershipsOf === 'function' && membershipsOf(SESSION.userId).length > 1
-                    ? menuItem('mdi:store-cog-outline', 'ប្តូរហាង', `onclick="location.href='${roleRoot}/index.html?pick=1'"`) : ''}
                 ${portalId !== 'controlPortal' ? menuItem('mdi:lifebuoy', 'ជំនួយ និងទំនាក់ទំនង', 'onclick="closeSidebarMenus(); showSupportInfo()"') : ''}
                 ${menuItem('mdi:theme-light-dark', 'ទម្រង់ភ្លឺ ឬងងឹត', 'onclick="toggleDarkMode(); closeSidebarMenus()"')}
                 ${menuItem('mdi:shield-check-outline', 'គោលការណ៍សិទ្ធិ', "onclick=\"document.getElementById('sbPolicyBody').classList.toggle('hidden')\"")}

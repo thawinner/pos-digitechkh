@@ -202,9 +202,9 @@
                         ចូលប្រើ <i class="fas fa-arrow-right text-[13px]"></i>
                     </button>
                 </div>
-                <!-- ជ្រើសហាង៖ បង្ហាញតែពេលគណនីជាសមាជិកច្រើនហាង -->
+                <!-- ជ្រើសសាខា៖ ម្ចាស់ហាងប្តូរសាខា (index.html?branch=1) -->
                 <div id="shopMode" class="invisible w-full" style="grid-area:1/1" inert>
-                    <h2 class="text-[24px] leading-tight font-semibold text-slate-900">ជ្រើសហាង</h2>
+                    <h2 class="text-[24px] leading-tight font-semibold text-slate-900">ជ្រើសសាខា</h2>
                     <span id="shopHello" class="block sm-td text-slate-500 mt-2"></span>
                     <div id="shopList" class="mt-6 space-y-2.5"></div>
                     <button type="button" id="shopBack" onclick="cancelShopPick()" class="mt-5 inline-flex items-center gap-2 h-9 sm-td-sub font-semibold text-slate-500 hover:text-slate-800">
@@ -245,7 +245,7 @@
     <script src="shared/scripts/portal.js"></script>
     <script>
         /* ទំព័រចូលប្រើ៖ អ៊ីមែល ឬលេខទូរស័ព្ទ + ពាក្យសម្ងាត់ (verifyLogin ក្នុង data.js)
-           គណនីធ្វើការច្រើនហាង → ជ្រើសហាង (ចងចាំហាងចុងក្រោយ pos_last_shop)
+           គណនីមួយ = ហាងមួយ · ម្ចាស់ហាងដែលមានសាខាច្រើនជ្រើសសាខាពីម៉ឺនុយគណនី (index.html?branch=1)
            កុំព្យូទ័របញ្ជរដែលបានចុះឈ្មោះ (thisDevice) → ផ្ទាំង PIN មុន · ឧបករណ៍ផ្សេងគ្មាន PIN
            សារខុសមិនប្រាប់ថាខុសត្រង់ណា · ខុស 5 ដង → ចាក់សោ 1 នាទី (pos_login_guard)
            ចងចាំអ៊ីមែល ឬលេខទូរស័ព្ទចុងក្រោយលើឧបករណ៍នេះ (pos_last_login) ដើម្បីវាយតែពាក្យសម្ងាត់
@@ -464,13 +464,11 @@
             pin = '';
             setTimeout(() => renderPinPad(document.getElementById('pinMsg').textContent ? document.getElementById('pinMsg').innerHTML : ''), 500);
         }
-        /* ===== ជ្រើសហាង (គណនីមួយ ធ្វើការច្រើនហាង) ===== */
-        let pickFor = null, pickIsSwitch = false;
+        let pickFor = null;
         function afterPassword(p) {
-            const ms = membershipsOf(p.id);
-            if (ms.length > 1) { showShopPicker(p, false); return false; }
-            if (shopBlocked(ms[0].shopId)) { setBusy(false); showMsg(blockedMsg(ms[0]), 'warn'); return false; }
-            return finishLogin(p, ms[0].shopId, 'password');
+            const m = membershipsOf(p.id)[0];
+            if (shopBlocked(m.shopId)) { setBusy(false); showMsg(blockedMsg(m), 'warn'); return false; }
+            return finishLogin(p, m.shopId, 'password');
         }
         /* ហាងផ្អាក ឬការជាវផុតកំណត់៖ ម្ចាស់ហាងទាក់ទង DIGITECHKH · បុគ្គលិកទាក់ទងម្ចាស់ហាង */
         function blockedMsg(m) {
@@ -478,34 +476,6 @@
             const st = subscriptionStatus(shopSubscription(m.shopId));
             const what = st === 'suspended' ? 'ត្រូវបានផ្អាក' : 'ការជាវបានផុតកំណត់';
             return `<i class="fas fa-store-slash mr-1.5"></i>${escapeText(sh.nameKh)} ${what} · ${m.role === 'admin' ? 'សូមទាក់ទង DIGITECHKH ដើម្បីបន្តការជាវ' : 'សូមទាក់ទងម្ចាស់ហាង'}`;
-        }
-        function showShopPicker(p, isSwitch) {
-            pickFor = p; pickIsSwitch = isSwitch;
-            const ms = membershipsOf(p.id);
-            const last = (posRead('pos_last_shop', {}) || {})[p.id];
-            const ordered = ms.slice().sort((a, b) => shopBlocked(a.shopId) - shopBlocked(b.shopId) || (b.shopId === last) - (a.shopId === last));
-            document.getElementById('shopHello').textContent = `${p.name} · អ្នកធ្វើការនៅ ${ms.length} ហាង`;
-            document.getElementById('shopBackText').textContent = isSwitch ? 'បោះបង់' : 'ចូលដោយគណនីផ្សេង';
-            document.getElementById('shopList').innerHTML = ordered.map((m, i) => {
-                const sh = shopById(m.shopId);
-                const blocked = shopBlocked(m.shopId);
-                const st = subscriptionStatus(shopSubscription(m.shopId));
-                return `<button type="button" onclick="pickShop('${m.shopId}')" data-shop="${m.shopId}" ${blocked ? 'disabled' : ''}
-                    class="w-full text-left px-4 py-3 rounded-lg border border-slate-200 bg-white transition-colors flex items-center gap-3 ${blocked ? 'opacity-60 cursor-not-allowed' : 'hover:border-slate-400'}">
-                    <img src="${shopLogoSrc(sh, '.')}" alt="" class="w-10 h-10 object-contain flex-shrink-0 rounded-lg">
-                    <span class="flex-1 min-w-0">
-                        <span class="block sm-td font-semibold text-slate-900 truncate">${escapeText(sh.nameKh)}</span>
-                        <span class="block sm-td-sub text-slate-500 truncate">${escapeText(sh.branch)} · ${ROLE_NAME[m.role]}</span>
-                    </span>
-                    ${blocked ? `<span class="sm-td-sub font-semibold text-rose-600 flex-shrink-0">${st === 'suspended' ? 'បានផ្អាក' : 'ផុតកំណត់'}</span>`
-                        : m.shopId === last ? '<span class="sm-td-sub text-slate-500 flex-shrink-0">ប្រើចុងក្រោយ</span>' : ''}
-                    <span class="kbd flex-shrink-0">${i + 1}</span>
-                </button>`;
-            }).join('');
-            ['emailMode', 'pinMode'].forEach(id => { const el = document.getElementById(id); el.classList.add('invisible'); el.inert = true; });
-            const sm = document.getElementById('shopMode');
-            sm.classList.remove('invisible', 'fade-up'); sm.inert = false; void sm.offsetWidth; sm.classList.add('fade-up');
-            setTimeout(() => { const b = sm.querySelector('[data-shop]:not([disabled])'); if (b) b.focus(); }, 50);
         }
         /* ម្ចាស់ហាងប្តូរសាខា (index.html?branch=1)៖ សាខានៃហាងក្នុងវគ្គចូលប្រើ · ការលក់ថ្ងៃនេះតាមសាខា */
         function showBranchPicker() {
@@ -529,7 +499,7 @@
                     <span class="kbd flex-shrink-0">${i + 1}</span>
                 </button>`;
             }).join('');
-            pickFor = p; pickIsSwitch = true;
+            pickFor = p;
             ['emailMode', 'pinMode'].forEach(id => { const el = document.getElementById(id); el.classList.add('invisible'); el.inert = true; });
             const sm = document.getElementById('shopMode');
             sm.classList.remove('invisible'); sm.inert = false;
@@ -539,23 +509,8 @@
             location.href = ROLE_HOME[roleOf(SESSION.userId)];
         }
 
-        function pickShop(shopId) {
-            if (!pickFor) return;
-            if (pickIsSwitch && SESSION) {
-                posLogin(pickFor.id, shopId, SESSION.via);
-                location.href = ROLE_HOME[roleOf(pickFor.id)];
-                return;
-            }
-            finishLogin(pickFor, shopId, 'password');
-        }
         function cancelShopPick() {
-            if (pickIsSwitch) { location.href = ROLE_HOME[roleOf(pickFor.id)]; return; }
-            pickFor = null;
-            const sm = document.getElementById('shopMode');
-            sm.classList.add('invisible'); sm.inert = true;
-            const em = document.getElementById('emailMode');
-            em.classList.remove('invisible'); em.inert = false;
-            clearIdent();
+            location.href = ROLE_HOME[roleOf(pickFor.id)];
         }
 
         document.addEventListener('keydown', e => {
@@ -577,7 +532,6 @@
             posLogin(who.id, shopId, via);
             const sm = document.getElementById('shopMode');
             sm.classList.add('invisible'); sm.inert = true;
-            const shopNote = membershipsOf(who.id).length > 1 ? ` · ${escapeText(shopById(shopId).nameKh)}` : '';
             const next = new URLSearchParams(location.search).get('next');
             const role = roleOf(who.id);
             const area = next && (next.match(/^(cashier|manager|admin)\/[a-z-]+\/[a-z-]+\.html$/) || [])[1];
@@ -593,7 +547,7 @@
             form.insertAdjacentHTML('beforeend', `<div class="pt-10 pb-6 flex flex-col items-center text-center fade-up">
                 ${avatarHtml(who.id, 'w-20 h-20 ring-1 ring-slate-200')}
                 <span class="block mt-4 text-[22px] leading-tight font-semibold text-slate-900">សូមស្វាគមន៍ ${who.name}</span>
-                <span class="block sm-td-sub text-slate-500 mt-1">${ROLE_NAME[role]}${shopNote} · កំពុងបើក${destinationOf(who)}…</span></div>`);
+                <span class="block sm-td-sub text-slate-500 mt-1">${ROLE_NAME[role]} · កំពុងបើក${destinationOf(who)}…</span></div>`);
             setTimeout(() => { location.href = allowed ? next : ROLE_HOME[role]; }, 650);
             return false;
         }
@@ -696,7 +650,7 @@
                 return head + `<button type="button" onclick="fillDemo('${p.id}')" class="w-full text-left py-2 px-1 flex items-center gap-2.5 hover:bg-slate-50 rounded transition-colors">
                     ${avatarHtml(p.id, 'w-7 h-7')}
                     <span class="flex-1 min-w-0"><span class="block sm-td-sub font-semibold text-slate-800 truncate">${p.name}</span>
-                    <span class="block sm-td-sub text-slate-500 truncate">${p.phone}${p.email ? ` · ${p.email}` : ''}${membershipsOf(p.id).length > 1 ? ` · ${membershipsOf(p.id).length} ហាង` : ''}</span></span>
+                    <span class="block sm-td-sub text-slate-500 truncate">${p.phone}${p.email ? ` · ${p.email}` : ''}</span></span>
                     <span class="text-right flex-shrink-0">
                         <span class="block sm-figure sm-td-sub text-slate-900 font-semibold">${effectivePassword(p.id)}</span>
                         <span class="block sm-figure sm-td-sub text-slate-500">${isControlId(p.id) ? 'DIGITECHKH' : `PIN ${effectivePin(p.id)}`}</span>
@@ -709,10 +663,9 @@
             renderPinPad();   // គូរផ្ទាំង PIN ជាមុន ដើម្បីឱ្យកម្ពស់បណ្ណថេរ
             document.getElementById('footYear').textContent = new Date().getFullYear();
             renderLock();
-            // ប្តូរហាងពីរបារចំហៀង (index.html?pick=1) · បញ្ជរដែលបានចុះឈ្មោះបើកផ្ទាំង PIN មុន · ឧបករណ៍ផ្សេងបើកទម្រង់ពាក្យសម្ងាត់
+            // ប្តូរសាខា (index.html?branch=1) · បញ្ជរដែលបានចុះឈ្មោះបើកផ្ទាំង PIN មុន · ឧបករណ៍ផ្សេងបើកទម្រង់ពាក្យសម្ងាត់
             const params = new URLSearchParams(location.search);
             if (params.get('branch') && SESSION && !SESSION.control && shopBranches().length > 1) showBranchPicker();
-            else if (params.get('pick') && SESSION && membershipsOf(SESSION.userId).length > 1) showShopPicker(personById(SESSION.userId), true);
             else if (DEVICE && !params.get('next')) showPinMode(true);
             else setTimeout(() => document.getElementById(last ? 'pass' : 'ident').focus({ preventScroll: true }), 1300);
         });
