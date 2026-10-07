@@ -93,10 +93,9 @@ removing or changing the till logs its cashier out. The demo seeds this browser 
 page switches it between every till of both shops or «កុំព្យូទ័រផ្ទាល់ខ្លួន» and greys out accounts that cannot log in there.
 
 Super Admin (DIGITECHKH's own console, `control/*`, body `controlPortal`): demo login admin@digitechkh.com · control2026
-(`CONTROL_ACCOUNTS` in `data.js`, no shop membership, can open only `control/*`). It has its own login page
-`control/login/login.html` (`verifyControlLogin`, 5 wrong tries lock it for 5 minutes, `pos_ctl_login_guard`); the POS
-login treats Super Admin credentials as wrong, `guardPage` sends `control/*` without a control session there, and the
-console's logout returns there. Pages: dashboard, companies (+ view,
+(`CONTROL_ACCOUNTS` in `data.js`, no shop membership, can open only `control/*`). It logs in on the normal login page,
+but only on a computer that is not a till (`verifyLogin(ident, pass, device)`): on a shop's till page its credentials
+count as a wrong password. `guardPage` sends `control/*` without a session to `index.html?next=…`. Pages: dashboard, companies (+ view,
 create), billing, plans, audit. Data in `control-data.js` (`pos_ctl_*`): plans with limits, subscribing shops, payments,
 support sessions, its own log. It never shows a shop's sales, costs or staff, only usage counts. Subscription status
 (`subscriptionStatus()` in `data.js`: active · trial · expiring · overdue (7-day grace) · expired · suspended) is mirrored to
@@ -145,7 +144,7 @@ src/
 ├── cashier/shift/{open,close}-shift  float count + manager PIN · blind close with one recount + Z-report
 ├── manager/{dashboard,approvals,shifts,roster,cash,stock,stock-count,stock-history,stock-transfer,purchase,suppliers,exceptions,reports,settings}/…  (view-request, view-shift, create-movement, create-stock-in, create-adjustment, create-count, view-count)
 ├── admin/{setup,dashboard,reports,branches,staff,products,settings,subscription,audit,stock}/…   owner: first-login setup wizard, getting-started checklist, branches, profit, stock value, shrinkage, stock-in cost, staff, prices, rules, audit log (view-stock-in, view-staff, create-product, create/edit-branch)
-├── control/{login,dashboard,companies,billing,plans,audit}/…   Super Admin (DIGITECHKH): own login, subscribing shops, payments, plans (view-company, create-company, create-payment, edit-plan)
+├── control/{dashboard,companies,billing,plans,audit}/…   Super Admin (DIGITECHKH): subscribing shops, payments, plans (view-company, create-company, create-payment, edit-plan)
 └── shared/{scripts,styles,assets}  assets/avatars/<personId>.svg = profile images
 ```
 

@@ -365,8 +365,12 @@
             if (bad) { document.querySelector('.field.is-error').focus(); return false; }
 
             setBusy(true);
-            const res = verifyLogin(ident, pass);
-            if (!res.person) setTimeout(() => setBusy(false), 0);
+            const res = verifyLogin(ident, pass, DEVICE);
+            if (!res.person && !res.control) setTimeout(() => setBusy(false), 0);
+            if (res.control) {
+                posWrite(GUARD_KEY, { fails: 0, lockedUntil: 0 });
+                return finishControl(res.control);
+            }
             if (res.person) {
                 posWrite(GUARD_KEY, { fails: 0, lockedUntil: 0 });
                 // ទំព័រចូលនេះជារបស់ហាង (បញ្ជរ) ឬអ្នកគិតលុយនៅក្រៅបញ្ជរ → មិនអនុញ្ញាត
@@ -598,6 +602,22 @@
             return false;
         }
 
+        /* អ្នកគ្រប់គ្រងប្រព័ន្ធ (DIGITECHKH)៖ គ្មានហាង · ចូលតែលើកុំព្យូទ័រមិនមែនបញ្ជរ · ទៅច្រក control/* */
+        function finishControl(who) {
+            posLoginControl(who.id);
+            const next = new URLSearchParams(location.search).get('next');
+            const ok = next && /^control\/[a-z-]+\/[a-z-]+\.html$/.test(next);
+            const form = document.getElementById('loginForm');
+            [...form.children].forEach(el => el.remove());
+            document.getElementById('altLogin').classList.add('hidden');
+            form.insertAdjacentHTML('beforeend', `<div class="pt-10 pb-6 flex flex-col items-center text-center fade-up">
+                ${avatarHtml(who.id, 'w-20 h-20 ring-1 ring-slate-200')}
+                <span class="block mt-4 text-[22px] leading-tight font-semibold text-slate-900">សូមស្វាគមន៍ ${who.name}</span>
+                <span class="block sm-td-sub text-slate-500 mt-1">អ្នកគ្រប់គ្រងប្រព័ន្ធ · កំពុងបើកបញ្ជីហាង…</span></div>`);
+            setTimeout(() => { location.href = ok ? next : 'control/dashboard/dashboard.html'; }, 650);
+            return false;
+        }
+
         /* ===== គណនីគំរូ ===== */
 
         function toggleDemo() {
@@ -711,7 +731,7 @@
                 .sort((a, b) => SHOPS.findIndex(s => s.id === (a.shopId || 'SHOP-01')) - SHOPS.findIndex(s => s.id === (b.shopId || 'SHOP-01'))
                     || branchOf(a).localeCompare(branchOf(b)) || ROLE_ORDER[a.role] - ROLE_ORDER[b.role] || a.id.localeCompare(b.id));
             let lastGroup = null;
-            document.getElementById('demoAccounts').innerHTML = people.map(p => {
+            document.getElementById('demoAccounts').innerHTML = people.concat(CONTROL_ACCOUNTS).map(p => {
                 const shopId = isControlId(p.id) ? 'CONTROL' : (p.shopId || 'SHOP-01');
                 const group = shopId === 'CONTROL' ? shopId : `${shopId}|${branchOf(p)}`;
                 const branches = shopId === 'CONTROL' ? [] : shopBranches(shopId);
@@ -719,8 +739,8 @@
                 const head = group !== lastGroup ? `<p class="pt-3 pb-1 px-1 sm-td-sub font-semibold text-slate-500">${shopId === 'CONTROL' ? 'អ្នកគ្រប់គ្រងប្រព័ន្ធ (DIGITECHKH)' : escapeText((shopById(shopId) || {}).nameKh || shopId) + br}</p>` : '';
                 lastGroup = group;
                 // គំរូ៖ បង្ហាញថាគណនីណាចូលមិនបាននៅទំព័រនេះ (ហាងផ្សេង សាខាផ្សេង ឬអ្នកគិតលុយក្រៅបញ្ជរ)
-                const why = loginBlockReason(p, DEVICE) || (tillBusyFor(p, DEVICE) ? 'busy' : '');
-                const whyText = { shop: 'ហាងផ្សេង · ចូលមិនបាននៅទីនេះ', branch: 'សាខាផ្សេង · ចូលមិនបាននៅបញ្ជរនេះ', till: 'ត្រូវចូលនៅបញ្ជរ', busy: 'បញ្ជរនេះកំពុងប្រើ · ប្រើបញ្ជរទំនេរ' }[why];
+                const why = isControlId(p.id) ? (DEVICE ? 'control' : '') : loginBlockReason(p, DEVICE) || (tillBusyFor(p, DEVICE) ? 'busy' : '');
+                const whyText = { shop: 'ហាងផ្សេង · ចូលមិនបាននៅទីនេះ', branch: 'សាខាផ្សេង · ចូលមិនបាននៅបញ្ជរនេះ', till: 'ត្រូវចូលនៅបញ្ជរ', busy: 'បញ្ជរនេះកំពុងប្រើ · ប្រើបញ្ជរទំនេរ', control: 'ចូលតែលើកុំព្យូទ័រមិនមែនបញ្ជរ' }[why];
                 return head + `<button type="button" onclick="fillDemo('${p.id}')" class="w-full text-left py-2 px-1 flex items-center gap-2.5 hover:bg-slate-50 rounded transition-colors ${why ? 'opacity-60' : ''}">
                     ${avatarHtml(p.id, 'w-7 h-7')}
                     <span class="flex-1 min-w-0"><span class="block sm-td-sub font-semibold text-slate-800 truncate">${p.name}</span>
@@ -730,8 +750,7 @@
                         <span class="block sm-figure sm-td-sub text-slate-500">${isControlId(p.id) ? 'DIGITECHKH' : `PIN ${effectivePin(p.id)}`}</span>
                     </span>
                 </button>`;
-            }).join('') + `<a href="control/login/login.html" class="mt-2 py-2.5 px-1 flex items-center gap-2.5 sm-td-sub font-semibold text-blue-700 hover:underline">
-                    <i class="fas fa-shield-halved w-7 text-center text-slate-400"></i>ច្រកអ្នកគ្រប់គ្រងប្រព័ន្ធ DIGITECHKH · ទំព័រចូលដាច់ដោយឡែក</a>`;
+            }).join('');
             const last = (() => { try { return localStorage.getItem('pos_last_login') || ''; } catch (err) { return ''; } })();
             document.getElementById('ident').value = last;
             syncClear();
@@ -743,7 +762,8 @@
             if (params.get('branch') && SESSION && shopBranches().length > 1) showBranchPicker();
             // បញ្ជរ៖ PIN ជានិច្ច (ទោះមកពីវគ្គផុតកំណត់ ?next=… ក៏ដោយ · next នៅតែប្រើក្រោយចូល)
             else if (DEVICE) showPinMode(true);
-            else setTimeout(() => document.getElementById(last ? 'pass' : 'ident').focus({ preventScroll: true }), 1300);
+            // ប្រអប់អាចត្រូវបានជំនួសរួច (ចូលលឿនមុនផ្ទាំងចាប់ផ្តើមបាត់)
+            else setTimeout(() => { const f = document.getElementById(last ? 'pass' : 'ident'); if (f) f.focus({ preventScroll: true }); }, 1300);
         });
 
         /* ផ្ទាំងចាប់ផ្តើម៖ បញ្ជរ = ឡូហ្គោ ឈ្មោះហាង សាខា និងលេខបញ្ជរ · ឧបករណ៍ផ្សេង = សញ្ញាប្រព័ន្ធ

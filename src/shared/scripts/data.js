@@ -700,19 +700,15 @@ function findAccount(identifier) {
 }
 
 /* ត្រឡប់ { person } ពេលត្រឹមត្រូវ · { error: 'bad' } មិនប្រាប់ថាខុសត្រង់ណា · { error: 'inactive' } គណនីផ្អាក */
-/* ការចូលប្រើ POS៖ គណនីអ្នកគ្រប់គ្រងប្រព័ន្ធមិនចូលទីនេះទេ (ចាត់ទុកជាពាក្យសម្ងាត់ខុស) */
-function verifyLogin(identifier, password) {
+/* ការចូលប្រើដោយពាក្យសម្ងាត់ · dev = បញ្ជរដែលបានចុះឈ្មោះលើកុំព្យូទ័រនេះ ឬ null
+   អ្នកគ្រប់គ្រងប្រព័ន្ធ (DIGITECHKH) ចូលបានតែនៅទំព័រចូលទូទៅ (កុំព្យូទ័រមិនមែនបញ្ជរ)
+   នៅទំព័រចូលរបស់ហាង (បញ្ជរ) គណនីនេះចាត់ទុកដូចពាក្យសម្ងាត់ខុស (មិនប្រាប់ថាមានគណនី) */
+function verifyLogin(identifier, password, dev) {
     const p = findAccount(identifier);
-    if (!p || isControlId(p.id) || !effectivePassword(p.id) || effectivePassword(p.id) !== String(password)) return { error: 'bad' };
+    if (!p || !effectivePassword(p.id) || effectivePassword(p.id) !== String(password)) return { error: 'bad' };
+    if (isControlId(p.id)) return dev ? { error: 'bad' } : { control: p };
     if (!p.active) return { error: 'inactive', person: p };
     return { person: p };
-}
-
-/* ការចូលច្រកអ្នកគ្រប់គ្រងប្រព័ន្ធ (control/login) · គណនីហាងមិនចូលទីនេះទេ */
-function verifyControlLogin(identifier, password) {
-    const q = String(identifier || '').trim().toLowerCase();
-    const a = CONTROL_ACCOUNTS.find(x => x.email.toLowerCase() === q || (x.phone && normPhone(x.phone) === normPhone(q)));
-    return a && effectivePassword(a.id) === String(password) ? a : null;
 }
 
 /* ការចូលប្រើតឹងរ៉ឹង (ពាក្យសម្ងាត់ និង PIN)៖
@@ -3283,13 +3279,12 @@ const MY_REGISTER = resolveRegister(ME_CASHIER);
     if (!area) return;
     // អ្នកគ្រប់គ្រងប្រព័ន្ធចូលបានតែ control/* · អ្នកផ្សេងចូល control/* មិនបាន
     if (SESSION && SESSION.control) {
-        if (area !== 'control' || path.includes('/control/login/')) location.replace('../../control/dashboard/dashboard.html');
+        if (area !== 'control') location.replace('../../control/dashboard/dashboard.html');
         return;
     }
-    // ច្រកអ្នកគ្រប់គ្រងប្រព័ន្ធមានទំព័រចូលដាច់ដោយឡែក (control/login) មិនមែនទំព័រចូល POS
+    // ច្រកអ្នកគ្រប់គ្រងប្រព័ន្ធ៖ ចូលនៅទំព័រចូលទូទៅ (មិនមែនបញ្ជរ) · ហាងចូលទីនេះមិនបាន
     if (area === 'control') {
-        if (path.includes('/control/login/')) return;
-        location.replace(`../../control/login/login.html?next=${encodeURIComponent(path.split('/').slice(-3).join('/'))}`);
+        location.replace(SESSION ? `../../${ROLE_HOME[roleOf(SESSION.userId)]}` : `../../index.html?next=${encodeURIComponent(path.split('/').slice(-3).join('/'))}`);
         return;
     }
     const role = SESSION ? roleOf(SESSION.userId) : '';
