@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគិតលុយ - ការជាវ</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { blue: { 50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 400: '#34d399', 500: '#059669', 600: '#047857', 700: '#065f46', 800: '#064e3b', 900: '#053d30', 950: '#022c22' }, slate: { 50: '#fafafa', 100: '#f4f4f4', 200: '#e7e7e7', 300: '#d4d4d4', 400: '#a2a2a2', 500: '#737373', 600: '#545454', 700: '#404040', 800: '#292929', 900: '#171717', 950: '#070707' }, primary: "#047857", 'primary-dark': "#065f46", accent: "#34d399" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+    <style>
+        /* បណ្ណទម្រង់៖ មិនប្រើ .bg-white ព្រោះ custom.css §17 ពង្រីកប៊ូតុងទាំងអស់ក្នុង «.bg-white មាន submit» ពេញទទឹងលើទូរស័ព្ទ */
+        .form-card { background: #ffffff; }
+        html.dark .form-card { background: #171717; border-color: #292929 !important; }
+        .f-input { width: 100%; height: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid #d4d4d4; background: #fff; color: #171717; }
+        .f-input:focus { outline: none; border-color: #047857; box-shadow: 0 0 0 3px rgba(4, 120, 87, .15); }
+        .f-input.is-error { border-color: #fb7185; }
+        html.dark .f-input { background: #111111; border-color: #404040; color: #e7e7e7; }
+        .f-err { display: block; min-height: 20px; margin-top: 4px; font-size: 13.5px; color: #e11d48; }
+        .ctl-kpis { display: grid; gap: 1rem; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        @media (max-width: 1023px) { .ctl-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    </style>
+</head>
+<body id="adminPortal" data-role-root="../.." data-active="subscription" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="ការជាវ និងការបង់ប្រាក់"
+             data-subtitle="កញ្ចប់ ថ្ងៃផុតកំណត់ ការប្រើប្រាស់ និងការបង់ប្រាក់ទៅ DIGITECHKH"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <div id="page" class="w-full space-y-5"></div>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/admin-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        /* ការជាវរបស់ហាង (ម្ចាស់ហាង)៖ ស្ថានភាព · ការប្រើប្រាស់ធៀបដែនកំណត់ · វិធីបង់ · កញ្ចប់ · ប្រវត្តិបង់ · សំណើ
+           ប៊ូតុងចម្បងតែមួយ៖ ជិតផុត ឬហួស → បង់ប្រាក់ · ធម្មតា → ប្តូរកញ្ចប់ */
+        const SUB_LABEL = { active: 'កំពុងប្រើ', trial: 'សាកល្បង', expiring: 'ជិតផុតកំណត់', overdue: 'ហួសកំណត់បង់', expired: 'ផុតកំណត់', suspended: 'បានផ្អាក' };
+        const SUB_CLS = { expiring: 'bg-amber-50 text-amber-800 border-amber-200', overdue: 'bg-amber-50 text-amber-800 border-amber-200', expired: 'bg-rose-50 text-rose-700 border-rose-200', suspended: 'bg-rose-50 text-rose-700 border-rose-200' };
+        const METHOD_LABEL = { khqr: 'KHQR', bank: 'ផ្ទេរតាមធនាគារ', cash: 'សាច់ប្រាក់' };
+        function subChipOwner(st) { return `<span class="sm-badge inline-flex px-2.5 py-0.5 rounded-full border whitespace-nowrap ${SUB_CLS[st] || 'bg-slate-50 text-slate-700 border-slate-200'}">${SUB_LABEL[st] || st}</span>`; }
+        function card(title, sub, body, action) {
+            return `<section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm">
+                <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3"><div class="min-w-0"><h3 class="sm-card-title text-slate-800">${title}</h3>${sub ? `<p class="sm-card-sub text-slate-500">${sub}</p>` : ''}</div>${action || ''}</div>${body}</section>`;
+        }
+
+        function usage() {
+            const lim = shopLimits(CURRENT_SHOP_ID);
+            return [
+                { label: 'បញ្ជរ', used: shopBranches().reduce((n, b) => n + (Number(b.registers) || 1), 0), limit: lim.registers },
+                { label: 'បុគ្គលិក', used: loadStaff().filter(p => p.active).length, limit: lim.staff },
+                { label: 'សាខា', used: shopBranches().length, limit: lim.branches }
+            ];
+        }
+
+        async function requestPlan(id) {
+            const p = subPlan(id);
+            const over = usage().filter((u, i) => u.used > [p.registers, p.staff, p.branches][i]);
+            if (over.length) return showToast(`ហាងប្រើលើសកញ្ចប់${p.name} (${over.map(o => o.label).join(' ')}) · សូមកាត់បន្ថយជាមុន`, 'error');
+            const ok = await showCustomConfirm({ title: `ស្នើប្តូរទៅកញ្ចប់${p.name}`, message: `${fmtUSD(p.price)}/ខែ · ${p.registers} បញ្ជរ · ${p.staff} បុគ្គលិក · ${p.branches} សាខា<br>DIGITECHKH នឹងប្តូរ ហើយជូនដំណឹងអ្នកនៅទំព័រនេះ · តម្លៃថ្មីគិតពីការបង់លើកក្រោយ`, confirmText: 'ផ្ញើសំណើ' });
+            if (!ok) return;
+            addSubRequest({ type: 'plan', planId: id });
+            adminLog('settings', `ស្នើប្តូរទៅកញ្ចប់${p.name}`);
+            render();
+            showToast('បានផ្ញើសំណើទៅ DIGITECHKH', 'success');
+        }
+
+        function copyText(t) {
+            try { navigator.clipboard.writeText(t).then(() => showToast('បានចម្លង', 'success')); } catch (e) { showToast(t, 'info'); }
+        }
+
+        function render() {
+            const sub = shopSubscription(CURRENT_SHOP_ID) || DEFAULT_SHOP_SUBS['SHOP-01'];
+            const st = subscriptionStatus(sub);
+            const plan = subPlan(sub.plan);
+            const left = daysUntil(sub.endsOn);
+            const reqs = subRequests(CURRENT_SHOP_ID);
+            const pendingClaim = reqs.find(r => r.type === 'claim' && r.status === 'pending');
+            const pendingPlan = reqs.find(r => r.type === 'plan' && r.status === 'pending');
+            const urgent = ['trial', 'expiring', 'overdue', 'expired'].includes(st);
+            const when = st === 'trial' ? `សាកល្បងដល់ ${fmtDate(sub.endsOn)} · នៅសល់ ${left} ថ្ងៃ`
+                : st === 'overdue' ? `ផុតកំណត់ ${fmtDate(sub.endsOn)} · ហាងនឹងចូលប្រើមិនបានក្នុង ${SUB_GRACE_DAYS + left} ថ្ងៃ`
+                : st === 'expired' ? `ផុតកំណត់ ${fmtDate(sub.endsOn)}`
+                : `ប្រើបានដល់ ${fmtDate(sub.endsOn)} · នៅសល់ ${left} ថ្ងៃ`;
+            const primary = pendingClaim ? '<span class="sm-td-sub text-slate-500">បានជូនដំណឹងថាបង់រួច · រង់ចាំ DIGITECHKH បញ្ជាក់</span>'
+                : `<a href="create-payment.html" class="sm-badge h-10 px-4 rounded-xl ${urgent ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-700'} font-semibold inline-flex items-center gap-2 whitespace-nowrap"><i class="fas fa-receipt"></i> ${urgent ? (st === 'trial' ? 'ជាវដើម្បីបន្តប្រើ' : 'បង់ប្រាក់ ដើម្បីបន្ត') : 'បង់មុន'}</a>`;
+            const pays = shopSubPayments(CURRENT_SHOP_ID);
+            const pg = pagerSlice('sub-pay', pays, { size: 15, render: 'render', sig: 'x' });
+            document.getElementById('page').innerHTML = `
+                <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm px-5 py-4 flex flex-wrap items-center gap-4">
+                    <div class="min-w-0 flex-1">
+                        <div class="flex flex-wrap items-center gap-2">${subChipOwner(st)}<span class="sm-card-title text-slate-800">កញ្ចប់${plan.name}</span><span class="sm-td text-slate-500 sm-figure">${fmtUSD(plan.price)}/ខែ${sub.cycle === 'year' ? ' · បង់ប្រចាំឆ្នាំ' : ''}</span></div>
+                        <p class="sm-td-sub mt-1.5 ${st === 'overdue' || st === 'expiring' ? 'text-amber-700 font-semibold' : st === 'expired' ? 'text-rose-600 font-semibold' : 'text-slate-500'}">${when}</p>
+                    </div>
+                    ${primary}
+                </section>
+                <div class="grid gap-5 xl:grid-cols-3">
+                    <div class="xl:col-span-2 space-y-5 min-w-0">
+                        ${card('កញ្ចប់', 'ប្តូរកញ្ចប់នៅពេលហាងរីកធំ · តម្លៃថ្មីគិតពីការបង់លើកក្រោយ', `<div class="p-5 grid gap-3 md:grid-cols-3">${subPlans().map(p => {
+                            const cur = p.id === plan.id;
+                            const req = pendingPlan && pendingPlan.planId === p.id;
+                            return `<div class="rounded-xl border ${cur ? 'border-blue-600 ring-1 ring-blue-600' : 'border-slate-200'} p-4 flex flex-col">
+                                <p class="sm-td font-semibold text-slate-800">${p.name}</p>
+                                <p class="sm-figure mt-1"><span class="text-[24px] font-bold text-slate-900">${fmtUSD(p.price)}</span><span class="sm-td-sub text-slate-500"> / ខែ</span></p>
+                                <p class="sm-td-sub text-slate-500 mt-1">${p.registers} បញ្ជរ · ${p.staff} បុគ្គលិក · ${p.branches} សាខា</p>
+                                <div class="mt-3 pt-3 border-t border-slate-100 mt-auto">${cur ? '<span class="sm-td-sub font-semibold text-slate-600">កញ្ចប់បច្ចុប្បន្ន</span>'
+                                    : req ? '<span class="sm-td-sub text-slate-500">បានស្នើ · រង់ចាំ DIGITECHKH</span>'
+                                    : pendingPlan ? '' : `<button type="button" onclick="requestPlan('${p.id}')" class="sm-td-sub font-semibold text-blue-700 hover:underline">ស្នើប្តូរ</button>`}</div>
+                            </div>`;
+                        }).join('')}</div>`)}
+                        ${card('ប្រវត្តិការបង់ប្រាក់', pays.length ? `សរុប ${fmtUSD(pays.reduce((n, p) => n + p.amount, 0))} · ${pays.length} ដង` : '', pays.length ? `<div class="overflow-x-auto"><table class="w-full">
+                            <thead><tr class="border-b border-slate-100 bg-slate-50/60"><th class="sm-th py-2.5 px-5 text-left text-slate-500">ថ្ងៃបង់</th><th class="sm-th py-2.5 px-3 text-left text-slate-500 max-sm:hidden">រយៈពេល</th><th class="sm-th py-2.5 px-3 text-left text-slate-500">វិធីបង់</th><th class="sm-th py-2.5 px-5 text-right text-slate-500">ចំនួន</th></tr></thead>
+                            <tbody class="divide-y divide-slate-100">${pg.rows.map(p => `<tr>
+                                <td class="py-2.5 px-5 sm-td sm-figure text-slate-700">${fmtDate(p.at)}</td>
+                                <td class="py-2.5 px-3 sm-td sm-figure text-slate-700 max-sm:hidden">${fmtDate(p.periodFrom)} – ${fmtDate(p.periodTo)}</td>
+                                <td class="py-2.5 px-3 sm-td text-slate-700">${METHOD_LABEL[p.method] || ''}${p.ref ? `<span class="block sm-td-sub text-slate-400 sm-figure">${escapeText(p.ref)}</span>` : ''}</td>
+                                <td class="py-2.5 px-5 sm-td sm-figure text-right font-medium text-slate-800">${fmtUSD(p.amount)}</td></tr>`).join('')}</tbody></table></div><div data-pager="sub-pay">${pg.html}</div>`
+                            : emptyState('fa-receipt', sub.trial ? 'កំពុងសាកល្បង · មិនទាន់បង់' : 'មិនទាន់មានការបង់ប្រាក់', 'ការបង់ប្រាក់ដែល DIGITECHKH បានបញ្ជាក់ លេចនៅទីនេះ'))}
+                    </div>
+                    <div class="space-y-5 min-w-0">
+                        ${card('ការប្រើប្រាស់', `ធៀបនឹងកញ្ចប់${plan.name}`, `<div class="px-5 py-4 space-y-4">${usage().map(u => `<div>
+                            <div class="flex items-baseline justify-between"><span class="sm-td text-slate-700">${u.label}</span><span class="sm-td sm-figure ${u.used > u.limit ? 'text-amber-700 font-semibold' : 'text-slate-800'}">${u.used} / ${u.limit}</span></div>
+                            <div class="h-1.5 rounded-full bg-slate-100 overflow-hidden mt-1.5"><div class="h-full ${u.used > u.limit ? 'bg-amber-500' : 'bg-blue-600'}" style="width:${Math.min(100, u.used / u.limit * 100)}%"></div></div>
+                            ${u.used >= u.limit ? `<p class="sm-td-sub text-slate-500 mt-1">ប្រើពេញ · បន្ថែម${u.label}ទៀតត្រូវប្តូរកញ្ចប់</p>` : ''}</div>`).join('')}</div>`)}
+                        ${card('វិធីបង់ប្រាក់', 'បង់ទៅ DIGITECHKH រួចជូនដំណឹងនៅទីនេះ', `<div class="px-5 py-2 divide-y divide-slate-100">
+                            <div class="py-2.5 flex items-center justify-between gap-3"><span class="min-w-0"><span class="block sm-td-sub text-slate-500">KHQR · បាគង</span><span class="block sm-td font-semibold text-slate-800 sm-figure">${VENDOR_PAY.khqr}</span></span><button type="button" onclick="copyText('${VENDOR_PAY.khqr}')" aria-label="ចម្លង" class="w-9 h-9 rounded-lg hover:bg-slate-100 text-slate-500 flex items-center justify-center"><i class="fas fa-copy"></i></button></div>
+                            <div class="py-2.5 flex items-center justify-between gap-3"><span class="min-w-0"><span class="block sm-td-sub text-slate-500">ធនាគារ ${VENDOR_PAY.bank} · ${VENDOR_PAY.accountName}</span><span class="block sm-td font-semibold text-slate-800 sm-figure">${VENDOR_PAY.account}</span></span><button type="button" onclick="copyText('${VENDOR_PAY.account}')" aria-label="ចម្លង" class="w-9 h-9 rounded-lg hover:bg-slate-100 text-slate-500 flex items-center justify-center"><i class="fas fa-copy"></i></button></div>
+                            <p class="py-2.5 sm-td-sub text-slate-500">ប្រចាំឆ្នាំ = តម្លៃ ${PLAN_YEAR_MONTHS} ខែ (ឥតគិតថ្លៃ 2 ខែ)</p>
+                        </div>`)}
+                        ${reqs.length ? card('សំណើរបស់អ្នក', 'ចម្លើយពី DIGITECHKH', `<div class="divide-y divide-slate-100">${reqs.slice(0, 5).map(r => `<div class="px-5 py-3">
+                            <p class="sm-td text-slate-700">${r.type === 'claim' ? `បានបង់ ${fmtUSD(r.amount)} · ${r.months} ខែ` : `ស្នើប្តូរទៅកញ្ចប់${subPlan(r.planId).name}`}</p>
+                            <p class="sm-td-sub ${r.status === 'rejected' ? 'text-rose-600' : 'text-slate-500'}"><span class="sm-figure">${fmtDate(r.at)}</span> · ${r.status === 'pending' ? 'រង់ចាំ DIGITECHKH' : r.status === 'done' ? 'រួចរាល់' : `បដិសេធ · ${escapeText(r.answer || '')}`}</p></div>`).join('')}</div>`) : ''}
+                    </div>
+                </div>`;
+        }
+
+        window.onStoreChanged = render;
+        document.addEventListener('DOMContentLoaded', render);
+    </script>
+</body>
+</html>

@@ -426,6 +426,49 @@ function subscriptionStatus(sub) {
     return left <= SUB_WARN_DAYS ? 'expiring' : 'active';
 }
 
+/* ===== កញ្ចប់ និងការបង់ប្រាក់ជាមួយ DIGITECHKH (ម្ចាស់ហាងមើលនៅ admin/subscription) =====
+   តម្លៃកញ្ចប់ និងការបង់ប្រាក់របស់ហាងខ្លួនឯង · ច្រកអ្នកគ្រប់គ្រងប្រព័ន្ធប្រើបញ្ជីកញ្ចប់ដដែល (control-data.js)
+   ប្រព័ន្ធពិត៖ ម៉ាស៊ីនមេផ្តល់តែវិក្កយបត្ររបស់ហាងនេះ */
+const SUB_PLANS_DEFAULT = [
+    { id: 'basic', name: 'ចាប់ផ្តើម', price: 15, branches: 1, registers: 1, staff: 5, note: 'ហាងតូច បញ្ជរមួយ' },
+    { id: 'standard', name: 'ស្តង់ដារ', price: 29, branches: 1, registers: 3, staff: 15, note: 'ហាងមធ្យម បញ្ជរច្រើន' },
+    { id: 'multi', name: 'ច្រើនសាខា', price: 59, branches: 3, registers: 10, staff: 50, note: 'ហាងមានសាខាច្រើន' }
+];
+const PLAN_YEAR_MONTHS = 10;   // ប្រចាំឆ្នាំ = តម្លៃ 10 ខែ
+/* គណនីទទួលប្រាក់របស់ DIGITECHKH (គំរូ) */
+const VENDOR_PAY = { khqr: 'digitechkh@aclb', bank: 'ABA', account: '002 345 678', accountName: 'DIGITECHKH' };
+
+function subPlans() {
+    return posRead('pos_ctl_plans', SUB_PLANS_DEFAULT) || SUB_PLANS_DEFAULT;
+}
+
+function subPlan(id) {
+    return subPlans().find(p => p.id === id) || subPlans()[0];
+}
+
+function subPrice(planId, months) {
+    const p = subPlan(planId);
+    return Math.floor(months / 12) * p.price * PLAN_YEAR_MONTHS + (months % 12) * p.price;
+}
+
+function shopSubPayments(shopId) {
+    return (posRead('pos_ctl_payments', []) || []).filter(p => p.companyId === shopId).sort((a, b) => b.at.localeCompare(a.at));
+}
+
+/* សំណើពីម្ចាស់ហាងទៅ DIGITECHKH៖ claim = ខ្ញុំបានបង់ប្រាក់ (រង់ចាំផ្ទៀងផ្ទាត់) · plan = ស្នើប្តូរកញ្ចប់
+   { id, shopId, type, status: pending|done|rejected, by, at, months, method, amount, ref, planId, note, doneAt, doneBy, answer } */
+function subRequests(shopId) {
+    return (posRead('pos_ctl_requests', []) || []).filter(r => !shopId || r.shopId === shopId).sort((a, b) => b.at.localeCompare(a.at));
+}
+
+function addSubRequest(req) {
+    const list = posRead('pos_ctl_requests', []) || [];
+    const r = Object.assign({ id: newId('RQ'), shopId: ACTIVE_SHOP_ID, status: 'pending', by: (posRead('pos_session', {}) || {}).userId || '', at: isoLocal(new Date()) }, req);
+    list.push(r);
+    posWrite('pos_ctl_requests', list);
+    return r;
+}
+
 function shopBlocked(shopId) {
     const st = subscriptionStatus(shopSubscription(shopId));
     return st === 'suspended' || st === 'expired';

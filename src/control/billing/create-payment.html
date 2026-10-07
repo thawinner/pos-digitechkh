@@ -89,8 +89,10 @@
         const ID = new URLSearchParams(location.search).get('id');
         const BACK = new URLSearchParams(location.search).get('back') || 'billing.html';
         const c = ctlCompany(ID);
-        let method = 'khqr';
-        let months = c && c.cycle === 'year' ? 12 : 1;
+        // ពីសំណើម្ចាស់ហាង «ខ្ញុំបានបង់ប្រាក់»៖ បំពេញរយៈពេល វិធីបង់ និងលេខយោងជាមុន · ផ្ទៀងផ្ទាត់ជាមួយគណនីធនាគារ រួចកត់ត្រា
+        const CLAIM = subRequests().find(r => r.id === new URLSearchParams(location.search).get('claim') && r.status === 'pending') || null;
+        let method = CLAIM ? CLAIM.method : 'khqr';
+        let months = CLAIM ? CLAIM.months : c && c.cycle === 'year' ? 12 : 1;
         const today = isoDate(new Date());
         const from = c && !c.trial && c.endsOn >= today ? c.endsOn : today;
 
@@ -116,6 +118,7 @@
             const ref = val('ref');
             if (setErr('ref', method !== 'cash' && ref.length < 4 ? 'សូមបញ្ចូលលេខយោងពីធនាគារ' : '')) { document.getElementById('ref').focus(); return false; }
             const pay = ctlRecordPayment(ID, { months, method, ref, amount: priceFor(c.plan, months) });
+            if (CLAIM) ctlResolveRequest(CLAIM.id, 'done', `បានទទួល ${fmtUSD(pay.amount)} · ប្រើបានដល់ ${fmtDate(pay.periodTo)}`);
             markRecordViewed(ID);
             flashToast(`បានទទួល ${fmtUSD(pay.amount)} ពី ${c.nameKh} · ប្រើបានដល់ ${fmtDate(pay.periodTo)}`);
             location.href = BACK;
@@ -126,6 +129,10 @@
             if (!c) { location.replace('billing.html'); return; }
             document.getElementById('shopHead').innerHTML = `<div class="flex flex-wrap items-center gap-2"><h3 class="sm-card-title text-slate-800">${escapeText(c.nameKh)}</h3>${subChip(c)}</div>
                 <p class="sm-card-sub text-slate-500">${planLabel(c)} · ${attentionText(c)}</p>`;
+            if (CLAIM) {
+                document.getElementById('ref').value = CLAIM.ref || '';
+                document.getElementById('shopHead').insertAdjacentHTML('beforeend', `<p class="sm-td text-slate-700 mt-2"><i class="fas fa-circle-info text-slate-400 mr-1.5"></i>ម្ចាស់ហាងជូនដំណឹងថាបានបង់ ${fmtUSD(CLAIM.amount)} នៅ <span class="sm-figure">${fmtDate(CLAIM.at)} ${fmtTime(CLAIM.at)}</span> · ពិនិត្យក្នុងគណនីធនាគារមុនកត់ត្រា</p>`);
+            }
             render();
             wireInputs();
         });

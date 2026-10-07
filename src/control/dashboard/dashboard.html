@@ -42,6 +42,7 @@
         <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
             <div class="w-full space-y-5">
                 <div id="kpis" class="ctl-kpis ctl-kpis-5"></div>
+                <section id="requests" class="hidden bg-white rounded-2xl border border-slate-200/80 shadow-sm"></section>
                 <div class="grid gap-5 xl:grid-cols-3">
                     <section class="xl:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm">
                         <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
@@ -162,6 +163,26 @@
                 </a>`).join('') : emptyState('fa-store', 'គ្មានហាងថ្មី', '60 ថ្ងៃចុងក្រោយ');
         }
 
+        /* សំណើពីហាង៖ ម្ចាស់ហាងជូនដំណឹងថាបានបង់ (ផ្ទៀងផ្ទាត់ រួចកត់ត្រា) · ស្នើប្តូរកញ្ចប់ (ប្តូរ ឬបដិសេធ) */
+        function renderRequests() {
+            const list = ctlPendingRequests();
+            const box = document.getElementById('requests');
+            box.classList.toggle('hidden', !list.length);
+            if (!list.length) return;
+            box.innerHTML = `<div class="px-5 py-4 border-b border-slate-100"><h3 class="sm-card-title text-slate-800">សំណើពីហាង · <span class="sm-figure">${list.length}</span></h3><p class="sm-card-sub text-slate-500">ម្ចាស់ហាងរង់ចាំចម្លើយ · ពួកគេឃើញលទ្ធផលនៅទំព័រការជាវ</p></div>
+                <div class="divide-y divide-slate-100">${list.map(r => {
+                    const c = ctlCompany(r.shopId) || { nameKh: r.shopId };
+                    return `<div class="px-5 py-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+                        <div class="min-w-0 flex-1 basis-[260px]"><p class="sm-td-strong text-slate-800 truncate">${escapeText(c.nameKh)}</p>
+                            <p class="sm-td-sub text-slate-500">${escapeText(requestText(r))} · <span class="sm-figure">${fmtDate(r.at)} ${fmtTime(r.at)}</span></p></div>
+                        <button type="button" onclick="ctlRejectRequest('${r.id}').then(ok => ok && renderAll())" class="sm-badge h-9 px-3 rounded-xl sm-td-sub font-semibold text-slate-600 hover:bg-slate-50">បដិសេធ</button>
+                        ${r.type === 'claim'
+                            ? `<button type="button" onclick="ctlOpenPayment('${r.shopId}', '${r.id}')" class="sm-badge h-9 px-3.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold whitespace-nowrap"><i class="fas fa-receipt mr-1.5 text-slate-400"></i>ផ្ទៀងផ្ទាត់ និងកត់ត្រា</button>`
+                            : `<button type="button" onclick="ctlApprovePlanRequest('${r.id}').then(ok => ok && renderAll())" class="sm-badge h-9 px-3.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold whitespace-nowrap"><i class="fas fa-box mr-1.5 text-slate-400"></i>ប្តូរកញ្ចប់</button>`}
+                    </div>`;
+                }).join('')}</div>`;
+        }
+
         function renderHelp() {
             const all = ctlCompanies();
             const col = (title, list, sub, tab) => `<div class="min-w-0"><div class="px-5 pt-3 pb-1 flex items-center justify-between"><p class="sm-td-sub font-semibold text-slate-500">${title} · <span class="sm-figure">${list.length}</span></p>${list.length ? `<a href="../companies/companies.html?tab=${tab}" class="sm-td-sub font-semibold text-blue-700 hover:underline">មើលទាំងអស់</a>` : ''}</div>
@@ -174,7 +195,7 @@
         }
 
         function renderAll() {
-            renderKpis(); renderAttention(); renderHelp(); renderByPlan(); renderRevenue(); renderRecent();
+            renderKpis(); renderRequests(); renderAttention(); renderHelp(); renderByPlan(); renderRevenue(); renderRecent();
             if (typeof updatePortalBadges === 'function') updatePortalBadges();
         }
 

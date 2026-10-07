@@ -16,12 +16,8 @@ const CTL_KEYS = {
 };
 
 /* កញ្ចប់៖ តម្លៃប្រចាំខែ · ប្រចាំឆ្នាំ = 10 ខែ (ឥតគិតថ្លៃ 2 ខែ) · សាកល្បង 14 ថ្ងៃ ឥតគិតថ្លៃ */
-const PLAN_SEED = [
-    { id: 'basic', name: 'ចាប់ផ្តើម', price: 15, branches: 1, registers: 1, staff: 5, note: 'ហាងតូច បញ្ជរមួយ' },
-    { id: 'standard', name: 'ស្តង់ដារ', price: 29, branches: 1, registers: 3, staff: 15, note: 'ហាងមធ្យម បញ្ជរច្រើន' },
-    { id: 'multi', name: 'ច្រើនសាខា', price: 59, branches: 3, registers: 10, staff: 50, note: 'ហាងមានសាខាច្រើន' }
-];
-const YEAR_PAID_MONTHS = 10;
+const PLAN_SEED = SUB_PLANS_DEFAULT;         // data.js (ម្ចាស់ហាងក៏មើលឃើញតម្លៃដដែល)
+const YEAR_PAID_MONTHS = PLAN_YEAR_MONTHS;
 const TRIAL_DAYS = 14;
 const SUPPORT_MINUTES = 30;
 
@@ -310,6 +306,53 @@ function ctlBranches(c) {
     }));
 }
 
+/* ===== សំណើពីហាង (ម្ចាស់ហាងជូនដំណឹងថាបានបង់ · ស្នើប្តូរកញ្ចប់) ===== */
+function ctlPendingRequests() {
+    return subRequests().filter(r => r.status === 'pending');
+}
+
+function ctlRequestCount() {
+    return ctlPendingRequests().length;
+}
+
+function ctlResolveRequest(id, status, answer) {
+    const list = posRead('pos_ctl_requests', []) || [];
+    const r = list.find(x => x.id === id);
+    if (!r) return;
+    Object.assign(r, { status, answer: answer || '', doneAt: isoLocal(new Date()), doneBy: ctlMe() });
+    posWrite('pos_ctl_requests', list);
+}
+
+function requestText(r) {
+    return r.type === 'claim'
+        ? `ជូនដំណឹងថាបានបង់ ${fmtUSD(r.amount)} · ${r.months} ខែ · ${PAY_METHODS[r.method] ? PAY_METHODS[r.method].label : ''}${r.ref ? ` · ${r.ref}` : ''}`
+        : `ស្នើប្តូរទៅកញ្ចប់${planById(r.planId).name}${r.note ? ` · ${r.note}` : ''}`;
+}
+
+async function ctlApprovePlanRequest(id) {
+    const r = subRequests().find(x => x.id === id);
+    const c = ctlCompany(r.shopId);
+    const p = planById(r.planId);
+    const over = [['registers', 'បញ្ជរ'], ['staff', 'បុគ្គលិក'], ['branches', 'សាខា']].filter(([k]) => c.usage[k] > p[k]);
+    if (over.length) { showToast(`${c.nameKh} ប្រើលើសកញ្ចប់${p.name} (${over.map(o => o[1]).join(' ')})`, 'error'); return false; }
+    const ok = await showCustomConfirm({ title: `ប្តូរ ${c.nameKh} ទៅកញ្ចប់${p.name}`, message: `${fmtUSD(p.price)}/ខែ · តម្លៃថ្មីគិតពីការបង់លើកក្រោយ · ម្ចាស់ហាងឃើញលទ្ធផលនៅទំព័រការជាវ`, confirmText: 'ប្តូរកញ្ចប់' });
+    if (!ok) return false;
+    ctlChangePlan(c.id, p.id);
+    ctlResolveRequest(id, 'done', `បានប្តូរទៅកញ្ចប់${p.name}`);
+    showToast(`${c.nameKh} ប្តូរទៅកញ្ចប់${p.name}`, 'success');
+    return true;
+}
+
+async function ctlRejectRequest(id) {
+    const reason = await showReasonPrompt({ title: 'បដិសេធសំណើ', message: 'ម្ចាស់ហាងឃើញមូលហេតុនេះនៅទំព័រការជាវ', reasons: ['រកមិនឃើញការបង់ប្រាក់នេះក្នុងគណនី', 'ចំនួនទឹកប្រាក់មិនត្រូវ', 'ការប្រើប្រាស់លើសកញ្ចប់ដែលស្នើ'], confirmText: 'បដិសេធ', danger: true });
+    if (!reason) return false;
+    const r = subRequests().find(x => x.id === id);
+    ctlResolveRequest(id, 'rejected', reason);
+    ctlAddLog(r.shopId, 'note', `បដិសេធសំណើ · ${reason}`);
+    showToast('បានបដិសេធសំណើ', 'success');
+    return true;
+}
+
 /* ===== សរសេរ ===== */
 
 function ctlSaveCompanies(list) {
@@ -545,9 +588,9 @@ function planLabel(c) {
 /* ===== ប្រអប់សកម្មភាព (ប្រើរួមគ្រប់ទំព័រ) — ត្រឡប់ true ពេលបានធ្វើ ===== */
 
 /* កត់ត្រាការបង់ប្រាក់ជាទំព័រពេញ · ត្រឡប់មកទំព័រដែលបើកវា */
-function ctlOpenPayment(id) {
+function ctlOpenPayment(id, claimId) {
     const here = location.pathname.split('/').slice(-2).join('/') + location.search;
-    location.href = `${document.body.dataset.roleRoot || '../..'}/control/billing/create-payment.html?id=${encodeURIComponent(id)}&back=${encodeURIComponent('../' + here)}`;
+    location.href = `${document.body.dataset.roleRoot || '../..'}/control/billing/create-payment.html?id=${encodeURIComponent(id)}${claimId ? `&claim=${encodeURIComponent(claimId)}` : ''}&back=${encodeURIComponent('../' + here)}`;
 }
 
 async function ctlPlanDialog(id) {

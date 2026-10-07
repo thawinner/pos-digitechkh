@@ -74,6 +74,13 @@ create-company), never pop-ups (`.ai/ui-rules.md` §2); after saving they return
 channel, reason). The owner dashboard shows «ចាប់ផ្តើមប្រើ» (`startChecklist()`: shop, products, stock, cashier, till,
 first sale; auto-detected, hideable once done). A branch with no stock records shows no «អស់» badges (`stockTracked`).
 The account menu has «ជំនួយ និងទំនាក់ទំនង» (`showSupportInfo`).
+Owner subscription page `admin/subscription/subscription.html` («ការជាវ និងការបង់ប្រាក់»): plan, status, end date,
+usage vs limits, plan comparison with «ស្នើប្តូរ», DIGITECHKH payment details (`VENDOR_PAY`), payment history
+(`shopSubPayments`), and the owner's requests. «ខ្ញុំបានបង់ប្រាក់» is a full page (`admin/subscription/create-payment`).
+Requests (`pos_ctl_requests`, `addSubRequest`: claim | plan) reach the Super Admin dashboard («សំណើពីហាង», badge
+`ctlRequestCount`); a claim opens `control/billing/create-payment.html?claim=…` prefilled and is closed on save, a plan
+request is applied or refused with a reason the owner sees. Plan list and prices live in `data.js` (`SUB_PLANS_DEFAULT`,
+`subPlans()`); `control-data.js` reuses them.
 First-login setup (`admin/setup/setup.html`): until `shopSetup(shopId).done`, `guardPage` sends the owner's admin pages
 there (unless «ធ្វើពេលក្រោយ» in this tab; the dashboard then shows a reminder). Steps: shop (name, KHQR name, branch,
 phone, VAT TIN → `saveShopProfile`, which overrides `SHOPS`/`MERCHANT`) · payments (rate, bank, Bakong ID) · registers
@@ -99,7 +106,7 @@ src/
 ├── cashier/receipts/receipts       shift receipts, void / return requests (manager PIN on the spot or queued), return from an earlier shift by exact receipt number
 ├── cashier/shift/{open,close}-shift  float count + manager PIN · blind close with one recount + Z-report
 ├── manager/{dashboard,approvals,shifts,roster,cash,stock,stock-count,stock-history,stock-transfer,exceptions,reports,settings}/…  (view-request, view-shift, create-movement, create-stock-in, create-adjustment, create-count)
-├── admin/{setup,dashboard,reports,branches,staff,products,settings,audit,stock}/…   owner: first-login setup wizard, getting-started checklist, branches, profit, stock value, shrinkage, stock-in cost, staff, prices, rules, audit log (view-stock-in, view-staff, create-product, create/edit-branch)
+├── admin/{setup,dashboard,reports,branches,staff,products,settings,subscription,audit,stock}/…   owner: first-login setup wizard, getting-started checklist, branches, profit, stock value, shrinkage, stock-in cost, staff, prices, rules, audit log (view-stock-in, view-staff, create-product, create/edit-branch)
 ├── control/{dashboard,companies,billing,plans,audit}/…   Super Admin (DIGITECHKH): subscribing shops, payments, plans (view-company, create-company, create-payment, edit-plan)
 └── shared/{scripts,styles,assets}  assets/avatars/<personId>.svg = profile images
 ```

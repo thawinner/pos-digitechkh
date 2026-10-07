@@ -974,10 +974,10 @@ function portalNotifications() {
         const st = subscriptionStatus(sub);
         const left = sub ? daysUntil(sub.endsOn) : 99;
         if (st === 'overdue') list.push({ icon: 'mdi:store-alert-outline', tone: 'danger', title: `ការជាវហួសកំណត់ ${-left} ថ្ងៃ`,
-            note: `ហាងនឹងចូលប្រើមិនបានក្នុង ${SUB_GRACE_DAYS + left} ថ្ងៃ · សូមបង់ប្រាក់ទៅ DIGITECHKH` });
+            note: `ហាងនឹងចូលប្រើមិនបានក្នុង ${SUB_GRACE_DAYS + left} ថ្ងៃ · សូមបង់ប្រាក់ទៅ DIGITECHKH`, href: `${root}/admin/subscription/subscription.html` });
         else if (st === 'expiring' || (st === 'trial' && left <= SUB_WARN_DAYS)) list.push({ icon: 'mdi:calendar-clock', tone: 'warning',
             title: st === 'trial' ? `សាកល្បងនៅសល់ ${left} ថ្ងៃ` : `ការជាវផុតកំណត់ក្នុង ${left} ថ្ងៃ`,
-            note: `${st === 'trial' ? 'ជាវដើម្បីបន្តប្រើ' : 'បង់ប្រាក់ដើម្បីបន្ត'} · ទាក់ទង DIGITECHKH 010 888 777`, time: fmtDate(sub.endsOn) });
+            note: `${st === 'trial' ? 'ជាវដើម្បីបន្តប្រើ' : 'បង់ប្រាក់ដើម្បីបន្ត'} · មើលវិធីបង់`, time: fmtDate(sub.endsOn), href: `${root}/admin/subscription/subscription.html` });
     }
     pendingApprovals().slice(0, 4).forEach(a => list.push({
         icon: 'mdi:shield-alert-outline', tone: 'warning',

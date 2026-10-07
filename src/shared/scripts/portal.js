@@ -95,6 +95,7 @@ const PORTAL_CONFIGS = {
             { id: 'payroll', label: 'ម៉ោងការងារ និងប្រាក់បៀវត្សរ៍', icon: 'mdi:cash-multiple', href: 'admin/reports/payroll.html' },
             { id: 'products', label: 'ទំនិញ និងតម្លៃ', icon: 'mdi:tag-outline', href: 'admin/products/products.html' },
             { id: 'settings', label: 'ច្បាប់ និងការកំណត់', icon: 'mdi:tune-variant', href: 'admin/settings/settings.html' },
+            { id: 'subscription', label: 'ការជាវ និងការបង់ប្រាក់', icon: 'mdi:card-account-details-outline', href: 'admin/subscription/subscription.html' },
             { group: 'ត្រួតពិនិត្យ', id: 'audit', label: 'កំណត់ហេតុសវនកម្ម', icon: 'mdi:clipboard-text-clock-outline', href: 'admin/audit/audit.html' }
         ]
     },
@@ -110,7 +111,7 @@ const PORTAL_CONFIGS = {
         userRole: 'អ្នកគ្រប់គ្រងប្រព័ន្ធ',
         policyNote: 'គ្រប់គ្រងហាងដែលជាវ កញ្ចប់ និងការបង់ប្រាក់ · មិនឃើញការលក់ ថ្លៃដើម ឬបុគ្គលិករបស់ហាង · ការចូលមើលដើម្បីជួយត្រូវមានមូលហេតុ ហើយម្ចាស់ហាងឃើញក្នុងកំណត់ហេតុរបស់ខ្លួន។',
         nav: [
-            { group: 'ទិដ្ឋភាពរួម', id: 'dashboard', label: 'ផ្ទាំងគ្រប់គ្រង', icon: 'mdi:view-dashboard-outline', href: 'control/dashboard/dashboard.html' },
+            { group: 'ទិដ្ឋភាពរួម', id: 'dashboard', label: 'ផ្ទាំងគ្រប់គ្រង', icon: 'mdi:view-dashboard-outline', href: 'control/dashboard/dashboard.html', badgeFn: 'ctlRequestCount', badgeTone: 'amber' },
             { group: 'អតិថិជន', id: 'companies', label: 'ហាងដែលជាវ', icon: 'mdi:storefront-outline', href: 'control/companies/companies.html', badgeFn: 'ctlAttentionCount', badgeTone: 'amber' },
             { id: 'billing', label: 'ការបង់ប្រាក់', icon: 'mdi:receipt-text-outline', href: 'control/billing/billing.html', badgeFn: 'ctlDueCount', badgeTone: 'amber' },
             { id: 'plans', label: 'កញ្ចប់ និងតម្លៃ', icon: 'mdi:package-variant', href: 'control/plans/plans.html' },

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគិតលុយ - បង់ប្រាក់</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { blue: { 50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 400: '#34d399', 500: '#059669', 600: '#047857', 700: '#065f46', 800: '#064e3b', 900: '#053d30', 950: '#022c22' }, slate: { 50: '#fafafa', 100: '#f4f4f4', 200: '#e7e7e7', 300: '#d4d4d4', 400: '#a2a2a2', 500: '#737373', 600: '#545454', 700: '#404040', 800: '#292929', 900: '#171717', 950: '#070707' }, primary: "#047857", 'primary-dark': "#065f46", accent: "#34d399" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+    <style>
+        /* បណ្ណទម្រង់៖ មិនប្រើ .bg-white ព្រោះ custom.css §17 ពង្រីកប៊ូតុងទាំងអស់ក្នុង «.bg-white មាន submit» ពេញទទឹងលើទូរស័ព្ទ */
+        .form-card { background: #ffffff; }
+        html.dark .form-card { background: #171717; border-color: #292929 !important; }
+        .f-input { width: 100%; height: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid #d4d4d4; background: #fff; color: #171717; }
+        .f-input:focus { outline: none; border-color: #047857; box-shadow: 0 0 0 3px rgba(4, 120, 87, .15); }
+        .f-input.is-error { border-color: #fb7185; }
+        html.dark .f-input { background: #111111; border-color: #404040; color: #e7e7e7; }
+        .f-err { display: block; min-height: 20px; margin-top: 4px; font-size: 13.5px; color: #e11d48; }
+        .ctl-kpis { display: grid; gap: 1rem; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        @media (max-width: 1023px) { .ctl-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    </style>
+</head>
+<body id="adminPortal" data-role-root="../.." data-active="subscription" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="បង់ប្រាក់ទៅ DIGITECHKH"
+             data-subtitle="បង់តាម KHQR ឬធនាគារ រួចជូនដំណឹង · DIGITECHKH បញ្ជាក់ ហើយបន្តថ្ងៃប្រើ" data-back="subscription.html"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <form id="form" onsubmit="return submitForm(event)" novalidate class="w-full grid gap-5 xl:grid-cols-3">
+                <div class="xl:col-span-2 space-y-5">
+                    <section class="form-card rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="px-5 py-4 border-b border-slate-100"><h3 class="sm-card-title text-slate-800">1. ជ្រើសរយៈពេល</h3><p class="sm-card-sub text-slate-500">ប្រចាំឆ្នាំ = តម្លៃ 10 ខែ</p></div>
+                        <div id="monthPick" class="px-5 py-4 flex flex-wrap gap-1.5"></div>
+                    </section>
+                    <section class="form-card rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="px-5 py-4 border-b border-slate-100"><h3 class="sm-card-title text-slate-800">2. បង់ប្រាក់</h3><p class="sm-card-sub text-slate-500">ស្កេន ឬផ្ទេរពីកម្មវិធីធនាគាររបស់អ្នក</p></div>
+                        <div class="px-5 py-4 space-y-4">
+                            <div id="methodPick" class="grid gap-2.5 md:grid-cols-2"></div>
+                            <div id="payTo" class="rounded-xl border border-slate-200 px-4 py-3"></div>
+                        </div>
+                    </section>
+                    <section class="form-card rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="px-5 py-4 border-b border-slate-100"><h3 class="sm-card-title text-slate-800">3. ជូនដំណឹង</h3><p class="sm-card-sub text-slate-500">លេខយោងពីសារធនាគារ ជួយ DIGITECHKH រកការបង់របស់អ្នកបានលឿន</p></div>
+                        <div class="px-5 py-5 grid gap-x-4 md:grid-cols-2">
+                            <label class="block "><span class="sm-td font-semibold text-slate-700">លេខយោងប្រតិបត្តិការ</span>
+                                <input id="ref" type="text"  placeholder="ឧ. 12345678" class="f-input mt-1.5"><span id="refErr" class="f-err"></span></label>
+                        </div>
+                    </section>
+                </div>
+                <div class="space-y-5">
+                    <section class="form-card rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="px-5 py-4 border-b border-slate-100"><h3 class="sm-card-title text-slate-800">សង្ខេប</h3><p class="sm-card-sub text-slate-500"></p></div>
+                        <div id="summary" class="px-5 py-4 space-y-2"></div>
+                        <div class="px-5 pb-4"><button type="submit" class="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white sm-td font-semibold inline-flex items-center justify-center gap-2"><i class="fas fa-paper-plane"></i> ខ្ញុំបានបង់ប្រាក់</button></div>
+                    </section>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/admin-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        /* ម្ចាស់ហាងជូនដំណឹងថាបានបង់ប្រាក់ (ទំព័រពេញ · .ai/ui-rules §2)
+           ជំហាន៖ រយៈពេល → បង់ (KHQR ឬធនាគាររបស់ DIGITECHKH) → លេខយោង · សំណើទៅច្រកអ្នកគ្រប់គ្រងប្រព័ន្ធ */
+        function setErr(id, msg) {
+            document.getElementById(id).classList.toggle('is-error', !!msg);
+            document.getElementById(id + 'Err').textContent = msg || '';
+            return msg ? 1 : 0;
+        }
+        function val(id) { return document.getElementById(id).value.trim(); }
+        function wireInputs(onChange) {
+            document.querySelectorAll('.f-input').forEach(i => i.addEventListener('input', () => { setErr(i.id, ''); if (onChange) onChange(); }));
+        }        const SUB_LABEL = { active: 'កំពុងប្រើ', trial: 'សាកល្បង', expiring: 'ជិតផុតកំណត់', overdue: 'ហួសកំណត់បង់', expired: 'ផុតកំណត់', suspended: 'បានផ្អាក' };
+        const SUB_CLS = { expiring: 'bg-amber-50 text-amber-800 border-amber-200', overdue: 'bg-amber-50 text-amber-800 border-amber-200', expired: 'bg-rose-50 text-rose-700 border-rose-200', suspended: 'bg-rose-50 text-rose-700 border-rose-200' };
+        const METHOD_LABEL = { khqr: 'KHQR', bank: 'ផ្ទេរតាមធនាគារ', cash: 'សាច់ប្រាក់' };
+        function subChipOwner(st) { return `<span class="sm-badge inline-flex px-2.5 py-0.5 rounded-full border whitespace-nowrap ${SUB_CLS[st] || 'bg-slate-50 text-slate-700 border-slate-200'}">${SUB_LABEL[st] || st}</span>`; }
+        const sub = shopSubscription(CURRENT_SHOP_ID) || DEFAULT_SHOP_SUBS['SHOP-01'];
+        let months = sub.cycle === 'year' ? 12 : 1;
+        let method = 'khqr';
+        const today = isoDate(new Date());
+        const from = !sub.trial && sub.endsOn >= today ? sub.endsOn : today;
+        function plusMonths(d, m) { const x = new Date(d + 'T12:00'); x.setMonth(x.getMonth() + m); return isoDate(x); }
+
+        function render() {
+            document.getElementById('monthPick').innerHTML = [1, 3, 6, 12].map(m => `<button type="button" onclick="months=${m}; render()"
+                class="sm-badge h-11 px-4 rounded-xl border transition ${months === m ? 'bg-blue-600 border-blue-600 text-white font-semibold' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}">${m} ខែ · <span class="sm-figure">${fmtUSD(subPrice(sub.plan, m))}</span></button>`).join('');
+            document.getElementById('methodPick').innerHTML = [['khqr', 'fa-qrcode', 'KHQR', 'ស្កេនពីកម្មវិធីធនាគារណាក៏បាន'], ['bank', 'fa-building-columns', 'ផ្ទេរតាមធនាគារ', `${VENDOR_PAY.bank} · ${VENDOR_PAY.accountName}`]].map(([k, i, l, d]) => `<button type="button" onclick="method='${k}'; render()"
+                class="text-left px-4 py-3 rounded-xl border transition flex items-start gap-3 ${method === k ? 'border-blue-600 ring-1 ring-blue-600' : 'border-slate-200 hover:border-slate-300'}">
+                <i class="fas ${i} mt-1 ${method === k ? 'text-blue-600' : 'text-slate-400'}"></i><span><span class="block sm-td font-semibold text-slate-800">${l}</span><span class="block sm-td-sub text-slate-500">${d}</span></span></button>`).join('');
+            document.getElementById('payTo').innerHTML = `<p class="sm-td-sub text-slate-500">${method === 'khqr' ? 'គណនីបាគង' : `លេខគណនី ${VENDOR_PAY.bank}`}</p>
+                <p class="text-[20px] font-semibold text-slate-900 sm-figure">${method === 'khqr' ? VENDOR_PAY.khqr : VENDOR_PAY.account}</p>
+                <p class="sm-td-sub text-slate-500">ចំនួន <b class="sm-figure text-slate-800">${fmtUSD(subPrice(sub.plan, months))}</b> · ចំណាំ៖ ${escapeText(MERCHANT.nameKh)}</p>`;
+            const row = (l, v) => `<div class="flex justify-between gap-3"><span class="sm-td-sub text-slate-500">${l}</span><span class="sm-td font-semibold text-slate-800 sm-figure text-right">${v}</span></div>`;
+            document.getElementById('summary').innerHTML = row('កញ្ចប់', subPlan(sub.plan).name) + row('ចំនួនទឹកប្រាក់', fmtUSD(subPrice(sub.plan, months)))
+                + row('ប្រើបានដល់', plusMonths(from, months).split('-').reverse().join('/'))
+                + '<p class="sm-td-sub text-slate-500 pt-1">DIGITECHKH ផ្ទៀងផ្ទាត់ក្នុង 1 ថ្ងៃធ្វើការ · អ្នកឃើញលទ្ធផលនៅទំព័រការជាវ</p>';
+        }
+
+        function submitForm(e) {
+            e.preventDefault();
+            const ref = val('ref');
+            if (setErr('ref', ref.length < 4 ? 'សូមបញ្ចូលលេខយោងពីសារធនាគារ' : '')) { document.getElementById('ref').focus(); return false; }
+            addSubRequest({ type: 'claim', months, method, ref, amount: subPrice(sub.plan, months) });
+            adminLog('settings', `ជូនដំណឹងការបង់ប្រាក់ ${fmtUSD(subPrice(sub.plan, months))} · ${months} ខែ · ${ref}`);
+            flashToast('បានជូនដំណឹងទៅ DIGITECHKH · រង់ចាំការបញ្ជាក់');
+            location.href = 'subscription.html';
+            return false;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (subRequests(CURRENT_SHOP_ID).some(r => r.type === 'claim' && r.status === 'pending')) { flashToast('បានជូនដំណឹងរួចហើយ · រង់ចាំ DIGITECHKH បញ្ជាក់'); location.replace('subscription.html'); return; }
+            render(); wireInputs();
+        });
+    </script>
+</body>
+</html>
