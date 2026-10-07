@@ -82,6 +82,7 @@
         /* បង្កើតការបញ្ជាទិញ — ទំព័រពេញ · ជ្រើសអ្នកផ្គត់ផ្គង់ → ទំនិញជិតអស់របស់ពួកគេបំពេញឱ្យ → ថ្ងៃដឹក → រក្សាទុក ហើយផ្ញើសារ */
         const SUPS = shopSuppliers().filter(s => s.active !== false);
         const pre = new URLSearchParams(location.search).get('supplier');
+        const preSku = new URLSearchParams(location.search).get('sku');
         let supId = SUPS.some(s => s.id === pre) ? pre : '';
         let lines = [];
         let days = 0;
@@ -166,7 +167,11 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            if (supId) pickSup(supId);
+            if (supId) {
+                pickSup(supId);
+                // មកពីជួរស្តុក: ត្រូវប្រាកដថាទំនិញនោះមានក្នុងបញ្ជី
+                if (preSku && getProduct(preSku) && !lines.some(l => l.sku === preSku)) addLine(preSku);
+            } else if (preSku && getProduct(preSku)) { lines = [{ sku: preSku, qty: getProduct(preSku).reorderQty || 12 }]; renderAll(); }
             else { const first = SUPS.find(s => lowStockForSupplier(s).length); if (first && !pre) pickSup(first.id); else renderAll(); }
             document.getElementById('search').addEventListener('input', renderResults);
         });

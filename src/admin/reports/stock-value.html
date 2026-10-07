@@ -112,11 +112,12 @@
         }
 
         function renderKpis(stats) {
+            const pendingIns = unconfirmedStockInCount();
             document.getElementById('kpiRow').innerHTML =
                 kpiCard('តម្លៃស្តុកសរុប (ថ្លៃដើម)', fmtUSD(stats.totalValue), 'គិតតាមថ្លៃដើមទិញចូល', 'text-emerald-700') +
                 kpiCard('ចំនួនឯកតាក្នុងស្តុក', `${stats.totalUnits}`, 'ឯកតាទំនិញជាក់ស្តែងទាំងអស់') +
                 kpiCard('មុខទំនិញសរុប', `${stats.productCount}`, `${stats.byCategory.length} ប្រភេទទំនិញ`) +
-                kpiCard('ថ្លៃដើមមិនទាន់បញ្ជាក់', `${stats.unconfirmedCount}`, stats.unconfirmedCount ? 'មុខទំនិញប្រើថ្លៃដើមបឋម' : 'បានបញ្ជាក់គ្រប់មុខ', stats.unconfirmedCount ? 'text-amber-600' : '');
+                kpiCard('ស្តុកចូលរង់ចាំបញ្ជាក់ថ្លៃដើម', `${pendingIns} វិក្កយបត្រ`, pendingIns ? 'តម្លៃនេះប្រើថ្លៃដើមចុងក្រោយ' : 'បានបញ្ជាក់រួចរាល់', pendingIns ? 'text-amber-600' : '', '../stock/stock-in.html');
         }
 
         function renderChart(stats) {

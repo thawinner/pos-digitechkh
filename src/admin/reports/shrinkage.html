@@ -293,7 +293,7 @@
                 </tr>`;
 
                 tbody.innerHTML = stats.list.map(x => {
-                    const rLabel = x.reason === 'count_shortage' ? 'ខ្វះពេលរាប់ស្តុក' : (STOCK_ADJUST_REASONS[x.reason] ? STOCK_ADJUST_REASONS[x.reason].label : x.reason);
+                    const rLabel = shrinkReasonLabel(x.reason);
                     return `<tr>
                         <td class="py-2.5 px-5 sm-td text-slate-600 sm-figure">${fmtDate(x.at)} <span class="sm-td-sub text-slate-400 block">${fmtTime(x.at)}</span></td>
                         <td class="py-2.5 px-3 sm-td font-medium text-slate-800">${escapeText(x.name)}<span class="sm-td-sub text-slate-400 font-mono block">${x.sku}</span></td>

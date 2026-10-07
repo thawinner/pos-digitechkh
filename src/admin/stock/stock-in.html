@@ -49,7 +49,7 @@
 
                 <!-- តារាងបញ្ជីស្តុកចូល -->
                 <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-                    <div class="max-md:hidden overflow-x-auto"><table class="w-full min-w-[760px]">
+                    <div class="max-md:hidden overflow-x-auto"><table class="w-full">
                         <thead><tr class="border-b border-slate-100 bg-slate-50/60">
                             <th class="sm-th py-2.5 px-5 text-left text-slate-500">កាលបរិច្ឆេទ</th>
                             <th class="sm-th py-2.5 px-3 text-left text-slate-500">វិក្កយបត្រ</th>
@@ -58,8 +58,7 @@
                             <th class="sm-th py-2.5 px-3 text-right text-slate-500">ចំនួនសរុប</th>
                             <th class="sm-th py-2.5 px-3 text-right text-slate-500">តម្លៃសរុប</th>
                             <th class="sm-th py-2.5 px-3 text-center text-slate-500">ស្ថានភាព</th>
-                            <th class="sm-th py-2.5 px-3 text-left text-slate-500">អ្នកទទួល</th>
-                            <th class="sm-th py-2.5 px-5 text-right w-24"></th>
+                            <th class="sm-th py-2.5 px-5 w-16"></th>
                         </tr></thead>
                         <tbody id="rows" class="divide-y divide-slate-100"></tbody>
                     </table></div>
@@ -107,7 +106,7 @@
 
             document.getElementById('kpiRow').innerHTML =
                 kpiCard('រង់ចាំបញ្ជាក់ថ្លៃដើម', `${pendingList.length}`, 'វិក្កយបត្រត្រូវបញ្ចូលថ្លៃដើម', pendingList.length ? 'text-amber-600' : 'text-slate-700') +
-                kpiCard('បានបញ្ជាក់រួចរាល់', `${confirmedList.length}`, 'មានថ្លៃដើមជាក់ស្តែងត្រឹមត្រូវ', 'text-emerald-700') +
+                kpiCard('បានបញ្ជាក់រួចរាល់', `${confirmedList.length}`, 'មានថ្លៃដើមជាក់ស្តែងត្រឹមត្រូវ') +
                 kpiCard('តម្លៃស្តុកចូលសរុប', fmtUSD(totalValue), 'គិតតាមថ្លៃដើមទិញចូល') +
                 kpiCard('ចំនួនឯកតាសរុប', `${totalUnits}`, 'ឯកតាទំនិញដែលបានទទួលចូលស្តុក');
         }
@@ -143,38 +142,38 @@
 
             document.getElementById('rows').innerHTML = list.map(s => {
                 const statusBadge = s.confirmed
-                    ? '<span class="sm-badge px-2.5 py-1 rounded-full bg-slate-50 text-slate-600 border border-slate-200 text-xs font-medium"><i class="fas fa-check mr-1"></i>បានបញ្ជាក់</span>'
+                    ? '<span class="sm-td text-slate-500">បានបញ្ជាក់</span>'
                     : '<span class="sm-badge px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-medium"><i class="fas fa-clock mr-1"></i>រង់ចាំបញ្ជាក់</span>';
 
-                const btnLabel = s.confirmed ? 'មើលលម្អិត' : 'បញ្ជាក់ថ្លៃដើម';
-                const btnTone = s.confirmed ? 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm';
+                const href = `view-stock-in.html?invoice=${encodeURIComponent(s.invoice)}`;
+                const menuId = `siMenu-${s.lines[0] ? s.lines[0].id : s.invoice}`.replace(/[^\w-]/g, '_');
 
-                return `<tr data-row-id="${escapeText(s.invoice)}">
-                    <td class="py-2.5 px-5 sm-td text-slate-600 sm-figure">${fmtDate(s.at)} <span class="sm-td-sub text-slate-400 block">${fmtTime(s.at)}</span></td>
-                    <td class="py-2.5 px-3 sm-td-strong text-slate-800 font-mono">${escapeText(s.invoice)}</td>
+                return `<tr data-row-id="${escapeText(s.invoice)}" onclick="location.href='${href}'" class="hover:bg-slate-50 cursor-pointer">
+                    <td class="py-2.5 px-5 sm-td text-slate-600 sm-figure">${fmtDate(s.at)} <span class="sm-td-sub text-slate-400 block">${fmtTime(s.at)} · ${personName(s.by)}</span></td>
+                    <td class="py-2.5 px-3 sm-td-strong text-slate-800">${escapeText(s.invoice)}</td>
                     <td class="py-2.5 px-3 sm-td text-slate-700 font-medium">${escapeText(s.supplier)}</td>
                     <td class="py-2.5 px-3 text-right sm-td sm-figure text-slate-600">${s.lines.length} មុខ</td>
                     <td class="py-2.5 px-3 text-right sm-td-strong sm-figure text-slate-800">${s.totalQty}</td>
                     <td class="py-2.5 px-3 text-right sm-td-strong sm-figure text-slate-700">${fmtUSD(s.totalCost)}</td>
                     <td class="py-2.5 px-3 text-center">${statusBadge}</td>
-                    <td class="py-2.5 px-3 sm-td text-slate-600">${personName(s.by)}</td>
-                    <td class="py-2.5 px-5 text-right">
-                        <a href="view-stock-in.html?invoice=${encodeURIComponent(s.invoice)}" class="sm-badge h-8 px-3 rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition ${btnTone}">
-                            ${btnLabel} <i class="fas fa-arrow-right text-[10px]"></i>
-                        </a>
+                    <td class="py-2.5 px-5 text-center relative" onclick="event.stopPropagation()">
+                        <button onclick="toggleRowActionMenu(event, '${menuId}')" type="button" class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-500 flex items-center justify-center mx-auto transition"><i class="fas fa-ellipsis-vertical text-sm"></i></button>
+                        <div id="${menuId}" class="hidden absolute right-4 top-10 w-48 bg-white rounded-2xl shadow-2xl border border-slate-200 p-1.5 text-left z-50">
+                            <button onclick="location.href='${href}'" type="button" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-50 text-left transition sm-td"><i class="fas ${s.confirmed ? 'fa-eye' : 'fa-pen'} text-slate-400 text-xs w-4"></i>${s.confirmed ? 'មើលលម្អិត' : 'បញ្ជាក់ថ្លៃដើម'}</button>
+                        </div>
                     </td>
                 </tr>`;
             }).join('');
 
             document.getElementById('cards').innerHTML = list.map(s => {
                 const statusBadge = s.confirmed
-                    ? '<span class="sm-badge px-2 py-0.5 rounded-full bg-slate-50 text-slate-600 border border-slate-200 text-xs font-medium">បានបញ្ជាក់</span>'
+                    ? '<span class="sm-td-sub text-slate-500">បានបញ្ជាក់</span>'
                     : '<span class="sm-badge px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-medium">រង់ចាំបញ្ជាក់</span>';
 
-                return `<div data-row-id="${escapeText(s.invoice)}" class="p-4 space-y-2">
+                return `<div data-row-id="${escapeText(s.invoice)}" onclick="location.href='view-stock-in.html?invoice=${encodeURIComponent(s.invoice)}'" class="p-4 space-y-2 cursor-pointer">
                     <div class="flex items-start justify-between gap-2">
                         <div>
-                            <p class="sm-value text-slate-800 font-mono">${escapeText(s.invoice)}</p>
+                            <p class="sm-value text-slate-800">${escapeText(s.invoice)}</p>
                             <p class="sm-td-sub text-slate-500">${escapeText(s.supplier)}</p>
                         </div>
                         ${statusBadge}
@@ -185,9 +184,7 @@
                     </div>
                     <div class="flex items-center justify-between pt-1">
                         <span class="sm-value text-slate-800 sm-figure">${fmtUSD(s.totalCost)}</span>
-                        <a href="view-stock-in.html?invoice=${encodeURIComponent(s.invoice)}" class="sm-badge h-8 px-3 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold inline-flex items-center gap-1">
-                            ${s.confirmed ? 'មើលលម្អិត' : 'បញ្ជាក់ថ្លៃដើម'} <i class="fas fa-arrow-right text-[10px]"></i>
-                        </a>
+                        <span class="sm-td-sub ${s.confirmed ? 'text-slate-500' : 'text-blue-700 font-semibold'}">${s.confirmed ? 'មើលលម្អិត' : 'បញ្ជាក់ថ្លៃដើម'} <i class="fas fa-chevron-right text-[10px]"></i></span>
                     </div>
                 </div>`;
             }).join('');

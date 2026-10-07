@@ -48,14 +48,17 @@ shopId)` reads another branch or shop. Stock transfer between branches: `manager
 view-transfer}` (nav item only when the shop has 2+ branches, `multiBranch` in `PORTAL_CONFIGS`; badge
 `mgrIncomingTransferCount`). `pos_transfers` is shop-wide; `sendTransfer` writes `transfer_out` moves in the sending
 branch at once, `receiveTransfer` writes `transfer_in` only for the counted quantity; a shortfall needs a reason and
-stays on the transfer (`transferShort`).
+stays on the transfer (`transferShort`); the owner's shrinkage report counts it as «ខ្វះពេលផ្ទេរ» for the sending
+branch (`shrinkageStats`, `shrinkReasonLabel`).
 Purchase orders: suppliers `manager/suppliers/{suppliers,create-supplier,edit-supplier}` (`pos_suppliers`, shop-wide;
 `SUPPLIER_SEED` only in the demo shop; each supplier lists the products it sells and its delivery days) and orders
 `manager/purchase/{purchase-orders,create-order,view-order}` (`pos_purchase_orders`, per branch). Creating an order
 pre-fills the chosen supplier's low or out-of-stock products not already on order (`lowStockForSupplier`) and the
 delivery date from its delivery days; the order page has a Khmer message to copy into Telegram/SMS (`poMessage`).
 Receiving (`receivePO`, part deliveries allowed) writes normal `stock_in` moves, so the owner's cost confirmation still
-applies; closing an open order needs a reason. Late orders: badge `lateOrderCount` and a manager notification. Demo history (`IS_DEMO_DATA`) exists only in the demo shop's first branch; new
+applies; closing an open order needs a reason. `onOrderBySku()` (still to arrive per product) drives the stock list's
+reorder column («បានបញ្ជាទិញ N · មកដល់» instead of a new suggestion; otherwise «ទិញ N» links to
+`create-order.html?sku=…&supplier=…`), and stock-in shows a banner to receive against the supplier's open order. Late orders: badge `lateOrderCount` and a manager notification. Demo history (`IS_DEMO_DATA`) exists only in the demo shop's first branch; new
 branches start empty with zero stock. A shop without a
 manager lets its owner approve at the till (`showManagerOverride`). A password login with more than one membership shows «ជ្រើសហាង»; the account menu offers
 «ប្តូរហាង» (`index.html?pick=1`). The session carries `shopId`; `CURRENT_SHOP_ID` copies that shop into `MERCHANT`.
@@ -112,7 +115,7 @@ src/
 ├── cashier/display/customer-display  customer-facing screen (CFD), opened from the terminal header; read-only mirror of `pos_cfd`
 ├── cashier/receipts/receipts       shift receipts, void / return requests (manager PIN on the spot or queued), return from an earlier shift by exact receipt number
 ├── cashier/shift/{open,close}-shift  float count + manager PIN · blind close with one recount + Z-report
-├── manager/{dashboard,approvals,shifts,roster,cash,stock,stock-count,stock-history,stock-transfer,purchase,suppliers,exceptions,reports,settings}/…  (view-request, view-shift, create-movement, create-stock-in, create-adjustment, create-count)
+├── manager/{dashboard,approvals,shifts,roster,cash,stock,stock-count,stock-history,stock-transfer,purchase,suppliers,exceptions,reports,settings}/…  (view-request, view-shift, create-movement, create-stock-in, create-adjustment, create-count, view-count)
 ├── admin/{setup,dashboard,reports,branches,staff,products,settings,subscription,audit,stock}/…   owner: first-login setup wizard, getting-started checklist, branches, profit, stock value, shrinkage, stock-in cost, staff, prices, rules, audit log (view-stock-in, view-staff, create-product, create/edit-branch)
 ├── control/{dashboard,companies,billing,plans,audit}/…   Super Admin (DIGITECHKH): subscribing shops, payments, plans (view-company, create-company, create-payment, edit-plan)
 └── shared/{scripts,styles,assets}  assets/avatars/<personId>.svg = profile images
@@ -201,7 +204,8 @@ src/
   `pos_stock_opening` + live sales since then (from the receipts) + `pos_stock_moves` (void, return, stock_in, adjust,
   count; each with `by`, `at`, `qty` ±, `reason`). Approvals write their moves in `applyApprovalToSale`; a return
   carries `restock` (false = damaged adjustment). Cashier pages use only `stockStatus()` (out / low by `p.minStock`),
-  never quantities. Simulated registers' sales after the opening do not move stock.
+  never quantities. Simulated registers' sales after the opening do not move stock. Generated stock-ins older than
+3 days count as cost-confirmed, so the owner's queue holds only recent deliveries.
 - **Customer display (CFD)**: the terminal's `syncCfd()` (called from `renderCart`, KHQR, success and lock handlers) writes a snapshot with `publishCfd()` to `pos_cfd` `{ stage: idle|sell|pay|khqr|thanks, items (sku, qty, price), totals, pay, khqr, thanks }`; the display listens to the `storage` event. The snapshot carries only what the customer should see: no cost, stock, PINs, reasons or staff names. The idle messages (max 5, with on/off and an icon) are `cfdMessages` in `posSettings()`, edited by the manager or owner in settings → «អេក្រង់អតិថិជន». The terminal republishes every 10 s as a heartbeat; the display falls back to idle after 30 s without an update. The owner may open the display page (exempt in `guardPage`).
 - Banks: KHQR payments go to a shop bank account chosen at the till. `PAY_BANKS` (ABA, ACLEDA, Wing, …) + `payBanks` in
   `posSettings()` (owner settings → «ធនាគារទទួលប្រាក់»: on/off, Bakong account ID, order; first = default). The sale stores

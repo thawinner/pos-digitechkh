@@ -670,9 +670,22 @@ function poMessage(po) {
 }
 
 /* ទំនិញជិតអស់ ឬអស់ ដែលអ្នកផ្គត់ផ្គង់នេះលក់ (មិនរាប់ទំនិញដែលកំពុងបញ្ជាទិញរួច) */
+// sku → { qty, expectedOn, poId } still to arrive on open orders
+function onOrderBySku() {
+    const out = {};
+    purchaseOrders().filter(poOpen).forEach(po => po.lines.forEach(l => {
+        const left = l.qty - l.received;
+        if (left <= 0) return;
+        const o = out[l.sku] || (out[l.sku] = { qty: 0, expectedOn: po.expectedOn, poId: po.id });
+        o.qty += left;
+        if (po.expectedOn < o.expectedOn) { o.expectedOn = po.expectedOn; o.poId = po.id; }
+    }));
+    return out;
+}
+
 function lowStockForSupplier(sup) {
     const levels = onHandLevels();
-    const onOrder = new Set(purchaseOrders().filter(poOpen).flatMap(po => po.lines.filter(l => l.received < l.qty).map(l => l.sku)));
+    const onOrder = new Set(Object.keys(onOrderBySku()));
     return (sup.skus || []).map(getProduct).filter(p => p && p.active !== false && !onOrder.has(p.sku) && stockStatusOf(p, levels[p.sku] || 0) !== 'ok');
 }
 
@@ -832,7 +845,8 @@ function generateStockHistory() {
                     supplier: sup,
                     invoice: invNum,
                     date: dayStr,
-                    costConfirmed: false,
+                    // only the last 3 days wait for the owner to confirm cost
+                    costConfirmed: dayStr < isoDate(new Date(Date.now() - 3 * 86400000)),
                     ref: invNum,
                     reason: 'ទទួលទំនិញចូលស្តុក',
                     note: ''

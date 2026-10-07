@@ -126,7 +126,7 @@
         });
 
         function renderTypeTabs() {
-            const types = ['all', 'sale', 'void', 'return', 'stock_in', 'adjust', 'count'];
+            const types = ['all', 'sale', 'void', 'return', 'stock_in', 'adjust', 'count', 'transfer_out', 'transfer_in'].filter(t => !t.startsWith('transfer') || shopBranches().length > 1);
             document.getElementById('typeTabs').innerHTML = types.map(t => {
                 const isSel = selectedType === t;
                 const meta = t === 'all' ? { label: 'ទាំងអស់' } : STOCK_MOVE_TYPE[t];

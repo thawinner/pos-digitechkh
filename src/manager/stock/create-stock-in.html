@@ -62,6 +62,7 @@
                                 </label>
                             </div>
                         </div>
+                        <div id="poBanner" class="hidden"></div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block">
@@ -94,13 +95,13 @@
                         </div>
 
                         <div class="overflow-x-auto">
-                            <table class="w-full text-left">
+                            <table class="w-full text-left no-min-width max-sm:table-fixed">
                                 <thead class="bg-slate-50 text-slate-500 border-b border-slate-100">
                                     <tr>
                                         <th class="sm-th py-2.5 px-3">មុខទំនិញ <span class="text-rose-500">*</span></th>
-                                        <th class="sm-th py-2.5 px-3 text-right w-32">ស្តុកបច្ចុប្បន្ន</th>
-                                        <th class="sm-th py-2.5 px-3 text-right w-36">ចំនួនទទួលចូល <span class="text-rose-500">*</span></th>
-                                        <th class="sm-th py-2.5 px-3 text-right w-32">ស្តុកក្រោយទទួល</th>
+                                        <th class="sm-th py-2.5 px-3 text-right w-32 max-sm:hidden">ស្តុកបច្ចុប្បន្ន</th>
+                                        <th class="sm-th py-2.5 px-3 text-right w-36 max-sm:w-24">ចំនួនទទួលចូល <span class="text-rose-500">*</span></th>
+                                        <th class="sm-th py-2.5 px-3 text-right w-32 max-sm:hidden">ស្តុកក្រោយទទួល</th>
                                         <th class="sm-th py-2.5 px-2 text-center w-12"></th>
                                     </tr>
                                 </thead>
@@ -143,8 +144,8 @@
                             </div>
                         </div>
 
-                        <div class="p-3.5 bg-amber-50/80 rounded-xl border border-amber-200/80 text-amber-800 text-xs flex items-start gap-2.5 leading-relaxed">
-                            <i class="fas fa-circle-info text-amber-600 text-sm mt-0.5 flex-shrink-0"></i>
+                        <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-slate-600 text-xs flex items-start gap-2.5 leading-relaxed">
+                            <i class="fas fa-circle-info text-slate-400 text-sm mt-0.5 flex-shrink-0"></i>
                             <div>
                                 ការទទួលស្តុកនេះមិនបង្ហាញថ្លៃដើមឡើយ។ ម្ចាស់ហាងនឹងបញ្ជាក់ថ្លៃដើមតាមក្រោយក្នុងប្រព័ន្ធ។
                             </div>
@@ -410,17 +411,17 @@
                             </button>
                         </div>
                     </td>
-                    <td class="py-2.5 px-3 text-right sm-td sm-figure font-medium text-slate-600">
+                    <td class="py-2.5 px-3 text-right sm-td sm-figure font-medium text-slate-600 max-sm:hidden">
                         ${l.sku ? `${cur} ${unit}` : '—'}
                     </td>
                     <td class="py-2.5 px-3 text-right">
                         <input type="number" min="1" step="1" value="${l.qty || 1}" oninput="updateLineQty(${idx}, this.value)" class="w-full h-11 px-3 rounded-xl bg-white border border-slate-200 text-right sm-value font-semibold text-slate-800 focus:outline-none focus:border-blue-500 sm-figure">
                     </td>
-                    <td class="py-2.5 px-3 text-right sm-td sm-figure font-bold text-emerald-700">
+                    <td class="py-2.5 px-3 text-right sm-td sm-figure font-bold text-slate-800 max-sm:hidden">
                         ${l.sku ? `${after} ${unit}` : '—'}
                     </td>
                     <td class="py-2.5 px-2 text-center">
-                        <button onclick="removeLine(${idx})" type="button" class="w-8 h-8 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 flex items-center justify-center transition cursor-pointer" title="លុបជួរនេះ">
+                        <button onclick="removeLine(${idx})" type="button" class="w-8 h-8 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 flex items-center justify-center transition cursor-pointer">
                             <i class="fas fa-trash-can text-sm"></i>
                         </button>
                     </td>
@@ -428,8 +429,24 @@
             }).join('');
         }
 
+        // អ្នកផ្គត់ផ្គង់មានការបញ្ជាទិញកំពុងរង់ចាំ → ទទួលតាមការបញ្ជាទិញ ដើម្បីកុំឱ្យវាស្ថិតបើកជារៀងរហូត
+        function renderPoBanner(name) {
+            const box = document.getElementById('poBanner');
+            const sp = name && shopSuppliers().find(s => s.name === name);
+            const open = sp ? purchaseOrders().filter(po => poOpen(po) && po.supplierId === sp.id) : [];
+            box.classList.toggle('hidden', !open.length);
+            if (!open.length) return;
+            const po = open[open.length - 1];
+            box.innerHTML = `<div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex flex-wrap items-center gap-3">
+                <i class="fas fa-cart-shopping text-slate-400"></i>
+                <span class="flex-1 min-w-0 sm-td text-slate-700">អ្នកផ្គត់ផ្គង់នេះមានការបញ្ជាទិញកំពុងរង់ចាំ ${open.length > 1 ? `${open.length} ` : ''}· មកដល់ ${fmtDate(po.expectedOn)}។ ទទួលតាមការបញ្ជាទិញ ដើម្បីបិទវាពេលទំនិញមកគ្រប់។</span>
+                <a href="../purchase/view-order.html?id=${po.id}#receive" class="sm-badge h-10 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold inline-flex items-center gap-2"><i class="fas fa-truck-ramp-box"></i> ទទួលតាមការបញ្ជាទិញ</a>
+            </div>`;
+        }
+
         function renderSummary() {
             const sup = document.getElementById('supplierInput').value.trim();
+            renderPoBanner(sup);
             const inv = document.getElementById('invoiceInput').value.trim();
             const dt = document.getElementById('deliveryDate').value;
 

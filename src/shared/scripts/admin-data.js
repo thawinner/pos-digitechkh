@@ -143,7 +143,7 @@ function totalStockValueAtCost() {
     const byCategory = {};
     const productList = [];
 
-    CATEGORIES.forEach(c => {
+    CATEGORIES.filter(c => c.id !== 'all').forEach(c => {
         byCategory[c.id] = { id: c.id, label: c.label, units: 0, value: 0, products: 0 };
     });
 
@@ -188,6 +188,12 @@ function totalStockValueAtCost() {
         byCategory: Object.values(byCategory),
         products: productList
     };
+}
+
+function shrinkReasonLabel(rk) {
+    if (rk === 'count_shortage') return 'ខ្វះពេលរាប់ស្តុក';
+    if (rk === 'transfer_short') return 'ខ្វះពេលផ្ទេរ';
+    return STOCK_ADJUST_REASONS[rk] ? STOCK_ADJUST_REASONS[rk].label : rk;
 }
 
 /* របាយការណ៍ការខាតបង់ស្តុក ($) តាមចន្លោះកាលបរិច្ឆេទ */
@@ -238,6 +244,23 @@ function shrinkageStats(range) {
         }
     });
 
+    // ខ្វះពេលផ្ទេរ: ស្តុកចេញពីសាខានេះ តែសាខាទទួលរាប់បានតិចជាង → ខាតរបស់សាខាផ្ញើ
+    if (typeof shopTransfers === 'function') {
+        shopTransfers().filter(t => t.from === ACTIVE_BRANCH_ID && t.status === 'received').forEach(t => {
+            const tDate = (t.receivedAt || t.sentAt).slice(0, 10);
+            if ((startStr && tDate < startStr) || (endStr && tDate > endStr)) return;
+            t.lines.forEach(l => {
+                const qty = l.qty - (l.received || 0);
+                if (qty <= 0) return;
+                const p = getProduct(l.sku);
+                const unitCost = costOf(l.sku);
+                list.push({ id: `${t.id}-${l.sku}`, sku: l.sku, name: p ? p.name : l.sku, category: p ? p.category : '', unit: p ? p.unit : 'ឯកតា',
+                    qty, unitCost, costValue: qty * unitCost, retailValue: qty * (p ? p.price : 0), reason: 'transfer_short',
+                    by: t.sentBy, at: t.receivedAt || t.sentAt, ref: t.id, note: `ផ្ទេរទៅ ${branchName(t.to)}` });
+            });
+        });
+    }
+
     list.sort((a, b) => b.at.localeCompare(a.at));
 
     const totalValue = list.reduce((s, x) => s + x.costValue, 0);
@@ -252,7 +275,7 @@ function shrinkageStats(range) {
     list.forEach(x => {
         // មូលហេតុ
         const rk = x.reason || 'other';
-        const rLabel = rk === 'count_shortage' ? 'ខ្វះពេលរាប់ស្តុក' : (STOCK_ADJUST_REASONS[rk] ? STOCK_ADJUST_REASONS[rk].label : rk);
+        const rLabel = shrinkReasonLabel(rk);
         byReason[rk] = byReason[rk] || { key: rk, label: rLabel, count: 0, qty: 0, value: 0 };
         byReason[rk].count += 1;
         byReason[rk].qty += x.qty;
