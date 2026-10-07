@@ -48,7 +48,14 @@ shopId)` reads another branch or shop. Stock transfer between branches: `manager
 view-transfer}` (nav item only when the shop has 2+ branches, `multiBranch` in `PORTAL_CONFIGS`; badge
 `mgrIncomingTransferCount`). `pos_transfers` is shop-wide; `sendTransfer` writes `transfer_out` moves in the sending
 branch at once, `receiveTransfer` writes `transfer_in` only for the counted quantity; a shortfall needs a reason and
-stays on the transfer (`transferShort`). Demo history (`IS_DEMO_DATA`) exists only in the demo shop's first branch; new
+stays on the transfer (`transferShort`).
+Purchase orders: suppliers `manager/suppliers/{suppliers,create-supplier,edit-supplier}` (`pos_suppliers`, shop-wide;
+`SUPPLIER_SEED` only in the demo shop; each supplier lists the products it sells and its delivery days) and orders
+`manager/purchase/{purchase-orders,create-order,view-order}` (`pos_purchase_orders`, per branch). Creating an order
+pre-fills the chosen supplier's low or out-of-stock products not already on order (`lowStockForSupplier`) and the
+delivery date from its delivery days; the order page has a Khmer message to copy into Telegram/SMS (`poMessage`).
+Receiving (`receivePO`, part deliveries allowed) writes normal `stock_in` moves, so the owner's cost confirmation still
+applies; closing an open order needs a reason. Late orders: badge `lateOrderCount` and a manager notification. Demo history (`IS_DEMO_DATA`) exists only in the demo shop's first branch; new
 branches start empty with zero stock. A shop without a
 manager lets its owner approve at the till (`showManagerOverride`). A password login with more than one membership shows «ជ្រើសហាង»; the account menu offers
 «ប្តូរហាង» (`index.html?pick=1`). The session carries `shopId`; `CURRENT_SHOP_ID` copies that shop into `MERCHANT`.
@@ -105,7 +112,7 @@ src/
 ├── cashier/display/customer-display  customer-facing screen (CFD), opened from the terminal header; read-only mirror of `pos_cfd`
 ├── cashier/receipts/receipts       shift receipts, void / return requests (manager PIN on the spot or queued), return from an earlier shift by exact receipt number
 ├── cashier/shift/{open,close}-shift  float count + manager PIN · blind close with one recount + Z-report
-├── manager/{dashboard,approvals,shifts,roster,cash,stock,stock-count,stock-history,stock-transfer,exceptions,reports,settings}/…  (view-request, view-shift, create-movement, create-stock-in, create-adjustment, create-count)
+├── manager/{dashboard,approvals,shifts,roster,cash,stock,stock-count,stock-history,stock-transfer,purchase,suppliers,exceptions,reports,settings}/…  (view-request, view-shift, create-movement, create-stock-in, create-adjustment, create-count)
 ├── admin/{setup,dashboard,reports,branches,staff,products,settings,subscription,audit,stock}/…   owner: first-login setup wizard, getting-started checklist, branches, profit, stock value, shrinkage, stock-in cost, staff, prices, rules, audit log (view-stock-in, view-staff, create-product, create/edit-branch)
 ├── control/{dashboard,companies,billing,plans,audit}/…   Super Admin (DIGITECHKH): subscribing shops, payments, plans (view-company, create-company, create-payment, edit-plan)
 └── shared/{scripts,styles,assets}  assets/avatars/<personId>.svg = profile images

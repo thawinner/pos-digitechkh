@@ -162,7 +162,7 @@ const ACTIVE_BRANCH_ID = (() => {
 const IS_DEMO_DATA = IS_DEMO_SHOP && ACTIVE_BRANCH_ID === 'BR-01';
 const BRANCH_KEYS = ['pos_shifts', 'pos_shift_sales', 'pos_held_sales', 'pos_approvals', 'pos_cash_movements', 'pos_events',
     'pos_terminal_lock', 'pos_roster', 'pos_stock_opening', 'pos_stock_moves', 'pos_stock_counts', 'pos_stock_costs',
-    'pos_overlay', 'pos_seed_v3', 'pos_mgr_seed_v2', 'pos_cfd', 'pos_new_shift_notice'];
+    'pos_overlay', 'pos_seed_v3', 'pos_mgr_seed_v2', 'pos_cfd', 'pos_new_shift_notice', 'pos_purchase_orders'];
 const GLOBAL_KEYS = ['pos_session', 'pos_devices', 'pos_device', 'pos_login_guard', 'pos_last_login', 'pos_last_shop', 'pos_last_branch',
     'pos_staff', 'pos_pins', 'pos_passwords', 'pos_shop_profile', 'pos_shop_setup', 'pos_shops'];
 
@@ -1051,6 +1051,8 @@ const PRODUCT_WEIGHT = {
    ដូច្នេះការប្តូរតម្លៃមិនប៉ះពាល់វិក្កយបត្រ ឬរបាយការណ៍ចាស់ឡើយ។
    opening = ស្តុកបើកពេលចាប់ផ្តើមកត់ត្រាស្តុក (មិនមែនស្តុកបច្ចុប្បន្នទេ — មើល onHandLevels)។
    លំនាំដើម៖ អប្បបរមា ≈ ការលក់ពាក់កណ្តាលថ្ងៃ · បញ្ជាទិញ ≈ ការលក់ 3 ទៅ 4 ថ្ងៃ (តាមទម្ងន់លក់ដាច់) */
+/* ទំនិញគំរូ (ប្រើសម្រាប់អ្នកផ្គត់ផ្គង់គំរូ) — រក្សាទុកមុនពេលហាងថ្មីសម្អាតបញ្ជីទំនិញគំរូ */
+const PRODUCTS_SEED_SKUS = PRODUCTS.map(p => ({ sku: p.sku, cat: p.category }));
 const CATALOG_KEY = 'pos_catalog';
 const PRODUCTS_KEY = 'pos_products';
 (function loadShopProducts() {

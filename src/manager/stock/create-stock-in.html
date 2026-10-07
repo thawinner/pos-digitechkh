@@ -188,7 +188,7 @@
             mgrStockMoves().forEach(m => {
                 if (m.supplier) set.add(m.supplier);
             });
-            FMCG_SUPPLIERS.forEach(s => set.add(s));
+            shopSuppliers().forEach(s => set.add(s.name));   // បញ្ជីអ្នកផ្គត់ផ្គង់របស់ហាង
             suppliers = Array.from(set);
         }
 

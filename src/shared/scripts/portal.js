@@ -64,6 +64,8 @@ const PORTAL_CONFIGS = {
             { id: 'shifts', label: 'វេន និងបញ្ជរគិតលុយ', icon: 'mdi:cash-register', href: 'manager/shifts/shifts.html', badgeFn: 'mgrAwaitingReviewCount', badgeTone: 'amber' },
             { id: 'cash', label: 'ចលនាសាច់ប្រាក់', icon: 'mdi:safe', href: 'manager/cash/cash.html', badgeFn: 'mgrPendingDropCount', badgeTone: 'amber' },
             { group: 'ស្តុក', id: 'stock', label: 'ស្តុកទំនិញ', icon: 'mdi:package-variant-closed', href: 'manager/stock/stock.html', badgeFn: 'mgrLowStockCount', badgeTone: 'amber' },
+            { id: 'purchase', label: 'បញ្ជាទិញ', icon: 'mdi:cart-arrow-down', href: 'manager/purchase/purchase-orders.html', badgeFn: 'lateOrderCount', badgeTone: 'amber' },
+            { id: 'suppliers', label: 'អ្នកផ្គត់ផ្គង់', icon: 'mdi:truck-outline', href: 'manager/suppliers/suppliers.html' },
             { id: 'stock-transfer', label: 'ផ្ទេរស្តុក', icon: 'mdi:truck-delivery-outline', href: 'manager/stock-transfer/transfers.html', badgeFn: 'mgrIncomingTransferCount', badgeTone: 'amber', multiBranch: true },
             { id: 'stock-history', label: 'ប្រវត្តិស្តុក', icon: 'mdi:history', href: 'manager/stock-history/stock-history.html' },
             { id: 'stock-count', label: 'រាប់ស្តុក', icon: 'mdi:clipboard-check-outline', href: 'manager/stock-count/stock-count.html' },

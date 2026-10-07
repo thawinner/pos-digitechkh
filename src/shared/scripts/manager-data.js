@@ -554,14 +554,127 @@ function approverStats(range) {
 
 /* ===== ស្តុកទំនិញ និងប្រវត្តិ 14 ថ្ងៃ (Phase 2) ===== */
 
-const FMCG_SUPPLIERS = [
-    'ក្រុមហ៊ុន ស្រាបៀរកម្ពុជា (Khmer Beverages)',
-    'ក្រុមហ៊ុន វីតាល់ & មីជាតិ (One More Ltd)',
-    'ក្រុមហ៊ុន ខូកា-កូឡា កម្ពុជា (Cambodia Beverage Co.)',
-    'ក្រុមហ៊ុន យូនីលីវើ ខេមបូឌា (Unilever)',
-    'ក្រុមហ៊ុន នេសត្លេ កម្ពុជា (Nestlé)',
-    'ក្រុមហ៊ុន ចែកចាយ ភ្នំពេញ ឌីស្ទ្រីប៊្យូសិន'
-];
+/* ===== អ្នកផ្គត់ផ្គង់ (pos_suppliers · រួមទូទាំងហាង) =====
+   { id, name, phone, telegram, leadDays, skus, note, active } · ហាងគំរូមាន 6 · ហាងថ្មីចាប់ផ្តើមទទេ */
+const SUPPLIERS_KEY = 'pos_suppliers';
+const SUPPLIER_SEED = (() => {
+    const by = cat => PRODUCTS_SEED_SKUS.filter(s => s.cat === cat).map(s => s.sku);
+    return [
+        { id: 'SUP-01', name: 'ក្រុមហ៊ុន ភេសជ្ជៈកម្ពុជា', phone: '023 880 101', telegram: '@khbeverage', leadDays: 2, skus: by('drink').filter(s => !['8850001', '8850008'].includes(s)), active: true },
+        { id: 'SUP-02', name: 'ក្រុមហ៊ុន ទឹកសុទ្ធ វីតាល់', phone: '023 880 202', telegram: '@vitalwater', leadDays: 1, skus: ['8850001', '8850008'], active: true },
+        { id: 'SUP-03', name: 'ក្រុមហ៊ុន ចែកចាយអាហារសម្រន់ ភ្នំពេញ', phone: '012 660 303', telegram: '', leadDays: 3, skus: by('snack'), active: true },
+        { id: 'SUP-04', name: 'ហាងលក់ដុំ របស់ប្រើប្រាស់ ស្រីមុំ', phone: '096 440 404', telegram: '@sreymom_ws', leadDays: 3, skus: by('household'), active: true },
+        { id: 'SUP-05', name: 'ហាងលក់ដុំ សម្ភារសិក្សា ចំណេះ', phone: '081 550 505', telegram: '', leadDays: 2, skus: by('stationery'), active: true },
+        { id: 'SUP-06', name: 'ក្រុមហ៊ុន អេឡិចត្រូនិក រស្មី', phone: '010 770 606', telegram: '@rasmey_elec', leadDays: 5, skus: by('electronic'), active: true }
+    ];
+})();
+/* ឈ្មោះអ្នកផ្គត់ផ្គង់សម្រាប់ប្រវត្តិស្តុកគំរូ (ខ្មែរសុទ្ធ) */
+const FMCG_SUPPLIERS = SUPPLIER_SEED.map(s => s.name);
+
+function shopSuppliers() {
+    const list = posRead(SUPPLIERS_KEY, null);
+    return list || (IS_DEMO_SHOP ? SUPPLIER_SEED : []);
+}
+
+function saveSuppliers(list) {
+    posWrite(SUPPLIERS_KEY, list);
+}
+
+function supplierById(id) {
+    return shopSuppliers().find(s => s.id === id) || null;
+}
+
+/* ===== ការបញ្ជាទិញ (pos_purchase_orders · តាមសាខា) =====
+   { id, supplierId, lines: [{ sku, qty, received }], expectedOn, note, status: ordered|partial|received|closed,
+     createdBy, createdAt, receipts: [{ at, by, invoice, lines: [{ sku, qty }] }], closeReason }
+   ទទួលទំនិញតាមការបញ្ជាទិញ = ទទួលស្តុកធម្មតា (stock_in) ដូច្នេះម្ចាស់ហាងបញ្ជាក់ថ្លៃដើមដូចមុន */
+const PO_KEY = 'pos_purchase_orders';
+const PO_STATUS = {
+    ordered: { label: 'រង់ចាំដឹក', cls: 'bg-slate-50 text-slate-700 border-slate-200' },
+    partial: { label: 'ទទួលខ្លះ', cls: 'bg-amber-50 text-amber-800 border-amber-200' },
+    received: { label: 'ទទួលគ្រប់', cls: 'bg-slate-50 text-slate-700 border-slate-200' },
+    closed: { label: 'បិទ · ទទួលមិនគ្រប់', cls: 'bg-slate-50 text-slate-600 border-slate-200' }
+};
+
+function purchaseOrders() {
+    return (posRead(PO_KEY, []) || []).slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+function poById(id) {
+    return purchaseOrders().find(p => p.id === id) || null;
+}
+
+function poOpen(po) {
+    return po.status === 'ordered' || po.status === 'partial';
+}
+
+function poLate(po) {
+    return poOpen(po) && po.expectedOn < isoDate(new Date());
+}
+
+function lateOrderCount() {
+    return purchaseOrders().filter(poLate).length;
+}
+
+function poUnits(po, key) {
+    return po.lines.reduce((n, l) => n + (Number(l[key]) || 0), 0);
+}
+
+function savePOs(list) {
+    posWrite(PO_KEY, list);
+}
+
+function createPO(supplierId, lines, expectedOn, note) {
+    const list = posRead(PO_KEY, []) || [];
+    const d = isoDate(new Date()).replace(/-/g, '').slice(2);
+    const po = { id: `PO-${d}-${pad2(list.filter(x => x.id.includes(d)).length + 1)}`, supplierId, expectedOn, note: note || '',
+        lines: lines.map(l => ({ sku: l.sku, qty: Number(l.qty), received: 0 })), status: 'ordered',
+        createdBy: currentActorId(), createdAt: isoLocal(new Date()), receipts: [] };
+    list.push(po);
+    savePOs(list);
+    logPosEvent('po_created', { ref: po.id, note: `${(supplierById(supplierId) || {}).name || ''} · ${po.lines.length} មុខ` });
+    return po;
+}
+
+function receivePO(id, qtys, invoice) {
+    const list = posRead(PO_KEY, []) || [];
+    const po = list.find(x => x.id === id);
+    if (!po || !poOpen(po)) return null;
+    const sup = supplierById(po.supplierId) || { name: '' };
+    const got = po.lines.map(l => ({ sku: l.sku, qty: Math.max(0, Math.min(l.qty - l.received, Number(qtys[l.sku]) || 0)) })).filter(l => l.qty > 0);
+    if (!got.length) return null;
+    got.forEach(g => { po.lines.find(l => l.sku === g.sku).received += g.qty; });
+    const at = isoLocal(new Date());
+    po.receipts.push({ at, by: currentActorId(), invoice: invoice || '', lines: got });
+    po.status = po.lines.every(l => l.received >= l.qty) ? 'received' : 'partial';
+    savePOs(list);
+    saveStockMoves(got.map(g => stockMove({ type: 'stock_in', sku: g.sku, qty: g.qty, at, supplier: sup.name, invoice: invoice || po.id,
+        date: isoDate(new Date()), costConfirmed: false, reason: 'ទទួលតាមការបញ្ជាទិញ', ref: po.id })));
+    return po;
+}
+
+function closePO(id, reason) {
+    const list = posRead(PO_KEY, []) || [];
+    const po = list.find(x => x.id === id);
+    if (!po) return;
+    Object.assign(po, { status: 'closed', closeReason: reason, closedAt: isoLocal(new Date()), closedBy: currentActorId() });
+    savePOs(list);
+}
+
+/* សារបញ្ជាទិញជាភាសាខ្មែរ សម្រាប់ចម្លងទៅតេឡេក្រាម ឬសារ SMS */
+function poMessage(po) {
+    const sup = supplierById(po.supplierId) || { name: '' };
+    return [`សួស្តី ${sup.name}`, `${MERCHANT.nameKh}${shopBranches().length > 1 ? ` (${MERCHANT.branch})` : ''} សូមបញ្ជាទិញ៖`]
+        .concat(po.lines.map((l, i) => { const p = getProduct(l.sku) || { name: l.sku, unit: '' }; return `${i + 1}. ${p.name} × ${l.qty} ${p.unit}`; }))
+        .concat([`សូមដឹកមកដល់ថ្ងៃ ${fmtDate(po.expectedOn)}`, `ទំនាក់ទំនង៖ ${MERCHANT.phone || ''}`, `លេខបញ្ជាទិញ៖ ${po.id}`]).join('\n');
+}
+
+/* ទំនិញជិតអស់ ឬអស់ ដែលអ្នកផ្គត់ផ្គង់នេះលក់ (មិនរាប់ទំនិញដែលកំពុងបញ្ជាទិញរួច) */
+function lowStockForSupplier(sup) {
+    const levels = onHandLevels();
+    const onOrder = new Set(purchaseOrders().filter(poOpen).flatMap(po => po.lines.filter(l => l.received < l.qty).map(l => l.sku)));
+    return (sup.skus || []).map(getProduct).filter(p => p && p.active !== false && !onOrder.has(p.sku) && stockStatusOf(p, levels[p.sku] || 0) !== 'ok');
+}
 
 let MGR_STOCK_CACHE = null;
 
@@ -962,6 +1075,12 @@ function mgrIncomingTransferCount() {
 function portalNotifications() {
     const root = document.body.dataset.roleRoot || '../..';
     const list = [];
+    purchaseOrders().filter(poLate).slice(0, 3).forEach(po => list.push({
+        icon: 'mdi:truck-alert-outline', tone: 'warning',
+        title: `${(supplierById(po.supplierId) || {}).name || ''} ដឹកយឺត`,
+        note: `ត្រូវមកដល់ ${fmtDate(po.expectedOn)} · ${po.lines.length} មុខ · ទូរស័ព្ទសួរ ឬបិទការបញ្ជាទិញ`,
+        href: `${root}/manager/purchase/view-order.html?id=${po.id}`
+    }));
     incomingTransfers().forEach(t => list.push({
         icon: 'mdi:truck-delivery-outline', tone: 'warning',
         title: `ស្តុកពី ${branchName(t.from)} រង់ចាំទទួល`,

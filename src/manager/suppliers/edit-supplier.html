@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគិតលុយ - កែអ្នកផ្គត់ផ្គង់</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { blue: { 50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 400: '#34d399', 500: '#059669', 600: '#047857', 700: '#065f46', 800: '#064e3b', 900: '#053d30', 950: '#022c22' }, slate: { 50: '#fafafa', 100: '#f4f4f4', 200: '#e7e7e7', 300: '#d4d4d4', 400: '#a2a2a2', 500: '#737373', 600: '#545454', 700: '#404040', 800: '#292929', 900: '#171717', 950: '#070707' }, primary: "#047857", 'primary-dark': "#065f46", accent: "#34d399" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+    <style>
+        /* បណ្ណទម្រង់៖ មិនប្រើ .bg-white ព្រោះ custom.css §17 ពង្រីកប៊ូតុងទាំងអស់ក្នុង «.bg-white មាន submit» ពេញទទឹងលើទូរស័ព្ទ */
+        .form-card { background: #ffffff; }
+        html.dark .form-card { background: #171717; border-color: #292929 !important; }
+        .f-input { width: 100%; height: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid #d4d4d4; background: #fff; color: #171717; }
+        .f-input:focus { outline: none; border-color: #047857; box-shadow: 0 0 0 3px rgba(4, 120, 87, .15); }
+        .f-input.is-error { border-color: #fb7185; }
+        html.dark .f-input { background: #111111; border-color: #404040; color: #e7e7e7; }
+        .f-err { display: block; min-height: 20px; margin-top: 4px; font-size: 13.5px; color: #e11d48; }
+        .ctl-kpis { display: grid; gap: 1rem; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        @media (max-width: 1023px) { .ctl-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    </style>
+</head>
+<body id="managerPortal" data-role-root="../.." data-active="suppliers" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="កែអ្នកផ្គត់ផ្គង់"
+             data-subtitle="ឈ្មោះ ទំនាក់ទំនង និងទំនិញដែលលក់" data-back="suppliers.html"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <form id="form" onsubmit="return submitForm(event)" novalidate class="w-full grid gap-5 xl:grid-cols-3">
+                <div class="xl:col-span-2 space-y-5 min-w-0">
+                    <section class="form-card rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="px-5 py-4 border-b border-slate-100"><h3 class="sm-card-title text-slate-800">អ្នកផ្គត់ផ្គង់</h3><p class="sm-card-sub text-slate-500">ឈ្មោះ និងរបៀបទាក់ទងពេលបញ្ជាទិញ</p></div>
+                        <div class="px-5 py-5 grid gap-x-4 md:grid-cols-2">
+                            <label class="block md:col-span-2"><span class="sm-td font-semibold text-slate-700">ឈ្មោះ</span>
+                                <input id="name" type="text"  placeholder="ឧ. ក្រុមហ៊ុន ភេសជ្ជៈកម្ពុជា" class="f-input mt-1.5"><span id="nameErr" class="f-err"></span></label>
+                            <label class="block "><span class="sm-td font-semibold text-slate-700">ទូរស័ព្ទ</span>
+                                <input id="phone" type="text" inputmode="tel" placeholder="ឧ. 023 880 101" class="f-input mt-1.5"><span id="phoneErr" class="f-err"></span></label>
+                            <label class="block "><span class="sm-td font-semibold text-slate-700">តេឡេក្រាម <span class="font-normal text-slate-400">មិនចាំបាច់</span></span>
+                                <input id="telegram" type="text"  placeholder="ឧ. @khbeverage" class="f-input mt-1.5"><span id="telegramErr" class="f-err"></span></label>
+                            <label class="block "><span class="sm-td font-semibold text-slate-700">ដឹកមកដល់ក្នុង (ថ្ងៃ)</span>
+                                <input id="leadDays" type="text" inputmode="numeric" placeholder="2" class="f-input mt-1.5"><span id="leadDaysErr" class="f-err"></span><span class="block sm-td-sub text-slate-500 -mt-1 mb-2">ប្រើគណនាថ្ងៃដឹកដល់ពេលបញ្ជាទិញ</span></label>
+                        </div>
+                    </section>
+                    <section class="form-card rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="px-5 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3"><div><h3 class="sm-card-title text-slate-800">ទំនិញដែលលក់</h3><p id="pickedNote" class="sm-card-sub text-slate-500"></p></div>
+                            <div id="catPick" class="flex flex-wrap gap-1.5"></div></div>
+                        <div class="px-5 pt-4"><input id="psearch" type="text" placeholder="ស្វែងរកទំនិញ" autocomplete="off" class="f-input"></div>
+                        <div id="plist" class="px-5 py-4 grid gap-2 md:grid-cols-2"></div>
+                    </section>
+                </div>
+                <div class="space-y-5 min-w-0">
+                    <section class="form-card rounded-2xl border border-slate-200/80 shadow-sm px-5 py-4 space-y-3">
+                        <p class="sm-td-sub text-slate-600"><i class="fas fa-circle-info text-slate-400 mr-1.5"></i>ពេលបញ្ជាទិញ ទំនិញជិតអស់របស់អ្នកផ្គត់ផ្គង់នេះត្រូវបំពេញឱ្យដោយស្វ័យប្រវត្តិ</p>
+                        <button type="submit" id="submitBtn" class="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white sm-td font-semibold inline-flex items-center justify-center gap-2"></button>
+                    </section>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        /* បន្ថែម ឬកែអ្នកផ្គត់ផ្គង់ — ទំព័រពេញ (.ai/ui-rules §2) */
+        function setErr(id, msg) {
+            document.getElementById(id).classList.toggle('is-error', !!msg);
+            document.getElementById(id + 'Err').textContent = msg || '';
+            return msg ? 1 : 0;
+        }
+        function val(id) { return document.getElementById(id).value.trim(); }
+        function wireInputs(onChange) {
+            document.querySelectorAll('.f-input').forEach(i => i.addEventListener('input', () => { setErr(i.id, ''); if (onChange) onChange(); }));
+        }
+        const EDIT_ID = new URLSearchParams(location.search).get('id');
+        const list = shopSuppliers().map(s => Object.assign({}, s));
+        const editing = EDIT_ID ? list.find(s => s.id === EDIT_ID) : null;
+        const picked = new Set(editing ? editing.skus || [] : []);
+
+        function toggleCat(cat) {
+            const skus = PRODUCTS.filter(p => p.category === cat).map(p => p.sku);
+            const all = skus.every(s => picked.has(s));
+            skus.forEach(s => all ? picked.delete(s) : picked.add(s));
+            renderProducts();
+        }
+
+        function renderProducts() {
+            const q = val('psearch').toLowerCase();
+            document.getElementById('catPick').innerHTML = CATEGORIES.filter(c => c.id !== 'all' && PRODUCTS.some(p => p.category === c.id)).map(c => {
+                const skus = PRODUCTS.filter(p => p.category === c.id).map(p => p.sku);
+                const all = skus.length && skus.every(s => picked.has(s));
+                return `<button type="button" onclick="toggleCat('${c.id}')" class="sm-badge h-9 px-3 rounded-xl border transition ${all ? 'bg-blue-600 border-blue-600 text-white font-semibold' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}">${c.label}</button>`;
+            }).join('');
+            const shown = PRODUCTS.filter(p => !q || p.name.toLowerCase().includes(q) || p.sku.includes(q));
+            document.getElementById('plist').innerHTML = shown.length ? shown.map(p => `<label class="flex items-center gap-3 px-3 py-2 rounded-xl border ${picked.has(p.sku) ? 'border-blue-600' : 'border-slate-200'} cursor-pointer">
+                <input type="checkbox" ${picked.has(p.sku) ? 'checked' : ''} onchange="this.checked ? picked.add('${p.sku}') : picked.delete('${p.sku}'); renderProducts()" class="w-4 h-4 accent-[#047857]">
+                <span class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0">${productImgHtml(p)}</span>
+                <span class="sm-td text-slate-800 truncate">${escapeText(p.name)}</span></label>`).join('')
+                : '<p class="sm-td-sub text-slate-400 md:col-span-2">' + (PRODUCTS.length ? 'រកមិនឃើញទំនិញ' : 'ហាងមិនទាន់មានទំនិញ · ម្ចាស់ហាងបន្ថែមទំនិញជាមុន') + '</p>';
+            document.getElementById('pickedNote').textContent = `បានជ្រើស ${picked.size} មុខ · ចុចប្រភេទ ដើម្បីជ្រើសទាំងប្រភេទ`;
+        }
+
+        function submitForm(e) {
+            e.preventDefault();
+            const name = val('name'), phone = val('phone'), telegram = val('telegram'), lead = Number(val('leadDays'));
+            let bad = 0;
+            bad += setErr('name', name.length < 2 ? 'សូមវាយឈ្មោះ' : list.some(s => s.name === name && (!editing || s.id !== editing.id)) ? 'មានអ្នកផ្គត់ផ្គង់ឈ្មោះនេះរួចហើយ' : '');
+            bad += setErr('phone', normPhone(phone).length < 9 ? 'លេខទូរស័ព្ទមិនគ្រប់ខ្ទង់ · ឧ. 023 880 101' : '');
+            bad += setErr('telegram', telegram && !/^@[A-Za-z0-9_]{4,}$/.test(telegram) ? 'ទម្រង់ @ឈ្មោះ ឧ. @khbeverage' : '');
+            bad += setErr('leadDays', !(Number.isInteger(lead) && lead >= 0 && lead <= 60) ? 'ចំនួនថ្ងៃ 0 ដល់ 60' : '');
+            if (bad) { document.querySelector('.f-input.is-error').focus(); return false; }
+            const rec = { name, phone, telegram, leadDays: lead, skus: [...picked], active: true };
+            if (editing) Object.assign(editing, rec);
+            else list.push(Object.assign({ id: `SUP-${pad2(Math.max(0, ...list.map(s => Number(s.id.split('-')[1]) || 0)) + 1)}` }, rec));
+            saveSuppliers(list);
+            const id = editing ? editing.id : list[list.length - 1].id;
+            markRecordViewed(id);
+            flashToast(editing ? `បានរក្សាទុក ${name}` : `បានបន្ថែម ${name} · ${picked.size} មុខ`);
+            location.href = 'suppliers.html';
+            return false;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (EDIT_ID && !editing) { location.replace('suppliers.html'); return; }
+            if (editing) { setPortalTitle(`កែ ${editing.name}`); ['name', 'phone', 'telegram'].forEach(k => { document.getElementById(k).value = editing[k] || ''; }); }
+            document.getElementById('leadDays').value = editing ? editing.leadDays : 2;
+            document.getElementById('submitBtn').innerHTML = editing ? '<i class="fas fa-check"></i> រក្សាទុក' : '<i class="fas fa-plus"></i> បន្ថែមអ្នកផ្គត់ផ្គង់';
+            renderProducts();
+            wireInputs();
+            document.getElementById('psearch').addEventListener('input', renderProducts);
+            document.getElementById('name').focus();
+        });
+    </script>
+</body>
+</html>

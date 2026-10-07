@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគិតលុយ - ការបញ្ជាទិញ</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { blue: { 50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 400: '#34d399', 500: '#059669', 600: '#047857', 700: '#065f46', 800: '#064e3b', 900: '#053d30', 950: '#022c22' }, slate: { 50: '#fafafa', 100: '#f4f4f4', 200: '#e7e7e7', 300: '#d4d4d4', 400: '#a2a2a2', 500: '#737373', 600: '#545454', 700: '#404040', 800: '#292929', 900: '#171717', 950: '#070707' }, primary: "#047857", 'primary-dark': "#065f46", accent: "#34d399" },
+                    fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <link rel="stylesheet" href="../../shared/styles/portal.css">
+    <style>
+        /* បណ្ណទម្រង់៖ មិនប្រើ .bg-white ព្រោះ custom.css §17 ពង្រីកប៊ូតុងទាំងអស់ក្នុង «.bg-white មាន submit» ពេញទទឹងលើទូរស័ព្ទ */
+        .form-card { background: #ffffff; }
+        html.dark .form-card { background: #171717; border-color: #292929 !important; }
+        .f-input { width: 100%; height: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid #d4d4d4; background: #fff; color: #171717; }
+        .f-input:focus { outline: none; border-color: #047857; box-shadow: 0 0 0 3px rgba(4, 120, 87, .15); }
+        .f-input.is-error { border-color: #fb7185; }
+        html.dark .f-input { background: #111111; border-color: #404040; color: #e7e7e7; }
+        .f-err { display: block; min-height: 20px; margin-top: 4px; font-size: 13.5px; color: #e11d48; }
+        .ctl-kpis { display: grid; gap: 1rem; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        @media (max-width: 1023px) { .ctl-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    </style>
+</head>
+<body id="managerPortal" data-role-root="../.." data-active="purchase" class="bg-slate-50 font-sans text-gray-800 text-[16px] flex h-screen overflow-hidden">
+
+    <div id="sidebarHost"></div>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        <div id="headerHost" data-title="ការបញ្ជាទិញ"
+             data-subtitle="" data-back="purchase-orders.html"></div>
+        <main class="flex-1 w-full overflow-x-hidden overflow-y-auto px-4 md:px-6 py-5">
+            <div id="page" class="w-full grid gap-5 xl:grid-cols-3"></div>
+        </main>
+    </div>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script src="../../shared/scripts/manager-data.js"></script>
+    <script src="../../shared/scripts/portal.js"></script>
+    <script>
+        /* ការបញ្ជាទិញមួយ៖ សារសម្រាប់ផ្ញើ · ទទួលទំនិញ (ទទួលខ្លះបាន) · បិទដោយមូលហេតុ · ប្រវត្តិការទទួល */
+        function poChip(po) {
+            if (poLate(po)) return `<span class="sm-badge inline-flex px-2.5 py-0.5 rounded-full border whitespace-nowrap bg-amber-50 text-amber-800 border-amber-200">យឺត ${-daysUntil(po.expectedOn)} ថ្ងៃ</span>`;
+            const m = PO_STATUS[po.status];
+            return `<span class="sm-badge inline-flex px-2.5 py-0.5 rounded-full border whitespace-nowrap ${m.cls}">${m.label}</span>`;
+        }
+        function copyMsg(id) {
+            const t = poMessage(poById(id));
+            try { navigator.clipboard.writeText(t).then(() => showToast('បានចម្លងសារ · បិទភ្ជាប់ក្នុងតេឡេក្រាម ឬសារ SMS', 'success'), () => showToast('ចម្លងមិនបាន · សូមចម្លងពីប្រអប់សារ', 'warning')); }
+            catch (e) { showToast('ចម្លងមិនបាន · សូមចម្លងពីប្រអប់សារ', 'warning'); }
+        }
+        const ID = new URLSearchParams(location.search).get('id');
+        let got = null;
+
+        function card(title, sub, body, side) {
+            return `<section class="form-card rounded-2xl border border-slate-200/80 shadow-sm"><div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3"><div class="min-w-0"><h3 class="sm-card-title text-slate-800">${title}</h3>${sub ? `<p class="sm-card-sub text-slate-500">${sub}</p>` : ''}</div>${side || ''}</div>${body}</section>`;
+        }
+
+        function render() {
+            const po = poById(ID);
+            const host = document.getElementById('page');
+            if (!po) { host.innerHTML = `<section class="xl:col-span-3 bg-white rounded-2xl border border-slate-200/80 shadow-sm">${emptyState('fa-cart-arrow-down', 'រកមិនឃើញការបញ្ជាទិញនេះ', '', '<a href="purchase-orders.html" class="inline-flex mt-4 sm-badge h-10 px-4 rounded-xl bg-blue-600 text-white font-semibold items-center">ទៅបញ្ជីបញ្ជាទិញ</a>')}</section>`; return; }
+            const sup = supplierById(po.supplierId) || { name: '—' };
+            markRecordViewed(po.id);
+            setPortalTitle(sup.name);
+            setPortalSubtitle(`${po.id} · បញ្ជាទិញ ${fmtDate(po.createdAt)} · ត្រូវមកដល់ ${fmtDate(po.expectedOn)}`);
+            const open = poOpen(po);
+            if (open && !got) { got = {}; po.lines.forEach(l => { got[l.sku] = l.qty - l.received; }); }
+            host.innerHTML = `
+                <div class="xl:col-span-2 space-y-5 min-w-0">
+                    ${card(open ? 'ទទួលទំនិញ' : 'ទំនិញ', open ? 'រាប់ទំនិញដែលមកដល់ · ដឹកខ្លះ សូមកែលេខ ហើយទទួលនៅសល់ពេលក្រោយ' : `${po.lines.length} មុខ`, `<div class="divide-y divide-slate-100">${po.lines.map(l => {
+                        const p = getProduct(l.sku) || { name: l.sku, unit: '' };
+                        const left = l.qty - l.received;
+                        return `<div class="px-5 py-3 flex items-center gap-3">
+                            <span class="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0">${productImgHtml(p)}</span>
+                            <span class="flex-1 min-w-0"><span class="block sm-td font-medium text-slate-800 truncate">${escapeText(p.name)}</span>
+                                <span class="block sm-td-sub text-slate-500 sm-figure">បញ្ជា ${l.qty} · ទទួលរួច ${l.received} ${p.unit}</span></span>
+                            ${open && left > 0 ? `<input type="text" inputmode="numeric" value="${got[l.sku]}" oninput="got['${l.sku}'] = Math.max(0, Math.min(${left}, parseInt(this.value, 10) || 0))" aria-label="ចំនួនទទួល" class="f-input text-right sm-figure flex-shrink-0" style="height:44px;width:96px">`
+                                : `<span class="sm-td sm-figure ${l.received < l.qty ? 'text-slate-500' : 'text-slate-700'}">${l.received >= l.qty ? 'គ្រប់' : `ខ្វះ ${left}`}</span>`}
+                        </div>`;
+                    }).join('')}</div>${open ? `<div id="receive" class="px-5 py-4 border-t border-slate-100 grid gap-3 md:grid-cols-[1fr_auto] items-end">
+                        <label class="block"><span class="sm-td font-semibold text-slate-700">លេខវិក្កយបត្រអ្នកផ្គត់ផ្គង់ <span class="font-normal text-slate-400">មិនចាំបាច់</span></span>
+                            <input id="invoice" type="text" placeholder="ឧ. INV-2026-0891" class="f-input mt-1.5"></label>
+                        <button type="button" onclick="doReceive()" class="h-12 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white sm-td font-semibold inline-flex items-center justify-center gap-2"><i class="fas fa-clipboard-check"></i> ទទួលទំនិញ</button></div>` : ''}`, poChip(po))}
+                    ${po.receipts.length ? card('ប្រវត្តិការទទួល', `${po.receipts.length} ដង`, `<div class="divide-y divide-slate-100">${po.receipts.map(r => `<div class="px-5 py-3">
+                        <p class="sm-td text-slate-700">${r.lines.map(l => `${escapeText((getProduct(l.sku) || {}).name || l.sku)} × ${l.qty}`).join(' · ')}</p>
+                        <p class="sm-td-sub text-slate-400"><span class="sm-figure">${fmtDate(r.at)} ${fmtTime(r.at)}</span> · ${personName(r.by)}${r.invoice ? ` · <span class="sm-figure">${escapeText(r.invoice)}</span>` : ''}</p></div>`).join('')}</div>`) : ''}
+                </div>
+                <div class="space-y-5 min-w-0">
+                    ${card('សារបញ្ជាទិញ', 'ចម្លង ហើយផ្ញើក្នុងតេឡេក្រាម ឬសារ SMS', `<div class="px-5 py-4 space-y-3">
+                        <pre class="whitespace-pre-wrap rounded-xl border border-slate-200 px-3 py-2.5 sm-td text-slate-700 font-sans">${escapeText(poMessage(po))}</pre>
+                        <button type="button" onclick="copyMsg('${po.id}')" class="w-full h-11 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 sm-td font-semibold inline-flex items-center justify-center gap-2"><i class="fas fa-copy text-slate-400"></i> ចម្លងសារ</button>
+                        <p class="sm-td-sub text-slate-500">${escapeText(sup.name)}${sup.phone ? ` · <span class="sm-figure">${escapeText(sup.phone)}</span>` : ''}${sup.telegram ? ` · ${escapeText(sup.telegram)}` : ''}</p></div>`)}
+                    ${po.status === 'closed' ? card('បានបិទ', '', `<p class="px-5 py-4 sm-td text-slate-700">${escapeText(po.closeReason || '')}<span class="block sm-td-sub text-slate-400 mt-1"><span class="sm-figure">${fmtDate(po.closedAt)}</span> · ${personName(po.closedBy)}</span></p>`) : ''}
+                    ${open ? `<button type="button" onclick="doClose()" class="w-full h-11 rounded-xl sm-td-sub font-semibold text-slate-600 hover:bg-slate-100">បិទការបញ្ជាទិញ (មិនទទួលនៅសល់)</button>` : ''}
+                </div>`;
+            if (location.hash === '#receive' && open) setTimeout(() => document.getElementById('receive').scrollIntoView({ block: 'center' }), 50);
+        }
+
+        async function doReceive() {
+            const po = poById(ID);
+            const total = po.lines.reduce((n, l) => n + Math.min(l.qty - l.received, Number(got[l.sku]) || 0), 0);
+            if (!total) { showToast('សូមវាយចំនួនទំនិញដែលមកដល់', 'warning'); return; }
+            const ok = await showPinConfirm({ title: 'បញ្ជាក់ការទទួលទំនិញ', message: `${escapeText((supplierById(po.supplierId) || {}).name || '')} · ${total} ឯកតា`, userId: ME_MANAGER, confirmText: 'ទទួល' });
+            if (!ok) return;
+            const r = receivePO(ID, got, document.getElementById('invoice').value.trim());
+            got = null;
+            showToast(r.status === 'received' ? 'ទទួលគ្រប់ · ស្តុកបានបូកចូល' : 'បានទទួលខ្លះ · នៅសល់រង់ចាំដឹក', 'success');
+            render();
+        }
+
+        async function doClose() {
+            const reason = await showReasonPrompt({ title: 'បិទការបញ្ជាទិញ', message: 'ទំនិញដែលមិនទាន់មកដល់ នឹងមិនរង់ចាំទៀតទេ', reasons: ['អ្នកផ្គត់ផ្គង់អស់ស្តុក', 'លែងត្រូវការ', 'នឹងទិញពីអ្នកផ្គត់ផ្គង់ផ្សេង'], confirmText: 'បិទ', danger: true });
+            if (!reason) return;
+            closePO(ID, reason);
+            showToast('បានបិទការបញ្ជាទិញ', 'success');
+            render();
+        }
+
+        window.onStoreChanged = render;
+        document.addEventListener('DOMContentLoaded', render);
+    </script>
+</body>
+</html>
