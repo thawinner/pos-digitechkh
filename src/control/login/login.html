@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគិតលុយ - ច្រកអ្នកគ្រប់គ្រងប្រព័ន្ធ</title>
+    <link rel="icon" type="image/png" href="../../shared/assets/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { blue: { 50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 400: '#34d399', 500: '#059669', 600: '#047857', 700: '#065f46', 800: '#064e3b', 900: '#053d30', 950: '#022c22' }, slate: { 50: '#fafafa', 100: '#f4f4f4', 200: '#e7e7e7', 300: '#d4d4d4', 400: '#a2a2a2', 500: '#737373', 600: '#545454', 700: '#404040', 800: '#292929', 900: '#171717', 950: '#070707' }, primary: "#047857", 'primary-dark': "#065f46" }, fontFamily: { sans: ["'Kantumruy Pro'", "sans-serif"] } } }
+        }
+    </script>
+    <script>try { if (localStorage.getItem('bms_theme') === 'dark') document.documentElement.classList.add('dark'); } catch (e) { /* ភ្លឺ */ }</script>
+    <link rel="stylesheet" href="../../shared/styles/custom.css">
+    <style>
+        /* ទំព័រចូលច្រកអ្នកគ្រប់គ្រងប្រព័ន្ធ — ដាច់ពីទំព័រចូល POS · គ្មានរបារចំហៀង */
+        /* បណ្ណទម្រង់៖ មិនប្រើ .bg-white ព្រោះ custom.css §17 ពង្រីកប៊ូតុងទាំងអស់លើទូរស័ព្ទ */
+        .ctl-card { background: #ffffff; }
+        html.dark body { background: #111111 !important; }
+        html.dark .ctl-card { background: #171717; border-color: #292929 !important; }
+        .field { height: 52px; font-size: 16px !important; }
+        .field:focus { outline: none; border-color: #047857 !important; box-shadow: 0 0 0 3px rgba(4, 120, 87, .15); }
+        .field.is-error { border-color: #fb7185 !important; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+        .shake { animation: shake .35s ease; }
+    </style>
+</head>
+<body data-role-root="../.." class="bg-slate-50 font-sans text-slate-800 min-h-screen flex flex-col">
+    <main class="flex-1 w-full flex flex-col items-center justify-center px-4 py-10">
+        <div class="ctl-card w-full max-w-[420px] rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
+            <div class="flex items-center gap-3">
+                <span class="w-11 h-11 rounded-xl bg-white border border-slate-200 flex items-center justify-center p-1.5 flex-shrink-0">
+                    <img src="../../shared/assets/logo-mark-transparent.png" alt="" class="w-full h-full object-contain">
+                </span>
+                <span class="min-w-0">
+                    <span class="block sm-td font-semibold text-slate-900">DIGITECHKH</span>
+                    <span class="block sm-td-sub text-slate-500">ច្រកអ្នកគ្រប់គ្រងប្រព័ន្ធ</span>
+                </span>
+            </div>
+            <h1 class="mt-7 text-[24px] leading-tight font-semibold text-slate-900">ចូលច្រកគ្រប់គ្រង</h1>
+            <span class="block sm-td text-slate-500 mt-2">សម្រាប់បុគ្គលិក DIGITECHKH ប៉ុណ្ណោះ · ម្ចាស់ហាង និងបុគ្គលិកចូលនៅទំព័រចូលហាង</span>
+
+            <form id="ctlForm" onsubmit="return submitControl(event)" novalidate class="mt-6 space-y-4">
+                <label class="block">
+                    <span class="sm-label font-semibold text-slate-700">អ៊ីមែល</span>
+                    <input id="email" type="email" autocomplete="username" placeholder="name@digitechkh.com" oninput="clearErr()" class="field mt-1.5 w-full px-3.5 rounded-lg border border-slate-300 bg-white text-slate-900">
+                </label>
+                <label class="block">
+                    <span class="sm-label font-semibold text-slate-700">ពាក្យសម្ងាត់</span>
+                    <input id="pass" type="password" autocomplete="current-password" oninput="clearErr()" class="field mt-1.5 w-full px-3.5 rounded-lg border border-slate-300 bg-white text-slate-900">
+                </label>
+                <div id="msg" class="hidden rounded-lg border px-3 py-2.5 sm-td-sub"></div>
+                <button id="btn" type="submit" class="w-full h-12 rounded-lg bg-blue-600 hover:bg-blue-700 text-white sm-td font-semibold inline-flex items-center justify-center gap-2 transition-colors disabled:opacity-50">
+                    ចូលច្រកគ្រប់គ្រង <i class="fas fa-arrow-right text-[13px]"></i>
+                </button>
+            </form>
+
+            <div class="mt-6 rounded-lg border border-slate-200 px-3 py-2.5 sm-td-sub text-slate-500 flex items-start gap-2">
+                <i class="fas fa-flask mt-1 text-slate-400"></i>
+                <span class="flex-1">គំរូ៖ <button type="button" onclick="fillDemo()" class="font-semibold text-blue-700 hover:underline">admin@digitechkh.com · control2026</button></span>
+            </div>
+        </div>
+        <a href="../../index.html" class="mt-5 inline-flex items-center gap-2 h-9 sm-td-sub font-semibold text-slate-500 hover:text-slate-800">
+            <i class="fas fa-arrow-left text-[12px]"></i> ទំព័រចូលហាង
+        </a>
+    </main>
+
+    <script src="../../shared/scripts/ui-components.js"></script>
+    <script src="../../shared/scripts/data.js"></script>
+    <script>
+        /* ចូលច្រកអ្នកគ្រប់គ្រងប្រព័ន្ធ៖ តែគណនី CONTROL_ACCOUNTS (verifyControlLogin) · គណនីហាងចូលមិនបាន
+           សារខុសមិនប្រាប់ថាខុសត្រង់ណា · ខុស 5 ដង → ចាក់សោ 5 នាទី (pos_ctl_login_guard ដាច់ពីទំព័រ POS)
+           ប្រព័ន្ធពិត៖ ផ្ទៀងផ្ទាត់ពីរជំហាន និងបញ្ជីអាសយដ្ឋានដែលអនុញ្ញាត */
+        const GUARD = 'pos_ctl_login_guard';
+        const MAX_TRIES = 5;
+        let lockTimer = null;
+        const guard = () => posRead(GUARD, { fails: 0, lockedUntil: 0 });
+        const lockedFor = () => Math.max(0, Math.ceil((guard().lockedUntil - Date.now()) / 1000));
+
+        function showMsg(html) {
+            const m = document.getElementById('msg');
+            m.classList.toggle('hidden', !html);
+            m.className = `${html ? '' : 'hidden '}rounded-lg border px-3 py-2.5 sm-td-sub border-rose-200 bg-rose-50 text-rose-700`;
+            m.innerHTML = html || '';
+        }
+        function clearErr() {
+            document.querySelectorAll('.field').forEach(f => f.classList.remove('is-error'));
+            if (!lockedFor()) showMsg('');
+        }
+        function renderLock() {
+            const s = lockedFor();
+            document.getElementById('btn').disabled = s > 0;
+            clearTimeout(lockTimer);
+            if (s > 0) {
+                showMsg(`<i class="fas fa-lock mr-1.5"></i>វាយខុស ${MAX_TRIES} ដង · សូមរង់ចាំ ${Math.ceil(s / 60)} នាទី រួចសាកម្តងទៀត`);
+                lockTimer = setTimeout(renderLock, 1000);
+            }
+        }
+        function fillDemo() {
+            document.getElementById('email').value = CONTROL_ACCOUNTS[0].email;
+            document.getElementById('pass').value = CONTROL_ACCOUNTS[0].password;
+            clearErr();
+            document.getElementById('btn').focus();
+        }
+        function submitControl(e) {
+            e.preventDefault();
+            if (lockedFor()) { renderLock(); return false; }
+            const email = document.getElementById('email').value.trim();
+            const pass = document.getElementById('pass').value;
+            if (!email || !pass) {
+                ['email', 'pass'].forEach(id => document.getElementById(id).classList.toggle('is-error', !document.getElementById(id).value.trim()));
+                showMsg('សូមវាយអ៊ីមែល និងពាក្យសម្ងាត់');
+                return false;
+            }
+            const who = verifyControlLogin(email, pass);
+            if (!who) {
+                const g = guard();
+                g.fails += 1;
+                if (g.fails >= MAX_TRIES) { g.fails = 0; g.lockedUntil = Date.now() + 5 * 60000; }
+                posWrite(GUARD, g);
+                document.getElementById('pass').value = '';
+                document.getElementById('pass').classList.add('is-error');
+                const form = document.getElementById('ctlForm');
+                form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake');
+                if (lockedFor()) renderLock();
+                else showMsg(`<i class="fas fa-circle-exclamation mr-1.5"></i>អ៊ីមែល ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ · នៅសល់ ${MAX_TRIES - g.fails} ដង`);
+                return false;
+            }
+            posWrite(GUARD, { fails: 0, lockedUntil: 0 });
+            posLoginControl(who.id);
+            const next = new URLSearchParams(location.search).get('next');
+            const ok = next && /^control\/[a-z-]+\/[a-z-]+\.html$/.test(next) && !next.startsWith('control/login/');
+            location.href = `../../${ok ? next : 'control/dashboard/dashboard.html'}`;
+            return false;
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            renderLock();
+            document.getElementById('email').focus();
+        });
+    </script>
+</body>
+</html>

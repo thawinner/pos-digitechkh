@@ -682,8 +682,10 @@ function handleLogout() {
             if (typeof posLogout === 'function') posLogout();
             showToast('កំពុងចាកចេញពីប្រព័ន្ធ...', 'info');
             const roleRoot = getRoleRoot();
+            // អ្នកគ្រប់គ្រងប្រព័ន្ធត្រឡប់ទៅទំព័រចូលរបស់ខ្លួន មិនមែនទំព័រចូល POS
+            const isControl = document.body && document.body.id === 'controlPortal';
             setTimeout(() => {
-                window.location.href = `${roleRoot}/index.html`;
+                window.location.href = isControl ? `${roleRoot}/control/login/login.html` : `${roleRoot}/index.html`;
             }, 400);
         }
     });

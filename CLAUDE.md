@@ -75,12 +75,19 @@ branches start empty with zero stock. A shop without a
 manager lets its owner approve at the till (`showManagerOverride`). There is no shop picker or «ប្តូរហាង»: a login opens the
 person's only shop. The session carries `shopId`; `CURRENT_SHOP_ID` copies that shop into `MERCHANT`.
 Till devices: the owner registers a computer as a register in settings → «ឧបករណ៍បញ្ជរ» (`registerThisDevice()`,
-`pos_devices` + `pos_device`); only a registered device offers PIN login (opens on the PIN pad, PIN searched within its
-shop via `verifyPinLogin()`); other devices use email/phone + password. The demo seeds this browser as POS-01; the demo
-panel on the login page toggles it.
+`pos_devices` + `pos_device`); only a registered device offers PIN login (opens on the PIN pad, `verifyPinLogin()`).
+Strict login (decided 2026-10-07), one rule for password and PIN, `loginBlockReason(person, device)` in `data.js`:
+a registered till is that shop's login page, so only its shop's people log in there, and staff only at their own
+branch's till (owners at any branch) → `shop` / `branch`; off a till, owners and managers may log in but cashiers may
+not (`till`). The message appears only after a correct password. `posSession()` re-applies the rule on every page, so
+removing or changing the till logs its cashier out. The demo seeds this browser as POS-01; the demo panel on the login
+page switches it between tills of both shops or «កុំព្យូទ័រផ្ទាល់ខ្លួន» and greys out accounts that cannot log in there.
 
 Super Admin (DIGITECHKH's own console, `control/*`, body `controlPortal`): demo login admin@digitechkh.com · control2026
-(`CONTROL_ACCOUNTS` in `data.js`, no shop membership, can open only `control/*`). Pages: dashboard, companies (+ view,
+(`CONTROL_ACCOUNTS` in `data.js`, no shop membership, can open only `control/*`). It has its own login page
+`control/login/login.html` (`verifyControlLogin`, 5 wrong tries lock it for 5 minutes, `pos_ctl_login_guard`); the POS
+login treats Super Admin credentials as wrong, `guardPage` sends `control/*` without a control session there, and the
+console's logout returns there. Pages: dashboard, companies (+ view,
 create), billing, plans, audit. Data in `control-data.js` (`pos_ctl_*`): plans with limits, subscribing shops, payments,
 support sessions, its own log. It never shows a shop's sales, costs or staff, only usage counts. Subscription status
 (`subscriptionStatus()` in `data.js`: active · trial · expiring · overdue (7-day grace) · expired · suspended) is mirrored to
@@ -129,7 +136,7 @@ src/
 ├── cashier/shift/{open,close}-shift  float count + manager PIN · blind close with one recount + Z-report
 ├── manager/{dashboard,approvals,shifts,roster,cash,stock,stock-count,stock-history,stock-transfer,purchase,suppliers,exceptions,reports,settings}/…  (view-request, view-shift, create-movement, create-stock-in, create-adjustment, create-count, view-count)
 ├── admin/{setup,dashboard,reports,branches,staff,products,settings,subscription,audit,stock}/…   owner: first-login setup wizard, getting-started checklist, branches, profit, stock value, shrinkage, stock-in cost, staff, prices, rules, audit log (view-stock-in, view-staff, create-product, create/edit-branch)
-├── control/{dashboard,companies,billing,plans,audit}/…   Super Admin (DIGITECHKH): subscribing shops, payments, plans (view-company, create-company, create-payment, edit-plan)
+├── control/{login,dashboard,companies,billing,plans,audit}/…   Super Admin (DIGITECHKH): own login, subscribing shops, payments, plans (view-company, create-company, create-payment, edit-plan)
 └── shared/{scripts,styles,assets}  assets/avatars/<personId>.svg = profile images
 ```
 

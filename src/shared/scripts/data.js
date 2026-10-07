@@ -700,12 +700,33 @@ function findAccount(identifier) {
 }
 
 /* ត្រឡប់ { person } ពេលត្រឹមត្រូវ · { error: 'bad' } មិនប្រាប់ថាខុសត្រង់ណា · { error: 'inactive' } គណនីផ្អាក */
+/* ការចូលប្រើ POS៖ គណនីអ្នកគ្រប់គ្រងប្រព័ន្ធមិនចូលទីនេះទេ (ចាត់ទុកជាពាក្យសម្ងាត់ខុស) */
 function verifyLogin(identifier, password) {
     const p = findAccount(identifier);
-    if (!p || !effectivePassword(p.id) || effectivePassword(p.id) !== String(password)) return { error: 'bad' };
-    if (isControlId(p.id)) return { control: p };
+    if (!p || isControlId(p.id) || !effectivePassword(p.id) || effectivePassword(p.id) !== String(password)) return { error: 'bad' };
     if (!p.active) return { error: 'inactive', person: p };
     return { person: p };
+}
+
+/* ការចូលច្រកអ្នកគ្រប់គ្រងប្រព័ន្ធ (control/login) · គណនីហាងមិនចូលទីនេះទេ */
+function verifyControlLogin(identifier, password) {
+    const q = String(identifier || '').trim().toLowerCase();
+    const a = CONTROL_ACCOUNTS.find(x => x.email.toLowerCase() === q || (x.phone && normPhone(x.phone) === normPhone(q)));
+    return a && effectivePassword(a.id) === String(password) ? a : null;
+}
+
+/* ការចូលប្រើតឹងរ៉ឹង (ពាក្យសម្ងាត់ និង PIN)៖
+   · បញ្ជរដែលបានចុះឈ្មោះ = ទំព័រចូលរបស់ហាងមួយ៖ តែបុគ្គលិកនៃហាង និងសាខានោះ ឬម្ចាស់ហាង
+   · ឧបករណ៍ផ្សេង៖ អ្នកគ្រប់គ្រង និងម្ចាស់ហាងចូលបាន · អ្នកគិតលុយលក់តែលើបញ្ជររបស់ហាង
+   លទ្ធផល៖ '' = អនុញ្ញាត · shop · branch · till */
+function loginBlockReason(p, dev) {
+    if (!p || isControlId(p.id)) return 'shop';
+    if (dev) {
+        if (dev.shopId !== (p.shopId || 'SHOP-01')) return 'shop';
+        if (p.role !== 'admin' && (p.branchId || 'BR-01') !== (dev.branchId || 'BR-01')) return 'branch';
+        return '';
+    }
+    return p.role === 'cashier' ? 'till' : '';
 }
 
 function isManagerPage() {
@@ -2862,7 +2883,9 @@ function posSession() {
     if (!s || !s.userId) return null;
     if (s.control) return isControlId(s.userId) ? s : null;
     // ហាងត្រូវបានផ្អាក ឬការជាវផុតកំណត់ពេលកំពុងប្រើ → ចេញពីប្រព័ន្ធនៅទំព័របន្ទាប់
-    return isMemberOf(s.userId, s.shopId || 'SHOP-01') && !shopBlocked(s.shopId || 'SHOP-01') ? s : null;
+    if (!isMemberOf(s.userId, s.shopId || 'SHOP-01') || shopBlocked(s.shopId || 'SHOP-01')) return null;
+    // ច្បាប់ចូលប្រើដដែលគ្រប់ទំព័រ៖ បញ្ជរត្រូវបានដកចេញ ឬប្តូរហាង → អ្នកគិតលុយត្រូវចូលម្តងទៀត
+    return loginBlockReason(personById(s.userId), thisDevice()) ? null : s;
 }
 
 function posLoginControl(userId) {
@@ -2930,8 +2953,8 @@ function removeDevice(id) {
 /* ចូលដោយ PIN លើឧបករណ៍ដែលបានចុះឈ្មោះ៖ រកតែក្នុងចំណោមសមាជិកហាងរបស់ឧបករណ៍ */
 /* បញ្ជរនៃសាខាមួយ៖ បុគ្គលិកនៃសាខានោះ ឬម្ចាស់ហាង */
 function verifyPinLogin(pin, shopId, branchId) {
-    const b = branchId || 'BR-01';
-    return ALL_STAFF.find(p => p.active && isMemberOf(p.id, shopId) && (p.role === 'admin' || (p.branchId || 'BR-01') === b) && verifyPin(p.id, pin)) || null;
+    const dev = { shopId, branchId: branchId || 'BR-01' };
+    return ALL_STAFF.find(p => p.active && !loginBlockReason(p, dev) && verifyPin(p.id, pin)) || null;
 }
 
 /* ឧបករណ៍គំរូ៖ កម្មវិធីរុករកនេះជាបញ្ជរ POS-01 នៃហាងទីមួយ (ម្ចាស់ហាងដកចេញបាននៅការកំណត់) */
@@ -3233,11 +3256,13 @@ const MY_REGISTER = resolveRegister(ME_CASHIER);
     if (!area) return;
     // អ្នកគ្រប់គ្រងប្រព័ន្ធចូលបានតែ control/* · អ្នកផ្សេងចូល control/* មិនបាន
     if (SESSION && SESSION.control) {
-        if (area !== 'control') location.replace('../../control/dashboard/dashboard.html');
+        if (area !== 'control' || path.includes('/control/login/')) location.replace('../../control/dashboard/dashboard.html');
         return;
     }
+    // ច្រកអ្នកគ្រប់គ្រងប្រព័ន្ធមានទំព័រចូលដាច់ដោយឡែក (control/login) មិនមែនទំព័រចូល POS
     if (area === 'control') {
-        location.replace(SESSION ? `../../${ROLE_HOME[roleOf(SESSION.userId)]}` : `../../index.html?next=${encodeURIComponent(path.split('/').slice(-3).join('/'))}`);
+        if (path.includes('/control/login/')) return;
+        location.replace(`../../control/login/login.html?next=${encodeURIComponent(path.split('/').slice(-3).join('/'))}`);
         return;
     }
     const role = SESSION ? roleOf(SESSION.userId) : '';

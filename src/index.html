@@ -179,7 +179,7 @@
                     </div>
                     <!-- ឧបករណ៍មិនទាន់ចុះឈ្មោះ៖ គ្មាន PIN (មិនដឹងថាជាហាងណា) -->
                     <p id="noDeviceNote" class="hidden mt-5 rounded-lg border border-slate-200 px-3 py-2.5 sm-td-sub text-slate-500 leading-relaxed">
-                        <i class="fas fa-circle-info mr-1.5 text-slate-400"></i>ការចូលដោយលេខកូដ PIN ប្រើបានតែលើកុំព្យូទ័របញ្ជរដែលម្ចាស់ហាងបានចុះឈ្មោះ
+                        <i class="fas fa-circle-info mr-1.5 text-slate-400"></i>កុំព្យូទ័រនេះមិនមែនបញ្ជររបស់ហាង · ម្ចាស់ហាង និងអ្នកគ្រប់គ្រងចូលបាន · អ្នកគិតលុយចូលតែលើបញ្ជរដែលម្ចាស់ហាងបានចុះឈ្មោះ
                     </p>
                     <p class="mt-6 flex items-center justify-center gap-2 sm-td-sub text-slate-400">
                         <i class="fas fa-shield-halved text-[12px]"></i> ចាក់សោស្វ័យប្រវត្តិ ពេលវាយខុស 5 ដង
@@ -351,18 +351,16 @@
 
             setBusy(true);
             const res = verifyLogin(ident, pass);
-            if (!res.person && !res.control) setTimeout(() => setBusy(false), 0);
+            if (!res.person) setTimeout(() => setBusy(false), 0);
             if (res.person) {
                 posWrite(GUARD_KEY, { fails: 0, lockedUntil: 0 });
+                // ទំព័រចូលនេះជារបស់ហាង (បញ្ជរ) ឬអ្នកគិតលុយនៅក្រៅបញ្ជរ → មិនអនុញ្ញាត
+                const why = loginBlockReason(res.person, DEVICE);
+                if (why) { setBusy(false); showMsg(blockText(why, res.person), 'warn'); return false; }
                 try {
                     localStorage.setItem('pos_last_login', ident);
                 } catch (err) { /* មិនអាចរក្សាទុក */ }
                 return afterPassword(res.person);
-            }
-            if (res.control) {
-                posWrite(GUARD_KEY, { fails: 0, lockedUntil: 0 });
-                try { localStorage.setItem('pos_last_login', ident); } catch (err) { /* មិនអាចរក្សាទុក */ }
-                return finishControl(res.control);
             }
             if (res.error === 'inactive') {
                 showMsg(`<i class="fas fa-user-slash mr-1.5"></i>គណនីរបស់ ${res.person.name} ត្រូវបានផ្អាក · សូមទាក់ទងម្ចាស់ហាង`, 'warn');
@@ -470,6 +468,13 @@
             if (shopBlocked(m.shopId)) { setBusy(false); showMsg(blockedMsg(m), 'warn'); return false; }
             return finishLogin(p, m.shopId, 'password');
         }
+        /* ពាក្យសម្ងាត់ត្រូវ តែមិនអាចចូលនៅទីនេះ (loginBlockReason) · ប្រាប់ពីអ្វីដែលត្រូវធ្វើ */
+        function blockText(why, p) {
+            if (why === 'shop') return `<i class="fas fa-store-slash mr-1.5"></i>គណនីនេះមិនអាចចូលនៅ ${escapeText(shopById(DEVICE.shopId).nameKh)} បានទេ · សូមចូលនៅហាងរបស់អ្នក`;
+            if (why === 'branch') return `<i class="fas fa-code-branch mr-1.5"></i>បញ្ជរនេះជារបស់${escapeText(branchName(DEVICE.branchId || 'BR-01'))} · សូមចូលនៅបញ្ជរនៃសាខារបស់អ្នក`;
+            return '<i class="fas fa-cash-register mr-1.5"></i>អ្នកគិតលុយចូលបានតែលើកុំព្យូទ័របញ្ជររបស់ហាង · សូមចូលនៅបញ្ជរ';
+        }
+
         /* ហាងផ្អាក ឬការជាវផុតកំណត់៖ ម្ចាស់ហាងទាក់ទង DIGITECHKH · បុគ្គលិកទាក់ទងម្ចាស់ហាង */
         function blockedMsg(m) {
             const sh = shopById(m.shopId);
@@ -552,22 +557,6 @@
             return false;
         }
 
-        /* អ្នកគ្រប់គ្រងប្រព័ន្ធ (DIGITECHKH)៖ គ្មានហាង · ទៅច្រក control/* */
-        function finishControl(who) {
-            posLoginControl(who.id);
-            const next = new URLSearchParams(location.search).get('next');
-            const ok = next && /^control\/[a-z-]+\/[a-z-]+\.html$/.test(next);
-            const form = document.getElementById('loginForm');
-            [...form.children].forEach(el => el.remove());
-            document.getElementById('altLogin').classList.add('hidden');
-            form.insertAdjacentHTML('beforeend', `<div class="pt-10 pb-6 flex flex-col items-center text-center fade-up">
-                ${avatarHtml(who.id, 'w-20 h-20 ring-1 ring-slate-200')}
-                <span class="block mt-4 text-[22px] leading-tight font-semibold text-slate-900">សូមស្វាគមន៍ ${who.name}</span>
-                <span class="block sm-td-sub text-slate-500 mt-1">អ្នកគ្រប់គ្រងប្រព័ន្ធ · កំពុងបើកបញ្ជីហាង…</span></div>`);
-            setTimeout(() => { location.href = ok ? next : 'control/dashboard/dashboard.html'; }, 650);
-            return false;
-        }
-
         /* ===== គណនីគំរូ ===== */
 
         function toggleDemo() {
@@ -588,17 +577,38 @@
 
         /* គំរូ៖ ប្តូររវាង «កុំព្យូទ័របញ្ជរដែលបានចុះឈ្មោះ» និង «ឧបករណ៍ផ្ទាល់ខ្លួន» ដើម្បីសាកការចូលទាំងពីរ
            (ក្នុងផលិតផល ម្ចាស់ហាងធ្វើនៅ ការកំណត់ → ឧបករណ៍បញ្ជរ) */
+        /* ឧបករណ៍នេះជាបញ្ជររបស់ហាង និងសាខាណា = ទំព័រចូលរបស់ហាងណា · គ្មាន = កុំព្យូទ័រផ្ទាល់ខ្លួន (អ្នកគិតលុយចូលមិនបាន) */
+        const DEMO_TILLS = [
+            { shopId: 'SHOP-01', branchId: 'BR-01', register: 'POS-01', by: 'ADM-01' },
+            { shopId: 'SHOP-01', branchId: 'BR-02', register: 'POS-04', by: 'ADM-01' },
+            { shopId: 'SHOP-01', branchId: 'BR-03', register: 'POS-06', by: 'ADM-01' },
+            { shopId: 'SHOP-02', branchId: 'BR-01', register: 'POS-01', by: 'ADM-02' },
+            null
+        ];
+        function demoTillLabel(t) {
+            if (!t) return 'កុំព្យូទ័រផ្ទាល់ខ្លួន (មិនមែនបញ្ជរ)';
+            const brs = shopBranches(t.shopId);
+            return `${escapeText(shopById(t.shopId).nameKh)}${brs.length > 1 ? ` · ${escapeText((brs.find(b => b.id === t.branchId) || {}).name || '')}` : ''} · ${t.register}`;
+        }
         function renderDemoDevice() {
             const d = thisDevice();
-            document.getElementById('demoDevice').innerHTML = `<i class="fas ${d ? 'fa-cash-register' : 'fa-laptop'} text-slate-400"></i>
-                <span class="flex-1 min-w-0 sm-td-sub text-slate-600">${d ? `ឧបករណ៍នេះ = បញ្ជរ ${d.register} · ${escapeText(shopById(d.shopId).nameKh)}` : 'ឧបករណ៍នេះមិនទាន់ចុះឈ្មោះជាបញ្ជរ'}</span>
-                <button type="button" onclick="demoToggleDevice()" class="sm-td-sub font-semibold text-blue-600 hover:text-blue-700 flex-shrink-0">${d ? 'ដកការចុះឈ្មោះ' : 'ចុះឈ្មោះជា POS-01'}</button>`;
+            const same = t => d && t && d.shopId === t.shopId && (d.branchId || 'BR-01') === t.branchId && d.register === t.register;
+            const box = document.getElementById('demoDevice');
+            box.className = 'mt-3 rounded-lg border border-slate-200 p-1.5';
+            box.innerHTML = `<p class="px-2 pt-1 pb-1.5 sm-td-sub font-semibold text-slate-500">ឧបករណ៍នេះ = ទំព័រចូលរបស់</p>` + DEMO_TILLS.map((t, i) => {
+                const on = t ? same(t) : !d;
+                return `<button type="button" onclick="demoSetDevice(${i})" class="w-full text-left px-2 py-2 rounded-md flex items-center gap-2.5 sm-td-sub ${on ? 'bg-slate-100 text-slate-900 font-semibold' : 'text-slate-600 hover:bg-slate-50'}">
+                    <i class="fas ${t ? 'fa-cash-register' : 'fa-laptop'} w-4 text-center text-slate-400"></i><span class="flex-1 min-w-0 truncate">${demoTillLabel(t)}</span>${on ? '<i class="fas fa-check text-slate-500"></i>' : ''}</button>`;
+            }).join('');
         }
-        function demoToggleDevice() {
+        function demoSetDevice(i) {
+            const t = DEMO_TILLS[i];
             const d = thisDevice();
             if (d) removeDevice(d.id);
-            else registerThisDevice('SHOP-01', 'POS-01', 'ADM-01');
-            location.reload();
+            if (t) registerThisDevice(t.shopId, t.register, t.by, t.branchId);
+            else posWrite('pos_device', null);
+            posLogout();
+            location.href = 'index.html';
         }
 
         async function resetDemo() {
@@ -646,23 +656,27 @@
                 .sort((a, b) => SHOPS.findIndex(s => s.id === (a.shopId || 'SHOP-01')) - SHOPS.findIndex(s => s.id === (b.shopId || 'SHOP-01'))
                     || branchOf(a).localeCompare(branchOf(b)) || ROLE_ORDER[a.role] - ROLE_ORDER[b.role] || a.id.localeCompare(b.id));
             let lastGroup = null;
-            document.getElementById('demoAccounts').innerHTML = people.concat(CONTROL_ACCOUNTS).map(p => {
+            document.getElementById('demoAccounts').innerHTML = people.map(p => {
                 const shopId = isControlId(p.id) ? 'CONTROL' : (p.shopId || 'SHOP-01');
                 const group = shopId === 'CONTROL' ? shopId : `${shopId}|${branchOf(p)}`;
                 const branches = shopId === 'CONTROL' ? [] : shopBranches(shopId);
                 const br = branches.length > 1 ? ` · ${escapeText((branches.find(b => b.id === branchOf(p)) || {}).name || '')}` : '';
                 const head = group !== lastGroup ? `<p class="pt-3 pb-1 px-1 sm-td-sub font-semibold text-slate-500">${shopId === 'CONTROL' ? 'អ្នកគ្រប់គ្រងប្រព័ន្ធ (DIGITECHKH)' : escapeText((shopById(shopId) || {}).nameKh || shopId) + br}</p>` : '';
                 lastGroup = group;
-                return head + `<button type="button" onclick="fillDemo('${p.id}')" class="w-full text-left py-2 px-1 flex items-center gap-2.5 hover:bg-slate-50 rounded transition-colors">
+                // គំរូ៖ បង្ហាញថាគណនីណាចូលមិនបាននៅទំព័រនេះ (ហាងផ្សេង សាខាផ្សេង ឬអ្នកគិតលុយក្រៅបញ្ជរ)
+                const why = loginBlockReason(p, DEVICE);
+                const whyText = { shop: 'ហាងផ្សេង · ចូលមិនបាននៅទីនេះ', branch: 'សាខាផ្សេង · ចូលមិនបាននៅបញ្ជរនេះ', till: 'ត្រូវចូលនៅបញ្ជរ' }[why];
+                return head + `<button type="button" onclick="fillDemo('${p.id}')" class="w-full text-left py-2 px-1 flex items-center gap-2.5 hover:bg-slate-50 rounded transition-colors ${why ? 'opacity-60' : ''}">
                     ${avatarHtml(p.id, 'w-7 h-7')}
                     <span class="flex-1 min-w-0"><span class="block sm-td-sub font-semibold text-slate-800 truncate">${p.name}</span>
-                    <span class="block sm-td-sub text-slate-500 truncate">${p.phone}${p.email ? ` · ${p.email}` : ''}</span></span>
+                    <span class="block sm-td-sub text-slate-500 truncate">${whyText ? `<i class="fas fa-ban mr-1"></i>${whyText}` : `${p.phone}${p.email ? ` · ${p.email}` : ''}`}</span></span>
                     <span class="text-right flex-shrink-0">
                         <span class="block sm-figure sm-td-sub text-slate-900 font-semibold">${effectivePassword(p.id)}</span>
                         <span class="block sm-figure sm-td-sub text-slate-500">${isControlId(p.id) ? 'DIGITECHKH' : `PIN ${effectivePin(p.id)}`}</span>
                     </span>
                 </button>`;
-            }).join('');
+            }).join('') + `<a href="control/login/login.html" class="mt-2 py-2.5 px-1 flex items-center gap-2.5 sm-td-sub font-semibold text-blue-700 hover:underline">
+                    <i class="fas fa-shield-halved w-7 text-center text-slate-400"></i>ច្រកអ្នកគ្រប់គ្រងប្រព័ន្ធ DIGITECHKH · ទំព័រចូលដាច់ដោយឡែក</a>`;
             const last = (() => { try { return localStorage.getItem('pos_last_login') || ''; } catch (err) { return ''; } })();
             document.getElementById('ident').value = last;
             syncClear();
@@ -671,7 +685,7 @@
             renderLock();
             // ប្តូរសាខា (index.html?branch=1) · បញ្ជរដែលបានចុះឈ្មោះបើកផ្ទាំង PIN មុន · ឧបករណ៍ផ្សេងបើកទម្រង់ពាក្យសម្ងាត់
             const params = new URLSearchParams(location.search);
-            if (params.get('branch') && SESSION && !SESSION.control && shopBranches().length > 1) showBranchPicker();
+            if (params.get('branch') && SESSION && shopBranches().length > 1) showBranchPicker();
             else if (DEVICE && !params.get('next')) showPinMode(true);
             else setTimeout(() => document.getElementById(last ? 'pass' : 'ident').focus({ preventScroll: true }), 1300);
         });
